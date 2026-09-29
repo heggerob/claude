@@ -37,6 +37,17 @@ namespace AirsoftArena
             GUILayout.BeginHorizontal();
             GUILayout.Label("AIRSOFT ARENA", title);
             GUILayout.FlexibleSpace();
+            DrawRankBadge(profile);
+            GUILayout.Space(12);
+            var today = System.DateTime.Now;
+            if (Progression.DailyAvailable(profile, today))
+            {
+                bool continues = profile.lastDailyDay == Progression.DayKey(today.AddDays(-1));
+                int next = Progression.DailyAmount(continues ? profile.dailyStreak + 1 : 1);
+                if (GUILayout.Button("DAILY BONUS\n+$" + next, GUILayout.Width(120f), GUILayout.Height(40f)))
+                    Defer(() => { Progression.ClaimDaily(profile, System.DateTime.Now); PlayerProfile.Save(); });
+            }
+            GUILayout.Space(12);
             GUILayout.Label("<b>$" + profile.money + "</b>", money);
             GUILayout.EndHorizontal();
 
@@ -259,7 +270,11 @@ namespace AirsoftArena
                 GUILayout.Label(WeaponButton(w) + "   <color=#999999>" + w.StatLine + "</color>", small);
                 GUILayout.FlexibleSpace();
                 var weapon = w;
-                if (GUILayout.Button("BUY  $" + w.price, GUILayout.Width(130f), GUILayout.Height(30f))) Defer(() => Shop.Buy(profile, weapon));
+                bool locked = profile.Level < w.requiredRank;
+                bool wasEnabled = GUI.enabled;
+                GUI.enabled = wasEnabled && !locked;
+                if (GUILayout.Button(locked ? "Rank " + w.requiredRank : "BUY  $" + w.price, GUILayout.Width(130f), GUILayout.Height(30f))) Defer(() => Shop.Buy(profile, weapon));
+                GUI.enabled = wasEnabled;
                 GUILayout.EndHorizontal();
             }
             foreach (var item in CosmeticCatalog.All)
@@ -387,6 +402,26 @@ namespace AirsoftArena
             GameSettings.Save();
         }
 
+        void DrawRankBadge(PlayerProfile profile)
+        {
+            GUILayout.BeginVertical(GUILayout.Width(190f));
+            int level = profile.Level;
+            string next = level >= Progression.MaxLevel ? "MAX RANK" : (profile.xp - Progression.XpForLevel(level)) + " / " + (Progression.XpForLevel(level + 1) - Progression.XpForLevel(level)) + " XP";
+            GUILayout.Label("<b>" + Chevrons(level) + "  " + profile.RankName + "</b>   <color=#aaaaaa>" + next + "</color>", small);
+            var bar = GUILayoutUtility.GetRect(180f, 8f, GUILayout.Width(180f));
+            GUI.DrawTexture(bar, whiteTexture, ScaleMode.StretchToFill, true, 0f, new Color(1f, 1f, 1f, 0.15f), 0f, 0f);
+            GUI.DrawTexture(new Rect(bar.x, bar.y, bar.width * Progression.LevelProgress(profile.xp), bar.height), whiteTexture, ScaleMode.StretchToFill, true, 0f, new Color(1f, 0.8f, 0.3f), 0f, 0f);
+            if (profile.dailyStreak > 1) GUILayout.Label("Daily streak: " + profile.dailyStreak + " days", small);
+            GUILayout.EndVertical();
+        }
+
+        static string Chevrons(int level)
+        {
+            if (level >= 9) return "★★";
+            if (level >= 6) return "★";
+            return new string('^', Mathf.Clamp(level, 1, 5));
+        }
+
         void SelectMap(PlayerProfile profile, MapDefinition map)
         {
             profile.mapId = map.id;
@@ -400,7 +435,10 @@ namespace AirsoftArena
         void WeaponChoice(PlayerProfile profile, WeaponData w, bool selected, bool isPrimary)
         {
             bool owned = profile.OwnsWeapon(w);
-            string text = owned ? WeaponButton(w) : WeaponButton(w) + "   <color=#ffd060>BUY $" + w.price + "</color>";
+            bool rankLocked = !owned && profile.Level < w.requiredRank;
+            string text = owned ? WeaponButton(w)
+                : rankLocked ? "<color=#888888>" + WeaponButton(w) + "   LOCKED: rank " + w.requiredRank + " " + Progression.RankName(w.requiredRank) + "</color>"
+                : WeaponButton(w) + "   <color=#ffd060>BUY $" + w.price + "</color>";
             if (!Choice(selected, text)) return;
             Defer(() =>
             {

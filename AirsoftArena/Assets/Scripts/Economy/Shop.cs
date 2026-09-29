@@ -24,7 +24,7 @@ namespace AirsoftArena
         public int refund;
     }
 
-    public enum PurchaseResult { Ok, AlreadyOwned, NotEnoughMoney, Unknown }
+    public enum PurchaseResult { Ok, AlreadyOwned, NotEnoughMoney, RankTooLow, Unknown }
 
     /// <summary>
     /// Everything that costs in-game money: cosmetics, weapons and crates.
@@ -63,6 +63,7 @@ namespace AirsoftArena
         {
             if (weapon == null) return PurchaseResult.Unknown;
             if (profile.OwnsWeapon(weapon)) return PurchaseResult.AlreadyOwned;
+            if (profile.Level < weapon.requiredRank) return PurchaseResult.RankTooLow;
             if (profile.money < weapon.price) return PurchaseResult.NotEnoughMoney;
             profile.money -= weapon.price;
             profile.ownedWeapons.Add(weapon.code);

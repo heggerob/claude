@@ -65,6 +65,8 @@ namespace AirsoftArena
         [Header("Shop")]
         [Tooltip("Price in in-game money. 0 = owned from the start.")]
         public int price;
+        [Tooltip("Rank level needed before it can be bought.")]
+        public int requiredRank = 1;
 
                 [Header("Melee only")]
         public float meleeRange = 1.3f;

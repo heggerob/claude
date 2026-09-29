@@ -14,6 +14,7 @@ namespace AirsoftArena
         Texture2D panelTexture, whiteTexture;
         float scale, W, H;
         Camera cam;
+        Vector2 resultsScroll;
 
         // Button actions that change what is drawn run in Update, so IMGUI's layout and repaint passes always match.
         System.Action deferred;
@@ -259,6 +260,7 @@ namespace AirsoftArena
             GUILayout.BeginHorizontal();
 
             GUILayout.BeginVertical(GUILayout.Width(pw * 0.5f));
+            resultsScroll = GUILayout.BeginScrollView(resultsScroll, GUILayout.Height(ph - 190f));
             if (r.role == Role.Soldier && r.playerStats != null)
             {
                 var s = r.playerStats;
@@ -278,9 +280,13 @@ namespace AirsoftArena
                 GUILayout.Label(string.Format("Missed cheaters {0}   ·   wrong calls {1}", r.refMissed, r.refWrongCalls), label);
             }
             GUILayout.Space(8);
+            GUILayout.Label(string.Format("<b>XP +{0}</b>{1}", r.xpGained, r.levelAfter > r.levelBefore ? "   <color=#ffd060><b>RANK UP → " + Progression.RankName(r.levelAfter) + "!</b></color>" : ""), label);
+            foreach (var line in r.xpLines) GUILayout.Label(line, small);
+            GUILayout.Space(6);
             GUILayout.Label("<b>Money</b>", label);
             foreach (var line in r.moneyLines) GUILayout.Label(line, small);
             GUILayout.Label(string.Format("${0} → <b>${1}</b>", r.moneyBefore, r.moneyAfter), label);
+            GUILayout.EndScrollView();
             GUILayout.EndVertical();
 
             GUILayout.Space(16);

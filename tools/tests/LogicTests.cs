@@ -21,6 +21,7 @@ public static class LogicTests
         Weapons();
         ShopTests();
         Maps();
+        ProgressionTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
     }
@@ -56,6 +57,8 @@ public static class LogicTests
         p.money = 1000;
         var lmg = WeaponCatalog.Get("07-TH6");
         Check(!p.OwnsWeapon(lmg), "LMG locked at start");
+        Check(Shop.Buy(p, lmg) == PurchaseResult.RankTooLow, "LMG needs a higher rank");
+        p.xp = Progression.XpForLevel(lmg.requiredRank);
         Check(p.OwnsWeapon(WeaponCatalog.Get("01-VK4")), "starter rifle owned");
         Check(Shop.Buy(p, lmg) == PurchaseResult.Ok && p.money == 1000 - lmg.price, "buying LMG deducts price");
         Check(Shop.Buy(p, lmg) == PurchaseResult.AlreadyOwned, "can't buy twice");
@@ -93,6 +96,47 @@ public static class LogicTests
         Check(p.money == 1000000 - spent + refunded, "money adds up after 4000 crates");
         Check(hist[0] > hist[1] && hist[1] > hist[2] && hist[2] > hist[3] && hist[3] > 0, "rarity histogram is ordered: " + string.Join(",", hist));
         foreach (var c in CosmeticCatalog.All) Check(p.Owns(c), "crates can unlock " + c.id);
+    }
+
+    static void ProgressionTests()
+    {
+        Check(Progression.LevelForXp(0) == 1, "0 XP is rank 1");
+        Check(Progression.LevelForXp(249) == 1 && Progression.LevelForXp(250) == 2, "rank 2 at 250 XP");
+        Check(Progression.LevelForXp(750) == 3, "rank 3 at 750 XP");
+        Check(Progression.LevelForXp(int.MaxValue / 2) == Progression.MaxLevel, "rank is capped");
+        for (int l = 2; l <= Progression.MaxLevel; l++) Check(Progression.XpForLevel(l) > Progression.XpForLevel(l - 1), "XP thresholds increase at " + l);
+
+        var p = new PlayerProfile();
+        int money = p.money;
+        var lines = new List<string>();
+        int gained = Progression.AddXp(p, 800, lines);
+        Check(gained == 2 && p.Level == 3, "800 XP gives two rank-ups");
+        Check(p.money == money + Progression.RankUpReward(2) + Progression.RankUpReward(3), "rank-ups pay cash");
+        Check(lines.Count == 2, "a line per rank-up");
+
+        // Rank-gated weapons.
+        var sniper = WeaponCatalog.Get("03-LB2");
+        var q = new PlayerProfile { money = 100000 };
+        Check(Shop.Buy(q, sniper) == PurchaseResult.RankTooLow, "sniper needs rank " + sniper.requiredRank);
+        q.xp = Progression.XpForLevel(sniper.requiredRank);
+        Check(Shop.Buy(q, sniper) == PurchaseResult.Ok, "sniper buyable at required rank");
+        foreach (var w in WeaponCatalog.All) Check(w.price > 0 || w.requiredRank == 1, w.code + " free weapons need no rank");
+
+        // Match XP.
+        var stats = new SoldierStats { pointsScored = 5, hitsCalled = 3, captures = 1 };
+        int xp = Progression.SoldierXp(stats, true, false, null);
+        Check(xp == 100 + 60 + 5 * 12 + 3 * 8 + 60, "soldier XP adds up: " + xp);
+        Check(Progression.RefereeXp(0, 10, null) >= 50, "referee XP never below 50");
+
+        // Daily bonus streaks.
+        var d = new PlayerProfile();
+        var day1 = new DateTime(2026, 10, 1);
+        Check(Progression.ClaimDaily(d, day1) == 50 && d.dailyStreak == 1, "first daily bonus");
+        Check(Progression.ClaimDaily(d, day1) == 0, "only once per day");
+        Check(Progression.ClaimDaily(d, day1.AddDays(1)) == 75 && d.dailyStreak == 2, "streak grows next day");
+        for (int i = 2; i < 12; i++) Progression.ClaimDaily(d, day1.AddDays(i));
+        Check(d.dailyStreak == Progression.MaxStreak, "streak capped");
+        Check(Progression.ClaimDaily(d, day1.AddDays(20)) == 50 && d.dailyStreak == 1, "missing days resets streak");
     }
 
     static void Maps()

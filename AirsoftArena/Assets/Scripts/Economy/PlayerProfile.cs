@@ -16,6 +16,11 @@ namespace AirsoftArena
         public string playerName = "You";
         public int money = StartingMoney;
 
+        [Header("Progression")]
+        public int xp;
+        public int dailyStreak;
+        public string lastDailyDay = "";
+
         [Header("As a player")]
         public float skillRating = 1000f;
         [Tooltip("0..100. Goes down when the referee catches you not calling hits, shooting players who are out, or shooting the ref.")]
@@ -47,6 +52,9 @@ namespace AirsoftArena
         public string equippedTracer = CosmeticCatalog.DefaultId(CosmeticSlot.Tracer);
 
         public float RefStars { get { return refRatings > 0 ? refStarsTotal / refRatings : 3f; } }
+
+        public int Level { get { return Progression.LevelForXp(xp); } }
+        public string RankName { get { return Progression.RankName(Level); } }
 
         public bool OwnsWeapon(WeaponData weapon) { return weapon != null && (weapon.price <= 0 || ownedWeapons.Contains(weapon.code)); }
 

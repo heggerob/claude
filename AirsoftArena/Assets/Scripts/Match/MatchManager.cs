@@ -37,6 +37,8 @@ namespace AirsoftArena
         public bool playerWon;
         public int moneyBefore, moneyAfter;
         public readonly List<string> moneyLines = new List<string>();
+        public readonly List<string> xpLines = new List<string>();
+        public int xpGained, levelBefore, levelAfter;
         public float skillBefore, skillAfter, honorBefore, honorAfter;
 
         public string refereeName;
@@ -432,6 +434,16 @@ namespace AirsoftArena
             r.moneyAfter = profile.money;
             r.skillAfter = profile.skillRating;
             r.honorAfter = profile.honor;
+
+            r.levelBefore = profile.Level;
+            if (Settings.role == Role.Soldier)
+                r.xpGained = Progression.SoldierXp(PlayerSoldier.Stats, r.playerWon, r.draw, r.xpLines);
+            else
+                r.xpGained = Progression.RefereeXp(CorrectCalls, WrongCalls, r.xpLines);
+            // Rank-up cash lands in the money lines too.
+            Progression.AddXp(profile, r.xpGained, r.moneyLines);
+            r.levelAfter = profile.Level;
+            r.moneyAfter = profile.money;
             PlayerProfile.Save();
         }
 

@@ -45,7 +45,7 @@ Den første planen var laget for en 3D FPS. Dette er hva som er tatt med og hva 
 | Bevegelse | ✅ Gå, sprinte (kan ikke skyte), huke |
 | Spillmodi | ✅ Team Deathmatch, Capture the Flag, King of the Hill |
 | Roller (medic, sniper, assault) | 🔜 |
-| Progresjon og opplåsing | 🔜 Alle våpen er åpne i prototypen |
+| Progresjon og opplåsing | ✅ XP, 10 ranker (Recruit–General), våpen låses opp med rank, dagsbonus med streak |
 | Tilbehør (attachments) | 🔜 |
 | Kosmetikk og butikk | ✅ Kamo, uniform, hodeplagg, BB-farge, kasser med åpne odds |
 | Flere kart, innendørs | ✅ Pallet Yard, Warehouse (innendørs), Forest |

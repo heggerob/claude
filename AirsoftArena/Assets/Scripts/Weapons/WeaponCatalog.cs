@@ -74,6 +74,15 @@ namespace AirsoftArena
             { "00-RT1", 0 },
         };
 
+        static readonly Dictionary<string, int> Ranks = new Dictionary<string, int>
+        {
+            { "01-FR7", 2 }, { "05-TR3", 2 }, { "04-FJ6", 2 },
+            { "03-RD1", 3 }, { "04-BZ9", 3 },
+            { "06-TT3", 4 },
+            { "03-LB2", 5 },
+            { "07-TH6", 6 },
+        };
+
         public static WeaponData Get(string code)
         {
             foreach (var list in new[] { Primaries, Secondaries, MeleeWeapons })
@@ -115,6 +124,8 @@ namespace AirsoftArena
             w.pelletsPerShot = pellets;
             int price;
             w.price = Prices.TryGetValue(code, out price) ? price : 0;
+            int rank;
+            w.requiredRank = Ranks.TryGetValue(code, out rank) ? rank : 1;
             return w;
         }
     }
