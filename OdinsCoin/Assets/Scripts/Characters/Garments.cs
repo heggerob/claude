@@ -736,7 +736,7 @@ namespace OdinsCoin
                     {
                         float v = r / (float)(rows - 1);
                         float len = side < 0f ? 0.26f : 0.2f;
-                        float x = side * 0.02f * s + Mathf.Lerp(0f, 0.09f, v) * s * (side < 0f ? 1f : 0.4f) + (c - 0.5f) * 0.065f * s;
+                        float x = side * 0.02f * s + Mathf.Lerp(0f, 0.16f, v) * s * (side < 0f ? 1f : 0.5f) + (c - 0.5f) * 0.065f * s;
                         float yy = y - 0.02f * s - v * len * s - (r == rows - 1 && c == 0 ? 0.025f * s : 0f);
                         grid[r, c] = new Vector3(x, yy, cz + v * 0.02f + (side < 0f ? 0.012f : 0f));
                     }
