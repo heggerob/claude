@@ -60,3 +60,7 @@ Se [`AirsoftArena/DESIGN.md`](AirsoftArena/DESIGN.md) for designbeslutninger og 
 - `tools/tests/run.sh` kjører logikktester (kosmetikk, våpen, økonomi) uten Unity.
 
 ![Pixel-art](AirsoftArena/docs/sprites.png)
+
+| Pallet Yard | Warehouse (innendørs) | Forest |
+|---|---|---|
+| ![](AirsoftArena/docs/map_pallet_yard.png) | ![](AirsoftArena/docs/map_warehouse.png) | ![](AirsoftArena/docs/map_forest.png) |

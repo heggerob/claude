@@ -16,7 +16,8 @@ namespace AirsoftArena
             foreach (var hit in hits)
             {
                 if (hit.collider == self) continue;
-                if (hit.collider.GetComponent<Obstacle>() != null) return true;
+                var obstacle = hit.collider.GetComponent<Obstacle>();
+                if (obstacle != null && obstacle.BlocksMovement) return true;
             }
             return false;
         }

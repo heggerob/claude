@@ -21,13 +21,14 @@ namespace UnityEngine {
   public struct Vector3 { public float x,y,z; public Vector3(float x,float y,float z){this.x=x;this.y=y;this.z=z;} public static Vector3 zero{get{return new Vector3(0,0,0);}} public static Vector3 one{get{return new Vector3(1,1,1);}}
     public static Vector3 operator+(Vector3 a,Vector3 b){return new Vector3(a.x+b.x,a.y+b.y,a.z+b.z);} public static Vector3 operator-(Vector3 a,Vector3 b){return new Vector3(a.x-b.x,a.y-b.y,a.z-b.z);} public static Vector3 operator*(Vector3 a,float b){return new Vector3(a.x*b,a.y*b,a.z*b);} public static Vector3 operator*(float b,Vector3 a){return a*b;}
     public float magnitude{get{return (float)Math.Sqrt(x*x+y*y+z*z);}} public static Vector3 Lerp(Vector3 a,Vector3 b,float t){t=Mathf.Clamp01(t); return a+(b-a)*t;} }
+  public struct Vector2Int { public int x,y; public Vector2Int(int x,int y){this.x=x;this.y=y;} }
   public struct Quaternion { public static Quaternion identity; public static Quaternion Euler(float x,float y,float z){return identity;} }
   public struct Matrix4x4 { public static Matrix4x4 TRS(Vector3 p,Quaternion q,Vector3 s){return new Matrix4x4();} }
   public struct Color { public float r,g,b,a; public Color(float r,float g,float b,float a=1){this.r=r;this.g=g;this.b=b;this.a=a;}
     public static Color white{get{return new Color(1,1,1,1);}} public static Color black{get{return new Color(0,0,0,1);}} public static Color clear{get{return new Color(0,0,0,0);}}
     public static Color operator*(Color c,float f){return new Color(c.r*f,c.g*f,c.b*f,c.a*f);} public static Color operator+(Color a,Color b){return new Color(a.r+b.r,a.g+b.g,a.b+b.b,a.a+b.a);} public static implicit operator Color(Color32 c){return new Color(c.r/255f,c.g/255f,c.b/255f,c.a/255f);} }
   public struct Color32 { public byte r,g,b,a; public Color32(byte r,byte g,byte b,byte a){this.r=r;this.g=g;this.b=b;this.a=a;} }
-  public struct Rect { public Rect(float x,float y,float w,float h){this.x=x;this.y=y;width=w;height=h;} public float x,y,width,height; public float xMin{get{return 0;}} public float xMax{get{return 0;}} public float yMin{get{return 0;}} public float yMax{get{return 0;}} public Vector2 center{get{return new Vector2();}} public bool Contains(Vector2 p){return true;} }
+  public struct Rect { public Rect(float x,float y,float w,float h){this.x=x;this.y=y;width=w;height=h;} public float x,y,width,height; public float xMin{get{return x;}} public float xMax{get{return x+width;}} public float yMin{get{return y;}} public float yMax{get{return y+height;}} public Vector2 center{get{return new Vector2(x+width/2,y+height/2);}} public Vector2 size{get{return new Vector2(width,height);}} public Vector2 min{get{return new Vector2(x,y);}} public bool Contains(Vector2 p){return p.x>=x&&p.x<x+width&&p.y>=y&&p.y<y+height;} }
   public class RectOffset { public RectOffset(int a,int b,int c,int d){} }
   public static class Mathf { public const float PI=(float)Math.PI, Deg2Rad=(float)(Math.PI/180), Rad2Deg=(float)(180/Math.PI), Infinity=float.PositiveInfinity;
     public static float Sqrt(float f){return (float)Math.Sqrt(f);} public static float Max(float a,float b){return Math.Max(a,b);} public static int Max(int a,int b){return Math.Max(a,b);} public static float Min(float a,float b){return Math.Min(a,b);} public static int Min(int a,int b){return Math.Min(a,b);}
@@ -58,7 +59,7 @@ namespace UnityEngine {
     public Vector2 velocity;
 #endif
   }
-  public class Collider2D : Behaviour {} public class CircleCollider2D : Collider2D { public float radius; } public class BoxCollider2D : Collider2D { public Vector2 size; }
+  public class Collider2D : Behaviour { public bool isTrigger; } public class CircleCollider2D : Collider2D { public float radius; } public class BoxCollider2D : Collider2D { public Vector2 size; }
   public struct RaycastHit2D { public Collider2D collider; public float fraction; public Vector2 point; }
   public struct ContactFilter2D { public ContactFilter2D NoFilter(){return this;} }
   public static class Physics2D { public static Vector2 gravity; public static int Linecast(Vector2 a,Vector2 b,ContactFilter2D f,List<RaycastHit2D> r){return 0;} public static int CircleCast(Vector2 o,float r,Vector2 d,ContactFilter2D f,List<RaycastHit2D> res,float dist){return 0;} }

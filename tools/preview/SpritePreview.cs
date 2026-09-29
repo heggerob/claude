@@ -50,6 +50,7 @@ public static class SpritePreview
         Blit(SpriteFactory.Sandbag, new Color(0.78f, 0.7f, 0.5f), 1000, H - 660);
 
         string outPath = args.Length > 0 ? args[0] : "preview.rgba";
+        MapPreview.RenderAll(Path.GetDirectoryName(Path.GetFullPath(outPath)));
         using (var f = new BinaryWriter(File.Create(outPath)))
         {
             f.Write(W); f.Write(H);

@@ -33,6 +33,7 @@ namespace AirsoftArena
             public Vector2 pos, vel;
             public float z, vz, mass, hop, v0, age;
             public Soldier owner;
+            public Collider2D softPassed; // the bush this BB is already flying through
             public SpriteRenderer sprite, shadow;
         }
 
@@ -74,6 +75,7 @@ namespace AirsoftArena
                 bb.hop = weapon.hopUp * Random.Range(0.95f, 1.05f);
                 bb.v0 = speed;
                 bb.age = 0f;
+                bb.softPassed = null;
                 var look = owner != null ? owner.Look : null;
                 bb.sprite.color = look != null ? look.tracer : DefaultTracer;
                 active.Add(bb);
@@ -153,6 +155,13 @@ namespace AirsoftArena
                 if (obstacle != null)
                 {
                     if (zAt > obstacle.Height) continue; // flies over low cover
+                    if (obstacle.Soft)
+                    {
+                        // Branches stop about one BB in four; each bush gets one chance per BB.
+                        if (col == bb.softPassed) continue;
+                        bb.softPassed = col;
+                        if (Random.value > 0.25f) continue;
+                    }
                     Effects.Flash(hit.point, new Color(0.9f, 0.85f, 0.6f), 0.25f, 0.08f);
                     return false;
                 }

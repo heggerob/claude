@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace AirsoftArena
@@ -10,10 +11,10 @@ namespace AirsoftArena
     {
         public const int PixelsPerUnit = 16;
 
-        static Sprite pixel, circle, smallCircle, bb, grass, crate, sandbag;
+        static Sprite pixel, circle, smallCircle, bb, grass, crate, sandbag, concrete, forestFloor, shelf, log, canopy, bush, rock;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() { pixel = circle = smallCircle = bb = grass = crate = sandbag = null; }
+        static void ResetStatics() { pixel = circle = smallCircle = bb = grass = crate = sandbag = concrete = forestFloor = shelf = log = canopy = bush = rock = null; }
 
         /// <summary>1x1 white square, one world unit big. Scale and tint it for rectangles.</summary>
         public static Sprite Pixel { get { return pixel ?? (pixel = Make(Solid(1, 1, Color.white), 1)); } }
@@ -29,6 +30,14 @@ namespace AirsoftArena
         public static Sprite Grass { get { return grass ?? (grass = Make(GrassTile(), PixelsPerUnit)); } }
         public static Sprite Crate { get { return crate ?? (crate = Make(CrateTile(), PixelsPerUnit)); } }
         public static Sprite Sandbag { get { return sandbag ?? (sandbag = Make(SandbagTile(), PixelsPerUnit)); } }
+        public static Sprite Concrete { get { return concrete ?? (concrete = Make(ConcreteTile(), PixelsPerUnit)); } }
+        public static Sprite ForestFloor { get { return forestFloor ?? (forestFloor = Make(ForestTile(), PixelsPerUnit)); } }
+        public static Sprite Shelf { get { return shelf ?? (shelf = Make(ShelfTile(), PixelsPerUnit)); } }
+        public static Sprite Log { get { return log ?? (log = Make(LogTile(), PixelsPerUnit)); } }
+        /// <summary>Tree crown, 3 m across, drawn above players.</summary>
+        public static Sprite Canopy { get { return canopy ?? (canopy = Make(Blob(48, 11, new Color32(38, 72, 40, 255), new Color32(52, 94, 50, 255), new Color32(30, 58, 34, 255)), PixelsPerUnit)); } }
+        public static Sprite Bush { get { return bush ?? (bush = Make(Blob(32, 21, new Color32(64, 110, 52, 255), new Color32(82, 132, 62, 255), new Color32(50, 90, 44, 255)), PixelsPerUnit)); } }
+        public static Sprite Rock { get { return rock ?? (rock = Make(Blob(24, 5, new Color32(128, 128, 122, 255), new Color32(150, 150, 144, 255), new Color32(100, 100, 96, 255)), PixelsPerUnit)); } }
 
         static Sprite Make(Texture2D tex, int ppu)
         {
@@ -85,6 +94,106 @@ namespace AirsoftArena
                 tex.SetPixel(x, y, new Color32(104, 146, 76, 255));
                 tex.SetPixel(x, y + 1, new Color32(96, 136, 70, 255));
             }
+            return tex;
+        }
+
+        static Texture2D ConcreteTile()
+        {
+            var rng = new System.Random(11);
+            var tex = Solid(16, 16, Color.white);
+            for (int y = 0; y < 16; y++)
+                for (int x = 0; x < 16; x++)
+                {
+                    int n = rng.Next(100);
+                    byte v = (byte)(n < 70 ? 122 : n < 90 ? 128 : 114);
+                    tex.SetPixel(x, y, new Color32(v, v, (byte)(v - 4), 255));
+                }
+            // Expansion joints along two edges so the tiles read as floor slabs.
+            for (int i = 0; i < 16; i++) { tex.SetPixel(i, 0, new Color32(96, 96, 94, 255)); tex.SetPixel(0, i, new Color32(96, 96, 94, 255)); }
+            tex.SetPixel(9, 5, new Color32(104, 104, 100, 255)); tex.SetPixel(10, 6, new Color32(104, 104, 100, 255));
+            return tex;
+        }
+
+        static Texture2D ForestTile()
+        {
+            var rng = new System.Random(5);
+            var tex = Solid(16, 16, Color.white);
+            Color a = new Color32(52, 78, 44, 255), b = new Color32(60, 88, 48, 255), c = new Color32(46, 68, 40, 255);
+            for (int y = 0; y < 16; y++)
+                for (int x = 0; x < 16; x++)
+                {
+                    int n = rng.Next(100);
+                    tex.SetPixel(x, y, n < 50 ? a : n < 85 ? b : c);
+                }
+            // Pine needles and a few brown leaves.
+            for (int i = 0; i < 6; i++) tex.SetPixel(rng.Next(16), rng.Next(16), new Color32(112, 86, 52, 255));
+            for (int i = 0; i < 4; i++) tex.SetPixel(rng.Next(16), rng.Next(16), new Color32(84, 62, 40, 255));
+            return tex;
+        }
+
+        static Texture2D ShelfTile()
+        {
+            var tex = Solid(16, 16, new Color(0.3f, 0.32f, 0.36f));
+            var beam = new Color(0.85f, 0.5f, 0.15f);
+            for (int x = 0; x < 16; x++) { tex.SetPixel(x, 0, beam); tex.SetPixel(x, 15, beam); }
+            // Boxes on the shelf.
+            Color box = new Color32(176, 140, 96, 255), tape = new Color32(206, 186, 140, 255);
+            for (int bx = 1; bx < 15; bx += 7)
+                for (int y = 2; y < 14; y++)
+                    for (int x = bx; x < bx + 6 && x < 15; x++)
+                        tex.SetPixel(x, y, y == 8 ? tape : box);
+            return tex;
+        }
+
+        static Texture2D LogTile()
+        {
+            var tex = Solid(16, 16, new Color32(104, 74, 46, 255));
+            for (int x = 0; x < 16; x++)
+            {
+                tex.SetPixel(x, 0, new Color32(70, 48, 30, 255));
+                tex.SetPixel(x, 15, new Color32(70, 48, 30, 255));
+                if (x % 5 == 1) for (int y = 4; y < 12; y += 3) tex.SetPixel(x, y, new Color32(84, 58, 36, 255));
+                tex.SetPixel(x, 13, new Color32(128, 94, 60, 255));
+            }
+            return tex;
+        }
+
+        /// <summary>Round, lumpy blob with speckles: crowns, bushes and rocks.</summary>
+        static Texture2D Blob(int size, int seed, Color mid, Color light, Color dark)
+        {
+            var rng = new System.Random(seed);
+            var tex = Solid(size, size, Color.clear);
+            float r = size / 2f;
+            var bumps = new Vector2[7];
+            for (int i = 0; i < bumps.Length; i++)
+            {
+                float a = i / (float)bumps.Length * Mathf.PI * 2f;
+                bumps[i] = new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r * 0.55f;
+            }
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    var p = new Vector2(x + 0.5f - r, y + 0.5f - r);
+                    bool inside = p.magnitude < r * 0.62f;
+                    foreach (var b in bumps) if ((p - b).magnitude < r * 0.42f) inside = true;
+                    if (!inside) continue;
+                    int n = rng.Next(100);
+                    Color c = p.y > r * 0.15f ? (n < 60 ? light : mid) : (n < 60 ? mid : dark);
+                    if (n > 94) c = dark;
+                    tex.SetPixel(x, y, c);
+                }
+            // Dark outline.
+            var outline = dark * 0.7f;
+            outline.a = 1f;
+            var edge = new List<Vector2Int>();
+            for (int y = 1; y < size - 1; y++)
+                for (int x = 1; x < size - 1; x++)
+                {
+                    if (tex.GetPixel(x, y).a > 0f) continue;
+                    if (tex.GetPixel(x + 1, y).a > 0f || tex.GetPixel(x - 1, y).a > 0f || tex.GetPixel(x, y + 1).a > 0f || tex.GetPixel(x, y - 1).a > 0f)
+                        edge.Add(new Vector2Int(x, y));
+                }
+            foreach (var e in edge) tex.SetPixel(e.x, e.y, outline);
             return tex;
         }
 

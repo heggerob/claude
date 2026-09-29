@@ -18,6 +18,7 @@ namespace AirsoftArena
         public int teamSize = 4;
         public float duration = 180f;
         public int scoreLimit = 20;
+        public MapDefinition map;
 
         public int PlayerCount { get { return teamSize * 2; } }
 
@@ -128,6 +129,9 @@ namespace AirsoftArena
                 PlayerProfile.Save();
             }
 
+            if (settings.map == null) settings.map = MapLibrary.Get(profile.mapId);
+            if (MapBuilder.Current != settings.map) MapBuilder.Build(transform, settings.map);
+
             matchRoot = new GameObject("Match").transform;
             matchRoot.SetParent(transform, false);
 
@@ -164,16 +168,16 @@ namespace AirsoftArena
             if (settings.role == Role.Referee)
             {
                 var me = new RefereeProfile { name = profile.playerName + " (Ref)", skill = 1f };
-                Referee = RefereeNPC.Create(matchRoot, me, true, new Vector2(0f, -11f));
+                Referee = RefereeNPC.Create(matchRoot, me, true, RefereeStart());
                 PlayerReferee = Referee.gameObject.AddComponent<PlayerRefereeController>();
             }
             else
             {
-                Referee = RefereeNPC.Create(matchRoot, settings.referee, false, new Vector2(0f, -11f));
+                Referee = RefereeNPC.Create(matchRoot, settings.referee, false, RefereeStart());
             }
 
             BBSystem.Instance.Wind = Random.insideUnitCircle * Random.Range(0f, 2.5f);
-            AddFeed("Match on <b>Pallet Yard</b>. Referee: <b>" + Referee.Profile.name + "</b>");
+            AddFeed("Match on <b>" + settings.map.name + "</b>. Referee: <b>" + Referee.Profile.name + "</b>");
 
             var follow = CameraFollow.Instance;
             if (follow != null) follow.Follow(PlayerSoldier != null ? PlayerSoldier.transform : Referee.transform, 9f);
@@ -435,6 +439,12 @@ namespace AirsoftArena
         public Rect SpawnZone(Team team) { return MapBuilder.SpawnZones[(int)team]; }
         public Vector2 SpawnCenter(Team team) { return SpawnZone(team).center; }
         public bool InSpawnZone(Team team, Vector2 point) { return SpawnZone(team).Contains(point); }
+
+        static Vector2 RefereeStart()
+        {
+            var b = MapBuilder.Bounds;
+            return new Vector2(b.center.x, b.yMin + 2f);
+        }
 
         Vector2 RandomSpawnPoint(Team team)
         {

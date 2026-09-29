@@ -39,7 +39,7 @@ namespace AirsoftArena
             var cam = SetupCamera();
             if (cam.GetComponent<CameraFollow>() == null) cam.gameObject.AddComponent<CameraFollow>();
 
-            MapBuilder.Build(transform);
+            MapBuilder.Build(transform, MapLibrary.Get(PlayerProfile.Current.mapId));
             gameObject.AddComponent<BBSystem>();
             gameObject.AddComponent<Effects>();
             gameObject.AddComponent<MatchManager>();

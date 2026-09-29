@@ -20,6 +20,7 @@ public static class LogicTests
         Cosmetics();
         Weapons();
         ShopTests();
+        Maps();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
     }
@@ -92,6 +93,30 @@ public static class LogicTests
         Check(p.money == 1000000 - spent + refunded, "money adds up after 4000 crates");
         Check(hist[0] > hist[1] && hist[1] > hist[2] && hist[2] > hist[3] && hist[3] > 0, "rarity histogram is ordered: " + string.Join(",", hist));
         foreach (var c in CosmeticCatalog.All) Check(p.Owns(c), "crates can unlock " + c.id);
+    }
+
+    static void Maps()
+    {
+        var ids = new HashSet<string>();
+        foreach (var m in MapLibrary.All)
+        {
+            Check(ids.Add(m.id), "unique map id " + m.id);
+            Check(m.spawnZones.Length == 2 && m.flagPoints.Length == 2, m.id + " has two spawns and two flags");
+            foreach (var p in m.pieces)
+            {
+                if (p.kind == PieceKind.Bush) continue; // walk-through
+                var r = new Rect(p.center.x - p.size.x / 2f, p.center.y - p.size.y / 2f, p.size.x, p.size.y);
+                foreach (var z in m.spawnZones) Check(!Overlaps(r, z), m.id + ": " + p.kind + " at " + p.center + " blocks a spawn zone");
+                foreach (var f in m.flagPoints) Check(!r.Contains(f), m.id + ": flag " + f + " inside " + p.kind);
+            }
+            foreach (var z in m.spawnZones) Check(m.bounds.Contains(z.center), m.id + " spawn inside bounds");
+            foreach (var f in m.flagPoints) Check(m.bounds.Contains(f), m.id + " flag inside bounds");
+        }
+    }
+
+    static bool Overlaps(Rect a, Rect b)
+    {
+        return a.xMin < b.xMax && a.xMax > b.xMin && a.yMin < b.yMax && a.yMax > b.yMin;
     }
 
     static void Weapons()

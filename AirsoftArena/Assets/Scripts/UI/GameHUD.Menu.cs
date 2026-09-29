@@ -80,8 +80,18 @@ namespace AirsoftArena
             GUILayout.Label(WeaponButton(profile.Primary) + "\n" + WeaponButton(profile.Secondary) + "\n[00] Rubber Tanto", small);
             if (GUILayout.Button("Change loadout & look")) Defer(() => tab = MenuTab.Loadout);
             GUILayout.Space(10);
-            GUILayout.Label("<b>Match</b>", label);
-            GUILayout.Label("Team Deathmatch 4v4 vs bots  ·  Map: Pallet Yard  ·  first to 20 or 3:00", small);
+            GUILayout.Label("<b>Map</b>", label);
+            GUILayout.BeginHorizontal();
+            foreach (var map in MapLibrary.All)
+            {
+                var m = map;
+                if (Choice(profile.mapId == m.id, m.name + (m.indoor ? " (indoor)" : ""), GUILayout.Height(28)))
+                    Defer(() => SelectMap(profile, m));
+            }
+            GUILayout.EndHorizontal();
+            var selectedMap = MapLibrary.Get(profile.mapId);
+            GUILayout.Label(selectedMap.description, small);
+            GUILayout.Label(string.Format("Team Deathmatch 4v4 vs bots  ·  {0:0}×{1:0} m  ·  first to 20 or 3:00", selectedMap.bounds.width, selectedMap.bounds.height), small);
             GUILayout.EndVertical();
 
             GUILayout.Space(16);
@@ -116,6 +126,7 @@ namespace AirsoftArena
                 secondary = profile.Secondary,
                 referee = sel,
                 autoCallHits = GameSettings.AutoCallHits,
+                map = MapLibrary.Get(profile.mapId),
             };
             int cost = settings.EntryCost;
             if (profile.money < cost)
@@ -310,7 +321,8 @@ namespace AirsoftArena
                 RefereeProfile.StarText(profile.RefStars), profile.refMatches, profile.refCorrectCalls, profile.refWrongCalls, profile.refMissed), label);
             GUILayout.Label(string.Format("Your fee: <b>${0}</b> per player  ×  8 players  =  <b>${1}</b> per match", profile.RefFeePerPlayer, profile.RefFeePerPlayer * 8), label);
             GUILayout.FlexibleSpace();
-            var settings = new MatchSettings { role = Role.Referee, primary = profile.Primary, secondary = profile.Secondary };
+            var settings = new MatchSettings { role = Role.Referee, primary = profile.Primary, secondary = profile.Secondary, map = MapLibrary.Get(profile.mapId) };
+            GUILayout.Label("Map: <b>" + settings.map.name + "</b> (change it in the PLAY tab)", label);
             if (GUILayout.Button("START MATCH AS REFEREE", GUILayout.Height(48))) Defer(() => match.StartMatch(settings));
         }
 
@@ -362,6 +374,13 @@ namespace AirsoftArena
             if (tags != GameSettings.NameTags) GameSettings.NameTags = tags;
             if (!Mathf.Approximately(volume, GameSettings.Volume)) GameSettings.Volume = volume;
             GameSettings.Save();
+        }
+
+        void SelectMap(PlayerProfile profile, MapDefinition map)
+        {
+            profile.mapId = map.id;
+            PlayerProfile.Save();
+            if (MapBuilder.Current != map && GameBootstrap.Instance != null) MapBuilder.Build(GameBootstrap.Instance.transform, map);
         }
 
         // ================================================================ weapon + sprite helpers

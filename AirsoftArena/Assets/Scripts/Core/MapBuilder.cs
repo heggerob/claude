@@ -6,95 +6,159 @@ namespace AirsoftArena
     public class Obstacle : MonoBehaviour
     {
         public float Height = 3f;
+        /// <summary>Soft cover (bushes): you walk through it and it hides you, but most BBs get through.</summary>
+        public bool Soft;
 
-        /// <summary>Tall enough to hide a standing player.</summary>
-        public bool BlocksSight { get { return Height >= 2f; } }
+        /// <summary>Tall or dense enough to hide a standing player.</summary>
+        public bool BlocksSight { get { return Soft || Height >= 2f; } }
+
+        /// <summary>Solid things steer bots and stop movement; soft ones don't.</summary>
+        public bool BlocksMovement { get { return !Soft; } }
+    }
+
+    /// <summary>Fades tree crowns and bushes when the local player is underneath, so you can see yourself.</summary>
+    public class Foliage : MonoBehaviour
+    {
+        public float radius = 1.5f;
+        public float normalAlpha = 0.95f;
+        SpriteRenderer sr;
+
+        void Awake() { sr = GetComponent<SpriteRenderer>(); }
+
+        void LateUpdate()
+        {
+            var match = MatchManager.Instance;
+            Vector2 me = Vector2.zero;
+            bool has = false;
+            if (match != null && match.PlayerSoldier != null) { me = match.PlayerSoldier.Position; has = true; }
+            else if (match != null && match.Referee != null && match.Referee.HumanControlled) { me = match.Referee.Position; has = true; }
+            bool under = has && Vector2.Distance(me, transform.position) < radius;
+            var c = sr.color;
+            c.a = Mathf.MoveTowards(c.a, under ? 0.35f : normalAlpha, Time.deltaTime * 3f);
+            sr.color = c;
+        }
     }
 
     /// <summary>
-    /// Builds the test map "Pallet Yard" from code. 1 world unit = 1 metre.
-    /// Left half is mirrored to the right so both teams get the same field.
+    /// Builds a <see cref="MapDefinition"/> into GameObjects. Only one map exists at a time;
+    /// building a new one replaces the old. 1 world unit = 1 metre.
     /// </summary>
     public static class MapBuilder
     {
         public const float LowCoverHeight = 0.95f;
         public const float WallHeight = 3f;
 
-        public static readonly Rect Bounds = new Rect(-22f, -13f, 44f, 26f);
-        public static readonly Rect[] SpawnZones =
-        {
-            new Rect(-21f, -4f, 4f, 8f), // Blue
-            new Rect(17f, -4f, 4f, 8f),  // Red
-        };
+        static Transform root;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() { root = null; Current = null; }
+
+        public static MapDefinition Current { get; private set; }
+
+        public static Rect Bounds { get { return (Current ?? MapLibrary.All[0]).bounds; } }
+        public static Rect[] SpawnZones { get { return (Current ?? MapLibrary.All[0]).spawnZones; } }
 
         static readonly Color WallColor = new Color(0.55f, 0.42f, 0.3f);
+        static readonly Color IndoorWallColor = new Color(0.62f, 0.6f, 0.56f);
         static readonly Color ContainerColor = new Color(0.36f, 0.45f, 0.5f);
         static readonly Color SandbagColor = new Color(0.78f, 0.7f, 0.5f);
+        static readonly Color CrateColor = new Color(0.72f, 0.55f, 0.36f);
 
-        public static Transform Build(Transform parent)
+        public static Transform Build(Transform parent, MapDefinition map)
         {
-            var root = new GameObject("Map: Pallet Yard").transform;
+            if (root != null) Object.Destroy(root.gameObject);
+            Current = map;
+            root = new GameObject("Map: " + map.name).transform;
             root.SetParent(parent, false);
 
-            var ground = NewRenderer("Ground", root, SpriteFactory.Grass, -20);
+            var b = map.bounds;
+            var groundSprite = map.ground == GroundStyle.Concrete ? SpriteFactory.Concrete
+                : map.ground == GroundStyle.ForestFloor ? SpriteFactory.ForestFloor : SpriteFactory.Grass;
+            var ground = NewRenderer("Ground", root, groundSprite, -20);
+            ground.transform.position = b.center;
             ground.drawMode = SpriteDrawMode.Tiled;
-            ground.size = new Vector2(Bounds.width + 20f, Bounds.height + 20f);
+            // Indoors the floor stops at the walls; outdoors the grass carries on past the netting.
+            ground.size = map.indoor ? new Vector2(b.width + 2f, b.height + 2f) : new Vector2(b.width + 24f, b.height + 24f);
 
-            Zone(root, SpawnZones[0], Teams.Color(Team.Blue));
-            Zone(root, SpawnZones[1], Teams.Color(Team.Red));
+            Zone(map.spawnZones[0], Teams.Color(Team.Blue));
+            Zone(map.spawnZones[1], Teams.Color(Team.Red));
 
-            // Outer netting / walls.
-            Block(root, new Vector2(0f, Bounds.yMax + 0.5f), new Vector2(Bounds.width + 2f, 1f), false, WallColor);
-            Block(root, new Vector2(0f, Bounds.yMin - 0.5f), new Vector2(Bounds.width + 2f, 1f), false, WallColor);
-            Block(root, new Vector2(Bounds.xMin - 0.5f, 0f), new Vector2(1f, Bounds.height), false, WallColor);
-            Block(root, new Vector2(Bounds.xMax + 0.5f, 0f), new Vector2(1f, Bounds.height), false, WallColor);
-
-            // Spawn walls with a gap in the middle and at both ends.
-            Mirrored(root, new Vector2(-14f, 6f), new Vector2(1f, 6f), false, WallColor);
-            Mirrored(root, new Vector2(-14f, -6f), new Vector2(1f, 6f), false, WallColor);
-            Mirrored(root, new Vector2(-11f, 0f), new Vector2(1f, 3f), true, SandbagColor);
-            Mirrored(root, new Vector2(-10f, 9.5f), new Vector2(3f, 1f), true, SandbagColor);
-            Mirrored(root, new Vector2(-10f, -9.5f), new Vector2(3f, 1f), true, SandbagColor);
-
-            // Shipping containers.
-            Mirrored(root, new Vector2(-6.5f, 4.5f), new Vector2(5f, 2f), false, ContainerColor);
-            Mirrored(root, new Vector2(-6.5f, -4.5f), new Vector2(5f, 2f), false, ContainerColor);
-            Mirrored(root, new Vector2(-6f, 0f), new Vector2(1f, 2f), true, SandbagColor);
-            Mirrored(root, new Vector2(-3.5f, 10f), new Vector2(1f, 3f), true, SandbagColor);
-            Mirrored(root, new Vector2(-3.5f, -10f), new Vector2(1f, 3f), true, SandbagColor);
-
-            // Centre bunker corridor and pallets.
-            Block(root, new Vector2(0f, 2.5f), new Vector2(4f, 1f), false, WallColor);
-            Block(root, new Vector2(0f, -2.5f), new Vector2(4f, 1f), false, WallColor);
-            Block(root, new Vector2(0f, 7f), new Vector2(2.5f, 1f), true, SandbagColor);
-            Block(root, new Vector2(0f, -7f), new Vector2(2.5f, 1f), true, SandbagColor);
-
+            foreach (var piece in map.pieces) Place(piece, map.indoor);
             return root;
         }
 
-        static void Mirrored(Transform root, Vector2 center, Vector2 size, bool low, Color color)
+        static void Place(MapPiece p, bool indoor)
         {
-            Block(root, center, size, low, color);
-            Block(root, new Vector2(-center.x, center.y), size, low, color);
+            switch (p.kind)
+            {
+                case PieceKind.Wall: Block(p, SpriteFactory.Crate, indoor ? IndoorWallColor : WallColor, WallHeight, 2); break;
+                case PieceKind.Container: Block(p, SpriteFactory.Crate, ContainerColor, WallHeight, 2); break;
+                case PieceKind.Sandbags: Block(p, SpriteFactory.Sandbag, SandbagColor, LowCoverHeight, 1); break;
+                case PieceKind.Shelf: Block(p, SpriteFactory.Shelf, Color.white, 2.2f, 2); break;
+                case PieceKind.Crates: Block(p, SpriteFactory.Crate, CrateColor, 1.1f, 1); break;
+                case PieceKind.Log: Block(p, SpriteFactory.Log, Color.white, 0.6f, 1); break;
+                case PieceKind.Rock: Round(p, SpriteFactory.Rock, 1.2f, false, 1, Mathf.Min(p.size.x, p.size.y) * 0.45f, 0f); break;
+                case PieceKind.Tree: Tree(p); break;
+                case PieceKind.Bush: Round(p, SpriteFactory.Bush, 1.6f, true, 26, Mathf.Min(p.size.x, p.size.y) * 0.45f, 0.95f); break;
+            }
         }
 
-        static Obstacle Block(Transform root, Vector2 center, Vector2 size, bool low, Color color)
+        static void Block(MapPiece p, Sprite sprite, Color color, float height, int order)
         {
-            var sr = NewRenderer(low ? "Sandbags" : "Wall", root, low ? SpriteFactory.Sandbag : SpriteFactory.Crate, low ? 1 : 2);
-            sr.transform.position = center;
+            var sr = NewRenderer(p.kind.ToString(), root, sprite, order);
+            sr.transform.position = p.center;
             sr.drawMode = SpriteDrawMode.Tiled;
-            sr.size = size;
+            sr.size = p.size;
             sr.color = color;
-
             var col = sr.gameObject.AddComponent<BoxCollider2D>();
-            col.size = size;
-
-            var obstacle = sr.gameObject.AddComponent<Obstacle>();
-            obstacle.Height = low ? LowCoverHeight : WallHeight;
-            return obstacle;
+            col.size = p.size;
+            var o = sr.gameObject.AddComponent<Obstacle>();
+            o.Height = height;
         }
 
-        static void Zone(Transform root, Rect rect, Color teamColor)
+        static void Round(MapPiece p, Sprite sprite, float height, bool soft, int order, float radius, float foliageAlpha)
+        {
+            var sr = NewRenderer(p.kind.ToString(), root, sprite, order);
+            sr.transform.position = p.center;
+            float spriteSize = sprite.texture.width / (float)SpriteFactory.PixelsPerUnit;
+            float scale = Mathf.Max(p.size.x, p.size.y) / spriteSize;
+            sr.transform.localScale = new Vector3(scale, scale, 1f);
+            var col = sr.gameObject.AddComponent<CircleCollider2D>();
+            col.radius = radius / scale;
+            col.isTrigger = soft;
+            var o = sr.gameObject.AddComponent<Obstacle>();
+            o.Height = height;
+            o.Soft = soft;
+            if (foliageAlpha > 0f)
+            {
+                var f = sr.gameObject.AddComponent<Foliage>();
+                f.radius = radius + 0.4f;
+                f.normalAlpha = foliageAlpha;
+            }
+        }
+
+        static void Tree(MapPiece p)
+        {
+            // The trunk is what stops BBs and players...
+            var trunk = NewRenderer("Tree", root, SpriteFactory.SmallCircle, 3);
+            trunk.transform.position = p.center;
+            trunk.color = new Color(0.36f, 0.25f, 0.16f);
+            trunk.transform.localScale = new Vector3(1.4f, 1.4f, 1f);
+            var col = trunk.gameObject.AddComponent<CircleCollider2D>();
+            col.radius = 0.35f / 1.4f;
+            var o = trunk.gameObject.AddComponent<Obstacle>();
+            o.Height = WallHeight;
+
+            // ...the crown hangs above everyone and fades when you stand under it.
+            var crown = NewRenderer("Crown", trunk.transform, SpriteFactory.Canopy, 30);
+            crown.transform.localScale = new Vector3(1f / 1.4f, 1f / 1.4f, 1f);
+            crown.color = new Color(1f, 1f, 1f, 0.92f);
+            var f = crown.gameObject.AddComponent<Foliage>();
+            f.radius = 1.6f;
+            f.normalAlpha = 0.92f;
+        }
+
+        static void Zone(Rect rect, Color teamColor)
         {
             var sr = NewRenderer("Spawn Zone", root, SpriteFactory.Pixel, -15);
             sr.transform.position = rect.center;
