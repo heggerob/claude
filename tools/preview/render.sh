@@ -85,12 +85,19 @@ cw = img.width // len(labels)
 ink = (74, 58, 46, 255)
 for i, t in enumerate(labels):
     text = t.upper()
-    tw = d.textlength(text, font=font)
+    f = font
+    tw = d.textlength(text, font=f)
+    # Long labels shrink to fit their cell.
+    size = 22
+    while tw > cw - 40 and size > 10 and hasattr(font, 'path'):
+        size -= 1
+        f = ImageFont.truetype(font.path, size)
+        tw = d.textlength(text, font=f)
     x = i * cw + (cw - tw) / 2
     y = img.height + 18
     d.line([(i * cw + 30, y - 8), (x - 12, y - 8)], fill=ink, width=1)
     d.line([(x + tw + 12, y - 8), ((i + 1) * cw - 30, y - 8)], fill=ink, width=1)
-    d.text((x, y), text, font=font, fill=ink)
+    d.text((x, y), text, font=f, fill=ink)
 sheet.save(sys.argv[3])
 print('wrote', sys.argv[3])
 PY

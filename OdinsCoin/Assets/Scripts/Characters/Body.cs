@@ -50,11 +50,11 @@ namespace OdinsCoin
             f.hip = f.waist - 0.08f * s;
             f.bootTop = 0.18f * h;
             f.knee = 0.29f * h;
-            f.shoulderX = (female ? 0.175f : 0.195f) * w * s;
+            f.shoulderX = (female ? 0.15f : 0.17f) * w * s;
             f.hipX = 0.065f * w * s;
-            f.chestR = (female ? 0.135f : 0.15f) * w * s;
-            f.waistR = (female ? 0.115f : 0.135f) * w * s;
-            f.hipR = (female ? 0.15f : 0.14f) * w * s;
+            f.chestR = (female ? 0.11f : 0.125f) * w * s;
+            f.waistR = (female ? 0.095f : 0.11f) * w * s;
+            f.hipR = (female ? 0.13f : 0.12f) * w * s;
             f.depth = 0.72f;
             f.upperArm = 0.24f * s;
             f.foreArm = 0.22f * s;
