@@ -142,7 +142,7 @@ namespace AirsoftArena
                         ? new[] { settings.primary, settings.secondary, WeaponCatalog.MeleeWeapons[0] }
                         : new[] { Pick(WeaponCatalog.Primaries), Pick(WeaponCatalog.Secondaries), WeaponCatalog.MeleeWeapons[0] };
 
-                    var look = human ? new SoldierLook() : SoldierLook.RandomBot();
+                    var look = human ? profile.Look : CosmeticCatalog.RandomLook();
                     var soldier = Soldier.Create(matchRoot, name, (Team)team, human, loadout, look, RandomSpawnPoint((Team)team));
                     if (human)
                     {

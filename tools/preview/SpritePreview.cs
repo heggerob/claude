@@ -23,7 +23,8 @@ public static class SpritePreview
         {
             foreach (HeadGearStyle hg in Enum.GetValues(typeof(HeadGearStyle)))
             {
-                var look = new SoldierLook { camo = camo, headGear = hg, uniform = SoldierLook.UniformColors[n % SoldierLook.UniformColors.Length] };
+                var uniforms = CosmeticCatalog.InSlot(CosmeticSlot.Uniform);
+                var look = new SoldierLook { camo = camo, headGear = hg, uniform = uniforms[n % uniforms.Count].color };
                 var team = n % 2 == 0 ? Team.Blue : Team.Red;
                 float cx = 70 + (n % 6) * 170, cy = 90 + (n / 6) * 150;
                 DrawSoldier(look, team, primaries[n % primaries.Count], cx, cy);

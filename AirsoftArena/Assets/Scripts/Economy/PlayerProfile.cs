@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace AirsoftArena
@@ -30,7 +31,48 @@ namespace AirsoftArena
         public int refWrongCalls;
         public int refMissed;
 
+        [Header("Cosmetics")]
+        public List<string> ownedItems = new List<string>();
+        public string equippedCamo = CosmeticCatalog.DefaultId(CosmeticSlot.Camo);
+        public string equippedUniform = CosmeticCatalog.DefaultId(CosmeticSlot.Uniform);
+        public string equippedHeadGear = CosmeticCatalog.DefaultId(CosmeticSlot.HeadGear);
+        public string equippedTracer = CosmeticCatalog.DefaultId(CosmeticSlot.Tracer);
+
         public float RefStars { get { return refRatings > 0 ? refStarsTotal / refRatings : 3f; } }
+
+        public bool Owns(CosmeticItem item) { return item != null && (item.starter || ownedItems.Contains(item.id)); }
+
+        public void Unlock(CosmeticItem item)
+        {
+            if (item != null && !Owns(item)) ownedItems.Add(item.id);
+        }
+
+        public string Equipped(CosmeticSlot slot)
+        {
+            switch (slot)
+            {
+                case CosmeticSlot.Camo: return equippedCamo;
+                case CosmeticSlot.Uniform: return equippedUniform;
+                case CosmeticSlot.HeadGear: return equippedHeadGear;
+                default: return equippedTracer;
+            }
+        }
+
+        /// <summary>Wears an owned item. Returns false if you don't own it.</summary>
+        public bool Equip(CosmeticItem item)
+        {
+            if (!Owns(item)) return false;
+            switch (item.slot)
+            {
+                case CosmeticSlot.Camo: equippedCamo = item.id; break;
+                case CosmeticSlot.Uniform: equippedUniform = item.id; break;
+                case CosmeticSlot.HeadGear: equippedHeadGear = item.id; break;
+                default: equippedTracer = item.id; break;
+            }
+            return true;
+        }
+
+        public SoldierLook Look { get { return CosmeticCatalog.BuildLook(equippedCamo, equippedUniform, equippedHeadGear, equippedTracer); } }
         public int RefFeePerPlayer { get { return RefereeProfile.FeeForStars(RefStars); } }
 
         static PlayerProfile current;
