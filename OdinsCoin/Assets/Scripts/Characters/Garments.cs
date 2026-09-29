@@ -851,6 +851,9 @@ namespace OdinsCoin
                 var colour = (t & 1) == 0 ? d.pal.cloth : d.pal.clothDark;
                 float len = t == 0 ? 0.22f * s : 0.34f * s;
                 d.Add(Joints.Body, colour, CharacterKit.Flaps(tops[t], len, 14 + t * 2, 0.95f, depth, surface, 0.01f + t * 0.004f, d.seed + 62 + t, 0.01f * s));
+                // A few faded, paler strips caught between the dark ones, like weathered feathers and old wool.
+                if (t > 0)
+                    d.Add(Joints.Body, VikingModel.Shade(d.pal.cloth, 1.7f), CharacterKit.Flaps(tops[t] - 0.04f * s, len * 0.8f, 4 + t, 0.25f, depth, surface, 0.014f + t * 0.004f, d.seed + 72 + t, 0.008f * s), false);
             }
             // Feathers bristling round the shoulders.
             d.Add(Joints.Body, d.pal.clothDark, CharacterKit.FurRing(new Vector3(0f, f.shoulderY - 0.01f * s, 0f), f.shoulderX + 0.02f * s, 0.8f, 0.05f * s, 24, 0.1f * s, d.seed + 67, 1.4f));
