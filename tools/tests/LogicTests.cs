@@ -19,8 +19,21 @@ public static class LogicTests
         WavesTests();
         ShipTests();
         CoinTests();
+        IslandTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
+    }
+
+    static void IslandTests()
+    {
+        foreach (var spec in WorldGen.Specs)
+        {
+            Check(Island.Height(spec, spec.centre.x, spec.centre.y) > 3f, spec.name + " rises out of the sea in the middle");
+            Check(Island.Height(spec, spec.centre.x + spec.radius * 1.4f, spec.centre.y) < 0f, spec.name + " is sea well past its radius");
+            Check(Vector2.Distance(spec.centre, Vector2.zero) > spec.radius * 1.3f + 12f, spec.name + " leaves room for the ship at the start");
+            foreach (var other in WorldGen.Specs)
+                if (other != spec) Check(Vector2.Distance(spec.centre, other.centre) > (spec.radius + other.radius) * 1.25f, spec.name + " doesn't overlap " + other.name);
+        }
     }
 
     static void CoinTests()

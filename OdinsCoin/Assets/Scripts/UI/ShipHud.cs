@@ -30,6 +30,20 @@ namespace OdinsCoin
 
             DrawFortune();
 
+            // Nearest land.
+            if (Player != null)
+            {
+                float dist;
+                var island = WorldGen.Nearest(Player.transform.position, out dist);
+                if (island != null)
+                {
+                    Vector2 to = island.Spec.centre - new Vector2(Player.transform.position.x, Player.transform.position.z);
+                    float bearing = Mathf.Repeat(Mathf.Atan2(to.x, to.y) * Mathf.Rad2Deg, 360f);
+                    string what = island.Spec.monastery ? "  (monastery!)" : "";
+                    GUI.Label(new Rect(20, 134, 380, 22), string.Format("Nearest land: <b>{0}</b> {1:0} m, bearing {2:000}°{3}", island.Spec.name, Mathf.Max(0f, dist - island.Spec.radius), bearing, what), style);
+                }
+            }
+
             if (Player != null && !string.IsNullOrEmpty(Player.Prompt))
             {
                 var r = new Rect(Screen.width / 2f - 160f, Screen.height * 0.62f, 320f, 34f);

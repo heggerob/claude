@@ -52,6 +52,7 @@ namespace OdinsCoin
             SetupLighting();
 
             Ocean = Ocean.Create(transform);
+            WorldGen.Build(transform);
 
             Ship = Longship.Create(transform, new Vector3(0f, 0.2f, 0f), 30f);
             // The helm only listens to the keyboard while the Viking holds the steering oar.
