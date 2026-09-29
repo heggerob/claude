@@ -89,6 +89,7 @@ namespace OdinsCoin
             {
                 case HairStyle.LongBraids: Garments.LongBraids(d, 0.42f); break;
                 case HairStyle.WrappedBraids: Garments.LongBraids(d, 0.4f, true); break;
+                case HairStyle.SideBraid: Garments.SideBraid(d, 0.36f); break;
             }
         }
     }
@@ -153,6 +154,34 @@ namespace OdinsCoin
                         radii[i] = 0.022f * s;
                     }
                     d.Add(Joints.OffHand, d.pal.brass, MeshData.Tube(rim, radii, 6));
+                    break;
+                case OffHandId.Map:
+                    // A sheet of parchment with torn edges, gently curled, held up facing forward (+Z) above the fist,
+                    // with a compass rose and a coastline drawn in ink.
+                    const int rows = 6, cols = 5;
+                    var grid = new Vector3[rows, cols];
+                    var rng = new System.Random(3);
+                    for (int r = 0; r < rows; r++)
+                        for (int c = 0; c < cols; c++)
+                        {
+                            float u = c / (float)(cols - 1) - 0.5f, v = r / (float)(rows - 1);
+                            float torn = (r == 0 || r == rows - 1 || c == 0 || c == cols - 1) ? ((float)rng.NextDouble() - 0.5f) * 0.02f : 0f;
+                            grid[r, c] = new Vector3((u * 0.26f + 0.06f + torn) * s, (0.2f - v * 0.3f + torn) * s, (0.03f + 0.02f * Mathf.Cos(u * 3f)) * s);
+                        }
+                    d.Add(Joints.OffHand, d.pal.parchment, CharacterKit.Sheet(grid, Vector3.forward, 0.006f * s));
+                    var rose = new Vector3(0.09f * s, 0.07f * s, 0.052f * s);
+                    var ring = new Vector3[17];
+                    var rr = new float[17];
+                    for (int i = 0; i < ring.Length; i++) { float a = i / 16f * Mathf.PI * 2f; ring[i] = rose + new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * 0.045f * s; rr[i] = 0.002f * s; }
+                    d.Add(Joints.OffHand, d.pal.ink, MeshData.Tube(ring, rr, 4), false);
+                    for (int k = 0; k < 8; k++)
+                    {
+                        float a = k * Mathf.PI / 4f, len = (k % 2 == 0 ? 0.075f : 0.04f) * s;
+                        d.Add(Joints.OffHand, d.pal.ink, MeshData.Tube(new[] { rose, rose + new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * len }, new[] { 0.0035f * s, 0.001f * s }, 4), false);
+                    }
+                    var coast = new[] { new Vector3(-0.04f, 0.16f, 0.05f), new Vector3(-0.01f, 0.12f, 0.052f), new Vector3(-0.03f, 0.06f, 0.052f), new Vector3(0.01f, 0.0f, 0.052f), new Vector3(-0.02f, -0.05f, 0.05f) };
+                    for (int i = 0; i < coast.Length; i++) coast[i] *= s;
+                    d.Add(Joints.OffHand, d.pal.ink, CharacterKit.ZigZag(coast, Vector3.right, 0.004f * s, 0.002f * s), false);
                     break;
             }
         }

@@ -14,6 +14,8 @@ namespace OdinsCoin
         /// <summary>Main cloth (tunic, skirt).</summary>
         public Color cloth = new Color(0.27f, 0.26f, 0.26f);
         public Color clothDark = new Color(0.17f, 0.16f, 0.16f);
+        /// <summary>Secondary cloth (aprons, sashes, linings).</summary>
+        public Color cloth2 = new Color(0.62f, 0.47f, 0.2f);
         /// <summary>Accent cloth (banners, capes, scarves).</summary>
         public Color accent = new Color(0.62f, 0.17f, 0.12f);
         /// <summary>Embroidery and symbols on the accent cloth.</summary>
@@ -25,6 +27,8 @@ namespace OdinsCoin
         /// <summary>Buckles, rings, trims.</summary>
         public Color brass = new Color(0.76f, 0.57f, 0.25f);
         public Color metal = new Color(0.45f, 0.47f, 0.5f);
+        /// <summary>Parchment, bone, rope: pale natural things.</summary>
+        public Color parchment = new Color(0.86f, 0.76f, 0.56f);
 
         public Palette Copy() { return (Palette)MemberwiseClone(); }
     }

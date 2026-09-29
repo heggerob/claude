@@ -4,9 +4,9 @@ using UnityEngine;
 namespace OdinsCoin
 {
     public enum OutfitId { Raider, Jarl, Navigator, SpearGuard, Seer, Scout }
-    public enum HairStyle { None, LongBraids, WrappedBraids }
+    public enum HairStyle { None, LongBraids, WrappedBraids, SideBraid }
     public enum WeaponId { None, TwoHandAxe, Sword }
-    public enum OffHandId { None, RoundShield }
+    public enum OffHandId { None, RoundShield, Map }
 
     /// <summary>A special move or perk that comes with an outfit (used by the game later).</summary>
     public class Ability
@@ -76,6 +76,31 @@ namespace OdinsCoin
                     Garments.ShoulderPelt(d, 1.3f);
                     Garments.Brooches(d);
                     Garments.JarlCrown(d);
+                } } },
+            { OutfitId.Navigator, new Outfit {
+                id = OutfitId.Navigator, title = "The Navigator",
+                palette = () => new Palette {
+                    cloth = new Color(0.3f, 0.22f, 0.16f), clothDark = new Color(0.2f, 0.15f, 0.11f),
+                    accent = new Color(0.23f, 0.32f, 0.43f), cloth2 = new Color(0.64f, 0.5f, 0.22f), emblem = new Color(0.87f, 0.84f, 0.74f),
+                    hair = new Color(0.9f, 0.74f, 0.44f), leather = new Color(0.5f, 0.34f, 0.2f) },
+                defaultHair = HairStyle.SideBraid, suggestedWeapon = WeaponId.None, suggestedOffHand = OffHandId.Map,
+                abilities = new[] {
+                    new Ability { id = "stars", name = "Read the Stars", description = "Shows the way to the nearest island and treasure." },
+                    new Ability { id = "currents", name = "Currents", description = "The ship sails faster with you at the helm." } },
+                dress = d =>
+                {
+                    Garments.ShinBoots(d, 0.3f);
+                    Garments.Gloves(d);
+                    Garments.LongSkirt(d, 0.33f, 1.35f);
+                    Garments.FurSkirt(d, 0.52f, 0.36f);
+                    Garments.Tunic(d, false);
+                    Garments.LongSleeves(d);
+                    Garments.RaiderBelt(d, 2);
+                    Garments.Apron(d, 0.3f);
+                    Garments.ScrollCase(d);
+                    Garments.FurCollar(d);
+                    Garments.SideCloak(d, 0.62f, 0.62f);
+                    Garments.Bandana(d);
                 } } },
         };
 

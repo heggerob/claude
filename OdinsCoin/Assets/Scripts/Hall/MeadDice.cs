@@ -1,7 +1,7 @@
 namespace OdinsCoin
 {
     /// <summary>
-    /// Bjørn's dice game in the mead hall. You and Bjørn each roll three dice; the higher hand wins the stake.
+    /// Bjorn's dice game in the mead hall. You and Bjorn each roll three dice; the higher hand wins the stake.
     /// Any triple beats any sum (higher triple wins). A tie gives your stake back. It's an even game:
     /// neither side has an edge, unless Odin's Favour lets you reroll your lowest die.
     /// </summary>
@@ -16,7 +16,7 @@ namespace OdinsCoin
             return dice[0] + dice[1] + dice[2];
         }
 
-        /// <summary>+1 you win, -1 Bjørn wins, 0 a tie.</summary>
+        /// <summary>+1 you win, -1 Bjorn wins, 0 a tie.</summary>
         public static int Compare(int[] you, int[] bjorn)
         {
             int a = Rank(you), b = Rank(bjorn);

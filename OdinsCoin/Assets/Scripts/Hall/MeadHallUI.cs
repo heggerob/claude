@@ -3,7 +3,7 @@ using UnityEngine;
 namespace OdinsCoin
 {
     /// <summary>
-    /// The mead hall, run by Bjørn: buy ship and gear upgrades, play dice for gold, read the boasting board.
+    /// The mead hall, run by Bjorn: buy ship and gear upgrades, play dice for gold, read the boasting board.
     /// In-game gold only; the dice odds are printed on the table.
     /// </summary>
     public class MeadHallUI : MonoBehaviour
@@ -112,12 +112,12 @@ namespace OdinsCoin
             GUI.Box(box, GUIContent.none);
             GUILayout.BeginArea(new Rect(box.x + 16f, box.y + 12f, w - 32f, h - 24f));
             GUILayout.Label("THE MEAD HALL", title);
-            GUILayout.Label("<color=#aaaaaa>Bjørn wipes a horn and nods at you.</color>   Gold: <b>" + Fortune.Current.Gold + "</b>", text);
+            GUILayout.Label("<color=#aaaaaa>Bjorn wipes a horn and nods at you.</color>   Gold: <b>" + Fortune.Current.Gold + "</b>", text);
             GUILayout.BeginHorizontal();
             foreach (Tab t in new[] { Tab.Upgrades, Tab.Dice, Tab.Boasts })
             {
                 var tt = t;
-                string label = (t == tab ? "▶ " : "") + (t == Tab.Upgrades ? "Upgrades" : t == Tab.Dice ? "Dice with Bjørn" : "Boasting board");
+                string label = (t == tab ? "▶ " : "") + (t == Tab.Upgrades ? "Upgrades" : t == Tab.Dice ? "Dice with Bjorn" : "Boasting board");
                 GUI.enabled = dice != DiceState.Rolling && dice != DiceState.Reroll;
                 if (GUILayout.Button(label, GUILayout.Height(30))) deferred += () => { tab = tt; if (dice == DiceState.Done) dice = DiceState.Betting; };
                 GUI.enabled = true;
@@ -159,7 +159,7 @@ namespace OdinsCoin
                 {
                     GUI.enabled = up.CanBuy(d.kind, fortune);
                     if (GUILayout.Button(d.levels[level] + "\n<size=12>" + up.NextCost(d.kind) + " gold</size>", GUILayout.Width(190f), GUILayout.Height(40)))
-                        deferred += () => { if (up.Buy(d.kind, fortune)) { Sfx.Play(SfxId.Purchase); SaveGame.Save(); } if (up.Level(d.kind) > level) CombatHud.Banner(d.levels[level].ToUpper(), "Bjørn's cousin will have it done by the time you're aboard."); };
+                        deferred += () => { if (up.Buy(d.kind, fortune)) { Sfx.Play(SfxId.Purchase); SaveGame.Save(); } if (up.Level(d.kind) > level) CombatHud.Banner(d.levels[level].ToUpper(), "Bjorn's cousin will have it done by the time you're aboard."); };
                 }
                 GUI.enabled = true;
                 GUILayout.EndHorizontal();
@@ -180,7 +180,7 @@ namespace OdinsCoin
         void DrawDice()
         {
             var fortune = Fortune.Current;
-            GUILayout.Label("Three dice each. Higher total wins the stake; any triple beats any total. A tie gives your stake back.\n<color=#aaaaaa>An even game: you win as often as Bjørn does. With Odin's Favour you may reroll your lowest die once.</color>", small);
+            GUILayout.Label("Three dice each. Higher total wins the stake; any triple beats any total. A tie gives your stake back.\n<color=#aaaaaa>An even game: you win as often as Bjorn does. With Odin's Favour you may reroll your lowest die once.</color>", small);
             GUILayout.Space(116); // the dice are drawn here
             if (dice == DiceState.Rolling)
             {
@@ -189,7 +189,7 @@ namespace OdinsCoin
             }
             if (dice == DiceState.Reroll)
             {
-                GUILayout.Label(string.Format("You: {0}   Bjørn: {1}", MeadDice.Describe(mine), MeadDice.Describe(bjorn)), big);
+                GUILayout.Label(string.Format("You: {0}   Bjorn: {1}", MeadDice.Describe(mine), MeadDice.Describe(bjorn)), big);
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("<color=#ffd060>Odin's Favour: reroll your lowest die</color>", GUILayout.Height(36))) deferred += Reroll;
                 if (GUILayout.Button("Keep it", GUILayout.Height(36), GUILayout.Width(140f))) deferred += Finish;
@@ -199,9 +199,9 @@ namespace OdinsCoin
             if (dice == DiceState.Done)
             {
                 string verdict = outcome > 0 ? "<color=#ffd060>You win " + change + " gold!</color>"
-                               : outcome < 0 ? "<color=#ff8866>Bjørn wins " + (-change) + " gold.</color>"
+                               : outcome < 0 ? "<color=#ff8866>Bjorn wins " + (-change) + " gold.</color>"
                                : "A tie. Stakes back.";
-                GUILayout.Label(string.Format("You: {0}   Bjørn: {1}\n{2}", MeadDice.Describe(mine), MeadDice.Describe(bjorn), verdict), big);
+                GUILayout.Label(string.Format("You: {0}   Bjorn: {1}\n{2}", MeadDice.Describe(mine), MeadDice.Describe(bjorn), verdict), big);
             }
             GUILayout.BeginHorizontal();
             for (int i = 0; i < MeadDice.Stakes.Length; i++)
@@ -222,7 +222,7 @@ namespace OdinsCoin
             bool rolling = dice == DiceState.Rolling;
             float y = box.y + 190f;
             GUI.Label(new Rect(box.x + 40f, y - 22f, 200f, 20f), "<b>You</b>", text);
-            GUI.Label(new Rect(box.x + box.width - 240f, y - 22f, 200f, 20f), "<b>Bjørn</b>", text);
+            GUI.Label(new Rect(box.x + box.width - 240f, y - 22f, 200f, 20f), "<b>Bjorn</b>", text);
             for (int i = 0; i < 3; i++)
             {
                 int a = rolling ? rng.Next(1, 7) : mine[i];
@@ -265,7 +265,7 @@ namespace OdinsCoin
             GUILayout.Label("<b>The boasting board</b>  <color=#aaaaaa>(carved into the hall's main post)</color>", text);
             GUILayout.Space(4);
             GUILayout.Label(string.Format(
-                "Chests brought home: <b>{0}</b>\nGold plundered: <b>{1}</b>\nOdin's coin flipped: <b>{2}</b> times, Odin's eye <b>{3}</b> times\nDice with Bjørn: <b>{4}</b> won, <b>{5}</b> lost\nRunes on your coin: <b>{6}</b>",
+                "Chests brought home: <b>{0}</b>\nGold plundered: <b>{1}</b>\nOdin's coin flipped: <b>{2}</b> times, Odin's eye <b>{3}</b> times\nDice with Bjorn: <b>{4}</b> won, <b>{5}</b> lost\nRunes on your coin: <b>{6}</b>",
                 f.ChestsSold, f.GoldPlundered, f.Flips, f.HeadsCount, f.DiceWon, f.DiceLost, f.Carved.Count), text);
         }
 

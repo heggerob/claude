@@ -169,6 +169,23 @@ namespace OdinsCoin
             return Sheet(grid, Vector3.back, thickness);
         }
 
+        /// <summary>A point on the cape's surface (u -1..1 across, v 0 top..1 hem, ignoring the ragged hem), for trims and patterns.</summary>
+        public static Vector3 CapePoint(Vector3 top, float topWidth, float bottomWidth, float length, float wrap, float u, float v)
+        {
+            float width = Mathf.Lerp(topWidth, bottomWidth, v) * 0.5f;
+            float back = -(wrap * (1f - u * u) * (1f - 0.5f * v)) - v * 0.1f;
+            return top + new Vector3(-u * width, -v * length, back);
+        }
+
+        /// <summary>A zig-zag line (embroidery) through a list of points, alternating up and down by <paramref name="amplitude"/>.</summary>
+        public static MeshData ZigZag(Vector3[] along, Vector3 up, float amplitude, float radius)
+        {
+            var pts = new Vector3[along.Length];
+            var radii = new float[along.Length];
+            for (int i = 0; i < along.Length; i++) { pts[i] = along[i] + up * ((i & 1) == 0 ? amplitude : -amplitude); radii[i] = radius; }
+            return MeshData.Tube(pts, radii, 4);
+        }
+
         /// <summary>
         /// Loose flaps of pelt or torn cloth hanging around a body at a height: separate ragged pieces with gaps
         /// between them, each following a surface given by <paramref name="radiusAt"/> (x radius at a height).
@@ -213,13 +230,27 @@ namespace OdinsCoin
             var m = new MeshData();
             float total = 0f;
             for (int i = 1; i < path.Length; i++) total += Vector3.Distance(path[i - 1], path[i]);
-            int lumps = Mathf.Max(3, Mathf.RoundToInt(total / (radius * 1.5f)));
+            // Overlapping lumps that lean alternately left and right, like the crossing strands of a braid,
+            // over a thinner core so there are no gaps.
+            int lumps = Mathf.Max(3, Mathf.RoundToInt(total / (radius * 1.05f)));
+            var core = new Vector3[Mathf.Max(2, lumps / 2)];
+            var coreR = new float[core.Length];
+            for (int k = 0; k < core.Length; k++) { float t = k / (float)(core.Length - 1); core[k] = Along(path, t); coreR[k] = radius * Mathf.Lerp(0.7f, 0.45f, t); }
+            m.Append(MeshData.Tube(core, coreR, 7));
             for (int k = 0; k < lumps; k++)
             {
                 float t = k / (float)(lumps - 1);
                 Vector3 p = Along(path, t);
-                float r = radius * Mathf.Lerp(1f, 0.7f, t);
-                m.Append(MeshData.Ellipsoid(p, new Vector3(r, r * 1.2f, r), 8, 5));
+                Vector3 dir = (Along(path, Mathf.Min(1f, t + 0.02f)) - Along(path, Mathf.Max(0f, t - 0.02f))).normalized;
+                if (dir.sqrMagnitude < 0.5f) dir = Vector3.down;
+                Vector3 side = Vector3.Cross(dir, Vector3.forward);
+                if (side.sqrMagnitude < 0.01f) side = Vector3.right;
+                side.Normalize();
+                float r = radius * Mathf.Lerp(1f, 0.65f, t);
+                float lean = (k & 1) == 0 ? 1f : -1f;
+                var lump = MeshData.Ellipsoid(Vector3.zero, new Vector3(r * 0.85f, r * 1.35f, r * 0.8f), 8, 5);
+                var rot = Quaternion.FromToRotation(Vector3.up, dir) * Quaternion.Euler(0f, 0f, 28f * lean);
+                m.Append(lump.Transformed(p + side * lean * r * 0.28f, rot, Vector3.one));
             }
             return m;
         }

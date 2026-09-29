@@ -368,13 +368,13 @@ public static class LogicTests
 
     static void HallTests()
     {
-        // The hall and Bjørn stand on dry, fairly level ground, clear of trees, and apart from Gunnar.
+        // The hall and Bjorn stand on dry, fairly level ground, clear of trees, and apart from Gunnar.
         var home = HomeHarbour.Spec;
         var k = HomeHarbour.KeeperSpot;
         var hall = HomeHarbour.HallPosition;
         float hk = Island.Height(home, k.x, k.y), hh = Island.Height(home, hall.x, hall.y);
         Check(hk > Island.SandLevel && hh > Island.SandLevel, "hall and keeper are on dry land (" + hk + ", " + hh + ")");
-        Check(Math.Abs(hk - hh) < 0.3f, "Bjørn stands on the hall's terrace (" + (hk - hh) + ")");
+        Check(Math.Abs(hk - hh) < 0.3f, "Bjorn stands on the hall's terrace (" + (hk - hh) + ")");
         // The hall's corners sit on the level terrace too, so it doesn't float or sink into the hill.
         foreach (var c in new[] { new Vector2(-8f, -8f), new Vector2(8f, -8f), new Vector2(-8f, 8f), new Vector2(8f, 8f) })
         {
@@ -382,9 +382,9 @@ public static class LogicTests
             float hc = Island.Height(home, hall.x + w.x, hall.y + w.z);
             Check(Math.Abs(hc - hh) < 0.5f, "hall corner " + c + " is level (" + (hc - hh) + ")");
         }
-        Check(k.y > hall.y, "Bjørn stands on the jetty side of the hall");
+        Check(k.y > hall.y, "Bjorn stands on the jetty side of the hall");
         Check(home.InClearing(k) && home.InClearing(hall) && home.InClearing(new Vector2(0f, HomeHarbour.JettyStart)), "trees keep clear of the hall and jetty");
-        Check(Vector2.Distance(k, new Vector2(HomeHarbour.TraderPosition.x, HomeHarbour.TraderPosition.z)) > HomeHarbour.KeeperRange + HomeHarbour.TradeRange, "Bjørn and Gunnar don't share a prompt");
+        Check(Vector2.Distance(k, new Vector2(HomeHarbour.TraderPosition.x, HomeHarbour.TraderPosition.z)) > HomeHarbour.KeeperRange + HomeHarbour.TradeRange, "Bjorn and Gunnar don't share a prompt");
         foreach (var other in WorldGen.Specs) Check(!other.InClearing(other.centre), other.name + " has no clearings");
 
         // Upgrades.
@@ -421,7 +421,7 @@ public static class LogicTests
         var all = new List<int[]>();
         for (int a = 1; a <= 6; a++) for (int b = 1; b <= 6; b++) for (int c = 1; c <= 6; c++) all.Add(new[] { a, b, c });
         foreach (var x in all) foreach (var y in all) { int o = MeadDice.Compare(x, y); if (o > 0) wins++; else if (o < 0) losses++; else ties++; }
-        Check(wins == losses && wins + losses + ties == 216 * 216, "dice: you win exactly as often as Bjørn (" + wins + " / " + losses + " / " + ties + ")");
+        Check(wins == losses && wins + losses + ties == 216 * 216, "dice: you win exactly as often as Bjorn (" + wins + " / " + losses + " / " + ties + ")");
         // With Odin's Favour, rerolling the lowest die when not ahead helps.
         var rng = new System.Random(5);
         int favWins = 0, favLosses = 0;

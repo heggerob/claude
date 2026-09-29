@@ -195,7 +195,7 @@ namespace OdinsCoin
             var home = HomeHarbour.Instance;
             if (home != null && home.NearKeeper(transform.position))
             {
-                if (Carrying != null) { Prompt = "[E] Sell the chest to Bjørn (" + Carrying.Value + " gold)"; return; }
+                if (Carrying != null) { Prompt = "[E] Sell the chest to Bjorn (" + Carrying.Value + " gold)"; return; }
                 Prompt = "[E] Enter the mead hall";
                 return;
             }
@@ -245,7 +245,7 @@ namespace OdinsCoin
                     var chest = Carrying;
                     Carrying = null;
                     int paid = home.Sell(chest);
-                    CombatHud.Banner("+" + paid + " GOLD", "Bjørn pours you a horn of mead on the house.");
+                    CombatHud.Banner("+" + paid + " GOLD", "Bjorn pours you a horn of mead on the house.");
                 }
                 else if (MeadHallUI.Instance != null) MeadHallUI.Instance.Open();
                 return;

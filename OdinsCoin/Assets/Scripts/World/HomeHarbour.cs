@@ -4,7 +4,7 @@ namespace OdinsCoin
 {
     /// <summary>
     /// Home: an island with a wooden jetty, Gunnar the trader at the end of it (he buys every chest you bring
-    /// back) and the mead hall up the hill, where Bjørn sells upgrades and plays dice.
+    /// back) and the mead hall up the hill, where Bjorn sells upgrades and plays dice.
     /// The voyage starts here, moored alongside the jetty.
     /// </summary>
     public class HomeHarbour : MonoBehaviour
@@ -26,7 +26,7 @@ namespace OdinsCoin
         public static readonly Vector2 HallPosition = new Vector2(-14f, -92f);
         public const float HallYaw = 190f;
 
-        /// <summary>Where Bjørn stands (x, z), just outside the hall door.</summary>
+        /// <summary>Where Bjorn stands (x, z), just outside the hall door.</summary>
         public static Vector2 KeeperSpot
         {
             get
@@ -129,8 +129,8 @@ namespace OdinsCoin
             door.intensity = 1.4f;
             LongshipBuilder.Deco(PrimitiveType.Cube, house, new Vector3(0f, 1.2f, -7.9f), new Vector3(2.2f, 2.6f, 0.1f), new Color(0.12f, 0.08f, 0.05f));
 
-            // Bjørn the mead-keeper, by the door with a barrel and a dice table.
-            var k = new GameObject("Bjørn the Mead-Keeper").transform;
+            // Bjorn the mead-keeper, by the door with a barrel and a dice table.
+            var k = new GameObject("Bjorn the Mead-Keeper").transform;
             k.SetParent(transform, false);
             Vector2 spot = KeeperSpot;
             k.position = new Vector3(spot.x, Island.Height(Spec, spot.x, spot.y), spot.y);

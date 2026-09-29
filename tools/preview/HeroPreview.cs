@@ -68,9 +68,28 @@ public static class HeroPreview
         stand.rot[Joints.RightLeg] = Quaternion.Euler(0f, 0f, 5f);
         shots.Add(new Shot { label = "The Jarl", model = jarlModel, pose = stand, yaw = 188f });
         shots.Add(new Shot { label = "The Raider", model = model, pose = carry, yaw = 188f });
+        // The Navigator: holding up a chart in both hands, head tilted towards it.
+        var nav = CharacterSpec.Default(OutfitId.Navigator);
+        nav.body = new BodyShape { height = 1.57f, width = 0.9f, gender = Gender.Female };
+        var navFit = Fit.Of(nav.body);
+        var navModel = WithWeapon(HeroModel.Build(nav), HeroModel.BuildOffHand(nav), Joints.OffHand);
+        var reading = new Pose();
+        Vector3 lShoulder = new Vector3(-navFit.shoulderX, navFit.shoulderY, 0f), rShoulder = new Vector3(navFit.shoulderX, navFit.shoulderY, 0f);
+        Vector3 lElbow = lShoulder + new Vector3(-0.1f, -0.2f, 0.06f).normalized * navFit.upperArm;
+        Vector3 lFist = new Vector3(-0.2f, navFit.waist + 0.12f, 0.2f);
+        Vector3 rElbow = rShoulder + new Vector3(0.02f, -0.22f, 0.08f).normalized * navFit.upperArm;
+        Vector3 rFist = new Vector3(-0.05f, navFit.waist + 0.1f, 0.22f);
+        reading.worldRot[Joints.LeftArm] = Quaternion.FromToRotation(Vector3.down, lElbow - lShoulder);
+        reading.worldRot[Joints.LeftForearm] = Quaternion.FromToRotation(Vector3.down, lFist - lElbow);
+        reading.worldRot[Joints.RightArm] = Quaternion.FromToRotation(Vector3.down, rElbow - rShoulder);
+        reading.worldRot[Joints.RightForearm] = Quaternion.FromToRotation(Vector3.down, rFist - rElbow);
+        reading.worldRot[Joints.OffHand] = Quaternion.Euler(-12f, 18f, 0f);
+        reading.rot[Joints.Head] = Quaternion.Euler(6f, -8f, 0f);
+        reading.rot[Joints.LeftLeg] = Quaternion.Euler(0f, 0f, -3f);
+        reading.rot[Joints.RightLeg] = Quaternion.Euler(0f, 0f, 3f);
+        shots.Add(new Shot { label = "The Navigator", model = navModel, pose = reading, yaw = 188f });
         shots.Add(new Shot { label = "Jarl, three-quarter", model = jarlModel, pose = stand, yaw = 215f });
-        shots.Add(new Shot { label = "Jarl, back", model = jarlModel, pose = stand, yaw = 20f });
-        shots.Add(new Shot { label = "Raider, three-quarter", model = model, pose = carry, yaw = 215f });
+        shots.Add(new Shot { label = "Navigator, three-quarter", model = navModel, pose = reading, yaw = 150f });
         // Same outfit on other bodies: the player chooses height, build and gender.
         var tall = CharacterSpec.Default(OutfitId.Raider);
         tall.body = new BodyShape { height = 1.85f, width = 1.25f, gender = Gender.Male };
