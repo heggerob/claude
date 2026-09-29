@@ -520,7 +520,7 @@ namespace OdinsCoin
                     float v = r / (float)(rows - 1), u = c / (float)(cols - 1);
                     float y = f.shoulderY + 0.04f * s - v * hang[c];
                     // From the front of the shoulder (u = 0) round to the side (u = 1), widening as it falls.
-                    float ang = Mathf.Lerp(0.35f, 1.55f, u) + v * 0.15f;
+                    float ang = Mathf.Lerp(0.55f, 2.1f, u) + v * 0.2f;
                     float rad = Mathf.Max(f.TorsoRadius(Mathf.Max(y, f.waist)), d.SkirtRadius(y)) + 0.035f * s + v * 0.05f * s;
                     grid[r, c] = new Vector3(Mathf.Sin(ang) * rad, y, Mathf.Cos(ang) * rad * (f.depth + 0.1f));
                 }
@@ -544,6 +544,18 @@ namespace OdinsCoin
             var f = d.fit;
             float s = d.S;
             d.Add(Joints.Body, d.pal.fur, CharacterKit.FurRing(new Vector3(0f, f.shoulderY - 0.005f * s, 0f), f.chestR * 0.95f, f.depth + 0.05f, 0.055f * s, 16, 0.07f * s, d.seed + 54, 0.8f));
+        }
+
+        /// <summary>An under-skirt in the accent colour peeking out below the skirt, its hem trimmed with fur tufts.</summary>
+        public static void Underskirt(Dresser d, float below)
+        {
+            var f = d.fit;
+            float s = d.S;
+            if (!d.hasSkirt) return;
+            float top = d.skirtBottom + 0.15f * s, hem = d.skirtBottom - below * s;
+            // Stays inside the skirt; only its hem shows below.
+            d.Add(Joints.Body, d.pal.accent, CharacterKit.RaggedSkirt(top, d.SkirtRadius(top) * 0.9f, hem, d.skirtBottomR * 0.93f, d.skirtDepth - 0.03f, 20, 0.03f * s, d.seed + 91));
+            d.Add(Joints.Body, d.pal.fur, CharacterKit.FurRing(new Vector3(0f, hem + 0.012f * s, 0f), d.skirtBottomR * 0.92f, d.skirtDepth - 0.03f, 0.022f * s, 18, 0.03f * s, d.seed + 92, 1f));
         }
 
         /// <summary>A soft cloth bandana tied over the head, a studded leather band across the brow, a rune on the front,
@@ -598,8 +610,8 @@ namespace OdinsCoin
             var f = d.fit;
             float s = d.S;
             float y = f.waist - 0.1f * s;
-            float x = f.waistR * 1.1f + 0.02f * s;
-            var at = new Vector3(x, y, d.SkirtRadius(y) * 0.2f);
+            float x = f.waistR * 1.0f + 0.02f * s;
+            var at = new Vector3(x, y, d.SkirtRadius(y) * d.skirtDepth * 0.65f);
             // The case: a leather tube hanging at a slant.
             d.Add(Joints.Body, d.pal.leather, MeshData.Lathe(new[] { new Vector2(0.03f * s, -0.12f * s), new Vector2(0.032f * s, 0.1f * s) }, 10)
                 .Transformed(at + new Vector3(0.02f * s, -0.05f * s, 0.03f * s), Quaternion.Euler(0f, 0f, 25f), Vector3.one));

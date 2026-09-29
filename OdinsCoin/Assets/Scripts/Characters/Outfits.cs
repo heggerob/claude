@@ -91,8 +91,9 @@ namespace OdinsCoin
                 {
                     Garments.ShinBoots(d, 0.3f);
                     Garments.Gloves(d);
-                    Garments.LongSkirt(d, 0.33f, 1.35f);
-                    Garments.FurSkirt(d, 0.52f, 0.36f);
+                    Garments.LongSkirt(d, 0.36f, 1.75f);
+                    Garments.Underskirt(d, 0.05f);
+                    Garments.FurSkirt(d, 0.55f, 0.4f);
                     Garments.Tunic(d, false);
                     Garments.LongSleeves(d);
                     Garments.RaiderBelt(d, 2);
