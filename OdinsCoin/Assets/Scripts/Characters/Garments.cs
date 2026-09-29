@@ -806,12 +806,12 @@ namespace OdinsCoin
                 d.Add(Joints.Body, colour, CharacterKit.Flaps(tops[t], len, 14 + t * 2, 0.95f, depth, surface, 0.01f + t * 0.004f, d.seed + 62 + t, 0.01f * s));
             }
             // Feathers bristling round the shoulders.
-            d.Add(Joints.Body, d.pal.clothDark, CharacterKit.FurRing(new Vector3(0f, f.shoulderY - 0.01f * s, 0f), f.shoulderX + 0.05f * s, 0.8f, 0.06f * s, 24, 0.14f * s, d.seed + 67, 1.1f));
+            d.Add(Joints.Body, d.pal.clothDark, CharacterKit.FurRing(new Vector3(0f, f.shoulderY - 0.01f * s, 0f), f.shoulderX + 0.02f * s, 0.8f, 0.05f * s, 24, 0.1f * s, d.seed + 67, 1.4f));
             // Ragged sleeves hanging from the arms.
             foreach (var arm in new[] { Joints.LeftArm, Joints.RightArm })
             {
-                float r = 0.06f * s;
-                d.Add(arm, d.pal.cloth, MeshData.Lathe(new[] { new Vector2(r * 1.3f, -f.upperArm - 0.02f * s), new Vector2(r, -0.1f * s), new Vector2(r * 0.9f, 0.03f * s) }, 10));
+                float r = 0.05f * s;
+                d.Add(arm, d.pal.cloth, MeshData.Lathe(new[] { new Vector2(r * 1.25f, -f.upperArm - 0.02f * s), new Vector2(r, -0.1f * s), new Vector2(r * 0.9f, 0.03f * s) }, 10));
             }
             foreach (var fore in new[] { Joints.LeftForearm, Joints.RightForearm })
             {
@@ -837,15 +837,20 @@ namespace OdinsCoin
                 rr[i] = 0.03f * s;
             }
             d.Add(Joints.Head, d.pal.cloth, MeshData.Tube(rim, rr, 6));
-            // Ragged feathers bristling all round the hood's edge.
+            // Ragged feathers round the hood's edge, lying down along it and hanging off the sides like a mane.
             var rng = new System.Random(d.seed + 70);
-            for (int i = 0; i < 16; i++)
+            for (int i = 0; i < 18; i++)
             {
-                float a = Mathf.Lerp(-0.6f, Mathf.PI + 0.6f, i / 15f);
-                var root = new Vector3(Mathf.Cos(a) * r * 1.2f, cy + Mathf.Sin(a) * r * 1.22f, r * 0.2f);
-                var outDir = new Vector3(Mathf.Cos(a), Mathf.Sin(a) - 0.6f, -0.3f).normalized;
-                d.Add(Joints.Head, i % 2 == 0 ? d.pal.clothDark : d.pal.cloth, CharacterKit.Tuft(root, root + outDir * (0.06f + (float)rng.NextDouble() * 0.05f) * s, 0.02f * s));
+                float a = Mathf.Lerp(-0.5f, Mathf.PI + 0.5f, i / 17f);
+                var root = new Vector3(Mathf.Cos(a) * r * 1.18f, cy + Mathf.Sin(a) * r * 1.2f, r * 0.15f);
+                float side = Mathf.Abs(Mathf.Cos(a));
+                var outDir = new Vector3(Mathf.Cos(a) * 0.35f, -1f, -0.15f).normalized;
+                float len = (0.05f + side * 0.12f + (float)rng.NextDouble() * 0.05f) * s;
+                d.Add(Joints.Head, i % 2 == 0 ? d.pal.clothDark : d.pal.cloth, CharacterKit.Tuft(root, root + outDir * len, 0.022f * s));
             }
+            // A soft peak at the top of the hood.
+            d.Add(Joints.Head, d.pal.clothDark, MeshData.Tube(new[] { new Vector3(0f, cy + r * 1.1f, -0.25f * r), new Vector3(0f, cy + r * 1.45f, -0.45f * r), new Vector3(0f, cy + r * 1.55f, -0.75f * r) },
+                new[] { r * 0.55f, r * 0.25f, 0.004f }, 8));
             // The hood falls onto the shoulders behind the neck.
             d.Add(Joints.Head, d.pal.clothDark, MeshData.Ellipsoid(new Vector3(0f, cy - r * 1.0f, -r * 0.55f), new Vector3(r * 1.35f, r * 0.7f, r * 0.9f), 14, 8));
         }
@@ -942,7 +947,7 @@ namespace OdinsCoin
             var horn = d.pal.leather;
             var rng = new System.Random(d.seed + 71);
             // The crossbar, just above the hood behind the head.
-            float barY = cy + r * 1.05f, barZ = -r * 0.45f, half = 0.3f * s;
+            float barY = cy + r * 1.05f, barZ = -r * 0.45f, half = 0.36f * s;
             d.Add(Joints.Head, VikingModel.Shade(horn, 0.9f), MeshData.Tube(new[] { new Vector3(-half, barY - 0.02f * s, barZ), new Vector3(0f, barY + 0.01f * s, barZ), new Vector3(half, barY - 0.02f * s, barZ) }, new[] { 0.016f * s, 0.018f * s, 0.016f * s }, 7));
             foreach (float x in new[] { -1f, 1f })
             {
@@ -964,7 +969,7 @@ namespace OdinsCoin
                 for (int k = 0; k < 3; k++)
                 {
                     var hang = Vector3.Lerp(beam[1], beam[3], k / 2f);
-                    Charm(d, hang, (0.08f + 0.06f * (k % 2)) * s, k, rng);
+                    Charm(d, hang, (0.1f + 0.08f * (k % 2)) * s, k, rng);
                 }
             }
             // Charms hanging along the crossbar.
@@ -972,7 +977,7 @@ namespace OdinsCoin
             {
                 float x = Mathf.Lerp(-half * 0.95f, half * 0.95f, k / 5f);
                 if (Mathf.Abs(x) < r * 0.6f) continue; // not in front of the face
-                Charm(d, new Vector3(x, barY - 0.02f * s, barZ + 0.02f * s), (0.06f + 0.05f * (k % 3)) * s, k + 3, rng);
+                Charm(d, new Vector3(x, barY - 0.02f * s, barZ + 0.02f * s), (0.1f + 0.06f * (k % 3)) * s, k + 3, rng);
             }
         }
 
@@ -984,8 +989,13 @@ namespace OdinsCoin
             d.Add(Joints.Head, d.pal.leatherDark, MeshData.Tube(new[] { from, end }, new[] { 0.0025f * s, 0.0025f * s }, 4), false);
             switch (kind % 3)
             {
-                case 0: RuneDisc(d, Joints.Head, end + Vector3.down * 0.035f * s, 0.036f * s, Quaternion.Euler(90f, 0f, 0f)); break;
-                case 1: d.Add(Joints.Head, d.pal.parchment, MeshData.Ellipsoid(end + Vector3.down * 0.025f * s, new Vector3(0.011f, 0.032f, 0.011f) * s, 6, 5)); break;
+                case 0: RuneDisc(d, Joints.Head, end + Vector3.down * 0.05f * s, 0.05f * s, Quaternion.Euler(90f, 0f, 0f)); break;
+                case 1:
+                    // A rune disc with a bone bead dangling under it.
+                    RuneDisc(d, Joints.Head, end + Vector3.down * 0.045f * s, 0.044f * s, Quaternion.Euler(90f, 0f, 0f));
+                    d.Add(Joints.Head, d.pal.leatherDark, MeshData.Tube(new[] { end + Vector3.down * 0.09f * s, end + Vector3.down * 0.12f * s }, new[] { 0.002f * s, 0.002f * s }, 4), false);
+                    d.Add(Joints.Head, d.pal.parchment, MeshData.Ellipsoid(end + Vector3.down * 0.14f * s, new Vector3(0.011f, 0.024f, 0.011f) * s, 6, 5));
+                    break;
                 default:
                     for (int i = 0; i < 4; i++)
                         d.Add(Joints.Head, i % 2 == 0 ? d.pal.leather : d.pal.parchment, MeshData.Ellipsoid(end + Vector3.down * (0.012f + i * 0.018f) * s, Vector3.one * 0.01f * s, 6, 4), false);
