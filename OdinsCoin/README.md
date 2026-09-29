@@ -38,6 +38,8 @@ Et 3D vikingspill i Unity: seil langskipet, raid øyer og kast **Odins mynt** om
 
 Seks øyer, blant annet to med kloster (Lindholm og Iona Minor), og hjemmeøya i sør. Den brune streken er brygga, og den røde viser hvor skipet ligger fortøyd.
 
+![Verden](docs/world.png)
+
 Alle lydene er generert i kode, og du kan høre dem i [docs/sounds](docs/sounds).
 
 ## Testing uten Unity
@@ -45,5 +47,3 @@ Alle lydene er generert i kode, og du kan høre dem i [docs/sounds](docs/sounds)
 - `tools/check.sh` kompilerer alt mot en falsk Unity-API, både for Unity 2022 og Unity 6.
 - `tools/tests/run.sh` kjører logikktestene.
 - `tools/preview/render.sh` tegner kartet og lager WAV-filer av lydene.
-
-![Verden](docs/world.png)
