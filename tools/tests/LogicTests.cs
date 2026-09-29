@@ -713,6 +713,22 @@ public static class LogicTests
         Check(InkStyle.HatchAmount(SurfaceKind.Skin) == 0f && InkStyle.HatchAmount(SurfaceKind.Cloth) == 1f, "faces stay clean, cloth is hatched");
         Check(InkStyle.Tone(Vector3.up, Vector3.up) == 1f && InkStyle.Tone(Vector3.down, Vector3.up) == 0f, "tone runs from shadow to sun");
 
+        // World ink lines: boxes are solid, two-sided sheets aren't; smoothed normals close the corners.
+        var box = MeshData.Box(Vector3.zero, new Vector3(1f, 2f, 0.5f));
+        Check(InkOutline.IsSolid(box.Vertices.ToArray(), box.Triangles.ToArray()), "a box gets an ink line");
+        var sheetV = new[] { new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(1, 1, 0), new Vector3(0, 1, 0) };
+        var sheetT = new[] { 0, 1, 2, 0, 2, 3, 0, 2, 1, 0, 3, 2 };
+        Check(!InkOutline.IsSolid(sheetV, sheetT), "a two-sided sheet (sail, banner) doesn't");
+        var sn = InkOutline.SmoothNormals(box.Vertices.ToArray(), box.Triangles.ToArray());
+        bool corners = true, outward = true;
+        for (int i = 0; i < sn.Length; i++)
+        {
+            Vector3 v = box.Vertices[i];
+            if (Math.Abs(Math.Abs(sn[i].x) - Math.Abs(sn[i].y)) > 0.9f && Math.Abs(sn[i].z) < 0.01f) corners = false;
+            if (Vector3.Dot(sn[i], v) <= 0f) outward = false;
+        }
+        Check(corners && outward, "box corners share one outward normal, so the line doesn't crack");
+
         var d = new Dresser { pal = new Palette() };
         Check(d.SurfaceOf(d.pal.fur) == SurfaceKind.Fur && d.SurfaceOf(d.pal.leatherDark) == SurfaceKind.Leather
             && d.SurfaceOf(d.pal.accent) == SurfaceKind.Cloth && d.SurfaceOf(d.pal.ink) == SurfaceKind.Plain

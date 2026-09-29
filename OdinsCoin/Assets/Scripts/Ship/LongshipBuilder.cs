@@ -46,7 +46,11 @@ namespace OdinsCoin
 
             var hull = new GameObject("Hull");
             hull.transform.SetParent(root, false);
-            hull.AddComponent<MeshFilter>().sharedMesh = HullMesh();
+            int[] hullOutside;
+            var hullMesh = HullMesh(out hullOutside);
+            hull.AddComponent<MeshFilter>().sharedMesh = hullMesh;
+            // The hull is two-sided, so it gets its ink line from the outer skin only.
+            InkOutline.AddLine(hull.transform, hullMesh.vertices, hullOutside, "Longship Hull");
             var mr = hull.AddComponent<MeshRenderer>();
             mr.sharedMaterials = new[] { Materials.Get(Materials.Wood), Materials.Get(Materials.DarkWood) };
 
@@ -166,7 +170,7 @@ namespace OdinsCoin
             return parts;
         }
 
-        static Mesh HullMesh()
+        static Mesh HullMesh(out int[] outsideSkin)
         {
             const int stations = 24;
             // Profile from keel (0) to gunwale (last), for the starboard side: fraction of width, fraction of height.
@@ -208,6 +212,7 @@ namespace OdinsCoin
             mesh.subMeshCount = 2;
             mesh.SetTriangles(outsideTris.ToArray(), 0);
             mesh.SetTriangles(insideTris.ToArray(), 1);
+            outsideSkin = outsideTris.ToArray();
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
             return mesh;

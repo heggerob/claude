@@ -28,6 +28,7 @@ namespace OdinsCoin
         public static Parts Build(Transform root, VikingLook look)
         {
             var model = VikingModel.Build(look);
+            if (root.GetComponent<OwnInk>() == null) root.gameObject.AddComponent<OwnInk>();
             var joints = new Dictionary<string, Transform>();
             foreach (var j in model.Joints)
             {

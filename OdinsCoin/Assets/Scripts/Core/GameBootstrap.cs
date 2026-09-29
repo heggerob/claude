@@ -74,6 +74,8 @@ namespace OdinsCoin
             gameObject.AddComponent<Storm>();
             gameObject.AddComponent<SeaDangers>();
             gameObject.AddComponent<Sfx>();
+            // Pen lines around everything solid in the world (the heroes draw their own).
+            gameObject.AddComponent<InkOutliner>();
             var hud = gameObject.AddComponent<ShipHud>();
             hud.Ship = Ship;
             hud.Player = Player;

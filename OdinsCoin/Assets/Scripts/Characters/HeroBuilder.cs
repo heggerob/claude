@@ -14,6 +14,8 @@ namespace OdinsCoin
         public static VikingBuilder.Parts Build(Transform root, CharacterSpec spec)
         {
             var model = HeroModel.Build(spec);
+            // The hero brings its own ink lines; the world's outliner leaves it alone.
+            if (root.GetComponent<OwnInk>() == null) root.gameObject.AddComponent<OwnInk>();
             var joints = new Dictionary<string, Transform>();
             foreach (var j in model.Joints)
             {

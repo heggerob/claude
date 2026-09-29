@@ -123,6 +123,9 @@ namespace OdinsCoin
             gameObject.AddComponent<MeshFilter>().sharedMesh = mesh;
             gameObject.AddComponent<MeshRenderer>().sharedMaterials = new[] { Materials.Get(Materials.Sand), Materials.Get(Materials.Grass), Materials.Get(Materials.Rock) };
             gameObject.AddComponent<MeshCollider>().sharedMesh = mesh;
+            // Open terrain: a pen line along its skyline and ridges.
+            var all = new List<int>(sand); all.AddRange(grass); all.AddRange(rock);
+            InkOutline.AddLine(transform, verts.ToArray(), all.ToArray(), "Island Terrain");
         }
 
         static void AddTri(List<Vector3> verts, List<int> sand, List<int> grass, List<int> rock, Vector3 a, Vector3 b, Vector3 c)
