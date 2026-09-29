@@ -15,12 +15,7 @@ namespace AirsoftArena
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics() { Instance = null; }
 
-        public const float Gravity = 9.81f;
-        // 0.5 * air density * drag coefficient of a sphere * cross-section area of a 6 mm BB.
-        const float DragFactor = 0.5f * 1.2f * 0.47f * Mathf.PI * 0.003f * 0.003f;
         const float StepTime = 1f / 120f; // collisions use line casts, so this only affects curve accuracy
-        const float MinSpeed = 8f;
-        const float MaxAge = 4f;
         // How far up the screen a BB is drawn per metre of height, so you can see it arc.
         const float HeightOnScreen = 0.3f;
         static readonly Color DefaultTracer = new Color(1f, 0.97f, 0.85f);
@@ -118,14 +113,7 @@ namespace AirsoftArena
 
         bool Step(BB bb, float h)
         {
-            // Quadratic air drag, relative to the moving air (that is what makes wind push BBs sideways).
-            Vector2 rel = bb.vel - Wind;
-            bb.vel -= rel * (DragFactor / bb.mass * rel.magnitude * h);
-            float speed = bb.vel.magnitude;
-
-            // Hop-up backspin lift, strongest while the BB is fast.
-            float lift = Gravity * bb.hop * Mathf.Sqrt(Mathf.Clamp01(speed / bb.v0));
-            bb.vz += (lift - Gravity) * h;
+            float speed = Ballistics.Step(ref bb.vel, ref bb.vz, bb.mass, bb.hop, bb.v0, Wind, h);
 
             Vector2 next = bb.pos + bb.vel * h;
             float nextZ = bb.z + bb.vz * h;
@@ -199,7 +187,7 @@ namespace AirsoftArena
                 if (MatchManager.Instance != null) MatchManager.Instance.OnBBLanded(bb.pos, bb.owner);
                 return false;
             }
-            return speed >= MinSpeed && bb.age <= MaxAge;
+            return speed >= Ballistics.MinSpeed && bb.age <= Ballistics.MaxAge;
         }
 
         void Draw(BB bb)

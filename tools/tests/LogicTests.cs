@@ -23,6 +23,7 @@ public static class LogicTests
         Maps();
         ProgressionTests();
         Sounds();
+        BallisticsTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
     }
@@ -97,6 +98,26 @@ public static class LogicTests
         Check(p.money == 1000000 - spent + refunded, "money adds up after 4000 crates");
         Check(hist[0] > hist[1] && hist[1] > hist[2] && hist[2] > hist[3] && hist[3] > 0, "rarity histogram is ordered: " + string.Join(",", hist));
         foreach (var c in CosmeticCatalog.All) Check(p.Owns(c), "crates can unlock " + c.id);
+    }
+
+    static void BallisticsTests()
+    {
+        var aeg = WeaponCatalog.Get("01-VK4");
+        var sniper = WeaponCatalog.Get("03-LB2");
+        var pistol = WeaponCatalog.Get("04-PP2");
+        float aegRange = Ballistics.MaxRange(aeg), sniperRange = Ballistics.MaxRange(sniper), pistolRange = Ballistics.MaxRange(pistol);
+        Console.WriteLine(string.Format("  ranges: AEG {0:0.0} m (effective {1:0.0}), sniper {2:0.0} m (effective {3:0.0}), pistol {4:0.0} m (effective {5:0.0})",
+            aegRange, Ballistics.EffectiveRange(aeg), sniperRange, Ballistics.EffectiveRange(sniper), pistolRange, Ballistics.EffectiveRange(pistol)));
+        Check(aegRange > 40f && aegRange < 58f, "AEG lands around 45-55 m: " + aegRange);
+        Check(sniperRange > aegRange && aegRange > pistolRange, "sniper > AEG > pistol range");
+        foreach (var w in WeaponCatalog.All)
+        {
+            if (w.IsMelee) continue;
+            Check(Ballistics.EffectiveRange(w) < Ballistics.MaxRange(w), w.code + " effective range shorter than max range");
+            float near = Ballistics.HeightAtDistance(w, 1.4f, 5f);
+            Check(near > 1.2f && near < 1.6f, w.code + " flies nearly level at 5 m: " + near);
+            Check(Ballistics.HeightAtDistance(w, 1.4f, Ballistics.MaxRange(w) + 3f) < 0f, w.code + " out of range past max range");
+        }
     }
 
     static void Sounds()

@@ -29,6 +29,7 @@ namespace AirsoftArena
             bool show = s != null && s.InPlay && match.Phase == MatchPhase.Playing && !match.Paused;
             Cursor.visible = !show;
             if (!show || Event.current.type != EventType.Repaint) return;
+            if (rangeStyle == null) rangeStyle = new GUIStyle(small) { fontSize = 12, wordWrap = false };
 
             Vector2 mouse = GameInput.MousePosition();
             var m = new Vector2(mouse.x / scale, (Screen.height - mouse.y) / scale);
@@ -36,17 +37,51 @@ namespace AirsoftArena
             // Looking through a scope: darken the edges of the screen.
             if (s.Scoped) GUI.DrawTexture(new Rect(0f, 0f, W, H), Vignette(), ScaleMode.StretchToFill, true);
 
-            // The gap opens up when moving and closes when crouched, matching the real spread.
+            // The gap opens up when moving and closes when crouched or aiming, matching the real spread.
             var d = s.Weapon.Data;
             float spread = d.IsMelee ? 0.5f : d.spreadDegrees * s.SpreadMultiplier;
             if (s.Sprinting) spread *= 3f;
-            float gap = 5f + spread * 5f;
-            var c = s.CanShoot ? new Color(1f, 1f, 1f, 0.9f) : new Color(1f, 1f, 1f, 0.35f);
-            Line(new Rect(m.x - gap - 8f, m.y - 1f, 8f, 2f), c);
-            Line(new Rect(m.x + gap, m.y - 1f, 8f, 2f), c);
-            Line(new Rect(m.x - 1f, m.y - gap - 8f, 2f, 8f), c);
-            Line(new Rect(m.x - 1f, m.y + gap, 2f, 8f), c);
-            Line(new Rect(m.x - 1f, m.y - 1f, 2f, 2f), c);
+            float gap = 4f + spread * 5f;
+            var c = GameSettings.CrosshairColors[GameSettings.CrosshairColor];
+            c.a = s.CanShoot ? 0.95f : 0.35f;
+            var outline = new Color(0f, 0f, 0f, c.a * 0.6f);
+            int style = GameSettings.CrosshairStyle;
+            if (style == 0 || style == 3)
+            {
+                Tick(new Rect(m.x - gap - 8f, m.y - 1f, 8f, 2f), c, outline);
+                Tick(new Rect(m.x + gap, m.y - 1f, 8f, 2f), c, outline);
+                Tick(new Rect(m.x - 1f, m.y - gap - 8f, 2f, 8f), c, outline);
+                Tick(new Rect(m.x - 1f, m.y + gap, 2f, 8f), c, outline);
+            }
+            if (style == 2) Ring(m, gap + 6f, c, outline);
+            if (style != 0) Tick(new Rect(m.x - 1.5f, m.y - 1.5f, 3f, 3f), c, outline);
+            else Line(new Rect(m.x - 1f, m.y - 1f, 2f, 2f), c);
+
+            // Range finder: metres to the cursor, and whether the BB still carries at that range.
+            if (GameSettings.RangeFinder && !d.IsMelee && cam != null)
+            {
+                Vector2 world = cam.ScreenToWorldPoint(mouse);
+                float dist = Vector2.Distance(world, s.Position);
+                float z = Ballistics.HeightAtDistance(d, s.MuzzleHeight, dist);
+                string verdict;
+                Color vc;
+                if (z < 0f) { verdict = "OUT OF RANGE"; vc = new Color(1f, 0.4f, 0.35f); }
+                else if (z < 0.5f) { verdict = "BB DROPS: legs"; vc = new Color(1f, 0.75f, 0.3f); }
+                else if (z < 1.0f) { verdict = "BB DROPS: waist"; vc = new Color(1f, 0.9f, 0.45f); }
+                else { verdict = ""; vc = new Color(0.7f, 1f, 0.7f); }
+                vc.a = 0.9f;
+                rangeStyle.normal.textColor = new Color(0f, 0f, 0f, 0.7f);
+                string text = dist.ToString("0") + " m" + (verdict.Length > 0 ? "  " + verdict : "");
+                GUI.Label(new Rect(m.x + gap + 13f, m.y + 7f, 200f, 18f), text, rangeStyle);
+                rangeStyle.normal.textColor = vc;
+                GUI.Label(new Rect(m.x + gap + 12f, m.y + 6f, 200f, 18f), text, rangeStyle);
+                // Drop hint: a little tick below the centre showing how far under the aim point the BB falls.
+                if (z >= 0f && z < s.MuzzleHeight - 0.15f)
+                {
+                    float drop = Mathf.Clamp((s.MuzzleHeight - z) * 14f, 0f, 30f);
+                    Tick(new Rect(m.x - 3f, m.y + drop, 6f, 2f), vc, outline);
+                }
+            }
 
             // Hit marker: a quick X, orange if you hit a teammate.
             float age = Time.time - hitMarkerAt;
@@ -78,6 +113,32 @@ namespace AirsoftArena
                 }
             vignette.Apply();
             return vignette;
+        }
+
+        GUIStyle rangeStyle;
+
+        /// <summary>A crosshair line with a dark outline so it reads on any ground.</summary>
+        void Tick(Rect r, Color c, Color outline)
+        {
+            Line(new Rect(r.x - 1f, r.y - 1f, r.width + 2f, r.height + 2f), outline);
+            Line(r, c);
+        }
+
+        void Ring(Vector2 centre, float radius, Color c, Color outline)
+        {
+            int segments = Mathf.Clamp(Mathf.RoundToInt(radius * 1.5f), 16, 64);
+            for (int i = 0; i < segments; i++)
+            {
+                float a = i / (float)segments * Mathf.PI * 2f;
+                var p = centre + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * radius;
+                Line(new Rect(p.x - 1.5f, p.y - 1.5f, 3f, 3f), outline);
+            }
+            for (int i = 0; i < segments; i++)
+            {
+                float a = i / (float)segments * Mathf.PI * 2f;
+                var p = centre + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * radius;
+                Line(new Rect(p.x - 1f, p.y - 1f, 2f, 2f), c);
+            }
         }
 
         void Line(Rect r, Color c)

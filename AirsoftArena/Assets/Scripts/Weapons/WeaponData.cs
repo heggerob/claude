@@ -112,7 +112,7 @@ namespace AirsoftArena
             get
             {
                 if (IsMelee) return "Melee · tap to eliminate · range " + meleeRange.ToString("0.0") + " m";
-                return string.Format("{0} · {1} FPS · {2} RPM · {3} BBs x{4} · {5:0.00} g", PowerLabel, fps, rpm, magCapacity, magsCarried + 1, bbWeightGrams);
+                return string.Format("{0} · {1} FPS · {2} RPM · {3} BBs x{4} · {5:0.00} g · range ~{6:0} m", PowerLabel, fps, rpm, magCapacity, magsCarried + 1, bbWeightGrams, Ballistics.EffectiveRangeCached(this));
             }
         }
     }

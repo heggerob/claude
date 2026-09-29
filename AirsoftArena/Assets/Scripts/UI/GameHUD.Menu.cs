@@ -425,6 +425,29 @@ namespace AirsoftArena
             bool auto = GUILayout.Toggle(GameSettings.AutoCallHits, "  Auto-call my hits");
             bool shake = GUILayout.Toggle(GameSettings.ScreenShake, "  Screen shake");
             bool tags = GUILayout.Toggle(GameSettings.NameTags, "  Name tags above players");
+            GUILayout.Space(6);
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Crosshair", label, GUILayout.Width(120f));
+            for (int i = 0; i < GameSettings.CrosshairStyles.Length; i++)
+            {
+                int index = i;
+                if (Choice(GameSettings.CrosshairStyle == i, GameSettings.CrosshairStyles[i], GUILayout.Width(110f))) Defer(() => { GameSettings.CrosshairStyle = index; GameSettings.Save(); });
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Colour", label, GUILayout.Width(120f));
+            for (int i = 0; i < GameSettings.CrosshairColors.Length; i++)
+            {
+                int index = i;
+                var old = GUI.contentColor;
+                GUI.contentColor = GameSettings.CrosshairColors[i];
+                if (Choice(GameSettings.CrosshairColor == i, GameSettings.CrosshairColorNames[i], GUILayout.Width(80f))) Defer(() => { GameSettings.CrosshairColor = index; GameSettings.Save(); });
+                GUI.contentColor = old;
+            }
+            GUILayout.EndHorizontal();
+            bool finder = GUILayout.Toggle(GameSettings.RangeFinder, "  Range finder (metres to the cursor + BB drop warning)");
+            if (finder != GameSettings.RangeFinder) GameSettings.RangeFinder = finder;
+            GUILayout.Space(6);
             GUILayout.BeginHorizontal();
             GUILayout.Label("View distance", label, GUILayout.Width(120f));
             float view = GUILayout.HorizontalSlider(GameSettings.ViewDistance, GameSettings.MinViewDistance, GameSettings.MaxViewDistance, GUILayout.Width(260f));
