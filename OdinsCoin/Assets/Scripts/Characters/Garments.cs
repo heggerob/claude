@@ -663,6 +663,192 @@ namespace OdinsCoin
             d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(new[] { new Vector3(px, y, f.waistR * depth * 0.7f), pouch + new Vector3(0f, 0.04f * s, 0f) }, new[] { 0.007f * s, 0.007f * s }, 4), false);
         }
 
+        // ---------------------------------------------------------------- the old seer
+
+        /// <summary>A long robe to the ground, torn into strips at the hem, flaring wide.</summary>
+        public static void Robe(Dresser d)
+        {
+            var f = d.fit;
+            float s = d.S;
+            d.hasSkirt = true;
+            d.skirtTop = f.waist; d.skirtTopR = f.waistR * 0.98f; d.skirtBottom = 0.06f * s; d.skirtBottomR = f.hipR * 1.9f; d.skirtDepth = f.depth + 0.08f;
+            d.Add(Joints.Body, d.pal.cloth, CharacterKit.RaggedSkirt(d.skirtTop, d.skirtTopR, d.skirtBottom, d.skirtBottomR, d.skirtDepth, 26, 0.09f * s, d.seed + 61));
+        }
+
+        /// <summary>
+        /// A shaggy cloak of torn strips and feathers: tier upon tier of dark flaps from the shoulders to the ground,
+        /// in two shades, so the whole figure looks ragged like the concept's seer.
+        /// </summary>
+        public static void FeatherCloak(Dresser d)
+        {
+            var f = d.fit;
+            float s = d.S;
+            System.Func<float, float> surface = y => y > f.waist ? f.TorsoRadius(y) * 1.15f + 0.03f * s : d.SkirtRadius(y) * 1.02f;
+            float depth = d.hasSkirt ? d.skirtDepth : f.depth;
+            float[] tops = { f.shoulderY + 0.01f * s, f.chest - 0.02f * s, f.waist - 0.02f * s, f.waist - 0.3f * s, 0.45f * s };
+            for (int t = 0; t < tops.Length; t++)
+            {
+                var colour = (t & 1) == 0 ? d.pal.cloth : d.pal.clothDark;
+                float len = t == 0 ? 0.22f * s : 0.34f * s;
+                d.Add(Joints.Body, colour, CharacterKit.Flaps(tops[t], len, 14 + t * 2, 0.95f, depth, surface, 0.01f + t * 0.004f, d.seed + 62 + t, 0.01f * s));
+            }
+            // Feathers bristling round the shoulders.
+            d.Add(Joints.Body, d.pal.clothDark, CharacterKit.FurRing(new Vector3(0f, f.shoulderY - 0.01f * s, 0f), f.shoulderX + 0.05f * s, 0.8f, 0.06f * s, 24, 0.14f * s, d.seed + 67, 1.1f));
+            // Ragged sleeves hanging from the arms.
+            foreach (var arm in new[] { Joints.LeftArm, Joints.RightArm })
+            {
+                float r = 0.06f * s;
+                d.Add(arm, d.pal.cloth, MeshData.Lathe(new[] { new Vector2(r * 1.3f, -f.upperArm - 0.02f * s), new Vector2(r, -0.1f * s), new Vector2(r * 0.9f, 0.03f * s) }, 10));
+            }
+            foreach (var fore in new[] { Joints.LeftForearm, Joints.RightForearm })
+            {
+                float r = 0.07f * s;
+                d.Add(fore, d.pal.cloth, CharacterKit.RaggedSkirt(0.01f * s, r, -f.foreArm * 0.7f, r * 1.4f, 1f, 12, 0.05f * s, d.seed + fore.Length));
+            }
+        }
+
+        /// <summary>A deep hood round the face, dark, its edge ragged; the face shows in its opening.</summary>
+        public static void Hood(Dresser d)
+        {
+            var f = d.fit;
+            float r = f.headR, cy = HeroModel.HeadCentre(f), s = d.S;
+            // The hood's shell sits behind and over the head, a little bigger, with the front cut open.
+            d.Add(Joints.Head, d.pal.clothDark, MeshData.Ellipsoid(new Vector3(0f, cy + 0.06f * r, -0.28f * r), new Vector3(r * 1.25f, r * 1.28f, r * 1.1f), 16, 10));
+            // The hood's rim framing the face.
+            var rim = new Vector3[15];
+            var rr = new float[15];
+            for (int i = 0; i < rim.Length; i++)
+            {
+                float a = Mathf.Lerp(-0.35f, Mathf.PI + 0.35f, i / (float)(rim.Length - 1));
+                rim[i] = new Vector3(Mathf.Cos(a) * r * 1.12f, cy + Mathf.Sin(a) * r * 1.15f + 0.02f * r, r * 0.45f);
+                rr[i] = 0.03f * s;
+            }
+            d.Add(Joints.Head, d.pal.cloth, MeshData.Tube(rim, rr, 6));
+            // Ragged feathers bristling all round the hood's edge.
+            var rng = new System.Random(d.seed + 70);
+            for (int i = 0; i < 16; i++)
+            {
+                float a = Mathf.Lerp(-0.6f, Mathf.PI + 0.6f, i / 15f);
+                var root = new Vector3(Mathf.Cos(a) * r * 1.2f, cy + Mathf.Sin(a) * r * 1.22f, r * 0.2f);
+                var outDir = new Vector3(Mathf.Cos(a), Mathf.Sin(a) - 0.6f, -0.3f).normalized;
+                d.Add(Joints.Head, i % 2 == 0 ? d.pal.clothDark : d.pal.cloth, CharacterKit.Tuft(root, root + outDir * (0.06f + (float)rng.NextDouble() * 0.05f) * s, 0.02f * s));
+            }
+            // The hood falls onto the shoulders behind the neck.
+            d.Add(Joints.Head, d.pal.clothDark, MeshData.Ellipsoid(new Vector3(0f, cy - r * 1.0f, -r * 0.55f), new Vector3(r * 1.35f, r * 0.7f, r * 0.9f), 14, 8));
+        }
+
+        /// <summary>A long pale stole hanging down the front to the ground, with dark zig-zags and runes.</summary>
+        public static void Stole(Dresser d)
+        {
+            var f = d.fit;
+            float s = d.S;
+            const int rows = 12;
+            var grid = new Vector3[rows, 3];
+            float top = f.chest + 0.02f * s, bottom = 0.1f * s;
+            for (int r = 0; r < rows; r++)
+                for (int c = 0; c < 3; c++)
+                {
+                    float v = r / (float)(rows - 1);
+                    float y = Mathf.Lerp(top, bottom, v) - (r == rows - 1 && c != 1 ? 0.03f * s : 0f);
+                    float rad = y > f.waist ? f.TorsoRadius(y) * f.depth + 0.03f * s : d.SkirtRadius(y) * d.skirtDepth + 0.03f * s;
+                    grid[r, c] = new Vector3((c - 1) * Mathf.Lerp(0.05f, 0.075f, v) * s * f.width, y, rad + 0.02f * v);
+                }
+            d.Add(Joints.Body, d.pal.cloth2, CharacterKit.Sheet(grid, Vector3.forward, 0.01f * s));
+            // Rows of zig-zags down its length.
+            for (int band = 0; band < 5; band++)
+            {
+                float v = 0.2f + band * 0.16f;
+                int r = Mathf.RoundToInt(v * (rows - 1));
+                var line = new Vector3[7];
+                for (int i = 0; i < line.Length; i++)
+                    line[i] = Vector3.Lerp(grid[r, 0], grid[r, 2], i / 6f) * 1f + new Vector3(0f, 0f, 0.009f * s);
+                d.Add(Joints.Body, d.pal.clothDark, CharacterKit.ZigZag(line, Vector3.up, 0.018f * s, 0.004f * s), false);
+            }
+        }
+
+        /// <summary>Necklaces of beads with bone charms and wooden rune discs, and a rune-disc belt.</summary>
+        public static void Charms(Dresser d)
+        {
+            var f = d.fit;
+            float s = d.S;
+            float cz = f.chestR * f.depth + 0.035f * s;
+            // Two strings of beads hanging in loops across the chest.
+            for (int k = 0; k < 2; k++)
+            {
+                int n = 13;
+                for (int i = 0; i < n; i++)
+                {
+                    float u = i / (float)(n - 1) * 2f - 1f;
+                    var p = new Vector3(u * f.chestR * (0.7f + 0.1f * k), f.shoulderY - 0.02f * s - (1f - u * u) * (0.1f + 0.08f * k) * s, cz + (1f - u * u) * 0.01f);
+                    d.Add(Joints.Body, i % 3 == 0 ? d.pal.parchment : d.pal.leather, MeshData.Ellipsoid(p, Vector3.one * 0.011f * s, 6, 4), false);
+                }
+            }
+            // Pendants: a bone, a rune disc, a claw.
+            var pend = new[] { new Vector3(-0.05f, 0f, 0f), new Vector3(0.0f, -0.03f, 0.005f), new Vector3(0.055f, 0.01f, 0f) };
+            for (int i = 0; i < pend.Length; i++)
+            {
+                var p = new Vector3(pend[i].x * s, f.shoulderY - 0.2f * s + pend[i].y * s, cz + 0.01f);
+                if (i == 1) RuneDisc(d, Joints.Body, p, 0.03f * s, Quaternion.Euler(90f, 0f, 0f));
+                else d.Add(Joints.Body, d.pal.parchment, MeshData.Ellipsoid(p, new Vector3(0.012f, 0.03f, 0.012f) * s, 6, 5));
+            }
+            // Belt: a cord with a big wooden rune disc at the front.
+            d.Add(Joints.Body, d.pal.leather, CharacterKit.Band(f.waist, 0.03f * s, d.SkirtRadius(f.waist) * 1.06f, d.skirtDepth + 0.02f));
+            RuneDisc(d, Joints.Body, new Vector3(0f, f.waist, d.SkirtRadius(f.waist) * (d.skirtDepth + 0.02f) + 0.06f * s), 0.045f * s, Quaternion.Euler(90f, 0f, 0f));
+            // Charms hanging from the belt on cords.
+            foreach (float x in new[] { -0.09f, -0.05f, 0.07f })
+            {
+                var top = new Vector3(x * s, f.waist - 0.02f * s, d.SkirtRadius(f.waist) * d.skirtDepth + 0.02f);
+                var end = top + new Vector3(0f, -0.2f * s, 0.02f * s);
+                d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(new[] { top, end }, new[] { 0.003f * s, 0.003f * s }, 4), false);
+                if (x > 0f) RuneDisc(d, Joints.Body, end, 0.028f * s, Quaternion.Euler(90f, 0f, 0f));
+                else d.Add(Joints.Body, d.pal.parchment, MeshData.Ellipsoid(end, new Vector3(0.018f, 0.028f, 0.016f) * s, 7, 5));
+            }
+        }
+
+        /// <summary>A round wooden disc with a rune burnt into it (Algiz-like), facing along the rotation's up axis.</summary>
+        public static void RuneDisc(Dresser d, string joint, Vector3 at, float radius, Quaternion facing)
+        {
+            float s = d.S;
+            d.Add(joint, d.pal.leather, MeshData.Lathe(new[] { new Vector2(radius, -0.006f * s), new Vector2(radius, 0.006f * s) }, 14).Transformed(at, facing, Vector3.one));
+            var up = facing * Vector3.up;
+            var a = facing * Vector3.forward;
+            var b = facing * Vector3.right;
+            var c = at + up * 0.0075f * s;
+            foreach (var seg in new[] { new[] { -0.7f, 0f, 0.7f, 0f }, new[] { 0f, 0f, 0.6f, 0.45f }, new[] { 0f, 0f, 0.6f, -0.45f } })
+                d.Add(joint, d.pal.ink, MeshData.Tube(new[] { c + (a * seg[0] + b * seg[1]) * radius, c + (a * seg[2] + b * seg[3]) * radius }, new[] { 0.0035f * s, 0.0035f * s }, 4), false);
+        }
+
+        /// <summary>Great antlers rising from the hood, hung with rune discs and bone charms on cords.</summary>
+        public static void Antlers(Dresser d)
+        {
+            var f = d.fit;
+            float r = f.headR, cy = HeroModel.HeadCentre(f), s = d.S;
+            var horn = d.pal.leather;
+            foreach (float x in new[] { -1f, 1f })
+            {
+                var root = new Vector3(x * r * 0.55f, cy + r * 1.1f, -r * 0.3f);
+                var beam = new[] { root, root + new Vector3(x * 0.1f, 0.06f, 0f) * s, root + new Vector3(x * 0.22f, 0.13f, -0.02f) * s, root + new Vector3(x * 0.33f, 0.24f, -0.03f) * s, root + new Vector3(x * 0.38f, 0.36f, -0.02f) * s };
+                d.Add(Joints.Head, horn, MeshData.Tube(beam, new[] { 0.034f * s, 0.03f * s, 0.025f * s, 0.018f * s, 0.008f * s }, 7));
+                // Tines branching upwards off the beam.
+                foreach (var t in new[] { new[] { 1f, 0.12f, 0.02f }, new[] { 2f, 0.16f, -0.03f }, new[] { 3f, 0.12f, 0.05f } })
+                {
+                    var at = beam[(int)t[0]];
+                    var tip = at + new Vector3(x * t[2], t[1], 0.02f) * s;
+                    d.Add(Joints.Head, horn, MeshData.Tube(new[] { at, (at + tip) * 0.5f + new Vector3(0f, 0f, 0.01f * s), tip }, new[] { 0.018f * s, 0.013f * s, 0.005f * s }, 6));
+                }
+                // Charms hanging from the beam.
+                for (int k = 0; k < 3; k++)
+                {
+                    var hang = Vector3.Lerp(beam[1], beam[3], k / 2f);
+                    float drop = (0.1f + 0.05f * k) * s;
+                    var end = hang + Vector3.down * drop;
+                    d.Add(Joints.Head, d.pal.leatherDark, MeshData.Tube(new[] { hang, end }, new[] { 0.0025f * s, 0.0025f * s }, 4), false);
+                    if (k == 1) d.Add(Joints.Head, d.pal.parchment, MeshData.Ellipsoid(end + Vector3.down * 0.02f * s, new Vector3(0.01f, 0.03f, 0.01f) * s, 6, 4));
+                    else RuneDisc(d, Joints.Head, end + Vector3.down * 0.035f * s, 0.036f * s, Quaternion.Euler(90f, 0f, 0f));
+                }
+            }
+        }
+
         // ---------------------------------------------------------------- hair
 
         /// <summary>Two long braids from behind the ears, forward over the shoulders and down the chest, tied with leather.</summary>

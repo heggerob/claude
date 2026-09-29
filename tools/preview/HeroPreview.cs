@@ -108,6 +108,23 @@ public static class HeroPreview
         guarding.rot[Joints.LeftLeg] = Quaternion.Euler(0f, 0f, -5f);
         guarding.rot[Joints.RightLeg] = Quaternion.Euler(0f, 0f, 6f);
         shots.Add(new Shot { label = "The Spear Guard", model = guardModel, pose = guarding, yaw = 188f });
+        // The Old Seer: the rune staff upright in her left hand, the right hand at her charms.
+        var seer = CharacterSpec.Default(OutfitId.Seer);
+        seer.body = new BodyShape { height = 1.6f, width = 0.95f, gender = Gender.Female };
+        var sFit = Fit.Of(seer.body);
+        var seerModel = WithWeapon(HeroModel.Build(seer), HeroModel.BuildWeapon(seer), Joints.OffHand);
+        var augur = new Pose();
+        Vector3 sl = new Vector3(-sFit.shoulderX, sFit.shoulderY, 0f), sr = new Vector3(sFit.shoulderX, sFit.shoulderY, 0f);
+        Vector3 slElbow = sl + new Vector3(-0.1f, -0.2f, 0.02f).normalized * sFit.upperArm;
+        Vector3 slFist = new Vector3(-sFit.shoulderX - 0.16f, sFit.chest - 0.02f, 0.06f);
+        Vector3 srElbow = sr + new Vector3(0.06f, -0.2f, 0.06f).normalized * sFit.upperArm;
+        Vector3 srFist = new Vector3(0.08f, sFit.waist + 0.04f, 0.16f);
+        augur.worldRot[Joints.LeftArm] = Quaternion.FromToRotation(Vector3.down, slElbow - sl);
+        augur.worldRot[Joints.LeftForearm] = Quaternion.FromToRotation(Vector3.down, slFist - slElbow);
+        augur.worldRot[Joints.RightArm] = Quaternion.FromToRotation(Vector3.down, srElbow - sr);
+        augur.worldRot[Joints.RightForearm] = Quaternion.FromToRotation(Vector3.down, srFist - srElbow);
+        augur.worldRot[Joints.OffHand] = Quaternion.LookRotation(Vector3.up, new Vector3(1f, 0f, 0.3f));
+        shots.Add(new Shot { label = "The Old Seer", model = seerModel, pose = augur, yaw = 188f });
         shots.Add(new Shot { label = "Jarl, three-quarter", model = jarlModel, pose = stand, yaw = 215f });
         shots.Add(new Shot { label = "Navigator, three-quarter", model = navModel, pose = reading, yaw = 150f });
         // Same outfit on other bodies: the player chooses height, build and gender.

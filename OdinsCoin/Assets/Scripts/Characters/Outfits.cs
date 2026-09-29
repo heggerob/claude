@@ -4,8 +4,8 @@ using UnityEngine;
 namespace OdinsCoin
 {
     public enum OutfitId { Raider, Jarl, Navigator, SpearGuard, Seer, Scout }
-    public enum HairStyle { None, LongBraids, WrappedBraids, SideBraid, ShortLocks }
-    public enum WeaponId { None, TwoHandAxe, Sword, Spear }
+    public enum HairStyle { None, LongBraids, WrappedBraids, SideBraid, ShortLocks, VeryLongBraids }
+    public enum WeaponId { None, TwoHandAxe, Sword, Spear, Staff }
     public enum OffHandId { None, RoundShield, Map, KnotShield }
 
     /// <summary>A special move or perk that comes with an outfit (used by the game later).</summary>
@@ -126,6 +126,29 @@ namespace OdinsCoin
                     Garments.ShoulderPelt(d, 1.2f);
                     Garments.Scarf(d);
                     Garments.NasalHelmet(d);
+                } } },
+            { OutfitId.Seer, new Outfit {
+                id = OutfitId.Seer, title = "The Old Seer",
+                palette = () => new Palette {
+                    cloth = new Color(0.2f, 0.22f, 0.27f), clothDark = new Color(0.12f, 0.13f, 0.16f),
+                    cloth2 = new Color(0.7f, 0.6f, 0.44f), hair = new Color(0.9f, 0.88f, 0.82f),
+                    leather = new Color(0.46f, 0.34f, 0.22f), leatherDark = new Color(0.25f, 0.18f, 0.12f),
+                    parchment = new Color(0.88f, 0.84f, 0.74f), emblem = new Color(0.55f, 0.82f, 1f) },
+                defaultHair = HairStyle.VeryLongBraids, suggestedWeapon = WeaponId.Staff,
+                abilities = new[] {
+                    new Ability { id = "foresight", name = "Foresight", description = "See how Odin's coin will land before you wager." },
+                    new Ability { id = "ward", name = "Ward of Runes", description = "Curses on you and your crew wear off faster." } },
+                dress = d =>
+                {
+                    Garments.ShinBoots(d, 0.2f);
+                    Garments.Gloves(d);
+                    Garments.Robe(d);
+                    Garments.Tunic(d, false);
+                    Garments.FeatherCloak(d);
+                    Garments.Stole(d);
+                    Garments.Charms(d);
+                    Garments.Hood(d);
+                    Garments.Antlers(d);
                 } } },
         };
 
