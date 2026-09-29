@@ -25,6 +25,7 @@ namespace OdinsCoin
             public Transform rudder;    // the steering oar
             public Transform helm;      // where the helmsman stands
             public Transform altar;     // Odin's coin goes here
+            public Transform deck;      // what the crew stands on (the ship root)
             public Vector3[] floatPoints;
         }
 
@@ -134,10 +135,32 @@ namespace OdinsCoin
             }
             parts.floatPoints = points.ToArray();
 
-            // One simple collider for the hull body and one for the deck surface people stand on.
+            // Hull body (its top is the deck people stand on).
             var body = root.gameObject.AddComponent<BoxCollider>();
-            body.center = new Vector3(0f, -0.35f, 0f);
+            body.center = new Vector3(0f, DeckHeight - 0.65f, 0f);
             body.size = new Vector3(Beam * 0.85f, 1.3f, Length * 0.85f);
+
+            // Invisible rails along the gunwales so you don't slide overboard by accident (you can still jump over).
+            const int segments = 6;
+            for (int i = 0; i < segments; i++)
+            {
+                float s0 = -0.8f + 1.6f * i / segments, s1 = -0.8f + 1.6f * (i + 1) / segments;
+                float hw0, hw1, k, g;
+                Station(s0, out hw0, out k, out g);
+                Station(s1, out hw1, out k, out g);
+                float z0 = s0 * Length / 2f, z1 = s1 * Length / 2f;
+                for (int side = -1; side <= 1; side += 2)
+                {
+                    var rail = new GameObject("Rail").transform;
+                    rail.SetParent(root, false);
+                    Vector3 a0 = new Vector3(side * hw0 * 0.92f, 0f, z0), a1 = new Vector3(side * hw1 * 0.92f, 0f, z1);
+                    rail.localPosition = (a0 + a1) / 2f + Vector3.up * (DeckHeight + 0.35f);
+                    rail.localRotation = Quaternion.LookRotation(a1 - a0);
+                    var col = rail.gameObject.AddComponent<BoxCollider>();
+                    col.size = new Vector3(0.15f, 0.7f, (a1 - a0).magnitude + 0.1f);
+                }
+            }
+            parts.deck = root;
             return parts;
         }
 

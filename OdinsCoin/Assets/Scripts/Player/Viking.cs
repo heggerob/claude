@@ -1,0 +1,241 @@
+using UnityEngine;
+
+namespace OdinsCoin
+{
+    /// <summary>
+    /// The player's Viking. Walks on the deck while the longship rolls and sails (the ship "carries" you:
+    /// your position is kept in the ship's local space), jumps, falls overboard, swims, climbs back aboard
+    /// and takes the steering oar.
+    /// </summary>
+    [RequireComponent(typeof(CharacterController))]
+    public class Viking : MonoBehaviour
+    {
+        public const float WalkSpeed = 4.2f, RunSpeed = 6.5f, SwimSpeed = 2.4f, JumpSpeed = 5.5f;
+        const float Gravity = 18f;
+        const float InteractRange = 1.8f;
+        const float ClimbRange = 3.2f;
+
+        public Longship Ship;
+        public bool AtHelm { get; private set; }
+        public bool Swimming { get; private set; }
+        public bool OnShip { get; private set; }
+        /// <summary>What pressing E would do right now (for the HUD), or null.</summary>
+        public string Prompt { get; private set; }
+
+        CharacterController controller;
+        VikingBuilder.Parts parts;
+        float verticalSpeed;
+        float facing;
+        float walkCycle;
+        // Where we stand in the ship's own coordinates, and which way we face relative to the ship.
+        Vector3 shipLocal;
+        float shipLocalYaw;
+
+        public static Viking Create(Transform parent, Longship ship)
+        {
+            var go = new GameObject("Viking");
+            go.transform.SetParent(parent, false);
+            var cc = go.AddComponent<CharacterController>();
+            cc.height = 1.9f;
+            cc.radius = 0.35f;
+            cc.center = new Vector3(0f, 0.95f, 0f);
+            cc.stepOffset = 0.35f;
+            cc.slopeLimit = 50f;
+            var v = go.AddComponent<Viking>();
+            v.controller = cc;
+            v.Ship = ship;
+            v.parts = VikingBuilder.Build(go.transform, new Color(0.25f, 0.4f, 0.6f));
+            // Start on deck, amidships.
+            v.PlaceOnShip(new Vector3(0f, LongshipBuilder.DeckHeight + 0.05f, -1f));
+            return v;
+        }
+
+        void Awake() { if (controller == null) controller = GetComponent<CharacterController>(); }
+
+        void PlaceOnShip(Vector3 local)
+        {
+            shipLocal = local;
+            shipLocalYaw = 0f;
+            OnShip = true;
+            Swimming = false;
+            verticalSpeed = 0f;
+            Teleport(Ship.transform.TransformPoint(local));
+        }
+
+        void Teleport(Vector3 world)
+        {
+            controller.enabled = false;
+            transform.position = world;
+            controller.enabled = true;
+        }
+
+        void Update()
+        {
+            float dt = Time.deltaTime;
+            var ship = Ship.transform;
+
+            // 1. Ride along: put us back where we were on the (moved) ship.
+            if (OnShip)
+            {
+                Teleport(ship.TransformPoint(shipLocal));
+                facing = ship.eulerAngles.y + shipLocalYaw;
+            }
+
+            UpdatePrompt();
+            if (GameInput.Pressed(Key.Interact)) Interact();
+
+            if (AtHelm)
+            {
+                // Stand at the steering oar and lean on it.
+                shipLocal = Ship.Parts.helm.localPosition;
+                shipLocalYaw = 0f;
+                Teleport(ship.TransformPoint(shipLocal));
+                transform.rotation = Quaternion.Euler(0f, ship.eulerAngles.y, 0f);
+                Animate(0f, dt);
+                return;
+            }
+
+            // 2. Our own movement, relative to the camera.
+            Vector2 input = GameInput.Move();
+            var rig = CameraRig.Instance;
+            Vector3 forward = rig != null ? rig.FlatForward : Vector3.forward;
+            Vector3 right = new Vector3(forward.z, 0f, -forward.x);
+            Vector3 move = forward * input.y + right * input.x;
+            float speed = Swimming ? SwimSpeed : GameInput.Held(Key.Sprint) ? RunSpeed : WalkSpeed;
+
+            if (move.sqrMagnitude > 0.01f)
+            {
+                float target = Mathf.Atan2(move.x, move.z) * Mathf.Rad2Deg;
+                facing = Mathf.MoveTowardsAngle(facing, target, 720f * dt);
+            }
+
+            // 3. Gravity, jumping and swimming.
+            float water = Waves.Height(transform.position.x, transform.position.z);
+            Swimming = !OnShip && transform.position.y < water - 0.9f;
+            if (Swimming)
+            {
+                // Bob at the surface, head above water.
+                verticalSpeed = Mathf.Lerp(verticalSpeed, (water - 1.25f - transform.position.y) * 4f, dt * 5f);
+            }
+            else if (controller.isGrounded)
+            {
+                verticalSpeed = -2f;
+                if (GameInput.Pressed(Key.Jump)) verticalSpeed = JumpSpeed;
+            }
+            else
+            {
+                verticalSpeed -= Gravity * dt;
+            }
+
+            controller.Move((move * speed + Vector3.up * verticalSpeed) * dt);
+            transform.rotation = Quaternion.Euler(0f, facing, 0f);
+
+            // 4. Are we standing on the ship? Then remember where, in ship space.
+            RaycastHit hit;
+            bool onDeck = Physics.Raycast(transform.position + Vector3.up * 0.5f, Vector3.down, out hit, 1.2f)
+                          && hit.collider != null && hit.collider.transform.IsChildOfOrSelf(ship);
+            if (onDeck)
+            {
+                OnShip = true;
+                shipLocal = ship.InverseTransformPoint(transform.position);
+                shipLocalYaw = Mathf.DeltaAngle(ship.eulerAngles.y, facing);
+            }
+            else
+            {
+                // In the air: still carried along as long as we're above the hull (jumping on a moving ship
+                // must not leave you behind). Past the side, you're overboard.
+                Vector3 local = ship.InverseTransformPoint(transform.position);
+                float hw, k, g;
+                LongshipBuilder.Station(Mathf.Clamp(local.z / (LongshipBuilder.Length / 2f), -1f, 1f), out hw, out k, out g);
+                bool above = Mathf.Abs(local.x) < hw && Mathf.Abs(local.z) < LongshipBuilder.Length / 2f && local.y > -0.3f;
+                OnShip = above && !Swimming;
+                if (OnShip)
+                {
+                    shipLocal = local;
+                    shipLocalYaw = Mathf.DeltaAngle(ship.eulerAngles.y, facing);
+                }
+            }
+
+            Animate(move.magnitude * speed, dt);
+        }
+
+        void UpdatePrompt()
+        {
+            Prompt = null;
+            if (AtHelm) { Prompt = "[E] Leave the steering oar"; return; }
+            if (OnShip && Vector3.Distance(transform.position, Ship.Parts.helm.position) < InteractRange) { Prompt = "[E] Take the steering oar"; return; }
+            if (Swimming && DistanceToShip() < ClimbRange) Prompt = "[E] Climb aboard";
+        }
+
+        void Interact()
+        {
+            if (AtHelm)
+            {
+                AtHelm = false;
+                SetHelm(false);
+                return;
+            }
+            if (OnShip && Vector3.Distance(transform.position, Ship.Parts.helm.position) < InteractRange)
+            {
+                AtHelm = true;
+                SetHelm(true);
+                return;
+            }
+            if (Swimming && DistanceToShip() < ClimbRange)
+            {
+                // Haul yourself over the side nearest to you.
+                Vector3 local = Ship.transform.InverseTransformPoint(transform.position);
+                float hw, k, g;
+                LongshipBuilder.Station(Mathf.Clamp(local.z / (LongshipBuilder.Length / 2f), -0.7f, 0.7f), out hw, out k, out g);
+                PlaceOnShip(new Vector3(Mathf.Sign(local.x) * (hw - 0.8f), LongshipBuilder.DeckHeight + 0.05f, Mathf.Clamp(local.z, -6f, 6f)));
+            }
+        }
+
+        void SetHelm(bool on)
+        {
+            var helm = Ship.GetComponent<ShipKeyboardHelm>();
+            if (helm != null) helm.enabled = on;
+            if (!on) { Ship.RudderInput = 0f; Ship.Rowing = false; }
+            var rig = CameraRig.Instance;
+            if (rig != null)
+            {
+                rig.Target = on ? Ship.transform : transform;
+                rig.Distance = on ? 22f : 7f;
+                rig.Height = on ? 3f : 1.6f;
+            }
+        }
+
+        float DistanceToShip()
+        {
+            Vector3 local = Ship.transform.InverseTransformPoint(transform.position);
+            float hw, k, g;
+            LongshipBuilder.Station(Mathf.Clamp(local.z / (LongshipBuilder.Length / 2f), -1f, 1f), out hw, out k, out g);
+            float outside = Mathf.Max(0f, Mathf.Abs(local.x) - hw);
+            float past = Mathf.Max(0f, Mathf.Abs(local.z) - LongshipBuilder.Length / 2f);
+            return Mathf.Sqrt(outside * outside + past * past);
+        }
+
+        void Animate(float speed, float dt)
+        {
+            if (parts == null) return;
+            walkCycle += dt * (speed > 0.1f ? 2f + speed * 1.4f : 0f);
+            float swing = speed > 0.1f ? Mathf.Sin(walkCycle) * Mathf.Clamp(speed * 8f, 0f, 38f) : 0f;
+            if (Swimming) swing = Mathf.Sin(Time.time * 4f) * 40f;
+            parts.leftLeg.localRotation = Quaternion.Euler(swing, 0f, 0f);
+            parts.rightLeg.localRotation = Quaternion.Euler(-swing, 0f, 0f);
+            parts.leftArm.localRotation = Quaternion.Euler(-swing * 0.8f, 0f, 0f);
+            parts.rightArm.localRotation = Quaternion.Euler(AtHelm ? -60f : swing * 0.8f, 0f, 0f);
+            // Lean into the swim.
+            parts.body.localRotation = Quaternion.Euler(Swimming ? 60f : 0f, 0f, 0f);
+        }
+    }
+
+    public static class TransformExtensions
+    {
+        public static bool IsChildOfOrSelf(this Transform t, Transform parent)
+        {
+            for (var x = t; x != null; x = x.parent) if (x == parent) return true;
+            return false;
+        }
+    }
+}
