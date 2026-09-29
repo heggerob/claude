@@ -3,16 +3,20 @@ using UnityEngine;
 
 namespace AirsoftArena
 {
-    public enum GameMode { TeamDeathmatch, CaptureTheFlag, KingOfTheHill }
+    public enum GameMode { TeamDeathmatch, CaptureTheFlag, KingOfTheHill, Training }
 
     public static class GameModes
     {
+        /// <summary>Modes you can pick for a normal match (training has its own button).</summary>
+        public static readonly GameMode[] Competitive = { GameMode.TeamDeathmatch, GameMode.CaptureTheFlag, GameMode.KingOfTheHill };
+
         public static string Name(GameMode m)
         {
             switch (m)
             {
                 case GameMode.CaptureTheFlag: return "Capture the Flag";
                 case GameMode.KingOfTheHill: return "King of the Hill";
+                case GameMode.Training: return "Training Range";
                 default: return "Team Deathmatch";
             }
         }
@@ -23,6 +27,7 @@ namespace AirsoftArena
             {
                 case GameMode.CaptureTheFlag: return "Grab the enemy flag and carry it to your own. Get hit while carrying it and you drop it. First to 3 captures.";
                 case GameMode.KingOfTheHill: return "Hold the zone in the middle. Only one team inside = 1 point per second. First to 100.";
+                case GameMode.Training: return "Free range with steel targets from 10 to 60 m. Try any weapon, see where the BBs drop. No money, no XP.";
                 default: return "Every called hit is a point. First to 20.";
             }
         }
@@ -33,6 +38,7 @@ namespace AirsoftArena
             {
                 case GameMode.CaptureTheFlag: return 3;
                 case GameMode.KingOfTheHill: return 100;
+                case GameMode.Training: return int.MaxValue;
                 default: return 20;
             }
         }
@@ -43,6 +49,7 @@ namespace AirsoftArena
             {
                 case GameMode.CaptureTheFlag: return "captures";
                 case GameMode.KingOfTheHill: return "points";
+                case GameMode.Training: return "";
                 default: return "hits";
             }
         }
@@ -53,6 +60,7 @@ namespace AirsoftArena
             {
                 case GameMode.CaptureTheFlag: return new CaptureTheFlagRules();
                 case GameMode.KingOfTheHill: return new KingOfTheHillRules();
+                case GameMode.Training: return new TrainingRules();
                 default: return new TeamDeathmatchRules();
             }
         }

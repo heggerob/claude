@@ -10,7 +10,7 @@ Arbeidsliste for prototypen. Ett punkt om gangen, og hvert punkt skal kompilere 
 - [x] **6. Spillmodi:** Capture the Flag og King of the Hill i tillegg til TDM.
 - [x] **7. Progresjon:** XP og rank, våpen som låses opp med rank, og dagsbonus.
 - [x] **8. Lyd:** generert lyd for skudd, "tak", fløyte, omlading og treff.
-- [ ] **9. Treningsbane:** skyteblinker og måling av rekkevidde og BB-fall.
+- [x] **9. Treningsbane:** skyteblinker og måling av rekkevidde og BB-fall.
 - [ ] **10. Finpuss:** minikart, treffmarkør, skjermrist, innstillinger (auto-call, skjermrist, lydvolum).
 
 Når lista er ferdig går loopen videre til vikingspillet (eget repo).

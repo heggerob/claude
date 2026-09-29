@@ -97,6 +97,7 @@ namespace AirsoftArena
             GUILayout.BeginHorizontal();
             foreach (var map in MapLibrary.All)
             {
+                if (map.trainingOnly) continue;
                 var m = map;
                 if (Choice(profile.mapId == m.id, m.name + (m.indoor ? " (indoor)" : ""), GUILayout.Height(28)))
                     Defer(() => SelectMap(profile, m));
@@ -107,7 +108,7 @@ namespace AirsoftArena
             GUILayout.Space(4);
             GUILayout.Label("<b>Mode</b>", label);
             GUILayout.BeginHorizontal();
-            foreach (GameMode gm in System.Enum.GetValues(typeof(GameMode)))
+            foreach (GameMode gm in GameModes.Competitive)
             {
                 var g = gm;
                 if (Choice(profile.mode == g, GameModes.Name(g), GUILayout.Height(28))) Defer(() => { profile.mode = g; PlayerProfile.Save(); });
@@ -157,8 +158,20 @@ namespace AirsoftArena
                 GUILayout.Label("<color=#ff8866>Not enough money for this referee. Pick a cheaper one, or take a referee job to earn some.</color>", label);
             bool wasEnabled = GUI.enabled;
             GUI.enabled = wasEnabled && profile.money >= cost;
+            GUILayout.BeginHorizontal();
             if (GUILayout.Button("START MATCH   (referee fee $" + cost + ")", GUILayout.Height(48))) Defer(() => match.StartMatch(settings));
             GUI.enabled = wasEnabled;
+            var training = new MatchSettings
+            {
+                role = Role.Soldier,
+                primary = profile.Primary,
+                secondary = profile.Secondary,
+                map = MapLibrary.TrainingRange,
+                mode = GameMode.Training,
+                autoCallHits = true,
+            };
+            if (GUILayout.Button("TRAINING RANGE\n(free)", GUILayout.Width(170f), GUILayout.Height(48))) Defer(() => match.StartMatch(training));
+            GUILayout.EndHorizontal();
             GUILayout.Label("WASD move · mouse aim + shoot · R reload · B fire mode · 1/2/3 weapons · C crouch · Shift sprint · H call hit · Esc pause", small);
         }
 

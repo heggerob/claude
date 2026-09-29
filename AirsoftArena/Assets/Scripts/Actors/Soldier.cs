@@ -163,9 +163,19 @@ namespace AirsoftArena
             Vector2 muzzle = view != null ? view.MuzzlePosition : Position + AimDirection * (Radius + 0.2f);
             if (view != null) view.OnFired();
             Sfx.PlayAt(Sfx.ShotSound(weapon.Data.power), muzzle, 0.55f);
+            var training = MatchManager.Instance != null ? MatchManager.Instance.Rules as TrainingRules : null;
+            if (training != null) training.OnShot(bbs);
             float spread = Crouching ? 0.6f : 1f;
             if (moveInput.sqrMagnitude > 0.01f) spread *= 1.6f;
             BBSystem.Instance.Fire(this, muzzle, AimDirection, MuzzleHeight, weapon.Data, bbs, spread);
+        }
+
+        /// <summary>Swaps the weapon in a loadout slot (training range).</summary>
+        public void SetWeapon(int slot, WeaponData data)
+        {
+            if (slot < 0 || slot >= Loadout.Length) return;
+            Loadout[slot] = new WeaponInstance(data);
+            if (slot == Slot && view != null) view.RefreshGun();
         }
 
         public void Reload()

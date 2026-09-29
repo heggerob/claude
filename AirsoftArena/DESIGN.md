@@ -49,7 +49,7 @@ Den første planen var laget for en 3D FPS. Dette er hva som er tatt med og hva 
 | Tilbehør (attachments) | 🔜 |
 | Kosmetikk og butikk | ✅ Kamo, uniform, hodeplagg, BB-farge, kasser med åpne odds |
 | Flere kart, innendørs | ✅ Pallet Yard, Warehouse (innendørs), Forest |
-| Treningsmodus | 🔜 |
+| Treningsmodus | ✅ Treningsbane med stålblinker 10–60 m, måling av BB-fall, prøv alle våpen |
 | Proximity voice og radio (kan ikke skyte mens du bruker radio) | 🔜 Krever flerspiller |
 | Flerspiller / matchmaking | 🔜 FishNet eller Mirror + Steam |
 | Battle Royale med ekte våpen | ❄️ Eget spill, ikke i Airsoft Arena |

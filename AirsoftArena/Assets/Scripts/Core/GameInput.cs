@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 namespace AirsoftArena
 {
-    public enum GameKey { Up, Down, Left, Right, Sprint, Crouch, Reload, CallHit, FireMode, Pause, Slot1, Slot2, Slot3 }
+    public enum GameKey { Up, Down, Left, Right, Sprint, Crouch, Reload, CallHit, FireMode, Pause, Slot1, Slot2, Slot3, PrevWeapon, NextWeapon }
 
     /// <summary>
     /// Works with both the old Input Manager and the new Input System package,
@@ -66,6 +66,8 @@ namespace AirsoftArena
                 case GameKey.Slot1: return k.digit1Key;
                 case GameKey.Slot2: return k.digit2Key;
                 case GameKey.Slot3: return k.digit3Key;
+                case GameKey.PrevWeapon: return k.qKey;
+                case GameKey.NextWeapon: return k.eKey;
                 case GameKey.Sprint: return k.leftShiftKey;
                 case GameKey.Crouch: return k.cKey;
                 default: return null;
@@ -103,6 +105,8 @@ namespace AirsoftArena
                 case GameKey.Slot1: return KeyCode.Alpha1;
                 case GameKey.Slot2: return KeyCode.Alpha2;
                 case GameKey.Slot3: return KeyCode.Alpha3;
+                case GameKey.PrevWeapon: return KeyCode.Q;
+                case GameKey.NextWeapon: return KeyCode.E;
                 case GameKey.Sprint: return KeyCode.LeftShift;
                 case GameKey.Crouch: return KeyCode.C;
                 default: return KeyCode.None;

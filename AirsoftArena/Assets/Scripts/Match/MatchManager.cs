@@ -40,6 +40,9 @@ namespace AirsoftArena
         public readonly List<string> xpLines = new List<string>();
         public int xpGained, levelBefore, levelAfter;
         public bool soundPlayed;
+        public bool training;
+        public int trainingShots, trainingHits;
+        public float trainingLongestHit, trainingFarthest;
         public float skillBefore, skillAfter, honorBefore, honorAfter;
 
         public string refereeName;
@@ -135,6 +138,15 @@ namespace AirsoftArena
                 PlayerProfile.Save();
             }
 
+            bool training = settings.mode == GameMode.Training;
+            if (training)
+            {
+                settings.map = MapLibrary.TrainingRange;
+                settings.teamSize = 1;
+                settings.duration = 3600f;
+                settings.referee = null;
+                TimeLeft = settings.duration;
+            }
             if (settings.map == null) settings.map = MapLibrary.Get(profile.mapId);
             if (MapBuilder.Current != settings.map) MapBuilder.Build(transform, settings.map);
 
@@ -142,7 +154,7 @@ namespace AirsoftArena
             matchRoot.SetParent(transform, false);
 
             var names = new List<string>(BotNames);
-            for (int team = 0; team < 2; team++)
+            for (int team = 0; team < (training ? 1 : 2); team++)
             {
                 for (int i = 0; i < settings.teamSize; i++)
                 {
@@ -171,7 +183,11 @@ namespace AirsoftArena
                 }
             }
 
-            if (settings.role == Role.Referee)
+            if (training)
+            {
+                Referee = null;
+            }
+            else if (settings.role == Role.Referee)
             {
                 var me = new RefereeProfile { name = profile.playerName + " (Ref)", skill = 1f };
                 Referee = RefereeNPC.Create(matchRoot, me, true, RefereeStart());
@@ -182,14 +198,14 @@ namespace AirsoftArena
                 Referee = RefereeNPC.Create(matchRoot, settings.referee, false, RefereeStart());
             }
 
-            BBSystem.Instance.Wind = Random.insideUnitCircle * Random.Range(0f, 2.5f);
+            BBSystem.Instance.Wind = training ? Vector2.zero : Random.insideUnitCircle * Random.Range(0f, 2.5f);
             settings.scoreLimit = GameModes.ScoreLimit(settings.mode);
             Rules = GameModes.Create(settings.mode);
             Rules.Begin(this, matchRoot);
-            AddFeed("<b>" + GameModes.Name(settings.mode) + "</b> on <b>" + settings.map.name + "</b>. Referee: <b>" + Referee.Profile.name + "</b>");
+            AddFeed("<b>" + GameModes.Name(settings.mode) + "</b> on <b>" + settings.map.name + "</b>" + (Referee != null ? ". Referee: <b>" + Referee.Profile.name + "</b>" : ""));
 
             var follow = CameraFollow.Instance;
-            if (follow != null) follow.Follow(PlayerSoldier != null ? PlayerSoldier.transform : Referee.transform, 9f);
+            if (follow != null) follow.Follow(PlayerSoldier != null ? PlayerSoldier.transform : Referee.transform, training ? 17f : 9f);
 
             Phase = MatchPhase.Countdown;
             countdownEnd = Time.time + CountdownTime;
@@ -208,7 +224,7 @@ namespace AirsoftArena
             SetPaused(false);
             Phase = MatchPhase.Results;
             foreach (var s in Soldiers) s.Freeze();
-            Referee.ClearPending();
+            if (Referee != null) Referee.ClearPending();
             Payout();
         }
 
@@ -354,6 +370,8 @@ namespace AirsoftArena
 
         public void OnBBLanded(Vector2 point, Soldier owner)
         {
+            var training = Rules as TrainingRules;
+            if (training != null && Phase == MatchPhase.Playing) training.OnBBLanded(point);
             if (Phase != MatchPhase.Playing || owner == null || Referee == null || Referee.HumanControlled) return;
             foreach (var s in Soldiers)
             {
@@ -368,6 +386,19 @@ namespace AirsoftArena
         {
             var r = LastResult;
             var profile = PlayerProfile.Current;
+            var trainingRules = Rules as TrainingRules;
+            if (trainingRules != null)
+            {
+                // Practice is free and pays nothing.
+                r.training = true;
+                r.trainingShots = trainingRules.Shots;
+                r.trainingHits = trainingRules.Hits;
+                r.trainingLongestHit = trainingRules.LongestHit;
+                r.trainingFarthest = trainingRules.FarthestLanding;
+                r.moneyAfter = profile.money;
+                r.levelBefore = r.levelAfter = profile.Level;
+                return;
+            }
             r.blueScore = Score[0];
             r.redScore = Score[1];
             r.draw = Score[0] == Score[1];

@@ -72,6 +72,12 @@ namespace AirsoftArena
 
         void DrawMatchHud(MatchManager match)
         {
+            var training = match.Rules as TrainingRules;
+            if (training != null)
+            {
+                DrawTrainingHud(match, training);
+                return;
+            }
             // Score and timer.
             int seconds = Mathf.CeilToInt(Mathf.Max(0f, match.TimeLeft));
             string score = string.Format("<color={0}>BLUE  {1}</color>     {2}:{3:00}     <color={4}>{5}  RED</color>",
@@ -100,6 +106,31 @@ namespace AirsoftArena
 
             if (match.PlayerSoldier != null) DrawSoldierHud(match.PlayerSoldier);
             else if (match.PlayerReferee != null) DrawRefereeHud(match);
+        }
+
+        void DrawTrainingHud(MatchManager match, TrainingRules t)
+        {
+            var hint = t.PlayerHint(match.PlayerSoldier);
+            GUI.Box(new Rect(W / 2f - 250f, 8f, 500f, 30f), GUIContent.none, panel);
+            GUI.Label(new Rect(W / 2f - 250f, 10f, 500f, 26f), hint, centerSmall);
+
+            var d = match.PlayerSoldier.Weapon.Data;
+            float accuracy = t.Shots > 0 ? 100f * t.Hits / t.Shots : 0f;
+            string stats = string.Format(
+                "<b>{0}</b>  {1}\n{2:0} m/s with {3:0.00} g  ·  {4:0.00} J\n\nShots {5}   Hits {6}   ({7:0}%)\nLongest hit <b>{8:0} m</b>\nLast BB landed at <b>{9:0.0} m</b>\nFarthest BB <b>{10:0.0} m</b>\n\nHits per distance:",
+                d.displayName, d.code, d.MuzzleVelocity, d.bbWeightGrams, d.Joules, t.Shots, t.Hits, accuracy, t.LongestHit, t.LastLanding, t.FarthestLanding);
+            foreach (var dist in TrainingRules.Distances) stats += "\n  " + dist + " m: " + t.HitsAtDistance[dist];
+            GUI.Box(new Rect(W - 290f, 8f, 282f, 330f), GUIContent.none, panel);
+            GUI.Label(new Rect(W - 280f, 12f, 266f, 322f), stats, small);
+
+            if (cam != null)
+                foreach (var l in t.Labels())
+                {
+                    Vector2 p = ToGui(l.Key);
+                    GUI.Label(new Rect(p.x - 40f, p.y - 10f, 80f, 20f), l.Value, centerSmall);
+                }
+
+            DrawSoldierHud(match.PlayerSoldier);
         }
 
         void DrawSoldierHud(Soldier s)
@@ -253,6 +284,17 @@ namespace AirsoftArena
             float pw = Mathf.Min(W - 32f, 940f), ph = Mathf.Min(H - 32f, 600f);
             GUILayout.BeginArea(new Rect((W - pw) / 2f, (H - ph) / 2f, pw, ph), panel);
 
+            if (r.training)
+            {
+                GUILayout.Label("TRAINING DONE", title);
+                GUILayout.Label(string.Format("Shots {0}   ·   hits {1}   ·   accuracy {2:0}%", r.trainingShots, r.trainingHits, r.trainingShots > 0 ? 100f * r.trainingHits / r.trainingShots : 0f), big);
+                GUILayout.Label(string.Format("Longest hit {0:0} m   ·   farthest BB {1:0.0} m", r.trainingLongestHit, r.trainingFarthest), label);
+                GUILayout.Label("The range is free: no money or XP here. Go earn some in a real match!", small);
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button("CONTINUE", GUILayout.Height(44))) Defer(match.ReturnToLobby);
+                GUILayout.EndArea();
+                return;
+            }
             if (!r.soundPlayed)
             {
                 r.soundPlayed = true;

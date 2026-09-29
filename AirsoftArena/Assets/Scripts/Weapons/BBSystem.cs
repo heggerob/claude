@@ -168,6 +168,16 @@ namespace AirsoftArena
                     return false;
                 }
 
+                var target = col.GetComponent<TrainingTarget>();
+                if (target != null)
+                {
+                    if (zAt > TrainingTarget.Height || !target.IsUp) continue;
+                    var training = MatchManager.Instance != null ? MatchManager.Instance.Rules as TrainingRules : null;
+                    if (training != null) training.OnTargetHit(target);
+                    Effects.Flash(hit.point, Color.white, 0.4f, 0.12f);
+                    return false;
+                }
+
                 var referee = col.GetComponent<RefereeNPC>();
                 if (referee != null)
                 {

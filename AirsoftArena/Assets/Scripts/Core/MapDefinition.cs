@@ -48,6 +48,8 @@ namespace AirsoftArena
         public string name;
         public string description;
         public bool indoor;
+        /// <summary>Only used by the training range, hidden from the map picker.</summary>
+        public bool trainingOnly;
         public GroundStyle ground;
         public Rect bounds;
         /// <summary>Blue, Red.</summary>
@@ -83,7 +85,7 @@ namespace AirsoftArena
         {
             get
             {
-                if (all == null) all = new List<MapDefinition> { PalletYard(), Warehouse(), Forest() };
+                if (all == null) all = new List<MapDefinition> { PalletYard(), Warehouse(), Forest(), Range() };
                 return all;
             }
         }
@@ -211,6 +213,29 @@ namespace AirsoftArena
             m.Add(PieceKind.Rock, 0f, 0f, 2f, 2f);
             m.Add(PieceKind.Log, 0f, 7f, 4f, 0.8f);
             m.Add(PieceKind.Log, 0f, -7f, 4f, 0.8f);
+            return m;
+        }
+
+        public static MapDefinition TrainingRange { get { return Get("range"); } }
+
+        static MapDefinition Range()
+        {
+            var m = new MapDefinition
+            {
+                id = "range",
+                name = "Training Range",
+                description = "Steel poppers every 10 m out to 60 m.",
+                trainingOnly = true,
+                ground = GroundStyle.Grass,
+                bounds = new Rect(-6f, -7f, 76f, 14f),
+                spawnZones = new[] { new Rect(-5f, -3f, 4f, 6f), new Rect(66f, -3f, 3f, 6f) },
+                flagPoints = new[] { new Vector2(-3f, 5f), new Vector2(67f, 5f) },
+                hill = new Vector2(30f, 0f),
+            };
+            Border(m, PieceKind.Wall);
+            // Shooting bench: sandbags to crouch behind.
+            m.Add(PieceKind.Sandbags, 0f, 4.5f, 1f, 2f);
+            m.Add(PieceKind.Sandbags, 0f, -4.5f, 1f, 2f);
             return m;
         }
 
