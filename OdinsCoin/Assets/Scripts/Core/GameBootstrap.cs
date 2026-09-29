@@ -31,7 +31,11 @@ namespace OdinsCoin
         public Longship Ship { get; private set; }
         public Viking Player { get; private set; }
 
-        void Update() { Wind.Tick(Time.deltaTime); }
+        void Update()
+        {
+            Wind.Tick(Time.deltaTime);
+            Fortune.Current.Tick(Time.deltaTime);
+        }
 
         void Awake()
         {
@@ -53,6 +57,8 @@ namespace OdinsCoin
             // The helm only listens to the keyboard while the Viking holds the steering oar.
             Ship.gameObject.AddComponent<ShipKeyboardHelm>().enabled = false;
             Player = Viking.Create(transform, Ship);
+            CoinAltar.Create(Ship);
+            gameObject.AddComponent<CoinUI>();
             var hud = gameObject.AddComponent<ShipHud>();
             hud.Ship = Ship;
             hud.Player = Player;

@@ -28,6 +28,8 @@ namespace OdinsCoin
             GUI.Box(new Rect(10, 10, 380, 120), GUIContent.none);
             GUI.Label(new Rect(20, 16, 370, 110), text, style);
 
+            DrawFortune();
+
             if (Player != null && !string.IsNullOrEmpty(Player.Prompt))
             {
                 var r = new Rect(Screen.width / 2f - 160f, Screen.height * 0.62f, 320f, 34f);
@@ -36,6 +38,29 @@ namespace OdinsCoin
             }
             if (Player != null && Player.Swimming)
                 GUI.Label(new Rect(Screen.width / 2f - 100f, Screen.height * 0.55f, 200f, 24f), "<b>Swimming... get back to the ship!</b>", style);
+        }
+
+        /// <summary>Gold, Odin's favour and every active blessing / curse with its time left.</summary>
+        void DrawFortune()
+        {
+            var f = Fortune.Current;
+            float x = Screen.width - 300f, y = 10f;
+            int lines = 2 + f.Active.Count;
+            GUI.Box(new Rect(x, y, 290f, 28f + lines * 22f), GUIContent.none);
+            GUI.Label(new Rect(x + 10f, y + 6f, 280f, 22f), "<b>" + f.Gold + " gold</b>", style);
+            GUI.Label(new Rect(x + 10f, y + 28f, 90f, 22f), "<size=12>Odin's favour</size>", style);
+            GUI.Box(new Rect(x + 110f, y + 34f, 170f, 10f), GUIContent.none);
+            var old = GUI.color;
+            GUI.color = new Color(1f, 0.8f, 0.3f);
+            GUI.DrawTexture(new Rect(x + 111f, y + 35f, 168f * f.Favour, 8f), Texture2D.whiteTexture);
+            GUI.color = old;
+            for (int i = 0; i < f.Active.Count; i++)
+            {
+                var a = f.Active[i];
+                string colour = a.card.kind == FateKind.Blessing ? "#ffd060" : "#88ff88";
+                GUI.Label(new Rect(x + 10f, y + 52f + i * 22f, 280f, 22f),
+                    string.Format("<color={0}>{1}</color> <size=12>tier {2} · {3}:{4:00}</size>", colour, a.card.name, a.tier, Mathf.FloorToInt(a.remaining / 60f), Mathf.FloorToInt(a.remaining % 60f)), style);
+            }
         }
 
         static string Arrow(float relative)

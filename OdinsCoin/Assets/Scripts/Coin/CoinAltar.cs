@@ -1,0 +1,116 @@
+using UnityEngine;
+
+namespace OdinsCoin
+{
+    /// <summary>
+    /// The stone altar on the longship's deck with Odin's coin on it. Handles the flip animation:
+    /// the coin spins up into the air and lands Odin's-eye-up (blessing) or serpent-up (curse).
+    /// Also applies fates that act on the world (fair wind, a leaking hull).
+    /// </summary>
+    public class CoinAltar : MonoBehaviour
+    {
+        public static CoinAltar Instance { get; private set; }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() { Instance = null; }
+
+        public const float FlipTime = 1.6f;
+        public const float UseRange = 2f;
+
+        public Longship Ship;
+        public bool Flipping { get { return flipStart >= 0f; } }
+        public FlipResult LastResult { get; private set; }
+        /// <summary>Raised when the coin has landed and the result is shown.</summary>
+        public event System.Action<FlipResult> Landed;
+
+        Transform coin;
+        Vector3 rest;
+        float flipStart = -1f;
+        FlipResult pending;
+        Light glow;
+
+        public static CoinAltar Create(Longship ship)
+        {
+            var altar = ship.Parts.altar;
+            var a = altar.gameObject.AddComponent<CoinAltar>();
+            a.Ship = ship;
+            a.BuildCoin();
+            Instance = a;
+            return a;
+        }
+
+        void BuildCoin()
+        {
+            coin = new GameObject("Odin's Coin").transform;
+            coin.SetParent(transform, false);
+            rest = new Vector3(0f, 1.02f, 0f);
+            coin.localPosition = rest;
+            LongshipBuilder.Deco(PrimitiveType.Cylinder, coin, Vector3.zero, new Vector3(0.36f, 0.025f, 0.36f), Materials.Gold);
+            // Heads: Odin's single eye. Tails: the coiled serpent.
+            LongshipBuilder.Deco(PrimitiveType.Cylinder, coin, new Vector3(0f, 0.026f, 0f), new Vector3(0.14f, 0.004f, 0.08f), new Color(0.95f, 0.95f, 0.9f));
+            LongshipBuilder.Deco(PrimitiveType.Cylinder, coin, new Vector3(0f, 0.03f, 0f), new Vector3(0.06f, 0.004f, 0.06f), new Color(0.15f, 0.25f, 0.5f));
+            for (int i = 0; i < 6; i++)
+            {
+                float a = i / 6f * Mathf.PI * 2f;
+                LongshipBuilder.Deco(PrimitiveType.Cube, coin, new Vector3(Mathf.Cos(a) * 0.1f, -0.026f, Mathf.Sin(a) * 0.1f), new Vector3(0.05f, 0.004f, 0.04f), new Color(0.2f, 0.45f, 0.2f));
+            }
+
+            glow = new GameObject("Coin Glow").AddComponent<Light>();
+            glow.transform.SetParent(transform, false);
+            glow.transform.localPosition = new Vector3(0f, 1.6f, 0f);
+            glow.type = LightType.Point;
+            glow.range = 4f;
+            glow.intensity = 0f;
+        }
+
+        /// <summary>Start a flip. The outcome is decided up front; the animation just shows it.</summary>
+        public FlipResult Flip(int wager)
+        {
+            if (Flipping) return null;
+            pending = Fortune.Current.Flip(wager, Random.value, Random.value);
+            flipStart = Time.time;
+            return pending;
+        }
+
+        void Update()
+        {
+            AnimateFlip();
+            ApplyWorldFates();
+            // Blessings glow gold, curses glow sickly green, while any are active.
+            var fortune = Fortune.Current;
+            bool blessed = false, cursed = false;
+            foreach (var f in fortune.Active) { if (f.card.kind == FateKind.Blessing) blessed = true; else cursed = true; }
+            glow.color = cursed && !blessed ? new Color(0.4f, 1f, 0.5f) : new Color(1f, 0.8f, 0.35f);
+            glow.intensity = Mathf.Lerp(glow.intensity, blessed || cursed ? 1.2f + Mathf.Sin(Time.time * 3f) * 0.3f : 0f, Time.deltaTime * 3f);
+        }
+
+        void AnimateFlip()
+        {
+            if (!Flipping) return;
+            float t = (Time.time - flipStart) / FlipTime;
+            if (t >= 1f)
+            {
+                coin.localPosition = rest;
+                coin.localRotation = pending.heads ? Quaternion.identity : Quaternion.Euler(180f, 0f, 0f);
+                flipStart = -1f;
+                LastResult = pending;
+                if (Landed != null) Landed(pending);
+                return;
+            }
+            // Up and down in a parabola, spinning end over end, settling on the right face.
+            float height = 4f * 1.6f * t * (1f - t);
+            int turns = 7;
+            float spin = t * (turns * 360f + (pending.heads ? 0f : 180f));
+            coin.localPosition = rest + Vector3.up * height;
+            coin.localRotation = Quaternion.Euler(spin, t * 90f, 0f);
+        }
+
+        void ApplyWorldFates()
+        {
+            var fortune = Fortune.Current;
+            // Njord's Breeze: keep the wind right behind the ship.
+            if (fortune.Has(FateEffect.FairWind, FateKind.Blessing) && Ship != null)
+                Wind.Set(Ship.Heading, 0.75f + 0.12f * fortune.Strength(FateEffect.FairWind, FateKind.Blessing), 3f);
+        }
+    }
+}

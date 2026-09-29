@@ -18,8 +18,60 @@ public static class LogicTests
     {
         WavesTests();
         ShipTests();
+        CoinTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
+    }
+
+    static void CoinTests()
+    {
+        var f = new Fortune { Gold = 100 };
+        Check(Math.Abs(f.HeadsChance - 0.5f) < 1e-6f, "fair coin to start");
+        var win = f.Flip(50, 0.1f, 0f);
+        Check(win.heads && f.Gold == 150 && win.payout == 100, "heads pays the wager back double");
+        Check(win.fate.card.kind == FateKind.Blessing && win.fate.tier == 2, "heads gives a tier 2 blessing for 50 gold");
+        var lose = f.Flip(100, 0.9f, 0.3f);
+        Check(!lose.heads && f.Gold == 50 && lose.fate.card.kind == FateKind.Curse, "tails loses the wager and curses");
+        Check(f.Flip(500, 0.9f, 0f).wager == 50, "can't wager more gold than you have");
+        Check(f.Gold == 0, "all-in and lost");
+        Check(Fortune.Tier(0) == 1 && Fortune.Tier(49) == 1 && Fortune.Tier(50) == 2 && Fortune.Tier(200) == 3, "wager tiers");
+
+        // Same fate again refreshes instead of stacking.
+        var g = new Fortune();
+        g.Add(Fates.Blessings[0], 1, 10f);
+        g.Add(Fates.Blessings[0], 3, 5f);
+        Check(g.Active.Count == 1 && g.Active[0].tier == 3 && g.Active[0].remaining == 10f, "refresh keeps the best tier and time");
+        g.Tick(11f);
+        Check(g.Active.Count == 0, "fates expire");
+
+        // Effects the rest of the game reads.
+        var h = new Fortune();
+        Check(h.MeleeDamageMultiplier == 1f && h.ShipThrustMultiplier == 1f && h.LootMultiplier == 1f, "neutral without fates");
+        h.Add(Fates.Blessings[0], 3, 10f); // Thor
+        h.Add(Fates.Curses[1], 1, 10f);    // Rán
+        Check(h.MeleeDamageMultiplier > 1.5f, "Thor's Wrath tier 3 hits much harder");
+        Check(h.ShipThrustMultiplier < 1f, "Rán's Net slows the ship");
+        h.Add(Fates.Blessings[4], 1, 10f); // Odin's Favour
+        Check(h.HeadsChance > 0.5f, "Odin's Favour improves the odds");
+        h.RuneBonus = 1f;
+        Check(h.HeadsChance <= Fortune.MaxHeadsChance, "odds are capped");
+
+        // Over many free-rolling flips the coin is fair and the gold adds up.
+        var rng = new System.Random(9);
+        var k = new Fortune { Gold = 100000 };
+        int start = k.Gold, heads = 0;
+        long wagered = 0, paid = 0;
+        for (int i = 0; i < 20000; i++)
+        {
+            k.Active.Clear(); // measure the bare coin (Odin's Favour would otherwise tilt later flips)
+            var r = k.Flip(25, (float)rng.NextDouble(), (float)rng.NextDouble());
+            wagered += r.wager; paid += r.payout;
+            if (r.heads) heads++;
+        }
+        Check(k.Gold == start - wagered + paid, "gold adds up over 20000 flips");
+        Check(Math.Abs(heads / 20000f - 0.5f) < 0.02f, "about half heads: " + heads);
+        foreach (var c in Fates.Blessings) Check(c.kind == FateKind.Blessing && c.baseDuration > 0f, c.id + " is a blessing with a duration");
+        foreach (var c in Fates.Curses) Check(c.kind == FateKind.Curse && c.baseDuration > 0f, c.id + " is a curse with a duration");
     }
 
     static void ShipTests()

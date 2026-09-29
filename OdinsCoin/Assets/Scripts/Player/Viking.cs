@@ -81,6 +81,15 @@ namespace OdinsCoin
                 facing = ship.eulerAngles.y + shipLocalYaw;
             }
 
+            // At the altar the coin screen has the controls.
+            if (CoinUI.Instance != null && CoinUI.Instance.IsOpen)
+            {
+                Prompt = null;
+                controller.Move(Vector3.down * 2f * dt);
+                Animate(0f, dt);
+                return;
+            }
+
             UpdatePrompt();
             if (GameInput.Pressed(Key.Interact)) Interact();
 
@@ -164,6 +173,7 @@ namespace OdinsCoin
             Prompt = null;
             if (AtHelm) { Prompt = "[E] Leave the steering oar"; return; }
             if (OnShip && Vector3.Distance(transform.position, Ship.Parts.helm.position) < InteractRange) { Prompt = "[E] Take the steering oar"; return; }
+            if (OnShip && NearAltar()) { Prompt = "[E] Flip Odin's Coin"; return; }
             if (Swimming && DistanceToShip() < ClimbRange) Prompt = "[E] Climb aboard";
         }
 
@@ -179,6 +189,11 @@ namespace OdinsCoin
             {
                 AtHelm = true;
                 SetHelm(true);
+                return;
+            }
+            if (OnShip && NearAltar() && CoinUI.Instance != null)
+            {
+                CoinUI.Instance.Open(CoinAltar.Instance);
                 return;
             }
             if (Swimming && DistanceToShip() < ClimbRange)
@@ -203,6 +218,12 @@ namespace OdinsCoin
                 rig.Distance = on ? 22f : 7f;
                 rig.Height = on ? 3f : 1.6f;
             }
+        }
+
+        bool NearAltar()
+        {
+            var altar = CoinAltar.Instance;
+            return altar != null && !altar.Flipping && Vector3.Distance(transform.position, altar.transform.position) < CoinAltar.UseRange;
         }
 
         float DistanceToShip()

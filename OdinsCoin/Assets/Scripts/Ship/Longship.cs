@@ -75,6 +75,7 @@ namespace OdinsCoin
             SailAmount = Mathf.MoveTowards(SailAmount, Mathf.Clamp01(SailTarget), dt * 0.35f);
             float thrust = ShipTuning.SailThrust(SailAmount, t.forward);
             if (Rowing && SailAmount < 0.15f) thrust += ShipTuning.RowThrust;
+            thrust *= Fortune.Current.ShipThrustMultiplier; // Rán's Net drags at the hull
             Vector3 forwardFlat = t.forward;
             forwardFlat.y = 0f;
             Body.AddForce(forwardFlat.normalized * thrust);

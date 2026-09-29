@@ -25,6 +25,9 @@ namespace OdinsCoin
         Vector3 smoothedTarget;
         bool locked = true;
 
+        /// <summary>Menus set this to free the cursor and stop mouse-look.</summary>
+        public bool CursorFree;
+
         /// <summary>Horizontal forward direction of the camera, for movement relative to the view.</summary>
         public Vector3 FlatForward
         {
@@ -41,10 +44,11 @@ namespace OdinsCoin
         void LateUpdate()
         {
             if (GameInput.Pressed(Key.Pause)) locked = !locked;
-            Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
-            Cursor.visible = !locked;
+            bool look = locked && !CursorFree;
+            Cursor.lockState = look ? CursorLockMode.Locked : CursorLockMode.None;
+            Cursor.visible = !look;
 
-            if (locked)
+            if (look)
             {
                 Vector2 d = GameInput.MouseDelta();
                 Yaw += d.x * Sensitivity;
