@@ -81,7 +81,7 @@ public static class SpritePreview
     static void Blit(Sprite s, Color tint, float px, float py)
     {
         var t = s.texture;
-        float ox = px - s.pivot.x * t.width * Scale, oy = py - s.pivot.y * t.height * Scale;
+        float ox = px - s.pivot.x * Scale, oy = py - s.pivot.y * Scale;
         for (int y = 0; y < t.height; y++)
             for (int x = 0; x < t.width; x++)
             {

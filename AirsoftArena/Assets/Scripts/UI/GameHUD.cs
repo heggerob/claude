@@ -6,20 +6,14 @@ namespace AirsoftArena
     /// All prototype UI in one place, drawn with IMGUI so it needs no Canvas or prefabs.
     /// Swap for a proper uGUI / UI Toolkit interface once the gameplay is locked in.
     /// </summary>
-    public class GameHUD : MonoBehaviour
+    public partial class GameHUD : MonoBehaviour
     {
         const float RefHeight = 720f;
 
-        GUIStyle label, small, big, huge, title, panel, feed, tag, center;
+        GUIStyle label, small, big, huge, title, panel, feed, tag, center, money;
         Texture2D panelTexture, whiteTexture;
         float scale, W, H;
         Camera cam;
-
-        // Lobby choices.
-        Role role = Role.Soldier;
-        int refereeIndex = 2;
-        bool autoCallHits;
-        bool confirmReset;
 
         // Button actions that change what is drawn run in Update, so IMGUI's layout and repaint passes always match.
         System.Action deferred;
@@ -48,7 +42,7 @@ namespace AirsoftArena
             switch (match.Phase)
             {
                 case MatchPhase.Lobby:
-                    DrawLobby(match);
+                    DrawMenu(match);
                     break;
                 case MatchPhase.Countdown:
                 case MatchPhase.Playing:
@@ -61,134 +55,6 @@ namespace AirsoftArena
                     DrawResults(match);
                     break;
             }
-        }
-
-        // ================================================================ lobby
-
-        void DrawLobby(MatchManager match)
-        {
-            var profile = PlayerProfile.Current;
-            var primaries = WeaponCatalog.Primaries;
-            var secondaries = WeaponCatalog.Secondaries;
-            var referees = RefereeMarket.All;
-            var primary = profile.Primary;
-            var secondary = profile.Secondary;
-            refereeIndex = Mathf.Clamp(refereeIndex, 0, referees.Count - 1);
-
-            float pw = Mathf.Min(W - 32f, 1000f), ph = Mathf.Min(H - 32f, 680f);
-            GUILayout.BeginArea(new Rect((W - pw) / 2f, (H - ph) / 2f, pw, ph), panel);
-
-            GUILayout.Label("AIRSOFT ARENA", title);
-            GUILayout.Label("2D prototype  ·  Team Deathmatch 4v4  ·  Map: Pallet Yard", small);
-            GUILayout.Space(6);
-            GUILayout.Label(string.Format("<b>${0}</b>    Skill {1:0}    Honor {2:0}/100    Matches {3} (wins {4})    Referee {5} ({6} jobs)",
-                profile.money, profile.skillRating, profile.honor, profile.matches, profile.wins, RefereeProfile.StarText(profile.RefStars), profile.refMatches), label);
-            GUILayout.Space(8);
-
-            GUILayout.BeginHorizontal();
-            if (Choice(role == Role.Soldier, "PLAY  (soldier)", GUILayout.Height(34))) Defer(() => role = Role.Soldier);
-            if (Choice(role == Role.Referee, "WORK AS REFEREE  (get paid)", GUILayout.Height(34))) Defer(() => role = Role.Referee);
-            GUILayout.EndHorizontal();
-            GUILayout.Space(8);
-
-            GUILayout.BeginHorizontal();
-            if (role == Role.Soldier)
-            {
-                GUILayout.BeginVertical(GUILayout.Width(pw * 0.5f));
-                GUILayout.Label("<b>Primary</b>", label);
-                foreach (var w in primaries) WeaponChoice(profile, w, w == primary, true);
-                GUILayout.Label(primary.StatLine, small);
-                GUILayout.Space(6);
-                GUILayout.Label("<b>Secondary</b>", label);
-                foreach (var w in secondaries) WeaponChoice(profile, w, w == secondary, false);
-                GUILayout.Label(secondary.StatLine, small);
-                GUILayout.Label("Melee: [00] Rubber Tanto (always carried)", small);
-                GUILayout.EndVertical();
-
-                GUILayout.Space(12);
-
-                GUILayout.BeginVertical();
-                GUILayout.Label("<b>Hire a referee</b>  (every player pays the fee: better refs cost more)", label);
-                for (int i = 0; i < referees.Count; i++)
-                {
-                    var r = referees[i];
-                    if (Choice(i == refereeIndex, string.Format("{0}   {1}   ${2}/player", r.name, RefereeProfile.StarText(r.Stars), r.FeePerPlayer)))
-                        refereeIndex = i;
-                }
-                var sel = referees[refereeIndex];
-                GUILayout.Label("<i>\"" + sel.tagline + "\"</i>", small);
-                GUILayout.Label(string.Format("{0} matches · caught {1} cheaters · missed {2} · wrong calls {3}", sel.matches, sel.caught, sel.missed, sel.wrongCalls), small);
-                GUILayout.Space(10);
-                autoCallHits = GUILayout.Toggle(autoCallHits, "  Auto-call my hits (casual)");
-                GUILayout.Label("A hit is a hit: when a BB touches you, press <b>H</b> within 2.5 s to call it. Don't call it and you keep playing... unless the referee saw it.", small);
-                GUILayout.EndVertical();
-            }
-            else
-            {
-                GUILayout.BeginVertical();
-                GUILayout.Label("<b>The referee job</b>", label);
-                GUILayout.Label("Walk the field and watch the fight. When a BB hits someone you'll see a white flash and \"*tak*\". Honest players raise the orange rag and walk back to spawn.", label);
-                GUILayout.Label("Some players keep fighting after being hit. <b>Click them</b> to call them out. Call out someone who was never hit and the players will hate you.", label);
-                GUILayout.Label("After the match every player rates you. More stars = you can charge more.", label);
-                GUILayout.Space(10);
-                GUILayout.Label(string.Format("Your rating: {0}   ·   jobs {1}   ·   correct calls {2}   ·   wrong calls {3}   ·   missed {4}",
-                    RefereeProfile.StarText(profile.RefStars), profile.refMatches, profile.refCorrectCalls, profile.refWrongCalls, profile.refMissed), label);
-                GUILayout.Label(string.Format("Your fee: <b>${0}</b> per player  ×  8 players  =  <b>${1}</b> per match", profile.RefFeePerPlayer, profile.RefFeePerPlayer * 8), label);
-                GUILayout.EndVertical();
-            }
-            GUILayout.EndHorizontal();
-
-            GUILayout.FlexibleSpace();
-
-            var settings = new MatchSettings
-            {
-                role = role,
-                primary = primary,
-                secondary = secondary,
-                referee = referees[refereeIndex],
-                autoCallHits = autoCallHits,
-            };
-            int cost = settings.EntryCost;
-            bool canAfford = profile.money >= cost;
-            if (!canAfford)
-                GUILayout.Label("<color=#ff8866>Not enough money for this referee. Pick a cheaper one, or work as a referee to earn some.</color>", label);
-
-            GUI.enabled = canAfford;
-            string start = role == Role.Referee ? "START MATCH AS REFEREE" : "START MATCH   (pay $" + cost + ")";
-            if (GUILayout.Button(start, GUILayout.Height(46))) Defer(() => match.StartMatch(settings));
-            GUI.enabled = true;
-
-            GUILayout.Space(4);
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("WASD move · mouse aim + shoot · R reload · B fire mode · 1/2/3 weapons · C crouch · Shift sprint · H call hit · Esc pause", small);
-            if (GUILayout.Button(confirmReset ? "Really reset?" : "Reset save", GUILayout.Width(110)))
-            {
-                if (confirmReset) Defer(() => { PlayerProfile.ResetAll(); confirmReset = false; });
-                else confirmReset = true;
-            }
-            GUILayout.EndHorizontal();
-
-            GUILayout.EndArea();
-        }
-
-        /// <summary>Owned weapons select; locked ones show their price and are bought on click.</summary>
-        void WeaponChoice(PlayerProfile profile, WeaponData w, bool selected, bool isPrimary)
-        {
-            bool owned = profile.OwnsWeapon(w);
-            string text = owned ? WeaponButton(w) : WeaponButton(w) + "   <color=#ffd060>BUY $" + w.price + "</color>";
-            if (!Choice(selected, text)) return;
-            Defer(() =>
-            {
-                if (!profile.OwnsWeapon(w) && Shop.Buy(profile, w) != PurchaseResult.Ok) return;
-                if (isPrimary) profile.primaryWeapon = w.code;
-                else profile.secondaryWeapon = w.code;
-                PlayerProfile.Save();
-            });
-        }
-
-        static string WeaponButton(WeaponData w)
-        {
-            return string.Format("[{0}] {1}   {2}", w.ClassCode, w.displayName, w.code);
         }
 
         bool Choice(bool selected, string text, params GUILayoutOption[] options)
@@ -325,8 +191,10 @@ namespace AirsoftArena
             if (cam == null) return;
             var hovered = match.PlayerReferee != null ? match.PlayerReferee.Hovered : null;
 
+            bool tags = GameSettings.NameTags;
             foreach (var s in match.Soldiers)
             {
+                if (!tags && s != hovered && s != match.PlayerSoldier) continue;
                 Vector2 p = ToGui(s.Position + new Vector2(0f, 0.75f));
                 string text = s.DisplayName;
                 if (s.State == SoldierState.Out) text += "  <color=#ff9933>OUT</color>";
@@ -507,6 +375,8 @@ namespace AirsoftArena
             huge = new GUIStyle(label) { fontSize = 52, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, wordWrap = false };
             title = new GUIStyle(label) { fontSize = 34, fontStyle = FontStyle.Bold, wordWrap = false };
             title.normal.textColor = new Color(1f, 0.85f, 0.3f);
+            money = new GUIStyle(label) { fontSize = 26, alignment = TextAnchor.MiddleRight, wordWrap = false };
+            money.normal.textColor = new Color(0.55f, 1f, 0.55f);
             tag = new GUIStyle(label) { fontSize = 11, alignment = TextAnchor.LowerCenter, wordWrap = false };
             center = new GUIStyle(label) { alignment = TextAnchor.MiddleCenter, wordWrap = false };
             centerSmall = new GUIStyle(small) { alignment = TextAnchor.MiddleCenter };
