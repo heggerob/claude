@@ -150,10 +150,18 @@ public static class LogicTests
         Check(Math.Abs(bigTop - maxY * 1.2f) < 0.02f, "size scales the whole Viking (" + bigTop + ")");
     }
 
+    static float Top(VikingModel m)
+    {
+        float top = float.MinValue;
+        foreach (var p in m.Pieces) foreach (var v in p.mesh.Vertices) top = Math.Max(top, (m.RestPosition(p.joint) + v).y);
+        return top;
+    }
+
     static void HeroTests()
     {
-        var model = HeroModel.Build(new HeroLook());
-        float minY = float.MaxValue, maxY = float.MinValue;
+        var spec = CharacterSpec.Default(OutfitId.Raider);
+        var model = HeroModel.Build(spec);
+        float minY = float.MaxValue;
         int shells = 0;
         bool facesOut = true, shellsInsideOut = true;
         foreach (var p in model.Pieces)
@@ -162,19 +170,51 @@ public static class LogicTests
             if (p.ink) { shells++; if (v >= 0f) shellsInsideOut = false; }
             else if (v <= 0f) { facesOut = false; Console.WriteLine("  inside-out piece on " + p.joint + " (" + v + ")"); }
             Vector3 at = model.RestPosition(p.joint);
-            foreach (var vert in p.mesh.Vertices) { minY = Math.Min(minY, (at + vert).y); maxY = Math.Max(maxY, (at + vert).y); }
+            foreach (var vert in p.mesh.Vertices) minY = Math.Min(minY, (at + vert).y);
         }
+        float top = Top(model);
         Check(facesOut, "every hero piece faces outwards");
         Check(shells >= 6 && shellsInsideOut, "every joint has an ink outline shell, turned inside out (" + shells + ")");
         Check(minY > -0.02f && minY < 0.01f, "hero stands on the ground (" + minY + ")");
-        Check(maxY > 1.7f && maxY < 1.85f, "hero is about 1.75 m to the top of the helmet (" + maxY + ")");
-        // The signature: a big head (about 1/7 of the height) and stick-thin limbs.
-        Check(HeroModel.HeadRadius * 2f / maxY > 0.13f && HeroModel.HeadRadius * 2f / maxY < 0.18f, "the head is about a seventh of the height");
-        Check(HeroModel.LimbRadius < 0.02f, "limbs are stick-thin");
-        var small = HeroModel.Build(new HeroLook { height = 0.8f });
-        float smallTop = float.MinValue;
-        foreach (var p in small.Pieces) foreach (var vert in p.mesh.Vertices) smallTop = Math.Max(smallTop, (small.RestPosition(p.joint) + vert).y);
-        Check(Math.Abs(smallTop - maxY * 0.8f) < 0.02f, "height scales the whole hero (" + smallTop + ")");
+        Check(top > spec.body.height && top < spec.body.height + 0.12f, "the helmet sits on top of the head (" + top + ")");
+        foreach (var name in new[] { Joints.LeftForearm, Joints.RightForearm, Joints.OffHand, Joints.Weapon, Joints.Head, Joints.Back })
+            Check(model.Find(name) != null, "joint " + name);
+
+        // The body is chosen by the player; the outfit fits any of them.
+        var fit = Fit.Of(spec.body);
+        Check(fit.headR * 2f / fit.height > 0.14f && fit.headR * 2f / fit.height < 0.2f, "the head is about a seventh of the height");
+        Check(fit.limbR < 0.02f, "limbs are stick-thin");
+        foreach (var h in new[] { 1.45f, 1.62f, 1.9f })
+            foreach (var w in new[] { 0.8f, 1f, 1.3f })
+                foreach (var g in new[] { Gender.Male, Gender.Female })
+                {
+                    var sp = CharacterSpec.Default(OutfitId.Raider);
+                    sp.body = new BodyShape { height = h, width = w, gender = g };
+                    var mm = HeroModel.Build(sp);
+                    float t = Top(mm);
+                    var ff = Fit.Of(sp.body);
+                    Check(t > h && t < h + 0.14f, "outfit fits a " + g + " " + h + " m, width " + w + " (" + t + ")");
+                    Check(ff.bootTop < ff.knee && ff.knee < ff.hip && ff.hip < ff.waist && ff.waist < ff.chest && ff.chest < ff.shoulderY && ff.shoulderY < ff.neckY && ff.neckY < ff.headY, "body parts stack in order at " + h + " m");
+                }
+        var man = Fit.Of(new BodyShape { gender = Gender.Male });
+        var woman = Fit.Of(new BodyShape { gender = Gender.Female });
+        Check(man.shoulderX > woman.shoulderX && woman.hipR > woman.waistR && man.chestR > woman.chestR, "men and women are built differently");
+        var broad = Fit.Of(new BodyShape { width = 1.3f });
+        Check(broad.chestR > man.chestR && Math.Abs(broad.height - man.height) < 1e-5f, "width makes you broader, not taller");
+        Check(Fit.Of(new BodyShape { height = 5f }).height <= 2f && Fit.Of(new BodyShape { width = 0f }).width >= 0.75f, "silly sizes are clamped");
+
+        // Colours are changeable: a custom palette paints the same garments.
+        var red = CharacterSpec.Default(OutfitId.Raider);
+        red.palette = Outfits.Get(OutfitId.Raider).palette();
+        red.palette.cloth = new Color(0.9f, 0f, 0f);
+        bool found = false;
+        foreach (var p in HeroModel.Build(red).Pieces) if (p.color.Equals(red.palette.cloth)) found = true;
+        Check(found, "a changed palette colour shows up on the clothes");
+        // Weapons are separate from the character.
+        foreach (var p in model.Pieces) Check(p.joint != Joints.Weapon, "no weapon inside the character model");
+        var axe = HeroModel.BuildWeapon(spec);
+        Check(axe.Pieces.Count > 0 && Volume(axe.Pieces[0].mesh) > 0f, "the weapon is built on its own");
+
         float cape = Volume(CharacterKit.Cape(new Vector3(0f, 1.4f, -0.1f), 0.4f, 0.6f, 1f, 0.12f, 0.08f, 2));
         var grid = new Vector3[2, 2] { { new Vector3(0f, 1f, 0f), new Vector3(1f, 1f, 0f) }, { Vector3.zero, new Vector3(1f, 0f, 0f) } };
         Check(cape > 0f && Volume(CharacterKit.Sheet(grid, Vector3.forward, 0.1f)) > 0f && Volume(CharacterKit.Sheet(grid, Vector3.back, 0.1f)) > 0f, "cloth sheets face out whichever way they hang");

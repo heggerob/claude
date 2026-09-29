@@ -14,6 +14,8 @@ public static class HeroPreview
     {
         public Dictionary<string, Quaternion> rot = new Dictionary<string, Quaternion>();
         public Dictionary<string, Vector3> pos = new Dictionary<string, Vector3>();
+        /// <summary>Joints whose world orientation is set directly (props held at an exact angle).</summary>
+        public Dictionary<string, Quaternion> worldRot = new Dictionary<string, Quaternion>();
     }
 
     public class Shot
@@ -30,20 +32,41 @@ public static class HeroPreview
     public static void Main(string[] args)
     {
         var shots = new List<Shot>();
-        var look = new HeroLook();
+        var raider = CharacterSpec.Default(OutfitId.Raider);
+        // The concept sheet pose: the big axe held in the left fist by the shoulder, the haft across the back of
+        // the neck and the head over the right shoulder; the right arm hangs loose.
+        var model = WithWeapon(HeroModel.Build(raider), HeroModel.BuildWeapon(raider), Joints.OffHand);
+        var fit = Fit.Of(raider.body);
+        var carry = new Pose();
+        // Aim the left arm: elbow down and out, fist up by the shoulder and behind the head.
+        Vector3 shoulder = new Vector3(-fit.shoulderX, fit.shoulderY, 0f);
+        Vector3 elbow = shoulder + new Vector3(-0.15f, -0.17f, 0.04f).normalized * fit.upperArm;
+        Vector3 fist = elbow + new Vector3(0.08f, 0.25f, -0.17f).normalized * fit.foreArm;
+        carry.worldRot[Joints.LeftArm] = Quaternion.FromToRotation(Vector3.down, elbow - shoulder);
+        carry.worldRot[Joints.LeftForearm] = Quaternion.FromToRotation(Vector3.down, fist - elbow);
+        carry.worldRot[Joints.OffHand] = Quaternion.LookRotation(new Vector3(1f, 0.42f, -0.45f).normalized, new Vector3(0f, 1f, 0.3f));
+        carry.rot[Joints.RightArm] = Quaternion.Euler(4f, 0f, 14f);
+        carry.rot[Joints.RightForearm] = Quaternion.Euler(-12f, 0f, 0f);
         var walk = new Pose();
-        walk.rot[VikingModel.LeftLeg] = Quaternion.Euler(-24f, 0f, 0f);
-        walk.rot[VikingModel.RightLeg] = Quaternion.Euler(20f, 0f, 0f);
-        walk.rot[VikingModel.LeftArm] = Quaternion.Euler(22f, 0f, -6f);
-        walk.rot[VikingModel.RightArm] = Quaternion.Euler(-26f, 0f, 6f);
-        var model = HeroModel.Build(look);
-        shots.Add(new Shot { label = "Front", model = model, yaw = 180f });
-        shots.Add(new Shot { label = "Three-quarter", model = model, yaw = 210f });
-        shots.Add(new Shot { label = "Side", model = model, yaw = 270f });
-        shots.Add(new Shot { label = "Back", model = model, yaw = 20f });
-        shots.Add(new Shot { label = "Walking", model = model, pose = walk, yaw = 225f });
-        var blonde = new HeroLook { hair = new Color(0.9f, 0.78f, 0.5f), tunic = new Color(0.22f, 0.3f, 0.42f), skirt = new Color(0.2f, 0.24f, 0.3f), headGear = HeadGear.None };
-        shots.Add(new Shot { label = "Bare-headed", model = HeroModel.Build(blonde), yaw = 195f });
+        walk.rot[Joints.LeftLeg] = Quaternion.Euler(-24f, 0f, 0f);
+        walk.rot[Joints.RightLeg] = Quaternion.Euler(20f, 0f, 0f);
+        walk.rot[Joints.LeftArm] = Quaternion.Euler(22f, 0f, -6f);
+        walk.rot[Joints.RightArm] = Quaternion.Euler(-26f, 0f, 6f);
+        walk.rot[Joints.RightForearm] = Quaternion.Euler(-30f, 0f, 0f);
+        shots.Add(new Shot { label = "The Raider", model = model, pose = carry, yaw = 188f });
+        shots.Add(new Shot { label = "Three-quarter", model = model, pose = carry, yaw = 215f });
+        shots.Add(new Shot { label = "Side", model = model, pose = carry, yaw = 268f });
+        shots.Add(new Shot { label = "Back", model = model, pose = carry, yaw = 20f });
+        shots.Add(new Shot { label = "Walking", model = HeroModel.Build(raider), pose = walk, yaw = 225f });
+        // Same outfit on other bodies: the player chooses height, build and gender.
+        var tall = CharacterSpec.Default(OutfitId.Raider);
+        tall.body = new BodyShape { height = 1.85f, width = 1.25f, gender = Gender.Male };
+        tall.palette = Outfits.Get(OutfitId.Raider).palette();
+        tall.palette.hair = new Color(0.88f, 0.76f, 0.48f); tall.palette.accent = new Color(0.18f, 0.32f, 0.5f); tall.palette.cloth = new Color(0.33f, 0.29f, 0.24f);
+        shots.Add(new Shot { label = "Tall, broad (custom colours)", model = HeroModel.Build(tall), yaw = 195f });
+        var small = CharacterSpec.Default(OutfitId.Raider);
+        small.body = new BodyShape { height = 1.45f, width = 0.85f, gender = Gender.Female };
+        shots.Add(new Shot { label = "Short, slim", model = HeroModel.Build(small), yaw = 195f });
 
         const int cellW = 520, cellH = 1040; // 2x supersampled
         int w = cellW * shots.Count, h = cellH;
@@ -63,8 +86,17 @@ public static class HeroPreview
         foreach (var s in shots) labels.Add(s.label);
         File.WriteAllLines(args[1], labels.ToArray());
         Directory.CreateDirectory(args[2]);
-        ExportObj(model, Path.Combine(args[2], "hero-base.obj"));
+        ExportObj(HeroModel.Build(raider), Path.Combine(args[2], "raider.obj"));
+        ExportObj(HeroModel.BuildWeapon(raider), Path.Combine(args[2], "two-hand-axe.obj"));
         Console.WriteLine("hero: " + model.TriangleCount + " triangles");
+    }
+
+    /// <summary>For pictures only: hang the separately built weapon on the character's weapon hand.</summary>
+    static VikingModel WithWeapon(VikingModel character, VikingModel weapon, string hand)
+    {
+        foreach (var p in weapon.Pieces)
+            character.Pieces.Add(new VikingModel.Piece { joint = hand, color = p.color, mesh = p.mesh, outline = p.outline, ink = p.ink });
+        return character;
     }
 
     static void World(VikingModel m, Pose pose, string joint, out Vector3 pos, out Quaternion rot)
@@ -76,7 +108,7 @@ public static class HeroPreview
         Vector3 pp; Quaternion pr;
         World(m, pose, j.parent, out pp, out pr);
         pos = pp + pr * local;
-        rot = pr * own;
+        rot = pose.worldRot.ContainsKey(joint) ? pose.worldRot[joint] : pr * own;
     }
 
     static void Render(float[] img, int w, int h, int x0, int cellW, int cellH, Shot shot)

@@ -168,6 +168,44 @@ namespace OdinsCoin
             return Sheet(grid, Vector3.back, thickness);
         }
 
+        /// <summary>
+        /// Loose flaps of pelt or torn cloth hanging around a body at a height: separate ragged pieces with gaps
+        /// between them, each following a surface given by <paramref name="radiusAt"/> (x radius at a height).
+        /// </summary>
+        public static MeshData Flaps(float topY, float length, int count, float coverage, float depth, System.Func<float, float> radiusAt, float lift, int seed, float thickness)
+        {
+            var rng = new System.Random(seed);
+            var m = new MeshData();
+            for (int i = 0; i < count; i++)
+            {
+                float centre = (i + (float)rng.NextDouble() * 0.6f) / count * Mathf.PI * 2f;
+                float half = coverage * Mathf.PI / count * (0.7f + (float)rng.NextDouble() * 0.6f);
+                float len = length * (0.6f + (float)rng.NextDouble() * 0.7f);
+                float top = topY + ((float)rng.NextDouble() - 0.5f) * length * 0.3f;
+                const int rows = 4, cols = 7;
+                var grid = new Vector3[rows, cols];
+                var hang = new float[cols];
+                for (int c = 0; c < cols; c++)
+                {
+                    float edge = Mathf.Abs(c / (float)(cols - 1) * 2f - 1f);
+                    // Zig-zag torn hem: long points and short notches, shorter towards the sides.
+                    hang[c] = len * (((c & 1) == 0 ? 0.95f : 0.62f) + (float)rng.NextDouble() * 0.25f) * (1f - 0.35f * edge * edge);
+                }
+                for (int r = 0; r < rows; r++)
+                    for (int c = 0; c < cols; c++)
+                    {
+                        float v = r / (float)(rows - 1), u = c / (float)(cols - 1) * 2f - 1f;
+                        float a = centre + u * half * (1f - 0.25f * v);
+                        float y = top - v * hang[c];
+                        float rad = radiusAt(y) + lift + v * lift * 0.8f + v * v * 0.012f;
+                        grid[r, c] = new Vector3(Mathf.Sin(a) * rad, y, Mathf.Cos(a) * rad * depth);
+                    }
+                Vector3 outward = new Vector3(Mathf.Sin(centre), 0f, Mathf.Cos(centre));
+                m.Append(Sheet(grid, outward, thickness));
+            }
+            return m;
+        }
+
         /// <summary>A braid: a chain of lumps along a path, with a bead near the end.</summary>
         public static MeshData Braid(Vector3[] path, float radius)
         {

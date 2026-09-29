@@ -74,3 +74,22 @@ for i, t in enumerate(labels):
 sheet.save(sys.argv[3])
 print('wrote', sys.argv[3])
 PY
+
+# Side-by-side against the concept sheet: reference on the left, our render on the right.
+python3 - <<'PY'
+import os
+from PIL import Image
+ref = Image.open('OdinsCoin/docs/reference/characters-concept.png').convert('RGBA')
+ours = Image.open('OdinsCoin/docs/heroes.png').convert('RGBA')
+os.makedirs('OdinsCoin/docs/compare', exist_ok=True)
+crops = {'raider': ((300, 20, 650, 800), 0)}
+cell = ours.width // 7
+for name, (box, index) in crops.items():
+    a = ref.crop(box)
+    b = ours.crop((index * cell, 0, (index + 1) * cell, ours.height - 70))
+    b = b.resize((int(b.width * a.height / b.height), a.height), Image.LANCZOS)
+    out = Image.new('RGBA', (a.width + b.width + 20, a.height), (246, 241, 230, 255))
+    out.paste(a, (0, 0)); out.paste(b, (a.width + 20, 0))
+    out.save('OdinsCoin/docs/compare/%s.png' % name)
+print('wrote compare images')
+PY

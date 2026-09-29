@@ -1,0 +1,40 @@
+newmtl m0
+Kd 0.46 0.3 0.17
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m1
+Kd 0.23 0.15 0.1
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m2
+Kd 0.45 0.47 0.5
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m3
+Kd 0.45 0.47 0.5
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m4
+Kd 0.608 0.635 0.675
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
