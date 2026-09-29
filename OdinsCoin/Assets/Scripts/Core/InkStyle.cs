@@ -33,6 +33,15 @@ namespace OdinsCoin
         /// <summary>Colour multiplier for a tone: 0.55 in full shadow up to 1.1 in full sun.</summary>
         public static float Shade(float tone) { return 0.55f + 0.55f * tone; }
 
+        /// <summary>...flattened by <paramref name="flat"/> (0–1) towards the nearly even light the faces get.</summary>
+        public static float Shade(float tone, float flat) { return Mathf.Lerp(Shade(tone), 0.94f + 0.1f * tone, flat); }
+
+        /// <summary>
+        /// How flat a surface is lit: faces are nearly flat, like the round, evenly coloured faces of the concept
+        /// art; everything else gets the full light.
+        /// </summary>
+        public static float Flatness(SurfaceKind surface) { return surface == SurfaceKind.Skin ? 0.85f : 0f; }
+
         /// <summary>
         /// Hatching multiplier at a screen pixel: 1 where lit, pencil strokes (↗) below tone 0.55, crossed (↖)
         /// below 0.3. The strokes wobble a little, like a hand drawing them.

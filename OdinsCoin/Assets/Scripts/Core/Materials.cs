@@ -77,6 +77,7 @@ namespace OdinsCoin
             m.mainTexture = tex;
             if (m.HasProperty("_BaseMap")) m.SetTexture("_BaseMap", tex);
             if (m.HasProperty("_Hatch")) m.SetFloat("_Hatch", InkStyle.HatchAmount(surface));
+            if (m.HasProperty("_Flat")) m.SetFloat("_Flat", InkStyle.Flatness(surface));
             cache[key] = m;
             return m;
         }

@@ -307,13 +307,13 @@ public static class HeroPreview
                 int a = mesh.Triangles[t], b = mesh.Triangles[t + 1], c = mesh.Triangles[t + 2];
                 Vector3 fn = Vector3.Cross(world[b] - world[a], world[c] - world[a]);
                 if (Vector3.Dot(fn, forward) >= 0f) continue; // back face, culled like Unity
-                Tri(img, depth, w, x0, cellW, cellH, screen[a], screen[b], screen[c], normal[a], normal[b], normal[c], mesh.Uvs[a], mesh.Uvs[b], mesh.Uvs[c], tex, InkStyle.HatchAmount(piece.surface), piece.color, piece.ink, light, forward);
+                Tri(img, depth, w, x0, cellW, cellH, screen[a], screen[b], screen[c], normal[a], normal[b], normal[c], mesh.Uvs[a], mesh.Uvs[b], mesh.Uvs[c], tex, InkStyle.HatchAmount(piece.surface), InkStyle.Flatness(piece.surface), piece.color, piece.ink, light, forward);
             }
         }
     }
 
     static void Tri(float[] img, float[] depth, int w, int x0, int cellW, int cellH, Vector3 a, Vector3 b, Vector3 c,
-        Vector3 na, Vector3 nb, Vector3 nc, Vector2 ua, Vector2 ub, Vector2 uc, float[] tex, float hatch, Color color, bool ink, Vector3 light, Vector3 forward)
+        Vector3 na, Vector3 nb, Vector3 nc, Vector2 ua, Vector2 ub, Vector2 uc, float[] tex, float hatch, float flat, Color color, bool ink, Vector3 light, Vector3 forward)
     {
         int minX = Math.Max(x0, (int)Math.Floor(Math.Min(a.x, Math.Min(b.x, c.x))));
         int maxX = Math.Min(x0 + cellW - 1, (int)Math.Ceiling(Math.Max(a.x, Math.Max(b.x, c.x))));
@@ -346,7 +346,7 @@ public static class HeroPreview
                     // halved, so the strokes are twice as far apart here.
                     Vector3 nrm = (na * w0 + nb * w1 + nc * w2).normalized;
                     float d = InkStyle.Tone(nrm, light);
-                    float shade = InkStyle.Shade(d) * Mathf.Lerp(1f, InkStyle.Hatch(d, x, y, InkStyle.Spacing * 2f), hatch) * InkStyle.Paper(x * 0.5f, y * 0.5f);
+                    float shade = InkStyle.Shade(d, flat) * Mathf.Lerp(1f, InkStyle.Hatch(d, x, y, InkStyle.Spacing * 2f), hatch) * InkStyle.Paper(x * 0.5f, y * 0.5f);
                     r = r * shade * (0.96f + 0.06f * d); g *= shade; bl = bl * shade * (1.04f - 0.06f * d);
                 }
                 int i = (y * w + x) * 3;

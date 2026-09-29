@@ -9,6 +9,7 @@ Shader "OdinsCoin/InkToon"
         [MainColor] _Color ("Colour", Color) = (1, 1, 1, 1)
         [MainTexture] _MainTex ("Drawn texture", 2D) = "white" {}
         _Hatch ("Hatching", Range(0, 1)) = 1
+        _Flat ("Flat light", Range(0, 1)) = 0
     }
     SubShader
     {
@@ -27,6 +28,7 @@ Shader "OdinsCoin/InkToon"
             sampler2D _MainTex;
             float4 _MainTex_ST;
             float _Hatch;
+            float _Flat;
             // Set by InkStyle.SetSun; sensible defaults when they're not set yet (all zero).
             float4 _InkSunDir;
             float _InkHatchSpacing;
@@ -77,7 +79,7 @@ Shader "OdinsCoin/InkToon"
                 float strokeDark = _InkStrokeDark > 0.001 ? _InkStrokeDark : 0.3;
 
                 float tone = saturate((dot(n, sun) + 0.35) / 1.35);
-                float shade = 0.55 + 0.55 * tone;
+                float shade = lerp(0.55 + 0.55 * tone, 0.94 + 0.1 * tone, _Flat);
                 float3 col = _Color.rgb * tex2D(_MainTex, i.uv).rgb * shade;
                 col *= float3(0.96 + 0.06 * tone, 1.0, 1.04 - 0.06 * tone);
 

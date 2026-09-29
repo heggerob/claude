@@ -41,7 +41,7 @@ namespace OdinsCoin
             bool female = body.gender == Gender.Female;
             var f = new Fit { height = h, width = w, s = s, gender = body.gender };
             // The big head grows more slowly than the body, so short characters look younger and cuter.
-            f.headR = 0.135f * Mathf.Pow(s, 0.35f);
+            f.headR = 0.148f * Mathf.Pow(s, 0.35f);
             f.headY = h - f.headR;
             f.neckY = f.headY - f.headR - 0.01f * s;
             f.shoulderY = f.neckY - 0.08f * s;
