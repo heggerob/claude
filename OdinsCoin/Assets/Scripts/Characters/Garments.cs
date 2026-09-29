@@ -81,7 +81,7 @@ namespace OdinsCoin
             foreach (var joint in new[] { Joints.LeftLeg, Joints.RightLeg })
             {
                 float sole = -f.hip, top = f.bootTop + extra * d.S - f.hip, s = d.S;
-                float r = 0.052f * s * Mathf.Sqrt(f.width);
+                float r = 0.046f * s * Mathf.Sqrt(f.width);
                 // A slim shaft, narrowest at the ankle, flaring a little at the top.
                 d.Add(joint, d.pal.leatherDark, MeshData.Lathe(new[] {
                     new Vector2(r * 0.95f, sole), new Vector2(r * 1.08f, sole + 0.035f * s), new Vector2(r * 0.86f, sole + 0.1f * s),
@@ -177,8 +177,9 @@ namespace OdinsCoin
             {
                 float c = Mathf.Max(0f, Mathf.Cos(a));
                 float raise = drop * 0.7f * c * c;
-                // One-sided: pull the hem right up on the other shoulder.
-                if (side != 0f) raise = Mathf.Max(raise, drop * 0.95f * Mathf.Clamp01(-Mathf.Sin(a) * side * 1.5f + 0.2f));
+                // One-sided: pull the hem right up on the other shoulder and across the chest, so it hangs off one
+                // shoulder only.
+                if (side != 0f) raise = Mathf.Max(raise, (drop + 0.03f * s) * Mathf.Clamp01(-Mathf.Sin(a) * side * 1.5f + 0.2f + c * 2.5f));
                 return raise;
             };
             float hug = Mathf.Clamp01(f.chestR * f.depth * 1.25f / (r * 0.8f));
@@ -190,7 +191,7 @@ namespace OdinsCoin
             for (int i = 0; i < 16; i++)
             {
                 float a2 = side != 0f
-                    ? Mathf.PI * 0.5f * side + ((float)rng.NextDouble() - 0.5f) * 1.6f // on the one shoulder
+                    ? Mathf.PI * (0.5f + 0.15f) * side + ((float)rng.NextDouble() - 0.5f) * 1.0f * side // on the one shoulder, towards the back
                     : Mathf.PI * 0.35f + (float)rng.NextDouble() * Mathf.PI * 1.3f;   // mostly on the shoulders and back
                 float t = 0.35f + (float)rng.NextDouble() * 0.6f;
                 float rad = Mathf.Lerp(f.chestR * 0.62f, r, t * t) + 0.01f * s;
@@ -349,6 +350,21 @@ namespace OdinsCoin
         }
 
         /// <summary>Long sleeves down to the wrists, ending in fur cuffs, with gold-strapped bracers.</summary>
+        /// <summary>Bare arms with leather bracers on the forearms, laced, and a fur cuff at the elbow end.</summary>
+        public static void Bracers(Dresser d)
+        {
+            var f = d.fit;
+            float s = d.S;
+            float r = 0.05f * s * Mathf.Sqrt(f.width);
+            foreach (var fore in new[] { Joints.LeftForearm, Joints.RightForearm })
+            {
+                d.Add(fore, d.pal.leatherDark, MeshData.Lathe(new[] { new Vector2(r * 0.6f, -f.foreArm + 0.02f * s), new Vector2(r * 0.75f, -f.foreArm * 0.35f) }, 10));
+                d.Add(fore, d.pal.leather, CharacterKit.Spiral(-f.foreArm + 0.03f * s, -f.foreArm * 0.38f, r * 0.77f, 1.2f, 0f, 0.0045f * s), false);
+                d.Add(fore, d.pal.leather, CharacterKit.Spiral(-f.foreArm + 0.03f * s, -f.foreArm * 0.38f, r * 0.77f, -1.2f, Mathf.PI, 0.0045f * s), false);
+                d.Add(fore, d.pal.fur, CharacterKit.FurRing(new Vector3(0f, -f.foreArm * 0.35f, 0f), r * 0.78f, 1f, 0.026f * s, 9, 0.035f * s, d.seed + 7 + fore.Length));
+            }
+        }
+
         public static void LongSleeves(Dresser d)
         {
             var f = d.fit;
@@ -1006,21 +1022,10 @@ namespace OdinsCoin
             d.Add(Joints.Body, d.pal.accent, MeshData.Lathe(new[] {
                 new Vector2(f.chestR * 0.5f, f.neckY - 0.01f * s), new Vector2(f.chestR * 0.7f, f.neckY + 0.04f * s), new Vector2(f.chestR * 0.55f, f.neckY + 0.07f * s) }, 16)
                 .Transformed(Vector3.zero, Quaternion.identity, new Vector3(1f, 1f, 0.95f)));
-            // A short capelet over the shoulders, raised in front so the chest shows.
-            float capeBottom = f.shoulderY - 0.1f * s, capeDrop = f.neckY - capeBottom;
-            d.Add(Joints.Body, d.pal.accent, CharacterKit.RaggedSkirt(f.neckY + 0.01f * s, f.chestR * 0.62f, capeBottom, f.shoulderX + 0.03f * s, 0.8f, 18, 0.05f * s, d.seed + 83,
-                a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return capeDrop * 0.55f * c * c; }, a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return Mathf.Lerp(1f, 0.7f, c * c); }));
-            // The scarf's tail hanging down the front, off to one side.
-            const int rows = 5;
-            var tail = new Vector3[rows, 2];
-            for (int r = 0; r < rows; r++)
-                for (int c = 0; c < 2; c++)
-                {
-                    float v = r / (float)(rows - 1);
-                    float y = f.neckY - 0.02f * s - v * 0.24f * s - (r == rows - 1 && c == 0 ? 0.03f * s : 0f);
-                    tail[r, c] = new Vector3((-0.02f - v * 0.05f + c * 0.07f) * s, y, f.TorsoRadius(Mathf.Max(y, f.waist)) * f.depth + 0.025f + v * 0.01f);
-                }
-            d.Add(Joints.Body, VikingModel.Shade(d.pal.accent, 0.9f), CharacterKit.Sheet(tail, Vector3.forward, 0.012f * s));
+            // A capelet over both shoulders, falling to a ragged point at the front of the chest.
+            float capeBottom = f.shoulderY - 0.05f * s;
+            d.Add(Joints.Body, d.pal.accent, CharacterKit.RaggedSkirt(f.neckY + 0.01f * s, f.chestR * 0.62f, capeBottom, f.shoulderX + 0.02f * s, 0.85f, 20, 0.04f * s, d.seed + 83,
+                a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return -0.13f * s * c * c * c * c; }, a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return Mathf.Lerp(1f, 0.62f, c * c); }));
             // The hood, down, bunched behind the neck.
             d.Add(Joints.Body, VikingModel.Shade(d.pal.accent, 0.85f), MeshData.Ellipsoid(new Vector3(0f, f.neckY + 0.02f * s, -f.chestR * 0.7f), new Vector3(0.11f, 0.08f, 0.07f) * s, 12, 7));
         }
@@ -1042,8 +1047,9 @@ namespace OdinsCoin
         {
             var f = d.fit;
             float s = d.S;
-            var at = new Vector3(0.06f * s, f.chest - 0.02f * s, -f.chestR * f.depth - 0.05f * s);
-            var tilt = Quaternion.Euler(0f, 0f, -28f);
+            // Over the left shoulder, so the arrows are drawn with the right hand.
+            var at = new Vector3(-0.06f * s, f.chest - 0.02f * s, -f.chestR * f.depth - 0.05f * s);
+            var tilt = Quaternion.Euler(0f, 0f, 28f);
             d.Add(Joints.Body, d.pal.leather, MeshData.Lathe(new[] { new Vector2(0.035f * s, -0.22f * s), new Vector2(0.045f * s, 0.14f * s) }, 10).Transformed(at, tilt, Vector3.one));
             d.Add(Joints.Body, d.pal.leatherDark, MeshData.Lathe(new[] { new Vector2(0.048f * s, 0.1f * s), new Vector2(0.048f * s, 0.14f * s) }, 10).Transformed(at, tilt, Vector3.one), false);
             for (int i = 0; i < 4; i++)
@@ -1056,10 +1062,10 @@ namespace OdinsCoin
                     d.Add(Joints.Body, new Color(0.7f, 0.2f, 0.14f), MeshData.Extrude(new[] { new Vector2(0f, 0f), new Vector2(0.09f, 0f), new Vector2(0.1f, 0.03f), new Vector2(0.03f, 0.03f) }, 0.004f)
                         .Transformed(shaftTop - tilt * new Vector3(0f, 0.1f * s, 0f), tilt * Quaternion.Euler(-90f, side * 90f, 0f), Vector3.one * s));
             }
-            // Strap from the right shoulder across the chest to the left hip.
+            // Strap from the left shoulder across the chest to the right hip.
             float cz = f.chestR * f.depth;
             d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(new[] {
-                new Vector3(f.shoulderX * 0.6f, f.shoulderY + 0.01f * s, cz * 0.3f), new Vector3(0f, f.chest, cz + 0.015f), new Vector3(-f.waistR * 0.9f, f.waist + 0.02f * s, f.waistR * f.depth + 0.012f) },
+                new Vector3(-f.shoulderX * 0.6f, f.shoulderY + 0.01f * s, cz * 0.3f), new Vector3(0f, f.chest, cz + 0.015f), new Vector3(f.waistR * 0.9f, f.waist + 0.02f * s, f.waistR * f.depth + 0.012f) },
                 new[] { 0.013f * s, 0.014f * s, 0.013f * s }, 5), false);
         }
 

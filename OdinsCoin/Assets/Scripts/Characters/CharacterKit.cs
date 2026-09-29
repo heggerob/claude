@@ -85,7 +85,9 @@ namespace OdinsCoin
                 {
                     float a = s / (float)segments * Mathf.PI * 2f;
                     float raise = hemRaise != null ? hemRaise(a) : 0f;
-                    float y = Mathf.Lerp(bottomY - hem[s] + raise, topY, k);
+                    // Where the hem is raised almost to the top, its torn points shrink too, instead of poking out below.
+                    float left = Mathf.Clamp01((topY - bottomY - raise) / Mathf.Max(1e-4f, topY - bottomY) * 2.5f);
+                    float y = Mathf.Lerp(bottomY - hem[s] * left + raise, topY, k);
                     // Slight bell: widest just above the hem.
                     float hr = bottomRadius * (hemScale != null ? hemScale(a) : 1f);
                     float rad = Mathf.Lerp(hr, topRadius, k * k) * (1f + 0.04f * Mathf.Sin(k * Mathf.PI));
