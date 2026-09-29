@@ -82,6 +82,8 @@ namespace UnityEngine {
   public class GUILayoutOption {}
   public enum EventType { Layout, Repaint, MouseDown, MouseUp }
   public class Event { public static Event current = new Event(); public EventType type; }
+  public static class Cursor { public static bool visible; }
+  public static class GUIUtility { public static void RotateAroundPivot(float a, Vector2 p){} }
   public static class GUILayoutUtility { public static Rect GetRect(float w,float h,params GUILayoutOption[] o){return new Rect(0,0,w,h);} }
   public static class GUI { public static GUISkin skin; public static Matrix4x4 matrix; public static Color color, backgroundColor; public static bool enabled;
     public static void Label(Rect r,string t,GUIStyle s){} public static bool Button(Rect r,string t){return false;} public static void DrawTexture(Rect r,Texture t){} public static void BeginGroup(Rect r){} public static void EndGroup(){} public static void Box(Rect r,GUIContent c,GUIStyle s){} public static void DrawTexture(Rect r,Texture t,ScaleMode m,bool a,float asp,Color c,float bw,float br){} }

@@ -15,6 +15,8 @@ namespace AirsoftArena
 
         Camera cam;
         Transform target;
+        Vector3 smoothed = new Vector3(0f, -1f, -10f);
+        float trauma;
         float targetSize = OverviewSize;
 
         void Awake()
@@ -27,6 +29,13 @@ namespace AirsoftArena
         {
             target = t;
             targetSize = orthoSize;
+        }
+
+        /// <summary>Kick the camera. Amount ~0.05 for a shot, ~0.4 for getting hit. Respects the screen shake setting.</summary>
+        public static void Shake(float amount)
+        {
+            if (Instance == null || !GameSettings.ScreenShake) return;
+            Instance.trauma = Mathf.Min(1f, Instance.trauma + amount);
         }
 
         public void ShowOverview()
@@ -49,7 +58,12 @@ namespace AirsoftArena
                 goal += (Vector3)lookAhead;
             }
 
-            transform.position = Vector3.Lerp(transform.position, goal, 1f - Mathf.Exp(-8f * dt));
+            smoothed = Vector3.Lerp(smoothed, goal, 1f - Mathf.Exp(-8f * dt));
+            // Shake grows with trauma squared, so small kicks stay subtle.
+            float shake = trauma * trauma * 0.6f;
+            Vector3 offset = new Vector3(Random.Range(-1f, 1f), Random.Range(-1f, 1f), 0f) * shake;
+            trauma = Mathf.Max(0f, trauma - dt * 1.8f);
+            transform.position = smoothed + offset;
             if (cam != null) cam.orthographicSize = Mathf.Lerp(cam.orthographicSize, targetSize, 1f - Mathf.Exp(-4f * dt));
         }
     }

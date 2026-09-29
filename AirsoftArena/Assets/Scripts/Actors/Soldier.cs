@@ -163,6 +163,7 @@ namespace AirsoftArena
             Vector2 muzzle = view != null ? view.MuzzlePosition : Position + AimDirection * (Radius + 0.2f);
             if (view != null) view.OnFired();
             Sfx.PlayAt(Sfx.ShotSound(weapon.Data.power), muzzle, 0.55f);
+            if (IsHuman) CameraFollow.Shake(weapon.Data.power == PowerSystem.Spring ? 0.18f : 0.035f * bbs);
             var training = MatchManager.Instance != null ? MatchManager.Instance.Rules as TrainingRules : null;
             if (training != null) training.OnShot(bbs);
             float spread = Crouching ? 0.6f : 1f;
@@ -215,6 +216,8 @@ namespace AirsoftArena
 
             Stats.timesHit++;
             if (shooter != null && shooter.Team != Team) shooter.Stats.hitsLanded++;
+            if (IsHuman) CameraFollow.Shake(0.45f);
+            if (shooter != null && shooter.IsHuman && shooter != this) GameHUD.RegisterHitMarker(shooter.Team != Team);
             LastHitBy = shooter;
             LastHitTime = Time.time;
             State = SoldierState.Hit;

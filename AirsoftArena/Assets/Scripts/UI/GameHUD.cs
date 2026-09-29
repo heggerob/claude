@@ -43,16 +43,20 @@ namespace AirsoftArena
             switch (match.Phase)
             {
                 case MatchPhase.Lobby:
+                    Cursor.visible = true;
                     DrawMenu(match);
                     break;
                 case MatchPhase.Countdown:
                 case MatchPhase.Playing:
                     DrawWorldLabels(match);
                     DrawMatchHud(match);
+                    DrawMinimap(match);
+                    DrawCrosshair(match);
                     if (match.Phase == MatchPhase.Countdown) Shadowed(new Rect(0, H * 0.3f, W, 120), Mathf.CeilToInt(match.CountdownLeft).ToString(), huge);
                     if (match.Paused) DrawPause(match);
                     break;
                 case MatchPhase.Results:
+                    Cursor.visible = true;
                     DrawResults(match);
                     break;
             }

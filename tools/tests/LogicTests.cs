@@ -171,6 +171,10 @@ public static class LogicTests
             }
             foreach (var z in m.spawnZones) Check(m.bounds.Contains(z.center), m.id + " spawn inside bounds");
             foreach (var f in m.flagPoints) Check(m.bounds.Contains(f), m.id + " flag inside bounds");
+            var mini = Minimap.For(m);
+            Check(mini.width == Mathf.CeilToInt(m.bounds.width * Minimap.PixelsPerMetre), m.id + " minimap width");
+            var spawnPx = Minimap.Normalized(m, m.spawnZones[0].center);
+            Check(spawnPx.x > 0f && spawnPx.x < 0.5f && spawnPx.y > 0f && spawnPx.y < 1f, m.id + " blue spawn on the left of the minimap");
         }
     }
 

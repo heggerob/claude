@@ -11,6 +11,6 @@ Arbeidsliste for prototypen. Ett punkt om gangen, og hvert punkt skal kompilere 
 - [x] **7. Progresjon:** XP og rank, våpen som låses opp med rank, og dagsbonus.
 - [x] **8. Lyd:** generert lyd for skudd, "tak", fløyte, omlading og treff.
 - [x] **9. Treningsbane:** skyteblinker og måling av rekkevidde og BB-fall.
-- [ ] **10. Finpuss:** minikart, treffmarkør, skjermrist, innstillinger (auto-call, skjermrist, lydvolum).
+- [x] **10. Finpuss:** minikart, treffmarkør, skjermrist, innstillinger (auto-call, skjermrist, lydvolum).
 
 Når lista er ferdig går loopen videre til vikingspillet (eget repo).
