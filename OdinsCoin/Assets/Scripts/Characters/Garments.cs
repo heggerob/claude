@@ -318,14 +318,17 @@ namespace OdinsCoin
         /// <summary>
         /// A big red cape from the shoulders to the ankles, ragged at the hem, wrapping forward over the shoulders.
         /// </summary>
-        public static void BigCape(Dresser d, float length, float flare)
+        public static void BigCape(Dresser d, float length, float flare) { BigCape(d, length, flare, true); }
+
+        /// <summary>The big cape; <paramref name="drapes"/> adds the parts falling forward over the shoulders.</summary>
+        public static void BigCape(Dresser d, float length, float flare, bool drapes)
         {
             var f = d.fit;
             float s = d.S;
             var top = new Vector3(0f, f.shoulderY + 0.02f * s, -f.chestR * f.depth * 0.3f);
             d.Add(Joints.Body, d.pal.accent, CharacterKit.Cape(top, f.shoulderX * 2.6f, f.shoulderX * 2f * flare, length * s, f.chestR * 1.3f, 0.17f * s, d.seed + 41, 0.02f * s));
             // Front drapes falling over each shoulder, open at the chest.
-            foreach (float x in new[] { -1f, 1f })
+            if (drapes) foreach (float x in new[] { -1f, 1f })
             {
                 const int rows = 6, cols = 3;
                 var grid = new Vector3[rows, cols];

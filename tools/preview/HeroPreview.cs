@@ -102,15 +102,15 @@ public static class HeroPreview
         Vector3 grElbow = gr + new Vector3(0.12f, -0.2f, -0.02f).normalized * gFit.upperArm;
         Vector3 grFist = new Vector3(gFit.shoulderX + 0.14f, gFit.chest - 0.02f, 0.06f);
         Vector3 glElbow = gl + new Vector3(-0.08f, -0.2f, 0.1f).normalized * gFit.upperArm;
-        Vector3 glFist = new Vector3(-0.2f, gFit.waist - 0.06f, 0.17f);
+        Vector3 glFist = new Vector3(-0.24f, gFit.waist - 0.05f, 0.16f);
         guarding.worldRot[Joints.RightArm] = Quaternion.FromToRotation(Vector3.down, grElbow - gr);
         guarding.worldRot[Joints.RightForearm] = Quaternion.FromToRotation(Vector3.down, grFist - grElbow);
         guarding.worldRot[Joints.Weapon] = Quaternion.LookRotation(Vector3.up, new Vector3(-1f, 0f, 0.35f));
         guarding.worldRot[Joints.LeftArm] = Quaternion.FromToRotation(Vector3.down, glElbow - gl);
         guarding.worldRot[Joints.LeftForearm] = Quaternion.FromToRotation(Vector3.down, glFist - glElbow);
-        guarding.worldRot[Joints.OffHand] = Quaternion.Euler(0f, -22f, 0f);
-        guarding.rot[Joints.LeftLeg] = Quaternion.Euler(0f, 0f, -5f);
-        guarding.rot[Joints.RightLeg] = Quaternion.Euler(0f, 0f, 6f);
+        guarding.worldRot[Joints.OffHand] = Quaternion.Euler(4f, -38f, 6f);
+        guarding.rot[Joints.LeftLeg] = Quaternion.Euler(0f, -16f, -9f);
+        guarding.rot[Joints.RightLeg] = Quaternion.Euler(0f, 18f, 9f);
         shots.Add(new Shot { label = "The Spear Guard", model = guardModel, pose = guarding, yaw = 188f });
         // The Old Seer: the rune staff upright in her left hand, the right hand at her charms.
         var seer = CharacterSpec.Default(OutfitId.Seer);

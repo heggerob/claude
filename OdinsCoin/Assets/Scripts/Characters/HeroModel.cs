@@ -286,7 +286,7 @@ namespace OdinsCoin
                     {
                         // A big shield of red planks with an iron rim and boss and a pale triple-knot painted on it,
                         // held in front of the body, face forward (+Z).
-                        float rad = 0.33f * s;
+                        float rad = 0.3f * s;
                         var at = new Vector3(0f, 0.02f * s, 0.06f * s);
                         for (int q = 0; q < 6; q++)
                         {
@@ -303,15 +303,23 @@ namespace OdinsCoin
                         for (int i = 0; i < kRim.Length; i++) { float a = i / 32f * Mathf.PI * 2f; kRim[i] = at + new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * rad; kRr[i] = 0.02f * s; }
                         d.Add(Joints.OffHand, d.pal.metal, MeshData.Tube(kRim, kRr, 6));
                         d.Add(Joints.OffHand, d.pal.metal, MeshData.Dome(Vector3.zero, new Vector3(0.065f, 0.055f, 0.065f) * s, 12, 4).Transformed(at + new Vector3(0f, 0f, 0.012f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one));
-                        // The triple knot: three overlapping loops around the boss, and a circle through them.
+                        // The triquetra: three pointed lobes (vesicas) meeting at the boss, woven with a circle.
                         for (int k = 0; k < 3; k++)
                         {
                             float a0 = k * Mathf.PI * 2f / 3f + Mathf.PI / 2f;
-                            var loopCentre = at + new Vector3(Mathf.Cos(a0), Mathf.Sin(a0), 0f) * rad * 0.34f + new Vector3(0f, 0f, 0.017f * s);
-                            var loop = new Vector3[17];
-                            var lr = new float[17];
-                            for (int i = 0; i < loop.Length; i++) { float a = i / 16f * Mathf.PI * 2f; loop[i] = loopCentre + new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * rad * 0.33f; lr[i] = 0.011f * s; }
-                            d.Add(Joints.OffHand, d.pal.emblem, MeshData.Tube(loop, lr, 4), false);
+                            var dir = new Vector3(Mathf.Cos(a0), Mathf.Sin(a0), 0f);
+                            var perp = new Vector3(-dir.y, dir.x, 0f);
+                            var lobe = new Vector3[25];
+                            var lr = new float[25];
+                            for (int i = 0; i < lobe.Length; i++)
+                            {
+                                // Out along one arc and back along the other: a pointed lens from the centre to the tip.
+                                float t = i / (float)(lobe.Length - 1) * 2f;
+                                float u = t <= 1f ? t : 2f - t, side = t <= 1f ? 1f : -1f;
+                                lobe[i] = at + new Vector3(0f, 0f, 0.017f * s) + dir * (0.08f + u * 0.78f) * rad + perp * side * Mathf.Sin(u * Mathf.PI) * 0.3f * rad;
+                                lr[i] = 0.011f * s;
+                            }
+                            d.Add(Joints.OffHand, d.pal.emblem, MeshData.Tube(lobe, lr, 4), false);
                         }
                         var circle = new Vector3[25];
                         var cr = new float[25];
