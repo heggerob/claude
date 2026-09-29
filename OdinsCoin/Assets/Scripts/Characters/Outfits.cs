@@ -98,8 +98,9 @@ namespace OdinsCoin
                     Garments.RaiderBelt(d, 2);
                     Garments.Apron(d, 0.3f);
                     Garments.ScrollCase(d);
-                    Garments.ShoulderPelt(d, 1.0f);
                     Garments.SideCloak(d, 0.62f, 0.85f);
+                    // Over the cloak's shoulders, so the fur shows on top as in the concept art.
+                    Garments.ShoulderPelt(d, 1.25f, 0f, 0.9f, 2f);
                     Garments.Bandana(d);
                 } } },
             { OutfitId.SpearGuard, new Outfit {

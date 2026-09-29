@@ -80,7 +80,7 @@ public static class HeroPreview
         var reading = new Pose();
         Vector3 lShoulder = new Vector3(-navFit.shoulderX, navFit.shoulderY, 0f), rShoulder = new Vector3(navFit.shoulderX, navFit.shoulderY, 0f);
         Vector3 lElbow = lShoulder + new Vector3(-0.1f, -0.2f, 0.06f).normalized * navFit.upperArm;
-        Vector3 lFist = new Vector3(-0.2f, navFit.waist + 0.12f, 0.2f);
+        Vector3 lFist = new Vector3(-0.24f, navFit.waist + 0.03f, 0.2f);
         Vector3 rElbow = rShoulder + new Vector3(0.02f, -0.22f, 0.08f).normalized * navFit.upperArm;
         Vector3 rFist = new Vector3(-0.05f, navFit.waist + 0.1f, 0.22f);
         reading.worldRot[Joints.LeftArm] = Quaternion.FromToRotation(Vector3.down, lElbow - lShoulder);

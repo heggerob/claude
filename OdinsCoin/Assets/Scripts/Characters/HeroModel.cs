@@ -381,7 +381,7 @@ namespace OdinsCoin
                             float ty = edgeY ? ((float)rng.NextDouble() - 0.5f) * 0.035f * (r == 0 ? 1f : -1f) : 0f;
                             // The corners are curled a little towards the reader.
                             float curl = (edgeX && edgeY) ? 0.02f : 0f;
-                            grid[r, c] = new Vector3((u * 0.3f + 0.07f + tx) * s, (0.14f - v * 0.34f + ty) * s, (0.03f + 0.02f * Mathf.Cos(u * 3f) + curl) * s);
+                            grid[r, c] = new Vector3((u * 0.27f + 0.07f + tx) * s, (0.14f - v * 0.3f + ty) * s, (0.03f + 0.02f * Mathf.Cos(u * 3f) + curl) * s);
                         }
                     d.Add(Joints.OffHand, d.pal.parchment, CharacterKit.Sheet(grid, Vector3.forward, 0.006f * s));
                     var rose = new Vector3(0.09f * s, -0.01f * s, 0.052f * s);
