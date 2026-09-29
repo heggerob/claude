@@ -41,6 +41,24 @@ namespace OdinsCoin
             return m;
         }
 
+        /// <summary>
+        /// A coloured material with the hand-drawn texture of <paramref name="surface"/> on it (pencil strokes,
+        /// weave, fur strands...). Plain surfaces get the flat material.
+        /// </summary>
+        public static Material GetDrawn(Color color, SurfaceKind surface, float smoothness = 0.1f)
+        {
+            if (surface == SurfaceKind.Plain) return Get(color, smoothness);
+            string key = ColorUtility.ToHtmlStringRGBA(color) + smoothness.ToString("0.00") + surface;
+            Material m;
+            if (cache.TryGetValue(key, out m) && m != null) return m;
+            m = new Material(Get(color, smoothness));
+            var tex = DrawnTextures.Texture(surface);
+            m.mainTexture = tex;
+            if (m.HasProperty("_BaseMap")) m.SetTexture("_BaseMap", tex);
+            cache[key] = m;
+            return m;
+        }
+
         // Palette.
         public static readonly Color SeaDeep = new Color(0.06f, 0.24f, 0.33f);
         public static readonly Color Wood = new Color(0.45f, 0.29f, 0.16f);

@@ -15,7 +15,7 @@ namespace UnityEngine {
   public struct Bounds { public Bounds(Vector3 c,Vector3 s){center=c;size=s;} public Vector3 center,size; }
   public static class ColorUtility { public static string ToHtmlStringRGBA(Color c){return ((int)(c.r*255)).ToString("X2")+((int)(c.g*255)).ToString("X2")+((int)(c.b*255)).ToString("X2")+((int)(c.a*255)).ToString("X2");} }
   public class Shader : Object { public static Shader Find(string n){return new Shader{name=n};} }
-  public class Material : Object { public Material(Shader s){} public Material(Material m){} public Color color; public bool HasProperty(string n){return true;} public void SetColor(string n,Color c){} public void SetFloat(string n,float f){} public void EnableKeyword(string k){} public Texture mainTexture; }
+  public class Material : Object { public Material(Shader s){} public Material(Material m){} public Color color; public bool HasProperty(string n){return true;} public void SetColor(string n,Color c){} public void SetFloat(string n,float f){} public void SetTexture(string n,Texture t){} public void EnableKeyword(string k){} public Texture mainTexture; }
   public class Mesh : Object { public Vector3[] vertices; public int[] triangles; public Vector3[] normals; public Color[] colors; public Vector2[] uv; public Bounds bounds; public UnityEngine.Rendering.IndexFormat indexFormat; public void RecalculateNormals(){} public void RecalculateBounds(){} public void SetTriangles(int[] t,int sub){} public int subMeshCount; public void Clear(){} }
   public class MeshFilter : Component { public Mesh sharedMesh, mesh; }
   public class MeshCollider : Collider { public Mesh sharedMesh; public bool convex; }
@@ -92,7 +92,7 @@ namespace UnityEngine {
   public static class Debug { public static void Log(object o){} }
   public static class PlayerPrefs { static Dictionary<string,object> d=new Dictionary<string,object>(); public static string GetString(string k,string def){object v; return d.TryGetValue(k,out v)?(string)v:def;} public static void SetString(string k,string v){d[k]=v;} public static int GetInt(string k,int def){object v; return d.TryGetValue(k,out v)?(int)v:def;} public static void SetInt(string k,int v){d[k]=v;} public static float GetFloat(string k,float def){object v; return d.TryGetValue(k,out v)?(float)v:def;} public static void SetFloat(string k,float v){d[k]=v;} public static void Save(){} public static void DeleteAll(){d.Clear();} public static bool HasKey(string k){return d.ContainsKey(k);} public static void DeleteKey(string k){d.Remove(k);} }
   public static class JsonUtility { public static T FromJson<T>(string s){return default(T);} public static string ToJson(object o){return "";} }
-  public enum TextureFormat { RGBA32 } public enum FilterMode { Point } public enum TextureWrapMode { Clamp }
+  public enum TextureFormat { RGBA32 } public enum FilterMode { Point, Bilinear } public enum TextureWrapMode { Clamp, Repeat }
   public class Texture : Object {} 
   public class Texture2D : Texture { public Color[] pixels; public Texture2D(int w,int h){width=w;height=h;pixels=new Color[w*h];} public Texture2D(int w,int h,TextureFormat f,bool m):this(w,h){} public int width,height; public FilterMode filterMode; public TextureWrapMode wrapMode; public void SetPixel(int x,int y,Color c){if(x>=0&&y>=0&&x<width&&y<height)pixels[y*width+x]=c;} public Color GetPixel(int x,int y){return pixels[y*width+x];} public void Apply(){} public static Texture2D whiteTexture; }
   public enum SpriteMeshType { FullRect, Tight }

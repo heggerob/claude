@@ -240,7 +240,7 @@ public static class HeroPreview
     static VikingModel WithWeapon(VikingModel character, VikingModel weapon, string hand)
     {
         foreach (var p in weapon.Pieces)
-            character.Pieces.Add(new VikingModel.Piece { joint = hand, color = p.color, mesh = p.mesh, outline = p.outline, ink = p.ink });
+            character.Pieces.Add(new VikingModel.Piece { joint = hand, color = p.color, mesh = p.mesh, outline = p.outline, ink = p.ink, surface = p.surface });
         return character;
     }
 
@@ -283,6 +283,8 @@ public static class HeroPreview
             Vector3 jp; Quaternion jr;
             World(shot.model, shot.pose, piece.joint, out jp, out jr);
             var mesh = piece.mesh;
+            mesh.FillUvs();
+            var tex = piece.ink || piece.surface == SurfaceKind.Plain ? null : DrawnTextures.Get(piece.surface);
             int n = mesh.Vertices.Count;
             var world = new Vector3[n];
             var normal = new Vector3[n];
@@ -305,13 +307,13 @@ public static class HeroPreview
                 int a = mesh.Triangles[t], b = mesh.Triangles[t + 1], c = mesh.Triangles[t + 2];
                 Vector3 fn = Vector3.Cross(world[b] - world[a], world[c] - world[a]);
                 if (Vector3.Dot(fn, forward) >= 0f) continue; // back face, culled like Unity
-                Tri(img, depth, w, x0, cellW, cellH, screen[a], screen[b], screen[c], normal[a], normal[b], normal[c], piece.color, piece.ink, light, forward);
+                Tri(img, depth, w, x0, cellW, cellH, screen[a], screen[b], screen[c], normal[a], normal[b], normal[c], mesh.Uvs[a], mesh.Uvs[b], mesh.Uvs[c], tex, piece.color, piece.ink, light, forward);
             }
         }
     }
 
     static void Tri(float[] img, float[] depth, int w, int x0, int cellW, int cellH, Vector3 a, Vector3 b, Vector3 c,
-        Vector3 na, Vector3 nb, Vector3 nc, Color color, bool ink, Vector3 light, Vector3 forward)
+        Vector3 na, Vector3 nb, Vector3 nc, Vector2 ua, Vector2 ub, Vector2 uc, float[] tex, Color color, bool ink, Vector3 light, Vector3 forward)
     {
         int minX = Math.Max(x0, (int)Math.Floor(Math.Min(a.x, Math.Min(b.x, c.x))));
         int maxX = Math.Min(x0 + cellW - 1, (int)Math.Ceiling(Math.Max(a.x, Math.Max(b.x, c.x))));
@@ -332,6 +334,11 @@ public static class HeroPreview
                 if (z >= depth[di]) continue;
                 depth[di] = z;
                 float r = color.r, g = color.g, bl = color.b;
+                if (tex != null)
+                {
+                    float k = DrawnTextures.Sample(tex, ua.x * w0 + ub.x * w1 + uc.x * w2, ua.y * w0 + ub.y * w1 + uc.y * w2);
+                    r *= k; g *= k; bl *= k;
+                }
                 if (!ink)
                 {
                     // Soft painterly light: wrapped diffuse, cool shadows, warm highlights.

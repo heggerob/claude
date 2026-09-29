@@ -10,7 +10,30 @@ namespace OdinsCoin
         public Palette pal;
         public int seed;
 
-        public void Add(string joint, Color color, MeshData mesh, bool outline = true) { model.Add(joint, color, mesh, outline); }
+        public void Add(string joint, Color color, MeshData mesh, bool outline = true) { model.Add(joint, color, mesh, outline, SurfaceOf(color)); }
+        public void Add(string joint, Color color, MeshData mesh, bool outline, SurfaceKind surface) { model.Add(joint, color, mesh, outline, surface); }
+
+        /// <summary>
+        /// What a colour is drawn as, worked out from the palette slot it came from: fur and hair get strands, leather
+        /// gets scuffs, cloth gets weave and pencil hatching. Shaded colours (<see cref="VikingModel.Shade"/>) and
+        /// one-off colours are plain.
+        /// </summary>
+        public SurfaceKind SurfaceOf(Color c)
+        {
+            if (Same(c, pal.ink)) return SurfaceKind.Plain;
+            if (Same(c, pal.skin)) return SurfaceKind.Skin;
+            if (Same(c, pal.fur) || Same(c, pal.furShadow) || Same(c, pal.hair)) return SurfaceKind.Fur;
+            if (Same(c, pal.leather) || Same(c, pal.leatherDark)) return SurfaceKind.Leather;
+            if (Same(c, pal.metal) || Same(c, pal.brass)) return SurfaceKind.Metal;
+            if (Same(c, pal.parchment)) return SurfaceKind.Paper;
+            if (Same(c, pal.cloth) || Same(c, pal.clothDark) || Same(c, pal.cloth2) || Same(c, pal.accent) || Same(c, pal.emblem)) return SurfaceKind.Cloth;
+            return SurfaceKind.Plain;
+        }
+
+        static bool Same(Color a, Color b)
+        {
+            return Mathf.Abs(a.r - b.r) < 0.002f && Mathf.Abs(a.g - b.g) < 0.002f && Mathf.Abs(a.b - b.b) < 0.002f;
+        }
 
         /// <summary>
         /// A joint that swings on a spring, pivoting at <paramref name="pivot"/> (in the parent joint's space).

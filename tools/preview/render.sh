@@ -42,6 +42,26 @@ img.save(sys.argv[2])
 print('wrote', sys.argv[2])
 PY
 
+# The hand-drawn surface textures, each tiled 2x2.
+mcs -nowarn:169,414,649,219,618 -define:ENABLE_LEGACY_INPUT_MANAGER -out:$TMP/textures.exe \
+  tools/unity-stub/UnityStub.cs tools/preview/TexturePreview.cs $(find OdinsCoin/Assets/Scripts -name '*.cs')
+mono $TMP/textures.exe $TMP/textures.rgba $TMP/textures.txt
+python3 - "$TMP/textures.rgba" "$TMP/textures.txt" OdinsCoin/docs/textures.png <<'PY'
+import struct, sys
+from PIL import Image, ImageDraw
+data = open(sys.argv[1], 'rb').read()
+w, h = struct.unpack('<ii', data[:8])
+img = Image.frombytes('RGBA', (w, h), data[8:])
+labels = [l.strip() for l in open(sys.argv[2]) if l.strip()]
+sheet = Image.new('RGBA', (w, h + 24), (246, 241, 230, 255))
+sheet.paste(img, (0, 0))
+d = ImageDraw.Draw(sheet)
+for i, t in enumerate(labels):
+    d.text((i * (w // len(labels)) + 6, h + 6), t, fill=(60, 50, 40, 255))
+sheet.save(sys.argv[3])
+print('wrote', sys.argv[3])
+PY
+
 # The storybook heroes, laid out like the concept sheet, plus an .obj of each.
 mcs -nowarn:169,414,649,219,618 -define:ENABLE_LEGACY_INPUT_MANAGER -out:$TMP/heroes.exe \
   tools/unity-stub/UnityStub.cs tools/preview/HeroPreview.cs $(find OdinsCoin/Assets/Scripts -name '*.cs')

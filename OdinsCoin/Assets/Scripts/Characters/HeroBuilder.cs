@@ -56,7 +56,7 @@ namespace OdinsCoin
                 go.transform.SetParent(parent, false);
                 go.AddComponent<MeshFilter>().sharedMesh = piece.mesh.ToMesh(piece.joint);
                 var mr = go.AddComponent<MeshRenderer>();
-                mr.sharedMaterial = Materials.Get(piece.color, piece.ink ? 0f : 0.1f);
+                mr.sharedMaterial = piece.ink ? Materials.Get(piece.color, 0f) : Materials.GetDrawn(piece.color, piece.surface);
                 // The ink shells don't need to cast shadows of their own.
                 if (piece.ink) mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             }

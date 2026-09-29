@@ -90,6 +90,7 @@ namespace OdinsCoin
                     float hr = bottomRadius * (hemScale != null ? hemScale(a) : 1f);
                     float rad = Mathf.Lerp(hr, topRadius, k * k) * (1f + 0.04f * Mathf.Sin(k * Mathf.PI));
                     m.Vertices.Add(new Vector3(Mathf.Sin(a) * rad, y, Mathf.Cos(a) * rad * depth));
+                    m.Uvs.Add(new Vector2(s / (float)segments * 5f, y * MeshData.UvScale));
                 }
             }
             for (int r = 0; r < rows; r++)
@@ -123,7 +124,10 @@ namespace OdinsCoin
             for (int side = 0; side < 2; side++)
                 for (int r = 0; r < rows; r++)
                     for (int c = 0; c < cols; c++)
+                    {
                         m.Vertices.Add(grid[r, c] + (side == 0 ? half : -half));
+                        m.Uvs.Add(new Vector2(c / (float)Mathf.Max(1, cols - 1) * Vector3.Distance(grid[r, 0], grid[r, cols - 1]) * MeshData.UvScale, -grid[r, c].y * MeshData.UvScale));
+                    }
             int back = rows * cols;
             System.Func<int, int, int> F = (r, c) => r * cols + c;
             // Whichever way the grid runs, wind the faces so the front one faces `facing`.

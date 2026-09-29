@@ -8,20 +8,41 @@ namespace OdinsCoin
     {
         public readonly List<Vector3> Vertices = new List<Vector3>();
         public readonly List<int> Triangles = new List<int>();
+        /// <summary>Texture coordinates for the drawn textures, in tiles (about four per metre).</summary>
+        public readonly List<Vector2> Uvs = new List<Vector2>();
+
+        /// <summary>Texture tiles per metre.</summary>
+        public const float UvScale = 4f;
+
+        /// <summary>Gives any vertex without texture coordinates a flat projection of where it was made.</summary>
+        public void FillUvs()
+        {
+            for (int i = Uvs.Count; i < Vertices.Count; i++)
+            {
+                var v = Vertices[i];
+                Uvs.Add(new Vector2((v.x + v.z) * UvScale, v.y * UvScale));
+            }
+            if (Uvs.Count > Vertices.Count) Uvs.RemoveRange(Vertices.Count, Uvs.Count - Vertices.Count);
+        }
 
         public void Append(MeshData other)
         {
+            FillUvs();
+            other.FillUvs();
             int start = Vertices.Count;
             Vertices.AddRange(other.Vertices);
+            Uvs.AddRange(other.Uvs);
             foreach (int t in other.Triangles) Triangles.Add(start + t);
         }
 
         /// <summary>Move, turn and stretch everything (scale first, then rotate, then move).</summary>
         public MeshData Transformed(Vector3 position, Quaternion rotation, Vector3 scale)
         {
+            FillUvs();
             var m = new MeshData();
             foreach (var v in Vertices) m.Vertices.Add(position + rotation * Vector3.Scale(v, scale));
             m.Triangles.AddRange(Triangles);
+            m.Uvs.AddRange(Uvs);
             return m;
         }
 
@@ -75,8 +96,10 @@ namespace OdinsCoin
         {
             var mesh = new Mesh();
             mesh.name = name;
+            FillUvs();
             mesh.vertices = Vertices.ToArray();
             mesh.triangles = Triangles.ToArray();
+            mesh.uv = Uvs.ToArray();
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
             return mesh;
@@ -96,6 +119,7 @@ namespace OdinsCoin
                 {
                     float a = s / (float)segments * Mathf.PI * 2f;
                     m.Vertices.Add(new Vector3(Mathf.Sin(a) * profile[r].x, profile[r].y, Mathf.Cos(a) * profile[r].x));
+                    m.Uvs.Add(new Vector2(s / (float)segments * 4f, profile[r].y * UvScale));
                 }
             for (int r = 0; r < profile.Length - 1; r++)
                 for (int s = 0; s < segments; s++)
@@ -151,8 +175,10 @@ namespace OdinsCoin
         public static MeshData Tube(Vector3[] path, float[] radii, int segments = 8)
         {
             var m = new MeshData();
+            float along = 0f;
             for (int i = 0; i < path.Length; i++)
             {
+                if (i > 0) along += Vector3.Distance(path[i - 1], path[i]);
                 Vector3 dir = (i < path.Length - 1 ? path[i + 1] - path[i] : path[i] - path[i - 1]).normalized;
                 Vector3 side = Vector3.Cross(dir, Mathf.Abs(dir.y) > 0.9f ? Vector3.forward : Vector3.up).normalized;
                 Vector3 up = Vector3.Cross(side, dir);
@@ -160,6 +186,7 @@ namespace OdinsCoin
                 {
                     float a = s / (float)segments * Mathf.PI * 2f;
                     m.Vertices.Add(path[i] + (side * Mathf.Cos(a) + up * Mathf.Sin(a)) * radii[i]);
+                    m.Uvs.Add(new Vector2(s / (float)segments * 2f, along * UvScale));
                 }
             }
             for (int r = 0; r < path.Length - 1; r++)
@@ -316,6 +343,8 @@ namespace OdinsCoin
             public string joint;
             public Color color;
             public MeshData mesh;
+            /// <summary>What it's made of, which picks the drawn texture.</summary>
+            public SurfaceKind surface;
             /// <summary>Gets an ink outline (small details like eyes and thin trims don't).</summary>
             public bool outline = true;
             /// <summary>This piece is itself an ink outline shell.</summary>
@@ -358,11 +387,13 @@ namespace OdinsCoin
         /// <summary>Add a piece to a joint, merging with others of the same colour (one mesh and material per colour).</summary>
         public void Add(string joint, Color color, MeshData mesh) { Add(joint, color, mesh, true); }
 
-        public void Add(string joint, Color color, MeshData mesh, bool outline)
+        public void Add(string joint, Color color, MeshData mesh, bool outline) { Add(joint, color, mesh, outline, SurfaceKind.Plain); }
+
+        public void Add(string joint, Color color, MeshData mesh, bool outline, SurfaceKind surface)
         {
             foreach (var p in Pieces)
-                if (p.joint == joint && p.color.Equals(color) && p.outline == outline && !p.ink) { p.mesh.Append(mesh); return; }
-            var piece = new Piece { joint = joint, color = color, mesh = new MeshData(), outline = outline };
+                if (p.joint == joint && p.color.Equals(color) && p.outline == outline && p.surface == surface && !p.ink) { p.mesh.Append(mesh); return; }
+            var piece = new Piece { joint = joint, color = color, mesh = new MeshData(), outline = outline, surface = surface };
             piece.mesh.Append(mesh);
             Pieces.Add(piece);
         }

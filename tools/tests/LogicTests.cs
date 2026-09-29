@@ -1,6 +1,7 @@
 // Plain-C# tests for Odin's Coin logic that doesn't need a running Unity scene.
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using OdinsCoin;
 
@@ -29,6 +30,7 @@ public static class LogicTests
         ModelTests();
         HeroTests();
         SwingTests();
+        DrawnTextureTests();
         CombatTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
@@ -661,6 +663,52 @@ public static class LogicTests
         LongshipBuilder.Station(0f, out hw0, out k0, out g0);
         LongshipBuilder.Station(0.95f, out hw1, out k1, out g1);
         Check(hw0 > hw1 && g1 > g0 && k0 < k1, "hull is widest and deepest amidships, stem rises");
+    }
+
+    static void DrawnTextureTests()
+    {
+        int n = DrawnTextures.Size;
+        foreach (SurfaceKind kind in Enum.GetValues(typeof(SurfaceKind)))
+        {
+            var t = DrawnTextures.Get(kind);
+            Check(t.Length == n * n, kind + " texture is " + n + "x" + n);
+            float min = 1f, max = 0f, sum = 0f, inner = 0f, seamX = 0f, seamY = 0f;
+            foreach (var v in t) { min = Math.Min(min, v); max = Math.Max(max, v); sum += v; }
+            Check(min >= 0f && max <= 1f, kind + " values in [0, 1]");
+            float mean = sum / t.Length;
+            Check(mean > 0.8f, kind + " keeps the colour mostly as it is (mean " + mean + ")");
+            Check(min > 0.35f, kind + " marks never go near black (min " + min + ")");
+            for (int y = 0; y < n; y++)
+            {
+                seamX += Math.Abs(t[y * n] - t[y * n + n - 1]);
+                inner += Math.Abs(t[y * n + n / 2] - t[y * n + n / 2 - 1]);
+            }
+            for (int x = 0; x < n; x++) seamY += Math.Abs(t[x] - t[(n - 1) * n + x]);
+            Check(seamX <= inner * 2.5f + 0.5f && seamY <= inner * 2.5f + 0.5f, kind + " tiles without a seam (" + seamX + "/" + seamY + " vs " + inner + ")");
+            Check(DrawnTextures.Get(kind) == t, kind + " texture is made once");
+            float s = DrawnTextures.Sample(t, 1.3f, -2.6f), s2 = DrawnTextures.Sample(t, 0.3f, 0.4f);
+            Check(Math.Abs(s - s2) < 1e-4f, kind + " sampling wraps");
+        }
+        Check(DrawnTextures.Get(SurfaceKind.Fur).Min() < 0.85f, "fur has visible strands");
+        Check(DrawnTextures.Get(SurfaceKind.Cloth).Min() < 0.9f, "cloth has visible pencil strokes");
+
+        // Every hero piece has one uv per vertex, and the outfit's colours are drawn as the right stuff.
+        foreach (OutfitId id in Enum.GetValues(typeof(OutfitId)))
+        {
+            var spec = CharacterSpec.Default(id);
+            var m = HeroModel.Build(spec);
+            bool uvs = true;
+            var kinds = new HashSet<SurfaceKind>();
+            foreach (var p in m.Pieces) { p.mesh.FillUvs(); if (p.mesh.Uvs.Count != p.mesh.Vertices.Count) uvs = false; if (!p.ink) kinds.Add(p.surface); }
+            Check(uvs, id + ": one uv per vertex");
+            Check(kinds.Contains(SurfaceKind.Skin) && kinds.Contains(SurfaceKind.Cloth), id + ": skin and cloth are drawn");
+            Check(kinds.Contains(SurfaceKind.Fur), id + ": has fur or hair strands");
+            foreach (var p in m.Pieces) if (p.ink) Check(p.surface == SurfaceKind.Plain, id + ": ink shells stay flat");
+        }
+        var d = new Dresser { pal = new Palette() };
+        Check(d.SurfaceOf(d.pal.fur) == SurfaceKind.Fur && d.SurfaceOf(d.pal.leatherDark) == SurfaceKind.Leather
+            && d.SurfaceOf(d.pal.accent) == SurfaceKind.Cloth && d.SurfaceOf(d.pal.ink) == SurfaceKind.Plain
+            && d.SurfaceOf(VikingModel.Shade(d.pal.metal, 1.35f)) == SurfaceKind.Plain, "palette slots map to surfaces");
     }
 
     static void WavesTests()
