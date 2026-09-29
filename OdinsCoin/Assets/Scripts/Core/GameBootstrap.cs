@@ -58,6 +58,8 @@ namespace OdinsCoin
             // The helm only listens to the keyboard while the Viking holds the steering oar.
             Ship.gameObject.AddComponent<ShipKeyboardHelm>().enabled = false;
             Player = Viking.Create(transform, Ship);
+            Player.gameObject.AddComponent<VikingCombat>();
+            gameObject.AddComponent<CombatHud>().Player = Player.GetComponent<VikingCombat>();
             CoinAltar.Create(Ship);
             gameObject.AddComponent<CoinUI>();
             var hud = gameObject.AddComponent<ShipHud>();

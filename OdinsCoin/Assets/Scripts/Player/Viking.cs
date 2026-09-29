@@ -24,6 +24,9 @@ namespace OdinsCoin
 
         CharacterController controller;
         VikingBuilder.Parts parts;
+        VikingCombat combat;
+
+        public VikingBuilder.Parts Parts { get { return parts; } }
         float verticalSpeed;
         float facing;
         float walkCycle;
@@ -51,6 +54,13 @@ namespace OdinsCoin
         }
 
         void Awake() { if (controller == null) controller = GetComponent<CharacterController>(); }
+
+        /// <summary>Put the Viking back on deck (after dying, for example).</summary>
+        public void ReturnToShip()
+        {
+            if (AtHelm) { AtHelm = false; SetHelm(false); }
+            PlaceOnShip(new Vector3(0f, LongshipBuilder.DeckHeight + 0.05f, -1f));
+        }
 
         void PlaceOnShip(Vector3 local)
         {
@@ -81,8 +91,9 @@ namespace OdinsCoin
                 facing = ship.eulerAngles.y + shipLocalYaw;
             }
 
-            // At the altar the coin screen has the controls.
-            if (CoinUI.Instance != null && CoinUI.Instance.IsOpen)
+            if (combat == null) combat = GetComponent<VikingCombat>();
+            // At the altar the coin screen has the controls; when dead, nothing moves.
+            if ((CoinUI.Instance != null && CoinUI.Instance.IsOpen) || (combat != null && combat.Busy))
             {
                 Prompt = null;
                 controller.Move(Vector3.down * 2f * dt);
@@ -111,6 +122,7 @@ namespace OdinsCoin
             Vector3 right = new Vector3(forward.z, 0f, -forward.x);
             Vector3 move = forward * input.y + right * input.x;
             float speed = Swimming ? SwimSpeed : GameInput.Held(Key.Sprint) ? RunSpeed : WalkSpeed;
+            if (combat != null && combat.Blocking) speed *= 0.5f;
 
             if (move.sqrMagnitude > 0.01f)
             {

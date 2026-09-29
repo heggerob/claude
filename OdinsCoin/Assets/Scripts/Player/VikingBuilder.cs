@@ -15,9 +15,14 @@ namespace OdinsCoin
 
         public static Parts Build(Transform root, Color tunic)
         {
+            return Build(root, tunic, new Color(0.72f, 0.42f, 0.18f), new Color(0.75f, 0.15f, 0.12f), false);
+        }
+
+        /// <summary>Also used for Saxon guards: a different tunic, beard, shield colour and a sword instead of an axe.</summary>
+        public static Parts Build(Transform root, Color tunic, Color beard, Color shieldColor, bool sword)
+        {
             var p = new Parts { root = root };
             var skin = new Color(0.93f, 0.74f, 0.6f);
-            var beard = new Color(0.72f, 0.42f, 0.18f);
             var leather = new Color(0.36f, 0.24f, 0.14f);
             var trousers = new Color(0.32f, 0.3f, 0.26f);
             var iron = new Color(0.55f, 0.56f, 0.58f);
@@ -53,14 +58,22 @@ namespace OdinsCoin
             p.axe = new GameObject("Axe").transform;
             p.axe.SetParent(p.rightArm, false);
             p.axe.localPosition = new Vector3(0f, -0.62f, 0.05f);
-            Part(PrimitiveType.Cylinder, p.axe, new Vector3(0f, 0f, 0.3f), new Vector3(0.05f, 0.4f, 0.05f), leather).localRotation = Quaternion.Euler(90f, 0f, 0f);
-            Part(PrimitiveType.Cube, p.axe, new Vector3(0f, -0.1f, 0.62f), new Vector3(0.04f, 0.3f, 0.18f), iron);
+            if (sword)
+            {
+                Part(PrimitiveType.Cube, p.axe, new Vector3(0f, 0f, 0.08f), new Vector3(0.22f, 0.05f, 0.05f), iron);            // guard
+                Part(PrimitiveType.Cube, p.axe, new Vector3(0f, 0f, 0.5f), new Vector3(0.06f, 0.02f, 0.8f), new Color(0.8f, 0.82f, 0.85f)); // blade
+            }
+            else
+            {
+                Part(PrimitiveType.Cylinder, p.axe, new Vector3(0f, 0f, 0.3f), new Vector3(0.05f, 0.4f, 0.05f), leather).localRotation = Quaternion.Euler(90f, 0f, 0f);
+                Part(PrimitiveType.Cube, p.axe, new Vector3(0f, -0.1f, 0.62f), new Vector3(0.04f, 0.3f, 0.18f), iron);
+            }
 
             // Round shield on the back: painted halves and an iron boss.
             p.shield = new GameObject("Shield").transform;
             p.shield.SetParent(p.body, false);
             p.shield.localPosition = new Vector3(0f, 1.25f, -0.24f);
-            Part(PrimitiveType.Cylinder, p.shield, Vector3.zero, new Vector3(0.75f, 0.03f, 0.75f), new Color(0.75f, 0.15f, 0.12f)).localRotation = Quaternion.Euler(90f, 0f, 0f);
+            Part(PrimitiveType.Cylinder, p.shield, Vector3.zero, new Vector3(0.75f, 0.03f, 0.75f), shieldColor).localRotation = Quaternion.Euler(90f, 0f, 0f);
             Part(PrimitiveType.Cube, p.shield, new Vector3(0f, 0f, -0.035f), new Vector3(0.74f, 0.12f, 0.01f), new Color(0.92f, 0.88f, 0.78f));
             Part(PrimitiveType.Sphere, p.shield, new Vector3(0f, 0f, -0.05f), new Vector3(0.16f, 0.16f, 0.1f), iron);
             return p;

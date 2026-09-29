@@ -20,8 +20,28 @@ public static class LogicTests
         ShipTests();
         CoinTests();
         IslandTests();
+        CombatTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
+    }
+
+    static void CombatTests()
+    {
+        var o = Vector3.zero;
+        Check(CombatMath.InArc(o, Vector3.forward, new Vector3(0f, 0f, 1.5f), 2f, 90f), "target straight ahead is hit");
+        Check(!CombatMath.InArc(o, Vector3.forward, new Vector3(0f, 0f, 2.5f), 2f, 90f), "out of reach is missed");
+        Check(!CombatMath.InArc(o, Vector3.forward, new Vector3(0f, 0f, -1f), 2f, 90f), "behind you is missed");
+        Check(CombatMath.InArc(o, Vector3.forward, new Vector3(0.9f, 0.5f, 1f), 2f, 100f), "height doesn't matter for the arc");
+        Check(Math.Abs(CombatMath.Damage(20f, 1.5f, false, true) - 30f) < 0.01f, "blessing multiplies damage");
+        Check(CombatMath.Damage(20f, 1f, true, true) < 4f, "shield blocks most damage from the front");
+        Check(Math.Abs(CombatMath.Damage(20f, 1f, true, false) - 20f) < 0.01f, "shield doesn't help against a hit from behind");
+        Check(CombatMath.FromFront(o, Vector3.forward, new Vector3(0f, 0f, 3f)), "attacker in front counts as front");
+        Check(!CombatMath.FromFront(o, Vector3.forward, new Vector3(0f, 0f, -3f)), "attacker behind isn't front");
+
+        // How many swings to drop a guard, with and without Thor.
+        int plain = (int)Math.Ceiling(60f / VikingCombat.SwingDamage);
+        int thor = (int)Math.Ceiling(60f / (VikingCombat.SwingDamage * 1.7f));
+        Check(plain == 3 && thor == 2, "a guard takes 3 swings, 2 with Thor's Wrath tier 3 (" + plain + ", " + thor + ")");
     }
 
     static void IslandTests()

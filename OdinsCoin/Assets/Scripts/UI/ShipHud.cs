@@ -24,7 +24,7 @@ namespace OdinsCoin
                 Ship.SpeedKnots, Ship.Heading, Ship.SailAmount * 100f, Ship.Rowing ? "   ROWING" : "", Wind.Knots, arrow, WindWord(relWind),
                 Player != null && Player.AtHelm
                     ? "At the helm: A/D steer · R raise sail · Q lower sail · W row (sail down) · E let go"
-                    : "WASD walk · Shift run · Space jump · E use · mouse look · scroll zoom · Esc cursor");
+                    : "WASD walk · Shift run · Space jump · LMB axe · RMB shield · E use · scroll zoom · Esc cursor");
             GUI.Box(new Rect(10, 10, 380, 120), GUIContent.none);
             GUI.Label(new Rect(20, 16, 370, 110), text, style);
 

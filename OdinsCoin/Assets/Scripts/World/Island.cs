@@ -232,6 +232,14 @@ namespace OdinsCoin
 
             // The good stuff is inside.
             Chests.Add(TreasureChest.Create(root, root.TransformPoint(new Vector3(0f, 0.3f, l / 2f - 1.5f)), root.eulerAngles.y + 180f, 180 + rng.Next(120)));
+
+            // Guards: a few outside the door, one inside with the treasure.
+            foreach (var local in new[] { new Vector3(-2.5f, 0.3f, -l / 2f - 3f), new Vector3(2.5f, 0.3f, -l / 2f - 3f), new Vector3(-w / 2f - 3f, 0.3f, 0f), new Vector3(0f, 0.3f, l / 2f - 4f) })
+            {
+                Vector3 p = root.TransformPoint(local);
+                p.y = Mathf.Max(p.y, Height(Spec, p.x, p.z));
+                Saxon.Create(transform, p);
+            }
         }
 
         static void Wall(Transform parent, Vector3 pos, Vector3 size, Color color)
