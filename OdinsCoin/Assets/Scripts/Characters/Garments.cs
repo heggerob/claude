@@ -329,7 +329,7 @@ namespace OdinsCoin
             d.skirtTop = f.waist; d.skirtTopR = f.waistR * 0.98f; d.skirtBottom = hem; d.skirtBottomR = f.hipR * 1.35f; d.skirtDepth = f.depth + 0.05f;
             d.Add(Joints.Body, d.pal.cloth, CharacterKit.RaggedSkirt(d.skirtTop, d.skirtTopR, d.skirtBottom, d.skirtBottomR, d.skirtDepth, 22, 0.012f * s, d.seed + 31));
             // Gold border along the hem.
-            d.Add(Joints.Body, d.pal.brass, CharacterKit.Band(hem + 0.022f * s, 0.022f * s, d.SkirtRadius(hem + 0.022f * s) + 0.004f, d.skirtDepth, 22), false);
+            d.Add(Joints.Body, d.pal.brass, CharacterKit.Band(hem + 0.03f * s, 0.032f * s, d.SkirtRadius(hem + 0.03f * s) + 0.004f, d.skirtDepth, 22), false);
             // Front panel: darker cloth edged in gold, over the coat.
             const int rows = 7;
             var grid = new Vector3[rows, 3];
@@ -350,9 +350,12 @@ namespace OdinsCoin
                 for (int r = 0; r < rows; r++) radii[r] = 0.007f * s;
                 d.Add(Joints.Body, d.pal.brass, MeshData.Tube(edge, radii, 5), false);
             }
-            // Studs down the panel.
-            for (int r = 1; r < rows - 1; r++)
-                d.Add(Joints.Body, d.pal.brass, MeshData.Ellipsoid(grid[r, 1] + new Vector3(0f, 0f, 0.01f * s), Vector3.one * 0.008f * s, 5, 3), false);
+            // A broad gold border across the bottom of the panel, with a row of small studs above it.
+            var foot = new Vector3[3];
+            for (int c = 0; c < 3; c++) foot[c] = grid[rows - 1, c] + new Vector3(0f, 0.03f * s, 0.009f * s);
+            d.Add(Joints.Body, d.pal.brass, MeshData.Tube(foot, new[] { 0.016f * s, 0.016f * s, 0.016f * s }, 5), false);
+            for (int k = -2; k <= 2; k++)
+                d.Add(Joints.Body, d.pal.brass, MeshData.Ellipsoid(Vector3.Lerp(grid[rows - 2, 0], grid[rows - 2, 2], (k + 2) / 4f) + new Vector3(0f, 0f, 0.012f * s), Vector3.one * 0.007f * s, 5, 3), false);
         }
 
         /// <summary>Long sleeves down to the wrists, ending in fur cuffs, with gold-strapped bracers.</summary>
@@ -426,21 +429,21 @@ namespace OdinsCoin
         {
             var f = d.fit;
             float s = d.S;
-            float y = f.shoulderY - 0.16f * s, z = f.chestR * f.depth + 0.03f * s;
+            float y = f.shoulderY - 0.1f * s, z = f.chestR * f.depth + 0.03f * s;
             foreach (float x in new[] { -1f, 1f })
             {
                 var at = new Vector3(x * f.chestR * 0.72f, y, z);
-                d.Add(Joints.Body, d.pal.brass, MeshData.Lathe(new[] { new Vector2(0.058f * s, -0.008f * s), new Vector2(0.06f * s, 0f), new Vector2(0.052f * s, 0.012f * s), new Vector2(0.001f, 0.015f * s) }, 18)
+                d.Add(Joints.Body, d.pal.brass, MeshData.Lathe(new[] { new Vector2(0.046f * s, -0.008f * s), new Vector2(0.048f * s, 0f), new Vector2(0.041f * s, 0.012f * s), new Vector2(0.001f, 0.015f * s) }, 18)
                     .Transformed(at, Quaternion.Euler(90f, 0f, 0f), Vector3.one));
                 // Knotwork: an inner ring and a cross.
-                d.Add(Joints.Body, VikingModel.Shade(d.pal.brass, 0.6f), MeshData.Lathe(new[] { new Vector2(0.032f * s, 0f), new Vector2(0.032f * s, 0.004f * s) }, 16).Transformed(at + new Vector3(0f, 0f, 0.012f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one), false);
-                d.Add(Joints.Body, VikingModel.Shade(d.pal.brass, 0.6f), MeshData.Box(at + new Vector3(0f, 0f, 0.014f * s), new Vector3(0.06f, 0.008f, 0.004f) * s), false);
-                d.Add(Joints.Body, VikingModel.Shade(d.pal.brass, 0.6f), MeshData.Box(at + new Vector3(0f, 0f, 0.014f * s), new Vector3(0.008f, 0.06f, 0.004f) * s), false);
+                d.Add(Joints.Body, VikingModel.Shade(d.pal.brass, 0.6f), MeshData.Lathe(new[] { new Vector2(0.026f * s, 0f), new Vector2(0.026f * s, 0.004f * s) }, 16).Transformed(at + new Vector3(0f, 0f, 0.012f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one), false);
+                d.Add(Joints.Body, VikingModel.Shade(d.pal.brass, 0.6f), MeshData.Box(at + new Vector3(0f, 0f, 0.014f * s), new Vector3(0.048f, 0.007f, 0.004f) * s), false);
+                d.Add(Joints.Body, VikingModel.Shade(d.pal.brass, 0.6f), MeshData.Box(at + new Vector3(0f, 0f, 0.014f * s), new Vector3(0.007f, 0.048f, 0.004f) * s), false);
                 // Strap from the brooch across the chest to the opposite hip, with a ring halfway.
-                var end = new Vector3(-x * f.waistR * 0.8f, f.waist + 0.03f * s, f.waistR * f.depth + 0.015f);
-                var mid = Vector3.Lerp(at, end, 0.5f) + new Vector3(0f, 0f, 0.012f * s);
-                d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(new[] { at + new Vector3(0f, -0.03f * s, -0.01f * s), mid, end }, new[] { 0.011f * s, 0.012f * s, 0.011f * s }, 5), false);
-                d.Add(Joints.Body, d.pal.brass, MeshData.Lathe(new[] { new Vector2(0.02f * s, -0.005f * s), new Vector2(0.02f * s, 0.005f * s) }, 10).Transformed(mid + new Vector3(0f, 0f, 0.012f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one), false);
+                var end = new Vector3(-x * f.waistR * 0.8f, f.waist + 0.03f * s, f.waistR * f.depth + 0.03f);
+                var mid = Vector3.Lerp(at, end, 0.5f) + new Vector3(0f, 0f, 0.02f * s);
+                d.Add(Joints.Body, d.pal.leather, MeshData.Tube(new[] { at + new Vector3(0f, -0.03f * s, -0.01f * s), mid, end }, new[] { 0.014f * s, 0.015f * s, 0.014f * s }, 5), false);
+                d.Add(Joints.Body, d.pal.brass, MeshData.Lathe(new[] { new Vector2(0.02f * s, -0.005f * s), new Vector2(0.02f * s, 0.005f * s) }, 10).Transformed(mid + new Vector3(0f, 0f, 0.016f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one), false);
             }
         }
 
@@ -476,15 +479,15 @@ namespace OdinsCoin
             float brim = cy + 0.12f * r;
             var black = d.pal.clothDark;
             // A low crown that flares out wide towards the top, like an upturned bell.
-            var scale = new Vector3(1.1f, 1f, 0.92f);
+            var scale = new Vector3(1.04f, 1f, 0.92f);
             var offset = new Vector3(0f, 0f, -0.02f * r);
             d.Add(Joints.Head, black, MeshData.Lathe(new[] {
                 new Vector2(r * 1.13f, brim - 0.1f * r), new Vector2(r * 1.15f, brim + 0.2f * r), new Vector2(r * 1.28f, brim + 0.5f * r),
-                new Vector2(r * 1.46f, brim + 0.72f * r), new Vector2(r * 1.3f, brim + 0.78f * r), new Vector2(0.01f, brim + 0.7f * r) }, 24)
+                new Vector2(r * 1.36f, brim + 0.78f * r), new Vector2(r * 1.22f, brim + 0.84f * r), new Vector2(0.01f, brim + 0.76f * r) }, 24)
                 .Transformed(offset, Quaternion.identity, scale));
             // Gold bands at the brim and around the flared rim, with studs.
             d.Add(Joints.Head, d.pal.brass, CharacterKit.Band(brim - 0.03f * r, 0.03f * s, r * 1.19f, 0.97f, 24).Transformed(offset, Quaternion.identity, scale));
-            d.Add(Joints.Head, d.pal.brass, CharacterKit.Band(brim + 0.7f * r, 0.024f * s, r * 1.48f, 0.97f, 24).Transformed(offset, Quaternion.identity, scale));
+            d.Add(Joints.Head, d.pal.brass, CharacterKit.Band(brim + 0.76f * r, 0.024f * s, r * 1.38f, 0.97f, 24).Transformed(offset, Quaternion.identity, scale));
             for (int i = -4; i <= 4; i++)
             {
                 float a = i * 0.36f;
@@ -498,7 +501,7 @@ namespace OdinsCoin
             {
                 float len = Mathf.Abs(a) < 0.6f ? 0.6f : Mathf.Abs(a) < 2f ? 1.1f : 0.75f;
                 var dir = new Vector3(Mathf.Sin(a) * scale.x, 0f, Mathf.Cos(a) * scale.z);
-                var root = offset + new Vector3(0f, brim + 0.66f * r, 0f) + dir * r * 1.32f;
+                var root = offset + new Vector3(0f, brim + 0.72f * r, 0f) + dir * r * 1.24f;
                 var path = new[] {
                     root, root + dir * r * 0.3f * len + Vector3.up * r * 0.3f * len,
                     root + dir * r * 0.42f * len + Vector3.up * r * 0.7f * len, root + dir * r * 0.36f * len + Vector3.up * r * 1.0f * len + Vector3.forward * 0.06f * r };
