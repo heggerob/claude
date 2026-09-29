@@ -15,5 +15,5 @@ Ett punkt om gangen. Hvert punkt kompileres mot den falske Unity-API-en (`tools/
 - [x] **7. Bytte og gull:** bære kister om bord og levere dem i hjemmefjorden (Gunnar på brygga kjøper dem, også rett over ripa).
 - [x] **8. Runer:** gravere runer i mynten (6 runer, 3 plasser), endre oddsen, lykke-meter og ravnene Hugin og Munin.
 - [x] **9. Methallen:** selge bytte, oppgradere skipet og utstyret (seil, årer, skrog, brynje, øks), terningspill mot Bjørn og skrytetavle.
-- [ ] **10. Farer på havet:** storm, fiendeskip og Jormungand.
+- [x] **10. Farer på havet:** storm (regn, lyn, tåke, vann i skroget og øsing), danske vikingskip med bueskyttere og ramming, og Jormungand.
 - [ ] **11. Lyd og meny:** generert lyd, hovedmeny og lagring.

@@ -13,5 +13,14 @@ namespace OdinsCoin
             return body.velocity;
 #endif
         }
+
+        public static void SetVelocity(Rigidbody body, Vector3 v)
+        {
+#if UNITY_6000_0_OR_NEWER
+            body.linearVelocity = v;
+#else
+            body.velocity = v;
+#endif
+        }
     }
 }

@@ -38,7 +38,9 @@ namespace OdinsCoin
             gunwale = Freeboard + 1.5f * Mathf.Pow(a, 5f); // stem and stern sweep up
         }
 
-        public static Parts Build(Transform root)
+        public static Parts Build(Transform root) { return Build(root, Materials.Sail, Materials.SailStripe); }
+
+        public static Parts Build(Transform root, Color sailColor, Color stripeColor)
         {
             var parts = new Parts { root = root };
 
@@ -70,7 +72,7 @@ namespace OdinsCoin
             for (int i = 0; i < stripes; i++)
             {
                 float x = -sailWidth / 2f + sailWidth * (i + 0.5f) / stripes;
-                Deco(PrimitiveType.Cube, sail, new Vector3(x, -sailHeight / 2f, 0.12f), new Vector3(sailWidth / stripes, sailHeight, 0.04f), i % 2 == 0 ? Materials.Sail : Materials.SailStripe);
+                Deco(PrimitiveType.Cube, sail, new Vector3(x, -sailHeight / 2f, 0.12f), new Vector3(sailWidth / stripes, sailHeight, 0.04f), i % 2 == 0 ? sailColor : stripeColor);
             }
             parts.yard = yard;
             parts.sail = sail;

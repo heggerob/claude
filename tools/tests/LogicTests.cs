@@ -23,6 +23,7 @@ public static class LogicTests
         HarbourTests();
         RuneTests();
         HallTests();
+        SeaDangerTests();
         CombatTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
@@ -60,6 +61,90 @@ public static class LogicTests
                 Check(Vector2.Distance(spec.centre, start) > spec.radius * 1.3f + 12f, spec.name + " leaves room for the ship at the start");
             foreach (var other in all)
                 if (other != spec) Check(Vector2.Distance(spec.centre, other.centre) > (spec.radius + other.radius) * 1.25f, spec.name + " doesn't overlap " + other.name);
+        }
+    }
+
+    static void SeaDangerTests()
+    {
+        // Storm falloff.
+        var c = new Vector2(0f, 0f);
+        Check(Math.Abs(SeaMath.StormIntensity(c, 100f, new Vector2(10f, 0f)) - 1f) < 0.001f, "full storm near the eye");
+        Check(SeaMath.StormIntensity(c, 100f, new Vector2(101f, 0f)) == 0f, "calm outside the storm");
+        float prev = 2f; bool falls = true;
+        for (float d = 0f; d <= 110f; d += 5f) { float i = SeaMath.StormIntensity(c, 100f, new Vector2(d, 0f)); if (i > prev + 1e-5f) falls = false; prev = i; }
+        Check(falls, "storm weakens steadily towards the edge");
+        Check(SeaMath.StormLeakRate(0.2f) == 0f && SeaMath.StormLeakRate(1f) > 0f, "only a real storm pours water in");
+
+        // Hull water: a full storm swamps an unbailed ship in minutes, and bailing keeps up.
+        var hull = new HullWater();
+        float t = 0f;
+        while (!hull.Sunk && t < 1000f) { hull.Tick(0.1f, 1f); t += 0.1f; }
+        Check(t > 60f && t < 150f, "an unbailed ship founders in a full storm after " + t.ToString("0") + " s");
+        var bailed = new HullWater();
+        for (int s2 = 0; s2 < 600; s2++) { bailed.Tick(1f, 1f); if (s2 % 5 == 0) bailed.Bail(); }
+        Check(!bailed.Sunk && bailed.Level < 0.5f, "a bucket every 5 s keeps her afloat through a storm (" + bailed.Level + ")");
+        var holed = new HullWater { Holes = 2 };
+        holed.Tick(10f, 0f);
+        Check(holed.Level > 0f, "holes let water in");
+        holed.Bail(); holed.Bail();
+        float after = holed.Level;
+        holed.Tick(10f, 0f);
+        Check(holed.Holes == 0 && Math.Abs(holed.Level - after) < 1e-5f, "plugging both holes stops the leak");
+        Check(Math.Abs(new HullWater { Level = 1f }.SpeedMultiplier - 0.4f) < 0.001f, "a swamped ship crawls");
+
+        // Ramming.
+        Check(SeaMath.RamDamage(1.5f, 1f) == 0f, "a gentle bump does nothing");
+        Check(SeaMath.RamDamage(4f, 1f) > 20f && SeaMath.RamDamage(7f, 1f) > Raider.MaxHull * 0.4f, "a ram at speed hurts: " + SeaMath.RamDamage(7f, 1f));
+        Check(SeaMath.RamDamage(6f, 1.5f) > SeaMath.RamDamage(6f, 1f), "Thor's Wrath rams harder");
+        int rams = (int)Math.Ceiling(Raider.MaxHull / SeaMath.RamDamage(6f, 1f));
+        Check(rams >= 2 && rams <= 4, "a raider takes " + rams + " good rams to sink");
+        Check(SeaMath.InsideHull(new Vector3(0f, 0.3f, 0f)) && SeaMath.InsideHull(new Vector3(2f, 0.3f, 3f)), "amidships is inside the hull");
+        Check(!SeaMath.InsideHull(new Vector3(4f, 0.3f, 0f)) && !SeaMath.InsideHull(new Vector3(0f, 0.3f, 10f)), "beside and beyond the hull is outside");
+
+        // Raider AI.
+        var tgt = new Vector3(0f, 0f, 0f);
+        var ip = SeaMath.InterceptPoint(tgt, Vector3.forward, Vector3.zero, new Vector3(50f, 0f, 0f), 13f);
+        Check(ip.x > 10f && Math.Abs(ip.z) < 6f, "raider on the starboard side comes alongside to starboard (" + ip + ")");
+        var ip2 = SeaMath.InterceptPoint(tgt, Vector3.forward, Vector3.zero, new Vector3(-50f, 0f, 0f), 13f);
+        Check(ip2.x < -10f, "and to port from the port side");
+        Check(SeaMath.SteerTowards(Vector3.zero, 0f, new Vector3(10f, 0f, 10f)) > 0f && SeaMath.SteerTowards(Vector3.zero, 0f, new Vector3(-10f, 0f, 10f)) < 0f, "steers towards the target");
+        Check(Math.Abs(SeaMath.SteerTowards(Vector3.zero, 90f, new Vector3(10f, 0f, 0f))) < 0.01f, "no rudder when on course");
+
+        // Jörmungandr.
+        var b = new SerpentBrain();
+        int strikes = 0; float time = 0f; bool stunnedSeen = false;
+        while (b.State != SerpentBrain.Phase.Gone && time < 600f)
+        {
+            if (b.Tick(0.05f)) strikes++;
+            if (b.State == SerpentBrain.Phase.Stunned) stunnedSeen = true;
+            time += 0.05f;
+        }
+        Check(strikes == SerpentBrain.MaxStrikes && stunnedSeen && b.State == SerpentBrain.Phase.Gone, "left alone, it strikes " + strikes + " times and leaves after " + time.ToString("0") + " s");
+        var h = new SerpentBrain();
+        Check(!h.Hit(50f) && h.Health == SerpentBrain.MaxHealth, "can't hurt it while it circles");
+        while (h.State != SerpentBrain.Phase.Stunned) h.Tick(0.05f);
+        int blows = 0;
+        while (!h.Defeated && h.State == SerpentBrain.Phase.Stunned && blows < 50) { h.Hit(VikingCombat.SwingDamage); blows++; h.Tick(VikingCombat.SwingTime); }
+        int perStun = (int)(SerpentBrain.StunTime / VikingCombat.SwingTime);
+        Check(perStun >= 8, "about " + perStun + " swings fit in one stun");
+        float plainPerStun = perStun * VikingCombat.SwingDamage;
+        Check(plainPerStun < SerpentBrain.MaxHealth && plainPerStun * 3f > SerpentBrain.MaxHealth, "it takes more than one stun but fewer than its strikes to kill it with a plain axe");
+        var k = new SerpentBrain { State = SerpentBrain.Phase.Stunned };
+        k.Hit(SerpentBrain.MaxHealth);
+        Check(k.Defeated && k.State == SerpentBrain.Phase.Diving, "a killing blow sends it diving");
+
+        // Dangers only spawn in open water, away from home.
+        Check(SeaDangers.InSafeWaters(HomeHarbour.ShipStart), "the home fjord is safe");
+        Check(!SeaDangers.InSafeWaters(new Vector3(0f, 0f, 250f)), "open sea isn't");
+        var rng = new System.Random(9);
+        for (int i = 0; i < 50; i++)
+        {
+            var from = new Vector3((float)rng.NextDouble() * 500f - 250f, 0f, (float)rng.NextDouble() * 500f);
+            var spot = SeaDangers.OpenWater(from, 120f, () => (float)rng.NextDouble());
+            if (!spot.HasValue) continue;
+            bool water = true;
+            foreach (var sp in WorldGen.Specs) if (Island.Height(sp, spot.Value.x, spot.Value.z) > -3f) water = false;
+            Check(water && !SeaDangers.InSafeWaters(spot.Value), "raider spawns in deep open water " + spot.Value);
         }
     }
 

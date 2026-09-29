@@ -31,6 +31,7 @@ namespace OdinsCoin
 
         public VikingBuilder.Parts Parts { get { return parts; } }
         float verticalSpeed;
+        float bailAnim;
         float facing;
         float walkCycle;
         // Where we stand in the ship's own coordinates, and which way we face relative to the ship.
@@ -212,6 +213,8 @@ namespace OdinsCoin
             }
             var chest = TreasureChest.NearestFree(transform.position + Vector3.up * 0.5f, InteractRange);
             if (chest != null) { Prompt = "[E] Pick up the chest (" + chest.Value + " gold)"; return; }
+            if (OnShip && Ship.Hull.Holes > 0) { Prompt = "[E] Plug a hole (" + Ship.Hull.Holes + " letting water in)"; return; }
+            if (OnShip && Ship.Hull.Level > 0.02f) { Prompt = "[E] Bail water (" + Mathf.RoundToInt(Ship.Hull.Level * 100f) + "% full)"; return; }
             if (Swimming && DistanceToShip() < ClimbRange) Prompt = "[E] Climb aboard";
         }
 
@@ -279,6 +282,12 @@ namespace OdinsCoin
                     Carrying = chest;
                     return;
                 }
+                if (OnShip && (Ship.Hull.Holes > 0 || Ship.Hull.Level > 0.02f))
+                {
+                    Ship.Hull.Bail();
+                    bailAnim = 0.35f;
+                    return;
+                }
             }
             if (Swimming && DistanceToShip() < ClimbRange)
             {
@@ -338,7 +347,15 @@ namespace OdinsCoin
             if (Swimming) swing = Mathf.Sin(Time.time * 4f) * 40f;
             parts.leftLeg.localRotation = Quaternion.Euler(swing, 0f, 0f);
             parts.rightLeg.localRotation = Quaternion.Euler(-swing, 0f, 0f);
-            if (Carrying != null)
+            bailAnim = Mathf.Max(0f, bailAnim - dt);
+            if (bailAnim > 0f)
+            {
+                // A bucket of water heaved over the side.
+                float heave = Mathf.Sin(bailAnim / 0.35f * Mathf.PI) * 110f;
+                parts.leftArm.localRotation = Quaternion.Euler(-heave, 0f, 10f);
+                parts.rightArm.localRotation = Quaternion.Euler(-heave, 0f, -10f);
+            }
+            else if (Carrying != null)
             {
                 // Both arms out front, hugging the chest.
                 parts.leftArm.localRotation = Quaternion.Euler(-70f, 0f, 8f);

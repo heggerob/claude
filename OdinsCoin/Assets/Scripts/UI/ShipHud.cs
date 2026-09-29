@@ -31,6 +31,7 @@ namespace OdinsCoin
             GUI.Label(new Rect(20, 16, 370, 110), text, style);
 
             DrawFortune();
+            DrawDangers();
 
             // Nearest land.
             if (Player != null)
@@ -100,6 +101,51 @@ namespace OdinsCoin
                 GUI.Label(new Rect(x + 10f, y + 52f + i * 22f, 280f, 22f),
                     string.Format("<color={0}>{1}</color> <size=12>tier {2} · {3}:{4:00}</size>", colour, a.card.name, a.tier, Mathf.FloorToInt(a.remaining / 60f), Mathf.FloorToInt(a.remaining % 60f)), style);
             }
+        }
+
+        /// <summary>Hull water, the storm, and the health of whatever is attacking you.</summary>
+        void DrawDangers()
+        {
+            float y = 162f;
+            var hull = Ship.Hull;
+            if (hull.Level > 0.01f || hull.Holes > 0)
+            {
+                GUI.Label(new Rect(20f, y, 380f, 22f), string.Format("<color=#88ccff><b>Water in the hull</b></color> {0:0}%{1}", hull.Level * 100f,
+                    hull.Holes > 0 ? "   <color=#ff8866>" + hull.Holes + " hole" + (hull.Holes == 1 ? "" : "s") + "!</color>" : ""), style);
+                Bar(new Rect(20f, y + 24f, 200f, 10f), hull.Level, hull.Level > 0.7f ? new Color(1f, 0.35f, 0.3f) : new Color(0.4f, 0.7f, 1f));
+                y += 40f;
+            }
+            var storm = Storm.Instance;
+            if (storm != null && storm.Intensity > 0.25f)
+            {
+                GUI.Label(new Rect(20f, y, 380f, 22f), storm.Intensity > 0.6f ? "<color=#aabbff><b>STORM!</b> Furl the sail and bail.</color>" : "<color=#aabbff>The sky darkens: a storm is on you.</color>", style);
+                y += 24f;
+            }
+            foreach (var r in Raider.All)
+            {
+                if (r.Sinking) continue;
+                float d = Vector3.Distance(r.transform.position, Ship.transform.position);
+                GUI.Label(new Rect(20f, y, 380f, 22f), string.Format("<color=#ff8866>Raider</color> {0:0} m{1}", d, r.Ramming ? "  <b>RAMMING!</b>" : ""), style);
+                Bar(new Rect(160f, y + 7f, 120f, 8f), r.Hull / Raider.MaxHull, new Color(0.8f, 0.25f, 0.2f));
+                y += 24f;
+            }
+            var serpent = Serpent.Instance;
+            if (serpent != null)
+            {
+                string what = serpent.Brain.State == SerpentBrain.Phase.Stunned ? "<b>STUNNED: hit its head!</b>"
+                            : serpent.Brain.State == SerpentBrain.Phase.Rearing ? "<b>REARING UP: get clear!</b>" : "circling...";
+                GUI.Label(new Rect(Screen.width / 2f - 200f, 12f, 400f, 22f), "<color=#99ff99><b>JÖRMUNGANDR</b></color>  " + what, style);
+                Bar(new Rect(Screen.width / 2f - 200f, 36f, 400f, 10f), serpent.Brain.Health / SerpentBrain.MaxHealth, new Color(0.3f, 0.7f, 0.35f));
+            }
+        }
+
+        static void Bar(Rect r, float fill, Color colour)
+        {
+            GUI.Box(r, GUIContent.none);
+            var old = GUI.color;
+            GUI.color = colour;
+            GUI.DrawTexture(new Rect(r.x + 1f, r.y + 1f, (r.width - 2f) * Mathf.Clamp01(fill), r.height - 2f), Texture2D.whiteTexture);
+            GUI.color = old;
         }
 
         static string Arrow(float relative)

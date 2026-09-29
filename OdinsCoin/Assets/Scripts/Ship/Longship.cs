@@ -16,6 +16,9 @@ namespace OdinsCoin
         public float SailTarget = 0.6f;
         public float SailAmount { get; private set; }
         public bool Rowing;
+        /// <summary>The player's own ship: upgrades, blessings and curses apply to it, and it can flood.</summary>
+        public bool PlayerShip;
+        public readonly HullWater Hull = new HullWater();
 
         public Rigidbody Body { get; private set; }
         public LongshipBuilder.Parts Parts { get; private set; }
@@ -33,6 +36,11 @@ namespace OdinsCoin
 
         public static Longship Create(Transform parent, Vector3 position, float heading)
         {
+            return Create(parent, position, heading, Materials.Sail, Materials.SailStripe);
+        }
+
+        public static Longship Create(Transform parent, Vector3 position, float heading, Color sail, Color stripe)
+        {
             var go = new GameObject("Longship");
             go.transform.SetParent(parent, false);
             go.transform.position = position;
@@ -44,7 +52,7 @@ namespace OdinsCoin
             rb.maxAngularVelocity = 2f;
             var ship = go.AddComponent<Longship>();
             ship.Body = rb;
-            ship.Parts = LongshipBuilder.Build(go.transform);
+            ship.Parts = LongshipBuilder.Build(go.transform, sail, stripe);
             ship.SailAmount = ship.SailTarget;
             return ship;
         }
@@ -80,10 +88,16 @@ namespace OdinsCoin
 
             // Sail and oars.
             SailAmount = Mathf.MoveTowards(SailAmount, Mathf.Clamp01(SailTarget), dt * 0.35f);
-            var up = Upgrades.Current;
-            float thrust = ShipTuning.SailThrust(SailAmount, t.forward) * up.SailMultiplier;
-            if (Rowing && SailAmount < 0.15f) thrust += ShipTuning.RowThrust * up.OarMultiplier;
-            thrust *= up.LeakMultiplier(Fortune.Current); // Rán's Net drags at the hull; a tarred hull resists
+            float thrust = ShipTuning.SailThrust(SailAmount, t.forward);
+            if (Rowing && SailAmount < 0.15f) thrust += ShipTuning.RowThrust;
+            if (PlayerShip)
+            {
+                var up = Upgrades.Current;
+                thrust = ShipTuning.SailThrust(SailAmount, t.forward) * up.SailMultiplier;
+                if (Rowing && SailAmount < 0.15f) thrust += ShipTuning.RowThrust * up.OarMultiplier;
+                thrust *= up.LeakMultiplier(Fortune.Current); // Rán's Net drags at the hull; a tarred hull resists
+                thrust *= Hull.SpeedMultiplier;               // and so does water sloshing in the bilge
+            }
             Vector3 forwardFlat = t.forward;
             forwardFlat.y = 0f;
             Body.AddForce(forwardFlat.normalized * thrust);
@@ -92,6 +106,21 @@ namespace OdinsCoin
             rudderAngle = Mathf.MoveTowards(rudderAngle, Mathf.Clamp(RudderInput, -1f, 1f), dt * 1.5f);
             float flow = Mathf.Clamp(v.z, -2f, 9f) + (Rowing ? 1.5f : 0f);
             Body.AddTorque(Vector3.up * rudderAngle * flow * ShipTuning.RudderTorque);
+        }
+
+        /// <summary>Put the ship somewhere else at rest (after foundering, for example).</summary>
+        public void Relocate(Vector3 position, float heading)
+        {
+            transform.position = position;
+            transform.rotation = Quaternion.Euler(0f, heading, 0f);
+            Body.position = position;
+            Body.rotation = transform.rotation;
+            Compat.SetVelocity(Body, Vector3.zero);
+            Body.angularVelocity = Vector3.zero;
+            rudderAngle = 0f;
+            RudderInput = 0f;
+            Rowing = false;
+            Furl();
         }
 
         void Update()

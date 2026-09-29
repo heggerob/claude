@@ -30,6 +30,9 @@ namespace OdinsCoin
         public Transform Focus { get; private set; }
         public Longship Ship { get; private set; }
         public Viking Player { get; private set; }
+        public Light Sun { get; private set; }
+        public static readonly Color AmbientColor = new Color(0.42f, 0.48f, 0.53f);
+        public const float SunIntensity = 1.15f, FogStart = 40f, FogEnd = 220f;
 
         void Update()
         {
@@ -49,7 +52,7 @@ namespace OdinsCoin
 
             Time.timeScale = 1f;
             var cam = SetupCamera();
-            SetupLighting();
+            Sun = SetupLighting();
 
             Ocean = Ocean.Create(transform);
             WorldGen.Build(transform);
@@ -58,6 +61,7 @@ namespace OdinsCoin
             // The voyage starts moored at the home jetty, sail furled.
             Ship = Longship.Create(transform, HomeHarbour.ShipStart, HomeHarbour.ShipStartHeading);
             Ship.Furl();
+            Ship.PlayerShip = true;
             // The helm only listens to the keyboard while the Viking holds the steering oar.
             Ship.gameObject.AddComponent<ShipKeyboardHelm>().enabled = false;
             Player = Viking.Create(transform, Ship);
@@ -67,6 +71,8 @@ namespace OdinsCoin
             gameObject.AddComponent<CoinUI>();
             gameObject.AddComponent<Ravens>();
             gameObject.AddComponent<MeadHallUI>().Ship = Ship;
+            gameObject.AddComponent<Storm>();
+            gameObject.AddComponent<SeaDangers>();
             var hud = gameObject.AddComponent<ShipHud>();
             hud.Ship = Ship;
             hud.Player = Player;
@@ -111,7 +117,7 @@ namespace OdinsCoin
             return cam;
         }
 
-        static void SetupLighting()
+        static Light SetupLighting()
         {
             Light sun = null;
             foreach (var l in FindLights()) if (l.type == LightType.Directional) { sun = l; break; }
@@ -123,16 +129,17 @@ namespace OdinsCoin
             // Low northern sun.
             sun.transform.rotation = Quaternion.Euler(28f, -35f, 0f);
             sun.color = new Color(1f, 0.93f, 0.82f);
-            sun.intensity = 1.15f;
+            sun.intensity = SunIntensity;
             sun.shadows = LightShadows.Soft;
 
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Linear;
             RenderSettings.fogColor = SkyColor;
-            RenderSettings.fogStartDistance = 40f;
-            RenderSettings.fogEndDistance = 220f;
+            RenderSettings.fogStartDistance = FogStart;
+            RenderSettings.fogEndDistance = FogEnd;
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
-            RenderSettings.ambientLight = new Color(0.42f, 0.48f, 0.53f);
+            RenderSettings.ambientLight = AmbientColor;
+            return sun;
         }
 
         static Light[] FindLights()

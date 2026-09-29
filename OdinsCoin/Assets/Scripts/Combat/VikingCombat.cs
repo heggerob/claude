@@ -70,6 +70,18 @@ namespace OdinsCoin
                 saxon.Health.TakeDamage(dmg, transform.position);
                 saxon.Stagger(transform.position);
             }
+            float blow = SwingDamage * fortune.MeleeDamageMultiplier * Upgrades.Current.AxeMultiplier;
+            // Jörmungandr's head, while it lies stunned on the gunwale.
+            var serpent = Serpent.Instance;
+            if (serpent != null && serpent.HeadInReach(transform.position, transform.forward, Reach, Arc)) serpent.TakeHit(blow);
+            // Hacking at a raider's strakes from alongside (or aboard).
+            foreach (var raider in Raider.All.ToArray())
+                if (!raider.Sinking && raider.WithinReach(transform.position + transform.forward * 1.2f, 0.9f))
+                {
+                    float chop = blow * 0.35f;
+                    raider.TakeDamage(chop, transform.position);
+                    CombatHud.Number(transform.position + transform.forward * 1.5f + Vector3.up * 1.2f, "-" + Mathf.RoundToInt(chop) + " hull", new Color(0.9f, 0.7f, 0.4f));
+                }
         }
 
         void LateUpdate()
