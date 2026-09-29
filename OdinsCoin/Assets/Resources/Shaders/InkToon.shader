@@ -31,6 +31,9 @@ Shader "OdinsCoin/InkToon"
             float4 _InkSunDir;
             float _InkHatchSpacing;
             float _InkStrokeDark;
+            // Paper grain over the whole picture (DrawnTextures' paper), fixed to the screen like the page itself.
+            sampler2D _InkPaper;
+            float _InkPaperAmount;
 
             struct appdata
             {
@@ -86,6 +89,7 @@ Shader "OdinsCoin/InkToon"
                 float c2 = saturate((0.3 - tone) / 0.3);
                 if (c2 > 0.0) k *= 1.0 - strokeDark * InkLine((sp.x - sp.y - wobble) / spacing + 0.5, c2 * 0.28, spacing);
                 col *= lerp(1.0, k, _Hatch);
+                col *= lerp(1.0, tex2D(_InkPaper, sp / 256.0).r, _InkPaperAmount);
 
                 fixed4 c = fixed4(col, 1.0);
                 UNITY_APPLY_FOG(i.fogCoord, c);

@@ -505,13 +505,16 @@ namespace OdinsCoin
             foreach (var joint in new[] { Joints.LeftLeg, Joints.RightLeg })
             {
                 float sole = -f.hip, top = sole + height * s;
-                float r = 0.058f * s * Mathf.Sqrt(f.width);
+                float r = 0.048f * s * Mathf.Sqrt(f.width);
+                // A slim shaft, pinched at the ankle, opening into a folded-down cuff.
                 d.Add(joint, d.pal.leatherDark, MeshData.Lathe(new[] {
-                    new Vector2(r * 0.85f, sole), new Vector2(r * 1.02f, sole + 0.04f * s), new Vector2(r * 0.9f, sole + 0.1f * s),
+                    new Vector2(r * 0.95f, sole), new Vector2(r * 1.08f, sole + 0.035f * s), new Vector2(r * 0.86f, sole + 0.1f * s),
                     new Vector2(r * 1.0f, top - 0.03f * s), new Vector2(r * 1.2f, top) }, 12));
+                // A long pointed toe turning up a little, and a heel.
                 d.Add(joint, d.pal.leatherDark, MeshData.Tube(new[] {
-                    new Vector3(0f, sole + 0.045f * s, 0f), new Vector3(0f, sole + 0.035f * s, 0.11f * s), new Vector3(0f, sole + 0.05f * s, 0.18f * s) },
-                    new[] { r * 0.88f, r * 0.6f, 0.004f }, 10));
+                    new Vector3(0f, sole + 0.04f * s, -0.01f * s), new Vector3(0f, sole + 0.032f * s, 0.1f * s), new Vector3(0f, sole + 0.035f * s, 0.18f * s), new Vector3(0f, sole + 0.05f * s, 0.23f * s) },
+                    new[] { r * 0.95f, r * 0.7f, r * 0.35f, 0.003f }, 10));
+                d.Add(joint, VikingModel.Shade(d.pal.leatherDark, 0.7f), MeshData.Box(new Vector3(0f, sole + 0.012f * s, -0.025f * s), new Vector3(r * 1.5f, 0.024f * s, r * 1.2f)), false);
                 d.Add(joint, VikingModel.Shade(d.pal.leatherDark, 1.3f), MeshData.Lathe(new[] { new Vector2(r * 1.2f, top - 0.035f * s), new Vector2(r * 1.24f, top + 0.005f * s) }, 12));
                 d.Add(joint, d.pal.leather, CharacterKit.Spiral(sole + 0.06f * s, top - 0.05f * s, r * 1.02f, 1.2f, 0f, 0.0065f * s), false);
                 d.Add(joint, d.pal.leather, CharacterKit.Spiral(sole + 0.06f * s, top - 0.05f * s, r * 1.02f, -1.2f, Mathf.PI, 0.0065f * s), false);
@@ -578,7 +581,8 @@ namespace OdinsCoin
                     float y = f.shoulderY + 0.04f * s - v * hang[c];
                     // From the front of the shoulder (u = 0) round to the side (u = 1), widening as it falls.
                     float ang = Mathf.Lerp(0.55f, 2.1f, u) + v * 0.2f;
-                    float rad = Mathf.Max(f.TorsoRadius(Mathf.Max(y, f.waist)), d.SkirtRadius(y)) + 0.035f * s + v * 0.05f * s;
+                    // Flaring out as it falls, most at the outer edge, like heavy wool swinging off the hip.
+                    float rad = Mathf.Max(f.TorsoRadius(Mathf.Max(y, f.waist)), d.SkirtRadius(y)) + 0.035f * s + v * (0.05f + 0.12f * u) * s;
                     grid[r, c] = new Vector3(Mathf.Sin(ang) * rad, y, Mathf.Cos(ang) * rad * (f.depth + 0.1f));
                 }
             d.Add(Joints.Body, d.pal.accent, CharacterKit.Sheet(grid, new Vector3(1f, 0f, 0.6f), 0.016f * s));
@@ -667,8 +671,9 @@ namespace OdinsCoin
             var f = d.fit;
             float s = d.S;
             float y = f.waist - 0.1f * s;
-            float x = f.waistR * 1.0f + 0.02f * s;
-            var at = new Vector3(x, y, d.SkirtRadius(y) * d.skirtDepth * 0.65f);
+            // At the front of the right hip, in front of any cloak falling down that side.
+            float ang = 0.5f, rad = d.SkirtRadius(y) + 0.05f * s;
+            var at = new Vector3(Mathf.Sin(ang) * rad, y, Mathf.Cos(ang) * rad * (d.hasSkirt ? d.skirtDepth : f.depth));
             // The case: a leather tube hanging at a slant.
             d.Add(Joints.Body, d.pal.leather, MeshData.Lathe(new[] { new Vector2(0.03f * s, -0.12f * s), new Vector2(0.032f * s, 0.1f * s) }, 10)
                 .Transformed(at + new Vector3(0.02f * s, -0.05f * s, 0.03f * s), Quaternion.Euler(0f, 0f, 25f), Vector3.one));
@@ -677,10 +682,13 @@ namespace OdinsCoin
             // Two loose rolls of parchment tucked in the belt, lying crosswise.
             for (int i = 0; i < 2; i++)
             {
-                var c = at + new Vector3(-0.02f * s, (0.06f - i * 0.05f) * s, (0.07f + i * 0.02f) * s);
-                d.Add(Joints.Body, d.pal.parchment, MeshData.Lathe(new[] { new Vector2(0.024f * s, -0.07f * s), new Vector2(0.024f * s, 0.07f * s) }, 10)
+                var c = at + new Vector3(-0.01f * s, (0.07f - i * 0.06f) * s, (0.04f + i * 0.02f) * s);
+                d.Add(Joints.Body, d.pal.parchment, MeshData.Lathe(new[] { new Vector2(0.032f * s, -0.1f * s), new Vector2(0.032f * s, 0.1f * s) }, 12)
                     .Transformed(c, Quaternion.Euler(0f, 30f + i * 20f, 80f - i * 15f), Vector3.one));
-                d.Add(Joints.Body, VikingModel.Shade(d.pal.parchment, 0.7f), MeshData.Lathe(new[] { new Vector2(0.026f * s, -0.008f * s), new Vector2(0.026f * s, 0.008f * s) }, 10)
+                // The rolled end showing its spiral, and a cord round the middle.
+                d.Add(Joints.Body, VikingModel.Shade(d.pal.parchment, 0.75f), MeshData.Lathe(new[] { new Vector2(0.034f * s, -0.01f * s), new Vector2(0.034f * s, 0.01f * s) }, 12)
+                    .Transformed(c, Quaternion.Euler(0f, 30f + i * 20f, 80f - i * 15f), Vector3.one), false);
+                d.Add(Joints.Body, VikingModel.Shade(d.pal.parchment, 0.55f), MeshData.Lathe(new[] { new Vector2(0.018f * s, 0.098f * s), new Vector2(0.018f * s, 0.102f * s) }, 10)
                     .Transformed(c, Quaternion.Euler(0f, 30f + i * 20f, 80f - i * 15f), Vector3.one), false);
             }
         }

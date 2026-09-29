@@ -346,7 +346,7 @@ public static class HeroPreview
                     // halved, so the strokes are twice as far apart here.
                     Vector3 nrm = (na * w0 + nb * w1 + nc * w2).normalized;
                     float d = InkStyle.Tone(nrm, light);
-                    float shade = InkStyle.Shade(d) * Mathf.Lerp(1f, InkStyle.Hatch(d, x, y, InkStyle.Spacing * 2f), hatch);
+                    float shade = InkStyle.Shade(d) * Mathf.Lerp(1f, InkStyle.Hatch(d, x, y, InkStyle.Spacing * 2f), hatch) * InkStyle.Paper(x * 0.5f, y * 0.5f);
                     r = r * shade * (0.96f + 0.06f * d); g *= shade; bl = bl * shade * (1.04f - 0.06f * d);
                 }
                 int i = (y * w + x) * 3;

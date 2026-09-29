@@ -89,18 +89,17 @@ namespace OdinsCoin
                     new Ability { id = "currents", name = "Currents", description = "The ship sails faster with you at the helm." } },
                 dress = d =>
                 {
-                    Garments.ShinBoots(d, 0.3f);
+                    Garments.ShinBoots(d, 0.24f);
                     Garments.Gloves(d);
-                    Garments.LongSkirt(d, 0.36f, 1.75f);
-                    Garments.Underskirt(d, 0.05f);
-                    Garments.FurSkirt(d, 0.55f, 0.4f);
+                    Garments.LongSkirt(d, 0.2f, 1.35f);
+                    Garments.Underskirt(d, 0.08f);
                     Garments.Tunic(d, false);
                     Garments.LongSleeves(d);
                     Garments.RaiderBelt(d, 2);
                     Garments.Apron(d, 0.3f);
                     Garments.ScrollCase(d);
-                    Garments.FurCollar(d);
-                    Garments.SideCloak(d, 0.62f, 0.62f);
+                    Garments.ShoulderPelt(d, 1.0f);
+                    Garments.SideCloak(d, 0.62f, 0.85f);
                     Garments.Bandana(d);
                 } } },
             { OutfitId.SpearGuard, new Outfit {

@@ -42,7 +42,8 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
 - [ ] **10. Tegneserie-look på alt:** tusj-kanter på skipet, øyene, trærne, husene og havet, skravur med blyant eller tusj i skyggene, og papirkorn over hele bildet.
   - [x] Skravur i skyggene: shaderen `OdinsCoin/InkToon` (i `Resources/Shaders`) gir myk tegnet belysning med kalde skygger, enkle blyantstreker på skyggesiden og kryss-skravur i de mørkeste delene. Ansiktene får ingen skravur, så de holder seg rene. Den brukes på alt som ikke er blankt (havet beholder Lit). `InkStyle.cs` har samme matte, og forhåndsvisningen bruker den.
   - [x] Tusj-kanter på verdenen: shaderen `OdinsCoin/InkOutline` skyver et skall ut et fast antall skjermpiksler (tynnere på avstand), og `InkOutliner` gir alt massivt i InkToon en strek, også ting som dukker opp senere. Skroget og øyene får strek fra yttersiden, seil og bannere får ingen, og heltene har sine egne streker.
-  - [ ] Papirkorn over hele bildet og skygger som faller på ting med InkToon.
+  - [x] Papirkorn: papirteksturen ligger fast på skjermen over alt i InkToon (og i forhåndsvisningen).
+  - [ ] Skygger som faller på ting med InkToon (i dag kaster de skygge, men viser ikke skygger fra andre).
 - [x] **10b. Tegnede teksturer:** (`DrawnTextures.cs`, se `docs/textures.png`; hver del får type fra palettfargen) stoff, pels, lær, tre og mønsterkanter lages i kode med penselstrøk og streker, slik at alt ser tegnet ut som på bildet.
 - [ ] **11. I spillet:** velg figur i menyen, bruk figurene som spiller og NPC-er, og la animasjonene passe pinne-lemmene (pust, gange, sving).
 - [ ] **12. Skins:** fargesett og varianter for hver figur, kjøpt for gull i methallen, med en figur som snurrer rundt i butikken.

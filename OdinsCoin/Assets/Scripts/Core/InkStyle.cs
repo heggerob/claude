@@ -14,6 +14,15 @@ namespace OdinsCoin
         public const float Spacing = 5f;
         /// <summary>How dark one layer of strokes is.</summary>
         public const float StrokeDark = 0.3f;
+        /// <summary>How strongly the paper grain shows through everything.</summary>
+        public const float PaperAmount = 0.5f;
+
+        /// <summary>Paper grain multiplier at a screen pixel (the paper texture, 2 screen pixels per texel).</summary>
+        public static float Paper(float sx, float sy)
+        {
+            float g = DrawnTextures.Sample(DrawnTextures.Get(SurfaceKind.Paper), sx / 256f, sy / 256f);
+            return Mathf.Lerp(1f, g, PaperAmount);
+        }
 
         /// <summary>Light from 0 (facing away) to 1 (facing the sun), wrapped so the terminator is soft.</summary>
         public static float Tone(Vector3 normal, Vector3 toSun)
@@ -69,6 +78,8 @@ namespace OdinsCoin
             Shader.SetGlobalVector("_InkSunDir", new Vector4(d.x, d.y, d.z, 0f));
             Shader.SetGlobalFloat("_InkHatchSpacing", Spacing);
             Shader.SetGlobalFloat("_InkStrokeDark", StrokeDark);
+            Shader.SetGlobalTexture("_InkPaper", DrawnTextures.Texture(SurfaceKind.Paper));
+            Shader.SetGlobalFloat("_InkPaperAmount", PaperAmount);
         }
     }
 }
