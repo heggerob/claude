@@ -7,7 +7,7 @@ Ett punkt om gangen. Hvert punkt kompileres mot den falske Unity-API-en (`tools/
 > tilgang, flyttes alt dit.
 
 - [x] **1. Grunnmur:** oppstart fra kode, hav med bølger (mesh som animeres), himmel, lys, tåke og tredjepersonskamera.
-- [ ] **2. Langskipet:** skrog laget i kode, oppdrift som følger bølgene, seil, ror og vind.
+- [x] **2. Langskipet:** skrog laget i kode, oppdrift som følger bølgene, seil, ror og vind.
 - [ ] **3. Vikingen:** gå om bord mens skipet beveger seg, ta roret, heise seilet og hoppe i vannet.
 - [ ] **4. Odins mynt:** alteret om bord, myntkast med animasjon, innsats, velsignelser og forbannelser med varighet, og odds som vises.
 - [ ] **5. Øyer:** genererte øyer med strender, trær, klostre og skattekister.

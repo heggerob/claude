@@ -17,8 +17,35 @@ public static class LogicTests
     public static int Main()
     {
         WavesTests();
+        ShipTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
+    }
+
+    static void ShipTests()
+    {
+        // At rest every float point is RestDraft deep: buoyancy must carry the whole ship.
+        float lift = ShipTuning.Buoyancy(ShipTuning.RestDraft, 0f) * ShipTuning.BuoyancyPoints;
+        Check(Math.Abs(lift - ShipTuning.Mass * 9.81f) < 1f, "ship floats at rest draft: " + lift);
+        Check(ShipTuning.Buoyancy(-0.1f, 0f) == 0f, "no buoyancy out of the water");
+        Check(ShipTuning.Buoyancy(0.5f, 3f) < ShipTuning.Buoyancy(0.5f, 0f), "rising fast is damped");
+        Check(ShipTuning.Buoyancy(0.5f, -3f) > ShipTuning.Buoyancy(0.5f, 0f), "sinking fast pushes back harder");
+
+        var north = Vector3.forward;
+        Check(Math.Abs(ShipTuning.SailEfficiency(north, north) - 1f) < 0.001f, "tailwind is full efficiency");
+        Check(Math.Abs(ShipTuning.SailEfficiency(north, Vector3.right) - 0.5f) < 0.001f, "beam wind is half");
+        Check(ShipTuning.SailEfficiency(north, Vector3.back) <= 0.1f, "headwind is nearly useless");
+
+        // Top speed under full sail, tailwind, strongest wind: thrust = forward drag.
+        float vmax = (float)Math.Sqrt(ShipTuning.MaxSailThrust / ShipTuning.ForwardDrag);
+        float knots = ShipTuning.MetresPerSecondToKnots(vmax);
+        Check(knots > 10f && knots < 20f, "top speed is a believable longship speed: " + knots + " kn");
+
+        // Hull shape: widest amidships, rises at the ends.
+        float hw0, k0, g0, hw1, k1, g1;
+        LongshipBuilder.Station(0f, out hw0, out k0, out g0);
+        LongshipBuilder.Station(0.95f, out hw1, out k1, out g1);
+        Check(hw0 > hw1 && g1 > g0 && k0 < k1, "hull is widest and deepest amidships, stem rises");
     }
 
     static void WavesTests()

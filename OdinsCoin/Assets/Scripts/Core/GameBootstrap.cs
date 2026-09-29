@@ -28,6 +28,9 @@ namespace OdinsCoin
 
         public Ocean Ocean { get; private set; }
         public Transform Focus { get; private set; }
+        public Longship Ship { get; private set; }
+
+        void Update() { Wind.Tick(Time.deltaTime); }
 
         void Awake()
         {
@@ -45,14 +48,10 @@ namespace OdinsCoin
 
             Ocean = Ocean.Create(transform);
 
-            // Until the longship exists, the camera orbits a marker bobbing on the waves.
-            var marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            marker.name = "Marker Buoy";
-            marker.transform.SetParent(transform, false);
-            marker.transform.localScale = new Vector3(0.8f, 0.6f, 0.8f);
-            marker.GetComponent<Renderer>().sharedMaterial = Materials.Get(Materials.Sail);
-            marker.AddComponent<Floater>().drift = 0f;
-            Focus = marker.transform;
+            Ship = Longship.Create(transform, new Vector3(0f, 0.2f, 0f), 30f);
+            Ship.gameObject.AddComponent<ShipKeyboardHelm>();
+            gameObject.AddComponent<ShipHud>().Ship = Ship;
+            Focus = Ship.transform;
 
             // A few barrels drifting around, to show the swell.
             for (int i = 0; i < 8; i++)
@@ -68,6 +67,8 @@ namespace OdinsCoin
 
             var rig = cam.GetComponent<CameraRig>();
             if (rig == null) rig = cam.gameObject.AddComponent<CameraRig>();
+            rig.Distance = 22f;
+            rig.Height = 3f;
             rig.SnapTo(Focus, 30f);
             Ocean.Follow(cam.transform);
         }
