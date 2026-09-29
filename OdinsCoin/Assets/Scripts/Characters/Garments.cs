@@ -125,19 +125,33 @@ namespace OdinsCoin
         {
             var f = d.fit;
             float s = d.S;
-            float y = f.shoulderY - 0.02f * s;
-            float r = (f.shoulderX + 0.04f * s) * size;
-            d.Add(Joints.Body, d.pal.fur, MeshData.Ellipsoid(new Vector3(0f, y + 0.01f * s, -0.005f), new Vector3(r, 0.07f * s, r * 0.72f), 16, 8));
-            d.Add(Joints.Body, d.pal.fur, CharacterKit.FurRing(new Vector3(0f, y - 0.02f * s, -0.005f), r * 0.97f, 0.74f, 0.075f * s, 18, 0.12f * s * size, d.seed + 6, 0.95f));
-            d.Add(Joints.Body, d.pal.furShadow, CharacterKit.FurRing(new Vector3(0f, y + 0.035f * s, -0.005f), r * 0.72f, 0.78f, 0.05f * s, 16, 0.07f * s, d.seed + 7, 0.5f));
-            // Long wispy strands, in both shades, so the edge reads as shaggy fur rather than a ring.
-            d.Add(Joints.Body, d.pal.fur, CharacterKit.FurRing(new Vector3(0f, y - 0.035f * s, -0.005f), r * 0.98f, 0.74f, 0.04f * s, 30, 0.16f * s * size, d.seed + 9, 1.25f));
-            d.Add(Joints.Body, d.pal.furShadow, CharacterKit.FurRing(new Vector3(0f, y - 0.05f * s, -0.005f), r * 0.93f, 0.74f, 0.035f * s, 20, 0.14f * s * size, d.seed + 10, 1.4f));
+            float r = (f.shoulderX + 0.05f * s) * size;
+            float bottom = f.shoulderY - 0.17f * s * size;
+            // The pelt itself: a thick shaggy cape-let draped from the neck over the shoulders, its edge torn into
+            // big uneven points, with a darker under-layer whose tips show below it.
+            // It sits on the shoulders below the chin, rounding over them and hanging down.
+            float top = f.shoulderY + 0.035f * s;
+            // Short over the chest (so brooches, straps and the tunic show), long over the shoulders and back.
+            float drop = f.shoulderY - bottom;
+            System.Func<float, float> shortFront = a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return drop * 0.7f * c * c; };
+            float hug = Mathf.Clamp01(f.chestR * f.depth * 1.25f / (r * 0.8f));
+            System.Func<float, float> hugFront = a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return Mathf.Lerp(1f, hug, c * c); };
+            d.Add(Joints.Body, d.pal.furShadow, CharacterKit.RaggedSkirt(top - 0.02f * s, f.chestR * 0.78f, bottom - 0.035f * s, r * 1.02f, 0.78f, 26, 0.07f * s * size, d.seed + 7, shortFront, hugFront));
+            d.Add(Joints.Body, d.pal.fur, CharacterKit.RaggedSkirt(top, f.chestR * 0.62f, bottom, r, 0.8f, 30, 0.085f * s * size, d.seed + 6, shortFront, hugFront));
+            // Lumpy clumps over the top so it doesn't read as a smooth shell, in both shades.
+            var rng = new System.Random(d.seed + 8);
+            for (int i = 0; i < 16; i++)
+            {
+                float a2 = Mathf.PI * 0.35f + (float)rng.NextDouble() * Mathf.PI * 1.3f; // mostly on the shoulders and back
+                float t = 0.35f + (float)rng.NextDouble() * 0.6f;
+                float rad = Mathf.Lerp(f.chestR * 0.62f, r, t * t) + 0.01f * s;
+                float y = Mathf.Lerp(top, bottom, t) + 0.012f * s;
+                var p = new Vector3(Mathf.Sin(a2) * rad, y, Mathf.Cos(a2) * rad * 0.8f);
+                float lump = (0.035f + (float)rng.NextDouble() * 0.03f) * s * size;
+                d.Add(Joints.Body, i % 4 == 0 ? d.pal.furShadow : d.pal.fur, MeshData.Ellipsoid(p, new Vector3(lump * 1.3f, lump * 0.7f, lump), 7, 4));
+            }
             // The pelt rises behind the neck like a mane, framing the head.
-            d.Add(Joints.Body, d.pal.fur, MeshData.Ellipsoid(new Vector3(0f, y + 0.06f * s * size, -f.chestR * f.depth * 0.7f), new Vector3(r * 0.75f, 0.075f * s * size, 0.06f * s), 14, 7));
-            // Pelt pieces draping down over the chest and back.
-            System.Func<float, float> torso = yy => f.TorsoRadius(yy) * 1.02f;
-            d.Add(Joints.Body, d.pal.fur, CharacterKit.Flaps(y - 0.03f * s, 0.13f * s * size, 6, 0.6f, f.depth, torso, 0.015f, d.seed + 8, 0.012f * s));
+            d.Add(Joints.Body, d.pal.fur, MeshData.Ellipsoid(new Vector3(0f, f.shoulderY + 0.05f * s * size, -f.chestR * f.depth * 0.7f), new Vector3(r * 0.7f, 0.07f * s * size, 0.06f * s), 14, 7));
         }
 
         /// <summary>A wide belt with a big brass buckle, a ring, pouches and a strap across the chest.</summary>

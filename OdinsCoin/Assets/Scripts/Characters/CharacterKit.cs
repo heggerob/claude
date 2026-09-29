@@ -58,6 +58,21 @@ namespace OdinsCoin
         /// </summary>
         public static MeshData RaggedSkirt(float topY, float topRadius, float bottomY, float bottomRadius, float depth, int segments, float jag, int seed)
         {
+            return RaggedSkirt(topY, topRadius, bottomY, bottomRadius, depth, segments, jag, seed, null);
+        }
+
+        /// <summary>
+        /// A ragged skirt whose hem can be raised by angle: <paramref name="hemRaise"/> takes the angle (0 = front,
+        /// radians) and returns how far to lift the hem there (a pelt that's short in front, long at the back).
+        /// </summary>
+        public static MeshData RaggedSkirt(float topY, float topRadius, float bottomY, float bottomRadius, float depth, int segments, float jag, int seed, System.Func<float, float> hemRaise)
+        {
+            return RaggedSkirt(topY, topRadius, bottomY, bottomRadius, depth, segments, jag, seed, hemRaise, null);
+        }
+
+        /// <summary>...and <paramref name="hemScale"/> scales the hem's radius by angle (hugging the chest in front).</summary>
+        public static MeshData RaggedSkirt(float topY, float topRadius, float bottomY, float bottomRadius, float depth, int segments, float jag, int seed, System.Func<float, float> hemRaise, System.Func<float, float> hemScale)
+        {
             var rng = new System.Random(seed);
             const int rows = 5;
             var m = new MeshData();
@@ -69,9 +84,11 @@ namespace OdinsCoin
                 for (int s = 0; s < segments; s++)
                 {
                     float a = s / (float)segments * Mathf.PI * 2f;
-                    float y = Mathf.Lerp(bottomY - hem[s], topY, k);
+                    float raise = hemRaise != null ? hemRaise(a) : 0f;
+                    float y = Mathf.Lerp(bottomY - hem[s] + raise, topY, k);
                     // Slight bell: widest just above the hem.
-                    float rad = Mathf.Lerp(bottomRadius, topRadius, k * k) * (1f + 0.04f * Mathf.Sin(k * Mathf.PI));
+                    float hr = bottomRadius * (hemScale != null ? hemScale(a) : 1f);
+                    float rad = Mathf.Lerp(hr, topRadius, k * k) * (1f + 0.04f * Mathf.Sin(k * Mathf.PI));
                     m.Vertices.Add(new Vector3(Mathf.Sin(a) * rad, y, Mathf.Cos(a) * rad * depth));
                 }
             }
