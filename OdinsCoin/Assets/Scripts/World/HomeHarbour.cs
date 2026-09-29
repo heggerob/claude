@@ -135,7 +135,7 @@ namespace OdinsCoin
             Vector2 spot = KeeperSpot;
             k.position = new Vector3(spot.x, Island.Height(Spec, spot.x, spot.y), spot.y);
             k.rotation = house.rotation * Quaternion.Euler(0f, 180f, 0f);
-            VikingBuilder.Build(k, new Color(0.5f, 0.2f, 0.15f), new Color(0.55f, 0.3f, 0.15f), new Color(0.2f, 0.3f, 0.6f), false);
+            HeroBuilder.Build(k, NpcHeroes.Bjorn());
             LongshipBuilder.Deco(PrimitiveType.Cylinder, k, new Vector3(-1.1f, 0.5f, 0.2f), new Vector3(0.8f, 0.5f, 0.8f), Materials.Wood);  // mead barrel
             LongshipBuilder.Deco(PrimitiveType.Cube, k, new Vector3(0f, 0.45f, 1f), new Vector3(1.4f, 0.9f, 0.8f), Materials.DarkWood);      // dice table
             for (int i = 0; i < 3; i++)
@@ -150,7 +150,7 @@ namespace OdinsCoin
             t.position = TraderPosition;
             // Faces the ship moored alongside.
             t.rotation = Quaternion.Euler(0f, 90f, 0f);
-            VikingBuilder.Build(t, new Color(0.55f, 0.45f, 0.2f), new Color(0.85f, 0.85f, 0.8f), new Color(0.3f, 0.5f, 0.3f), false);
+            HeroBuilder.Build(t, NpcHeroes.Gunnar());
             // A table with scales for weighing silver.
             LongshipBuilder.Deco(PrimitiveType.Cube, t, new Vector3(0f, 0.45f, 0.9f), new Vector3(1.4f, 0.9f, 0.7f), Materials.Wood);
             LongshipBuilder.Deco(PrimitiveType.Cylinder, t, new Vector3(0.3f, 1f, 0.9f), new Vector3(0.3f, 0.02f, 0.3f), Materials.Gold);

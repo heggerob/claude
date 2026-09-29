@@ -32,6 +32,7 @@ public static class LogicTests
         SwingTests();
         DrawnTextureTests();
         HeroChoiceTests();
+        NpcHeroTests();
         CombatTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
@@ -768,6 +769,30 @@ public static class LogicTests
                 var wm = HeroModel.BuildWeapon(s2);
                 Check(w == WeaponId.None || wm.Pieces.Count > 0, id + " can carry " + w);
             }
+    }
+
+    static void NpcHeroTests()
+    {
+        var a = NpcHeroes.Saxon(1); var b = NpcHeroes.Saxon(2);
+        Check(a.outfit == OutfitId.SpearGuard && a.palette != null && a.weapon == WeaponId.Sword && a.offHand == OffHandId.RoundShield, "Saxons are spear guards in Saxon colours with sword and shield");
+        bool differ = false;
+        for (int i = 0; i < 6; i++) { var x = NpcHeroes.Saxon(i); if (Math.Abs(x.body.height - a.body.height) > 0.01f || x.body.gender != a.body.gender) differ = true; }
+        Check(differ, "a band of Saxons aren't all the same body");
+        Check(NpcHeroes.Saxon(4).body.height == NpcHeroes.Saxon(4).body.height, "the same seed gives the same Saxon");
+        for (int i = 0; i < 40; i++)
+        {
+            var body = NpcHeroes.RandomBody(i);
+            Check(body.height >= 1.5f && body.height <= 1.9f && body.width >= 0.8f && body.width <= 1.25f, "random body " + i + " is believable");
+        }
+        foreach (var spec in new[] { NpcHeroes.Saxon(9), NpcHeroes.DanishRaider(3), NpcHeroes.Bjorn(), NpcHeroes.Gunnar() })
+        {
+            var m = HeroModel.Build(spec);
+            Check(m.Pieces.Count > 20, spec.outfit + " NPC builds");
+            bool usesPalette = false;
+            foreach (var p in m.Pieces) if (p.color.Equals(spec.palette.cloth)) usesPalette = true;
+            Check(usesPalette, spec.outfit + " NPC wears its own colours");
+        }
+        Check(NpcHeroes.DanishRaider(1).weapon == WeaponId.Bow && NpcHeroes.Gunnar().offHand == OffHandId.Map && NpcHeroes.Bjorn().weapon == WeaponId.None, "NPCs carry the right things");
     }
 
     static float Avg(float tone) { float s = 0f; for (int y = 0; y < 40; y++) for (int x = 0; x < 40; x++) s += InkStyle.Hatch(tone, x, y); return s / 1600f; }

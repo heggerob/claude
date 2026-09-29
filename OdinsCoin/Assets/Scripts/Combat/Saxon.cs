@@ -41,7 +41,7 @@ namespace OdinsCoin
             s.controller = cc;
             s.home = position;
             s.wanderTarget = position;
-            s.parts = VikingBuilder.Build(go.transform, new Color(0.35f, 0.42f, 0.25f), new Color(0.4f, 0.3f, 0.2f), new Color(0.2f, 0.3f, 0.6f), true);
+            s.parts = HeroBuilder.Build(go.transform, NpcHeroes.Saxon(All.Count + Mathf.RoundToInt(position.x * 7f + position.z * 13f)));
             s.Health = go.AddComponent<Health>();
             s.Health.BaseMax = 60f;
             s.Health.Damaged += (amount, from) => CombatHud.Number(go.transform.position + Vector3.up * 2.2f, Mathf.RoundToInt(amount).ToString(), new Color(1f, 0.9f, 0.4f));
@@ -165,9 +165,7 @@ namespace OdinsCoin
             parts.rightArm.localRotation = Quaternion.Euler(armAngle, 0f, 0f);
             // They keep their shield up while waiting to strike.
             Blocking = attackStart < 0f && speed < 0.5f;
-            parts.shield.localPosition = Blocking ? new Vector3(-0.3f, 1.3f, 0.5f) : new Vector3(0f, 1.25f, -0.24f);
-            // On the back the painted side faces out behind; raised, it turns to face the enemy.
-            parts.shield.localRotation = Blocking ? Quaternion.Euler(0f, 180f, 0f) : Quaternion.identity;
+            HeroPose.Block(parts, Blocking ? 1f : 0f);
         }
     }
 }

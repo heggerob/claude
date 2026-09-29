@@ -37,13 +37,13 @@ namespace OdinsCoin
             r.target = target;
             r.Hull = MaxHull;
             r.nextVolley = Time.time + 4f;
-            // Archers along the deck: leather jerkins, dark beards, black shields.
+            // Archers along the deck: Danes in soot-dark furs, each with a bow.
             for (int i = 0; i < 4; i++)
             {
                 var a = new GameObject("Archer").transform;
                 a.SetParent(ship.transform, false);
                 a.localPosition = new Vector3(i % 2 == 0 ? -1f : 1f, LongshipBuilder.DeckHeight + 0.05f, -4.5f + i * 2.6f);
-                VikingBuilder.Build(a, new Color(0.35f, 0.25f, 0.18f), new Color(0.15f, 0.12f, 0.1f), new Color(0.1f, 0.1f, 0.1f), true);
+                HeroBuilder.Build(a, NpcHeroes.DanishRaider(i + 31 * (All.Count + 1)));
                 r.archers.Add(a);
             }
             return r;

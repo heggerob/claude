@@ -157,6 +157,11 @@ public static class HeroPreview
         var small = CharacterSpec.Default(OutfitId.Raider);
         small.body = new BodyShape { height = 1.45f, width = 0.85f, gender = Gender.Female };
         shots.Add(new Shot { label = "Short, slim", model = HeroModel.Build(small), yaw = 195f });
+        // The people of the world, built from the same outfits (NpcHeroes).
+        shots.Add(new Shot { label = "Saxon guard", model = Full(NpcHeroes.Saxon(3)), yaw = 195f });
+        shots.Add(new Shot { label = "Danish raider", model = Full(NpcHeroes.DanishRaider(5)), yaw = 195f });
+        shots.Add(new Shot { label = "Bjorn the mead-keeper", model = Full(NpcHeroes.Bjorn()), yaw = 195f });
+        shots.Add(new Shot { label = "Gunnar the trader", model = Full(NpcHeroes.Gunnar()), yaw = 195f });
 
         const int cellW = 680, cellH = 1080; // 2x supersampled
         int w = cellW * shots.Count, h = cellH;
@@ -234,6 +239,15 @@ public static class HeroPreview
         var labels = new List<string>();
         foreach (var f in frames) labels.Add(f.label);
         File.WriteAllLines(labelPath, labels.ToArray());
+    }
+
+    /// <summary>A character with its weapon and off-hand item in its hands.</summary>
+    static VikingModel Full(CharacterSpec spec)
+    {
+        var m = HeroModel.Build(spec);
+        if (spec.weapon != WeaponId.None) WithWeapon(m, HeroModel.BuildWeapon(spec), Joints.Weapon);
+        if (spec.offHand != OffHandId.None) WithWeapon(m, HeroModel.BuildOffHand(spec), Joints.OffHand);
+        return m;
     }
 
     /// <summary>For pictures only: hang the separately built weapon on the character's weapon hand.</summary>

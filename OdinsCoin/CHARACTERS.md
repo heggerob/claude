@@ -61,7 +61,7 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
 - [ ] **11. I spillet:** velg figur i menyen, bruk figurene som spiller og NPC-er, og la animasjonene passe pinne-lemmene (pust, gange, sving).
   - [x] Velg helt: tittelmenyen har «Your hero». Der velger du antrekk (med evnene vist), kjønn, høyde, bygning, våpen og hva du har i den andre handa. Spilleren bygges om med én gang, og valget lagres for seg (`HeroChoice`), så det overlever en ny seilas.
   - [x] Spilleren er en storybook-helt (`HeroBuilder`). Blokkering løfter skjoldarmen med albue i stedet for å flytte skjoldet.
-  - [ ] Saksere, danske raidere og Gunnar/Bjørn som helter.
+  - [x] Saksere, danske raidere, Bjørn og Gunnar er helter (`NpcHeroes`): antrekk med egne farger og kropp fra et frø, så ingen er like. De er med nederst i `docs/heroes.png`.
   - [ ] Animasjoner laget for pinnelemmer: albuer i gange, pust og sving.
 - [ ] **12. Skins:** fargesett og varianter for hver figur, kjøpt for gull i methallen, med en figur som snurrer rundt i butikken.
 - [ ] **13. Detaljer:** runer og mønstre på stoff, nagler og ringer, kapper som blafrer i vinden, og flere ansiktsuttrykk.
