@@ -1,0 +1,424 @@
+using UnityEngine;
+
+namespace AirsoftArena
+{
+    /// <summary>
+    /// All prototype UI in one place, drawn with IMGUI so it needs no Canvas or prefabs.
+    /// Swap for a proper uGUI / UI Toolkit interface once the gameplay is locked in.
+    /// </summary>
+    public partial class GameHUD : MonoBehaviour
+    {
+        const float RefHeight = 720f;
+
+        GUIStyle label, small, big, huge, title, panel, feed, tag, center, money, label2;
+        Texture2D panelTexture, whiteTexture;
+        float scale, W, H;
+        Camera cam;
+        Vector2 resultsScroll;
+
+        // Button actions that change what is drawn run in Update, so IMGUI's layout and repaint passes always match.
+        System.Action deferred;
+
+        void Defer(System.Action action) { deferred += action; }
+
+        void Update()
+        {
+            var action = deferred;
+            deferred = null;
+            if (action != null) action();
+        }
+
+        void OnGUI()
+        {
+            var match = MatchManager.Instance;
+            if (match == null) return;
+            EnsureStyles();
+            if (cam == null) cam = Camera.main;
+
+            scale = Screen.height / RefHeight;
+            W = Screen.width / scale;
+            H = RefHeight;
+            GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(scale, scale, 1f));
+
+            switch (match.Phase)
+            {
+                case MatchPhase.Lobby:
+                    Cursor.visible = true;
+                    DrawMenu(match);
+                    break;
+                case MatchPhase.Countdown:
+                case MatchPhase.Playing:
+                    DrawWorldLabels(match);
+                    DrawMatchHud(match);
+                    DrawMinimap(match);
+                    DrawCrosshair(match);
+                    DrawScoreboard(match);
+                    if (match.Phase == MatchPhase.Countdown) Shadowed(new Rect(0, H * 0.3f, W, 120), Mathf.CeilToInt(match.CountdownLeft).ToString(), huge);
+                    if (match.Paused) DrawPause(match);
+                    break;
+                case MatchPhase.Results:
+                    Cursor.visible = true;
+                    DrawResults(match);
+                    break;
+            }
+        }
+
+        bool Choice(bool selected, string text, params GUILayoutOption[] options)
+        {
+            var old = GUI.backgroundColor;
+            GUI.backgroundColor = selected ? new Color(0.45f, 1f, 0.5f) : new Color(0.8f, 0.8f, 0.8f);
+            bool clicked = GUILayout.Button((selected ? "▶ " : "") + text, options);
+            if (clicked) Sfx.Play(SfxId.UiClick, 0.5f);
+            GUI.backgroundColor = old;
+            return clicked;
+        }
+
+        // ================================================================ in match
+
+        void DrawMatchHud(MatchManager match)
+        {
+            var training = match.Rules as TrainingRules;
+            if (training != null)
+            {
+                DrawTrainingHud(match, training);
+                return;
+            }
+            // Score and timer.
+            int seconds = Mathf.CeilToInt(Mathf.Max(0f, match.TimeLeft));
+            string score = string.Format("<color={0}>BLUE  {1}</color>     {2}:{3:00}     <color={4}>{5}  RED</color>",
+                Teams.Hex(Team.Blue), match.Score[0], seconds / 60, seconds % 60, Teams.Hex(Team.Red), match.Score[1]);
+            GUI.Box(new Rect(W / 2f - 190f, 8f, 380f, 50f), GUIContent.none, panel);
+            GUI.Label(new Rect(W / 2f - 190f, 10f, 380f, 30f), score, big);
+            GUI.Label(new Rect(W / 2f - 190f, 36f, 380f, 20f), GameModes.Name(match.Settings.mode) + "  ·  first to " + match.Settings.scoreLimit + " " + GameModes.Unit(match.Settings.mode), centerSmall);
+            var watcher = match.PlayerSoldier;
+            string hint = watcher != null && match.Rules != null ? match.Rules.PlayerHint(watcher) : null;
+            DrawTeamPips(match);
+            if (!string.IsNullOrEmpty(hint)) Shadowed(new Rect(0f, 76f, W, 26f), hint, label2);
+
+            // Referee and wind.
+            var referee = match.Referee;
+            if (referee != null)
+            {
+                GUI.Box(new Rect(8f, 8f, 300f, 50f), GUIContent.none, panel);
+                string refText = referee.HumanControlled
+                    ? "Referee: <b>YOU</b>"
+                    : "Referee: <b>" + referee.Profile.name + "</b>  " + RefereeProfile.StarText(referee.Profile.Stars);
+                GUI.Label(new Rect(16f, 10f, 290f, 22f), refText, label);
+                var wind = BBSystem.Instance.Wind;
+                GUI.Label(new Rect(16f, 32f, 290f, 22f), "Wind " + wind.magnitude.ToString("0.0") + " m/s " + Arrow(wind), small);
+            }
+
+            DrawFeed(match);
+
+            if (match.PlayerSoldier != null) DrawSoldierHud(match.PlayerSoldier);
+            else if (match.PlayerReferee != null) DrawRefereeHud(match);
+        }
+
+        void DrawTrainingHud(MatchManager match, TrainingRules t)
+        {
+            var hint = t.PlayerHint(match.PlayerSoldier);
+            GUI.Box(new Rect(W / 2f - 250f, 8f, 500f, 30f), GUIContent.none, panel);
+            GUI.Label(new Rect(W / 2f - 250f, 10f, 500f, 26f), hint, centerSmall);
+
+            var d = match.PlayerSoldier.Weapon.Data;
+            float accuracy = t.Shots > 0 ? 100f * t.Hits / t.Shots : 0f;
+            string stats = string.Format(
+                "<b>{0}</b>  {1}\n{2:0} m/s with {3:0.00} g  ·  {4:0.00} J\n\nShots {5}   Hits {6}   ({7:0}%)\nLongest hit <b>{8:0} m</b>\nLast BB landed at <b>{9:0.0} m</b>\nFarthest BB <b>{10:0.0} m</b>\n\nHits per distance:",
+                d.displayName, d.code, d.MuzzleVelocity, d.bbWeightGrams, d.Joules, t.Shots, t.Hits, accuracy, t.LongestHit, t.LastLanding, t.FarthestLanding);
+            foreach (var dist in TrainingRules.Distances) stats += "\n  " + dist + " m: " + t.HitsAtDistance[dist];
+            GUI.Box(new Rect(W - 290f, 8f, 282f, 330f), GUIContent.none, panel);
+            GUI.Label(new Rect(W - 280f, 12f, 266f, 322f), stats, small);
+
+            if (cam != null)
+                foreach (var l in t.Labels())
+                {
+                    Vector2 p = ToGui(l.Key);
+                    GUI.Label(new Rect(p.x - 40f, p.y - 10f, 80f, 20f), l.Value, centerSmall);
+                }
+
+            DrawSoldierHud(match.PlayerSoldier);
+        }
+
+        void DrawSoldierHud(Soldier s)
+        {
+            DrawWeaponPanel(s);
+            DrawStatusPanel(s);
+            DrawHitFrom(s);
+            if (MatchManager.Instance != null) DrawObjectiveArrows(MatchManager.Instance, s);
+
+            // Big centre messages.
+            var r = new Rect(0f, H * 0.2f, W, 60f);
+            switch (s.State)
+            {
+                case SoldierState.Hit:
+                    bool blink = Mathf.Repeat(Time.time * 4f, 1f) < 0.6f;
+                    Shadowed(r, blink ? "<color=#ff4a3a>YOU'RE HIT!</color>" : "YOU'RE HIT!", huge);
+                    Shadowed(new Rect(0f, H * 0.2f + 64f, W, 30f), string.Format("Press <b>H</b> to call it ({0:0.0} s)... or keep playing and hope the ref didn't see", s.HitWindowLeft), big);
+                    break;
+                case SoldierState.Out:
+                    Vector2 to = MatchManager.Instance.SpawnCenter(s.Team) - s.Position;
+                    Shadowed(r, "OUT", huge);
+                    Shadowed(new Rect(0f, H * 0.2f + 64f, W, 30f), "Walk back to your spawn  " + Arrow(to), big);
+                    break;
+                case SoldierState.Respawning:
+                    Shadowed(r, "Back in the game in " + s.RespawnLeft.ToString("0.0"), big);
+                    break;
+                default:
+                    if (s.HasUncalledHit)
+                        Shadowed(new Rect(0f, H * 0.2f, W, 30f), "<color=#ffb050>You didn't call your hit... the referee might have seen it.  (H = call it late)</color>", label);
+                    break;
+            }
+        }
+
+        void DrawRefereeHud(MatchManager match)
+        {
+            float x = 12f, y = H - 92f;
+            GUI.Box(new Rect(x - 4f, y - 4f, 460f, 86f), GUIContent.none, panel);
+            GUI.Label(new Rect(x + 4f, y, 450f, 24f), "<b>REFEREE</b>   WASD walk · Shift jog · click a player to call them OUT", label);
+            GUI.Label(new Rect(x + 4f, y + 26f, 450f, 24f), string.Format("Correct calls <b>{0}</b>     Wrong calls <b>{1}</b>", match.CorrectCalls, match.WrongCalls), label);
+            GUI.Label(new Rect(x + 4f, y + 52f, 450f, 24f), "Look for the white flash + *tak* on a player who does NOT raise the orange rag.", small);
+        }
+
+        void DrawFeed(MatchManager match)
+        {
+            float y = 66f;
+            int shown = 0;
+            for (int i = match.Feed.Count - 1; i >= 0 && shown < 7; i--)
+            {
+                var e = match.Feed[i];
+                float age = Time.time - e.time;
+                if (age > 8f) break;
+                var rect = new Rect(W - 470f, y, 460f, 24f);
+                GUI.color = new Color(1f, 1f, 1f, Mathf.Clamp01(8f - age));
+                GUI.Box(rect, GUIContent.none, panel);
+                GUI.Label(new Rect(rect.x + 8f, rect.y + 2f, rect.width - 12f, rect.height), e.text, feed);
+                GUI.color = Color.white;
+                y += 26f;
+                shown++;
+            }
+        }
+
+        void DrawWorldLabels(MatchManager match)
+        {
+            if (cam == null) return;
+            var hovered = match.PlayerReferee != null ? match.PlayerReferee.Hovered : null;
+
+            bool tags = GameSettings.NameTags;
+            foreach (var s in match.Soldiers)
+            {
+                if (!tags && s != hovered && s != match.PlayerSoldier) continue;
+                Vector2 p = ToGui(s.Position + new Vector2(0f, 0.75f));
+                string text = s.DisplayName;
+                if (s.State == SoldierState.Out) text += "  <color=#ff9933>OUT</color>";
+                else if (s.State == SoldierState.Respawning) text += "  <color=#ff9933>" + s.RespawnLeft.ToString("0") + "</color>";
+                if (s == hovered) text = "<color=#ffe14a>[CLICK: call OUT]</color>\n" + text;
+                tag.normal.textColor = Teams.Color(s.Team);
+                GUI.Label(new Rect(p.x - 100f, p.y - (s == hovered ? 34f : 18f), 200f, s == hovered ? 36f : 18f), text, tag);
+            }
+
+            if (match.Referee != null)
+            {
+                Vector2 p = ToGui(match.Referee.Position + new Vector2(0f, 0.75f));
+                tag.normal.textColor = new Color(1f, 0.92f, 0.2f);
+                GUI.Label(new Rect(p.x - 60f, p.y - 18f, 120f, 18f), match.Referee.HumanControlled ? "REF (you)" : "REF", tag);
+            }
+
+            var effects = Effects.Instance;
+            if (effects == null) return;
+            foreach (var t in effects.Texts)
+            {
+                float age = (Time.time - t.born) / t.life;
+                Vector2 p = ToGui(t.position + new Vector2(0f, age * 0.6f));
+                var c = t.color;
+                c.a *= 1f - age * age;
+                var old = center.fontSize;
+                center.fontSize = t.size;
+                center.normal.textColor = new Color(0f, 0f, 0f, c.a * 0.8f);
+                GUI.Label(new Rect(p.x - 149f, p.y - 11f, 300f, 24f), t.text, center);
+                center.normal.textColor = c;
+                GUI.Label(new Rect(p.x - 150f, p.y - 12f, 300f, 24f), t.text, center);
+                center.fontSize = old;
+            }
+        }
+
+        void DrawPause(MatchManager match)
+        {
+            GUI.DrawTexture(new Rect(0f, 0f, W, H), whiteTexture, ScaleMode.StretchToFill, true, 0f, new Color(0f, 0f, 0f, 0.5f), 0f, 0f);
+            GUILayout.BeginArea(new Rect(W / 2f - 160f, H / 2f - 90f, 320f, 180f), panel);
+            GUILayout.Label("PAUSED", title);
+            if (GUILayout.Button("Resume", GUILayout.Height(36))) Defer(() => match.SetPaused(false));
+            if (GUILayout.Button("End match now", GUILayout.Height(36))) Defer(match.EndMatch);
+            GUILayout.EndArea();
+        }
+
+        // ================================================================ results
+
+        void DrawResults(MatchManager match)
+        {
+            var r = match.LastResult;
+            if (r == null) return;
+            float pw = Mathf.Min(W - 32f, 940f), ph = Mathf.Min(H - 32f, 600f);
+            GUILayout.BeginArea(new Rect((W - pw) / 2f, (H - ph) / 2f, pw, ph), panel);
+
+            if (r.training)
+            {
+                GUILayout.Label("TRAINING DONE", title);
+                GUILayout.Label(string.Format("Shots {0}   ·   hits {1}   ·   accuracy {2:0}%", r.trainingShots, r.trainingHits, r.trainingShots > 0 ? 100f * r.trainingHits / r.trainingShots : 0f), big);
+                GUILayout.Label(string.Format("Longest hit {0:0} m   ·   farthest BB {1:0.0} m", r.trainingLongestHit, r.trainingFarthest), label);
+                GUILayout.Label("The range is free: no money or XP here. Go earn some in a real match!", small);
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button("CONTINUE", GUILayout.Height(44))) Defer(match.ReturnToLobby);
+                GUILayout.EndArea();
+                return;
+            }
+            if (!r.soundPlayed)
+            {
+                r.soundPlayed = true;
+                if (r.levelAfter > r.levelBefore) Sfx.Play(SfxId.RankUp, 0.8f);
+                else if (r.playerWon) Sfx.Play(SfxId.Capture, 0.6f);
+            }
+            string headline = r.draw ? "DRAW" : "<color=" + Teams.Hex(r.winner) + ">" + Teams.Name(r.winner) + " WINS</color>";
+            GUILayout.Label(headline, title);
+            GUILayout.Label(string.Format("<color={0}>BLUE {1}</color>  -  <color={2}>{3} RED</color>", Teams.Hex(Team.Blue), r.blueScore, Teams.Hex(Team.Red), r.redScore), big);
+            GUILayout.Space(10);
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.BeginVertical(GUILayout.Width(pw * 0.5f));
+            resultsScroll = GUILayout.BeginScrollView(resultsScroll, GUILayout.Height(ph - 190f));
+            if (r.role == Role.Soldier && r.playerStats != null)
+            {
+                var s = r.playerStats;
+                GUILayout.Label(r.playerWon ? "<b>You won!</b>" : r.draw ? "<b>Even match.</b>" : "<b>You lost this one.</b>", label);
+                GUILayout.Label(string.Format("Hits scored {0}   ·   times hit {1}", s.pointsScored, s.timesHit), label);
+                GUILayout.Label(string.Format("Hits called {0}   ·   not called {1}   ·   caught by ref {2}", s.hitsCalled, s.hitsNotCalled, s.caughtByReferee), label);
+                if (s.wronglyCalledOut > 0) GUILayout.Label("Wrongly called out by the ref: " + s.wronglyCalledOut, label);
+                if (s.overshoots > 0) GUILayout.Label("Overshoots (shot players who were out): " + s.overshoots, label);
+                if (s.shotTheReferee > 0) GUILayout.Label("Shot the referee: " + s.shotTheReferee, label);
+                GUILayout.Space(6);
+                GUILayout.Label(string.Format("Skill {0:0} → <b>{1:0}</b>    Honor {2:0} → <b>{3:0}</b>", r.skillBefore, r.skillAfter, r.honorBefore, r.honorAfter), label);
+            }
+            else
+            {
+                GUILayout.Label("<b>Your shift as referee</b>", label);
+                GUILayout.Label(string.Format("Correct calls {0}   ·   caught cheaters {1}", r.refCorrectCalls, r.refCaught), label);
+                GUILayout.Label(string.Format("Missed cheaters {0}   ·   wrong calls {1}", r.refMissed, r.refWrongCalls), label);
+            }
+            GUILayout.Space(8);
+            GUILayout.Label(string.Format("<b>XP +{0}</b>{1}", r.xpGained, r.levelAfter > r.levelBefore ? "   <color=#ffd060><b>RANK UP → " + Progression.RankName(r.levelAfter) + "!</b></color>" : ""), label);
+            foreach (var line in r.xpLines) GUILayout.Label(line, small);
+            GUILayout.Space(6);
+            GUILayout.Label("<b>Money</b>", label);
+            foreach (var line in r.moneyLines) GUILayout.Label(line, small);
+            GUILayout.Label(string.Format("${0} → <b>${1}</b>", r.moneyBefore, r.moneyAfter), label);
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+
+            GUILayout.Space(16);
+
+            GUILayout.BeginVertical();
+            if (r.role == Role.Soldier)
+            {
+                GUILayout.Label("<b>Referee: " + r.refereeName + "</b>", label);
+                GUILayout.Label(string.Format("Caught {0} cheaters · missed {1} · wrong calls {2}", r.refCaught, r.refMissed, r.refWrongCalls), label);
+                GUILayout.Label("The other players rated: " + RefereeProfile.StarText(r.refLobbyStars), label);
+                GUILayout.Space(8);
+                if (!r.playerRatedReferee)
+                {
+                    GUILayout.Label("How was the referee?", label);
+                    GUILayout.BeginHorizontal();
+                    for (int stars = 1; stars <= 5; stars++)
+                    {
+                        int rating = stars;
+                        if (GUILayout.Button(stars + " ★", GUILayout.Height(34))) Defer(() => match.RateReferee(rating));
+                    }
+                    GUILayout.EndHorizontal();
+                }
+                else
+                {
+                    GUILayout.Label("Thanks for rating!", label);
+                }
+                GUILayout.Label(string.Format("Rating {0:0.00} → <b>{1:0.00}</b>", r.refStarsBefore, r.refStarsAfter), label);
+            }
+            else
+            {
+                GUILayout.Label("<b>The players rated you</b>", label);
+                GUILayout.Label(RefereeProfile.StarText(r.refLobbyStars), big);
+                GUILayout.Label(string.Format("Your rating {0:0.00} → <b>{1:0.00}</b>", r.refStarsBefore, r.refStarsAfter), label);
+                GUILayout.Label(string.Format("Your fee next match: <b>${0}</b> per player", PlayerProfile.Current.RefFeePerPlayer), label);
+            }
+            GUILayout.EndVertical();
+
+            GUILayout.EndHorizontal();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button("CONTINUE", GUILayout.Height(44))) Defer(match.ReturnToLobby);
+            GUILayout.EndArea();
+        }
+
+        // ================================================================ helpers
+
+        Vector2 ToGui(Vector2 world)
+        {
+            Vector3 sp = cam.WorldToScreenPoint(world);
+            return new Vector2(sp.x / scale, (Screen.height - sp.y) / scale);
+        }
+
+        void Shadowed(Rect r, string text, GUIStyle style)
+        {
+            var old = style.normal.textColor;
+            style.normal.textColor = new Color(0f, 0f, 0f, 0.8f);
+            GUI.Label(new Rect(r.x + 2f, r.y + 2f, r.width, r.height), StripColor(text), style);
+            style.normal.textColor = old;
+            GUI.Label(r, text, style);
+        }
+
+        static string StripColor(string s)
+        {
+            return System.Text.RegularExpressions.Regex.Replace(s, "</?color[^>]*>", "");
+        }
+
+        static string Arrow(Vector2 v)
+        {
+            if (v.sqrMagnitude < 0.01f) return "";
+            string[] arrows = { "→", "↗", "↑", "↖", "←", "↙", "↓", "↘" };
+            float angle = Mathf.Atan2(v.y, v.x) * Mathf.Rad2Deg;
+            int i = Mathf.RoundToInt(Mathf.Repeat(angle, 360f) / 45f) % 8;
+            return arrows[i];
+        }
+
+        GUIStyle centerSmall;
+
+        void EnsureStyles()
+        {
+            if (label != null) return;
+
+            panelTexture = new Texture2D(1, 1);
+            panelTexture.SetPixel(0, 0, new Color(0.05f, 0.06f, 0.05f, 0.82f));
+            panelTexture.Apply();
+            whiteTexture = Texture2D.whiteTexture;
+
+            panel = new GUIStyle(GUI.skin.box) { padding = new RectOffset(16, 16, 12, 12) };
+            panel.normal.background = panelTexture;
+
+            label = new GUIStyle(GUI.skin.label) { fontSize = 15, richText = true, wordWrap = true };
+            label.normal.textColor = new Color(0.93f, 0.93f, 0.9f);
+            small = new GUIStyle(label) { fontSize = 12 };
+            small.normal.textColor = new Color(0.75f, 0.75f, 0.72f);
+            feed = new GUIStyle(label) { fontSize = 13, wordWrap = false, alignment = TextAnchor.MiddleLeft };
+            big = new GUIStyle(label) { fontSize = 20, alignment = TextAnchor.MiddleCenter, wordWrap = false };
+            huge = new GUIStyle(label) { fontSize = 52, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, wordWrap = false };
+            title = new GUIStyle(label) { fontSize = 34, fontStyle = FontStyle.Bold, wordWrap = false };
+            title.normal.textColor = new Color(1f, 0.85f, 0.3f);
+            label2 = new GUIStyle(label) { alignment = TextAnchor.MiddleCenter, wordWrap = false, fontSize = 16 };
+            money = new GUIStyle(label) { fontSize = 26, alignment = TextAnchor.MiddleRight, wordWrap = false };
+            money.normal.textColor = new Color(0.55f, 1f, 0.55f);
+            tag = new GUIStyle(label) { fontSize = 11, alignment = TextAnchor.LowerCenter, wordWrap = false };
+            center = new GUIStyle(label) { alignment = TextAnchor.MiddleCenter, wordWrap = false };
+            centerSmall = new GUIStyle(small) { alignment = TextAnchor.MiddleCenter };
+
+            GUI.skin.button.richText = true;
+            GUI.skin.button.fontSize = 13;
+            GUI.skin.toggle.fontSize = 13;
+        }
+    }
+}
