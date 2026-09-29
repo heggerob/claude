@@ -142,7 +142,8 @@ namespace AirsoftArena
                         ? new[] { settings.primary, settings.secondary, WeaponCatalog.MeleeWeapons[0] }
                         : new[] { Pick(WeaponCatalog.Primaries), Pick(WeaponCatalog.Secondaries), WeaponCatalog.MeleeWeapons[0] };
 
-                    var soldier = Soldier.Create(matchRoot, name, (Team)team, human, loadout, RandomSpawnPoint((Team)team));
+                    var look = human ? new SoldierLook() : SoldierLook.RandomBot();
+                    var soldier = Soldier.Create(matchRoot, name, (Team)team, human, loadout, look, RandomSpawnPoint((Team)team));
                     if (human)
                     {
                         var pc = soldier.gameObject.AddComponent<PlayerController>();

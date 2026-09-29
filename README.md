@@ -52,3 +52,10 @@ AirsoftArena/Assets/Scripts/
 
 Reglene (våpen, treff, dommer og økonomi) er holdt adskilt fra grafikken, så de kan gjenbrukes i 3D-versjonen senere.
 Se [`AirsoftArena/DESIGN.md`](AirsoftArena/DESIGN.md) for designbeslutninger og veien videre.
+
+## Verktøy (uten Unity)
+
+- `tools/check.sh` kompilerer alle scriptene mot en liten falsk Unity-API. Det fanger skrivefeil, men beviser ikke at spillet kjører.
+- `tools/preview/render.sh` tegner all generert pixel-art til `AirsoftArena/docs/sprites.png`.
+
+![Pixel-art](AirsoftArena/docs/sprites.png)

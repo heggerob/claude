@@ -23,6 +23,7 @@ namespace AirsoftArena
         const float MaxAge = 4f;
         // How far up the screen a BB is drawn per metre of height, so you can see it arc.
         const float HeightOnScreen = 0.3f;
+        static readonly Color DefaultTracer = new Color(1f, 0.97f, 0.85f);
 
         /// <summary>Wind in m/s. Light BBs drift more than heavy ones.</summary>
         public Vector2 Wind;
@@ -73,6 +74,8 @@ namespace AirsoftArena
                 bb.hop = weapon.hopUp * Random.Range(0.95f, 1.05f);
                 bb.v0 = speed;
                 bb.age = 0f;
+                var look = owner != null ? owner.Look : null;
+                bb.sprite.color = look != null ? look.tracer : DefaultTracer;
                 active.Add(bb);
                 Draw(bb);
             }

@@ -76,11 +76,12 @@ namespace AirsoftArena
         public Collider2D Collider { get; private set; }
 
         Rigidbody2D body;
-        SpriteRenderer bodySprite, helmetSprite, gunSprite, ragSprite;
-        Transform gunPivot;
+        SoldierView view;
         Vector2 moveInput;
 
-        public static Soldier Create(Transform parent, string name, Team team, bool human, WeaponData[] loadout, Vector2 position)
+        public SoldierLook Look { get { return view != null ? view.Look : null; } }
+
+        public static Soldier Create(Transform parent, string name, Team team, bool human, WeaponData[] loadout, SoldierLook look, Vector2 position)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
@@ -97,6 +98,8 @@ namespace AirsoftArena
 
             var soldier = go.AddComponent<Soldier>();
             soldier.Init(name, team, human, loadout, rb, col);
+            soldier.view = go.AddComponent<SoldierView>();
+            soldier.view.Build(soldier, look);
             return soldier;
         }
 
@@ -110,35 +113,6 @@ namespace AirsoftArena
             Loadout = new WeaponInstance[loadout.Length];
             for (int i = 0; i < loadout.Length; i++) Loadout[i] = new WeaponInstance(loadout[i]);
             AimDirection = team == Team.Blue ? Vector2.right : Vector2.left;
-
-            var teamColor = Teams.Color(team);
-            bodySprite = Child("Body", SpriteFactory.Circle, teamColor, 10, Vector2.zero, Vector2.one);
-            helmetSprite = Child("Helmet", SpriteFactory.SmallCircle, teamColor * 0.6f + new Color(0f, 0f, 0f, 0.4f), 12, Vector2.zero, Vector2.one);
-
-            gunPivot = new GameObject("Gun Pivot").transform;
-            gunPivot.SetParent(transform, false);
-            gunSprite = new GameObject("Gun").AddComponent<SpriteRenderer>();
-            gunSprite.transform.SetParent(gunPivot, false);
-            gunSprite.sprite = SpriteFactory.Pixel;
-            gunSprite.color = new Color(0.12f, 0.12f, 0.12f);
-            gunSprite.sortingOrder = 11;
-
-            ragSprite = Child("Dead Rag", SpriteFactory.Pixel, new Color(1f, 0.45f, 0.05f), 13, new Vector2(0f, 0.55f), new Vector2(0.28f, 0.28f));
-            ragSprite.enabled = false;
-            RefreshGunVisual();
-        }
-
-        SpriteRenderer Child(string name, Sprite sprite, Color color, int order, Vector2 offset, Vector2 scale)
-        {
-            var go = new GameObject(name);
-            go.transform.SetParent(transform, false);
-            go.transform.localPosition = offset;
-            go.transform.localScale = new Vector3(scale.x, scale.y, 1f);
-            var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = sprite;
-            sr.color = color;
-            sr.sortingOrder = order;
-            return sr;
         }
 
         // ---------------------------------------------------------------- intentions from controllers
@@ -178,7 +152,8 @@ namespace AirsoftArena
                 return;
             }
 
-            Vector2 muzzle = Position + AimDirection * (Radius + 0.2f);
+            Vector2 muzzle = view != null ? view.MuzzlePosition : Position + AimDirection * (Radius + 0.2f);
+            if (view != null) view.OnFired();
             float spread = Crouching ? 0.6f : 1f;
             if (moveInput.sqrMagnitude > 0.01f) spread *= 1.6f;
             BBSystem.Instance.Fire(this, muzzle, AimDirection, MuzzleHeight, weapon.Data, bbs, spread);
@@ -193,7 +168,7 @@ namespace AirsoftArena
             if (slot < 0 || slot >= Loadout.Length || slot == Slot) return;
             Weapon.CancelReload();
             Slot = slot;
-            RefreshGunVisual();
+            if (view != null) view.RefreshGun();
         }
 
         /// <summary>The honest thing to do. Raises the dead rag and sends you back to spawn.</summary>
@@ -317,8 +292,6 @@ namespace AirsoftArena
                 }
                 foreach (var w in Loadout) w.Tick(Time.time);
             }
-
-            UpdateVisuals();
         }
 
         void FixedUpdate()
@@ -339,34 +312,6 @@ namespace AirsoftArena
                 else if (Sprinting) speed *= SprintMultiplier;
             }
             Compat.SetVelocity(body, moveInput * speed);
-        }
-
-        void UpdateVisuals()
-        {
-            float angle = Mathf.Atan2(AimDirection.y, AimDirection.x) * Mathf.Rad2Deg;
-            gunPivot.localRotation = Quaternion.Euler(0f, 0f, angle);
-            gunPivot.gameObject.SetActive(InPlay);
-
-            float scale = Crouching ? 0.82f : 1f;
-            bodySprite.transform.localScale = new Vector3(scale, scale, 1f);
-
-            bool isOut = !InPlay;
-            ragSprite.enabled = isOut && Mathf.Repeat(Time.time * 3f, 1f) < 0.7f;
-            var c = Teams.Color(Team);
-            c.a = isOut ? 0.55f : 1f;
-            bodySprite.color = c;
-            var h = helmetSprite.color;
-            h.a = isOut ? 0.5f : 1f;
-            helmetSprite.color = h;
-        }
-
-        void RefreshGunVisual()
-        {
-            var data = Weapon.Data;
-            float length = data.IsMelee ? 0.3f : Mathf.Clamp(data.lengthCm / 100f * 0.6f, 0.2f, 0.75f);
-            gunSprite.transform.localScale = new Vector3(length, data.IsMelee ? 0.08f : 0.12f, 1f);
-            gunSprite.transform.localPosition = new Vector3(Radius * 0.6f + length / 2f, -0.12f, 0f);
-            gunSprite.color = data.IsMelee ? new Color(0.65f, 0.65f, 0.6f) : new Color(0.12f, 0.12f, 0.12f);
         }
     }
 }
