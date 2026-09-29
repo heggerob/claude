@@ -13,11 +13,11 @@ namespace OdinsCoin
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics() { Instance = null; }
 
-        enum State { Title, Playing, Paused, Settings }
+        enum State { Title, Playing, Paused, Settings, Hero }
 
         /// <summary>True while a menu is up: the Viking and the camera don't take input.</summary>
         public static bool Blocking { get { return Instance != null && Instance.state != State.Playing; } }
-        public static bool OnTitle { get { return Instance != null && (Instance.state == State.Title || (Instance.state == State.Settings && Instance.settingsFrom == State.Title)); } }
+        public static bool OnTitle { get { return Instance != null && (Instance.state == State.Title || Instance.state == State.Hero || (Instance.state == State.Settings && Instance.settingsFrom == State.Title)); } }
 
         public const string VolumeKey = "odinscoin.volume", SensitivityKey = "odinscoin.mouse", InvertKey = "odinscoin.invert";
 
@@ -25,6 +25,10 @@ namespace OdinsCoin
         bool confirmNew, otherUiLastFrame;
         float autosave;
         GUIStyle title, text, small;
+        // The hero being edited on the hero screen, and when the model was last rebuilt for the sliders.
+        CharacterSpec editing;
+        bool heroDirty;
+        float lastRebuild;
         System.Action deferred;
 
         void Awake()
@@ -59,6 +63,7 @@ namespace OdinsCoin
                 if (state == State.Playing && !otherUi && !otherUiLastFrame) Pause();
                 else if (state == State.Paused) Resume();
                 else if (state == State.Settings) CloseSettings();
+                else if (state == State.Hero) CloseHero();
             }
             otherUiLastFrame = otherUi;
 
@@ -101,6 +106,31 @@ namespace OdinsCoin
 
         void OpenSettings() { settingsFrom = state; state = State.Settings; }
 
+        static Viking PlayerViking { get { return GameBootstrap.Instance != null ? GameBootstrap.Instance.Player : null; } }
+
+        void OpenHero()
+        {
+            var v = PlayerViking;
+            editing = HeroChoice.Parse(HeroChoice.Serialize(v != null && v.Hero != null ? v.Hero : HeroChoice.Load()));
+            heroDirty = false;
+            state = State.Hero;
+        }
+
+        void CloseHero()
+        {
+            HeroChoice.Save(editing);
+            RebuildPlayer();
+            state = State.Title;
+        }
+
+        void RebuildPlayer()
+        {
+            var v = PlayerViking;
+            if (v != null) v.Rebuild(HeroChoice.Parse(HeroChoice.Serialize(editing)));
+            heroDirty = false;
+            lastRebuild = Time.unscaledTime;
+        }
+
         void CloseSettings()
         {
             PlayerPrefs.Save();
@@ -125,13 +155,14 @@ namespace OdinsCoin
                 GUI.DrawTexture(new Rect(0f, 0f, Screen.width, Screen.height), Texture2D.whiteTexture);
                 GUI.color = old;
             }
-            float w = 380f, h = state == State.Settings ? 330f : OnTitle ? 360f : 250f;
+            float w = state == State.Hero ? 420f : 380f, h = state == State.Hero ? 470f : state == State.Settings ? 330f : OnTitle ? 400f : 250f;
             var box = new Rect((Screen.width - w) / 2f, Screen.height * 0.2f, w, h);
             GUI.Box(box, GUIContent.none);
             GUI.Box(box, GUIContent.none);
             GUILayout.BeginArea(new Rect(box.x + 20f, box.y + 14f, w - 40f, h - 28f));
 
             if (state == State.Settings) DrawSettings();
+            else if (state == State.Hero) DrawHero();
             else if (state == State.Title) DrawTitle();
             else DrawPause();
 
@@ -153,6 +184,8 @@ namespace OdinsCoin
             string newLabel = confirmNew ? "<color=#ff9966>Really start over? Your save is lost.</color>" : "New voyage";
             if (GUILayout.Button(newLabel, GUILayout.Height(40)))
                 deferred += () => { if (SaveGame.Exists && !confirmNew) confirmNew = true; else Begin(false); };
+            var hero = PlayerViking != null && PlayerViking.Hero != null ? PlayerViking.Hero : HeroChoice.Load();
+            if (GUILayout.Button("Your hero: <b>" + Outfits.Get(hero.outfit).title + "</b>", GUILayout.Height(34))) deferred += OpenHero;
             if (GUILayout.Button("Settings", GUILayout.Height(34))) deferred += OpenSettings;
             if (GUILayout.Button("Quit", GUILayout.Height(34))) deferred += Quit;
             GUILayout.FlexibleSpace();
@@ -167,6 +200,57 @@ namespace OdinsCoin
             if (GUILayout.Button("Back to the sea  [Esc]", GUILayout.Height(40))) deferred += Resume;
             if (GUILayout.Button("Settings", GUILayout.Height(34))) deferred += OpenSettings;
             if (GUILayout.Button("Save and quit", GUILayout.Height(34))) deferred += Quit;
+        }
+
+        void DrawHero()
+        {
+            GUILayout.Label("YOUR HERO", title);
+            var outfit = Outfits.Get(editing.outfit);
+            // Outfit: changing it brings that outfit's own hair, weapon and off-hand, but keeps the body.
+            if (Stepper(outfit.title, s =>
+            {
+                var body = editing.body;
+                editing = CharacterSpec.Default(HeroChoice.Cycle(editing.outfit, s));
+                editing.body = body;
+            })) RebuildPlayer();
+            foreach (var a in outfit.abilities)
+                GUILayout.Label("<b>" + a.name + "</b>  <color=#aaaaaa>" + a.description + "</color>", small);
+            GUILayout.Space(8);
+
+            GUILayout.BeginHorizontal();
+            foreach (Gender g in System.Enum.GetValues(typeof(Gender)))
+            {
+                bool on = editing.body.gender == g;
+                if (GUILayout.Toggle(on, " " + g, GUI.skin.button, GUILayout.Height(28)) && !on) { editing.body.gender = g; RebuildPlayer(); }
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.Label("Height: " + editing.body.height.ToString("0.00") + " m", text);
+            float nh = GUILayout.HorizontalSlider(editing.body.height, 1.45f, 1.9f);
+            if (Mathf.Abs(nh - editing.body.height) > 0.001f) { editing.body.height = BodyShape.ClampHeight(nh); heroDirty = true; }
+            GUILayout.Label("Build: " + (editing.body.width < 0.9f ? "slim" : editing.body.width > 1.1f ? "broad" : "sturdy"), text);
+            float nw = GUILayout.HorizontalSlider(editing.body.width, 0.8f, 1.25f);
+            if (Mathf.Abs(nw - editing.body.width) > 0.001f) { editing.body.width = BodyShape.ClampWidth(nw); heroDirty = true; }
+            // Sliders rebuild the model a few times a second at most, and once more when they stop moving.
+            if (heroDirty && Time.unscaledTime - lastRebuild > 0.25f) RebuildPlayer();
+            GUILayout.Space(8);
+
+            if (Stepper("Weapon: " + HeroChoice.Name(editing.weapon), s => editing.weapon = HeroChoice.Cycle(editing.weapon, s))) RebuildPlayer();
+            if (Stepper("Off hand: " + HeroChoice.Name(editing.offHand), s => editing.offHand = HeroChoice.Cycle(editing.offHand, s))) RebuildPlayer();
+
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button("Done  [Esc]", GUILayout.Height(34))) deferred += CloseHero;
+        }
+
+        /// <summary>A "◀ label ▶" row; returns true when a button was pressed (after calling change with -1 or +1).</summary>
+        bool Stepper(string label, System.Action<int> change)
+        {
+            bool pressed = false;
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("<", GUILayout.Width(36), GUILayout.Height(30))) { change(-1); pressed = true; }
+            GUILayout.Label(label, text, GUILayout.Height(30));
+            if (GUILayout.Button(">", GUILayout.Width(36), GUILayout.Height(30))) { change(1); pressed = true; }
+            GUILayout.EndHorizontal();
+            return pressed;
         }
 
         void DrawSettings()

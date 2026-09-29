@@ -45,6 +45,8 @@ namespace OdinsCoin
                 rightArm = joints[Joints.RightArm],
                 axe = joints[Joints.Weapon],
                 shield = joints[Joints.OffHand],
+                leftForearm = joints[Joints.LeftForearm],
+                rightForearm = joints[Joints.RightForearm],
             };
         }
 

@@ -12,6 +12,8 @@ namespace OdinsCoin
         public class Parts
         {
             public Transform root, body, head, leftLeg, rightLeg, leftArm, rightArm, axe, shield;
+            /// <summary>Only the storybook heroes have elbows; null on the old smooth Vikings.</summary>
+            public Transform leftForearm, rightForearm;
         }
 
         public static Parts Build(Transform root, Color tunic)

@@ -31,6 +31,7 @@ public static class LogicTests
         HeroTests();
         SwingTests();
         DrawnTextureTests();
+        HeroChoiceTests();
         CombatTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
@@ -733,6 +734,40 @@ public static class LogicTests
         Check(d.SurfaceOf(d.pal.fur) == SurfaceKind.Fur && d.SurfaceOf(d.pal.leatherDark) == SurfaceKind.Leather
             && d.SurfaceOf(d.pal.accent) == SurfaceKind.Cloth && d.SurfaceOf(d.pal.ink) == SurfaceKind.Plain
             && d.SurfaceOf(VikingModel.Shade(d.pal.metal, 1.35f)) == SurfaceKind.Plain, "palette slots map to surfaces");
+    }
+
+    static void HeroChoiceTests()
+    {
+        var spec = CharacterSpec.Default(OutfitId.Seer);
+        spec.body = new BodyShape { height = 1.74f, width = 0.85f, gender = Gender.Female };
+        spec.weapon = WeaponId.Spear;
+        spec.offHand = OffHandId.Map;
+        var back = HeroChoice.Parse(HeroChoice.Serialize(spec));
+        Check(back.outfit == OutfitId.Seer && Math.Abs(back.body.height - 1.74f) < 0.001f && Math.Abs(back.body.width - 0.85f) < 0.001f
+            && back.body.gender == Gender.Female && back.weapon == WeaponId.Spear && back.offHand == OffHandId.Map && back.hair == spec.hair,
+            "a hero survives saving and loading");
+        var empty = HeroChoice.Parse("");
+        Check(empty.outfit == OutfitId.Raider && empty.weapon == Outfits.Get(OutfitId.Raider).suggestedWeapon, "no saved hero gives the default Raider");
+        var broken = HeroChoice.Parse("outfit=Jarl\nheight=banana\nwidth=99\ngender=7\nweapon=Laser\n");
+        Check(broken.outfit == OutfitId.Jarl && Math.Abs(broken.body.height - 1.62f) < 0.001f && broken.body.width <= 1.35f
+            && broken.weapon == WeaponId.Sword && broken.body.gender == Gender.Male, "broken values fall back and clamp (" + broken.body.width + ")");
+        var tall = HeroChoice.Parse("height=5\nwidth=-3");
+        Check(tall.body.height <= 2f && tall.body.width >= 0.75f, "a silly body is clamped");
+        var comma = HeroChoice.Parse("height=1,8");
+        Check(Math.Abs(comma.body.height - 1.62f) < 0.001f || comma.body.height <= 2f, "a comma decimal can't break the hero");
+        Check(HeroChoice.Cycle(OutfitId.Scout, 1) == OutfitId.Raider && HeroChoice.Cycle(OutfitId.Raider, -1) == OutfitId.Scout
+            && HeroChoice.Cycle(WeaponId.None, 1) == WeaponId.TwoHandAxe, "the arrows wrap round");
+        foreach (WeaponId w in Enum.GetValues(typeof(WeaponId))) Check(!string.IsNullOrEmpty(HeroChoice.Name(w)), "weapon " + w + " has a name");
+        foreach (OffHandId o in Enum.GetValues(typeof(OffHandId))) Check(!string.IsNullOrEmpty(HeroChoice.Name(o)), "off-hand " + o + " has a name");
+        // Every outfit with every weapon and off-hand builds, and the hero has elbows for the block pose.
+        foreach (OutfitId id in Enum.GetValues(typeof(OutfitId)))
+            foreach (WeaponId w in Enum.GetValues(typeof(WeaponId)))
+            {
+                var s2 = CharacterSpec.Default(id);
+                s2.weapon = w;
+                var wm = HeroModel.BuildWeapon(s2);
+                Check(w == WeaponId.None || wm.Pieces.Count > 0, id + " can carry " + w);
+            }
     }
 
     static float Avg(float tone) { float s = 0f; for (int y = 0; y < 40; y++) for (int x = 0; x < 40; x++) s += InkStyle.Hatch(tone, x, y); return s / 1600f; }

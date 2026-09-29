@@ -101,9 +101,23 @@ namespace OdinsCoin
             }
             // Shield: slides from the back to the front arm while blocking.
             block = Mathf.MoveTowards(block, Blocking ? 1f : 0f, Time.deltaTime * 6f);
-            parts.shield.localPosition = Vector3.Lerp(new Vector3(0f, 1.25f, -0.24f), new Vector3(-0.3f, 1.3f, 0.5f), block);
-            parts.shield.localRotation = Quaternion.Euler(0f, 180f * block, 0f);
-            if (block > 0.01f) parts.leftArm.localRotation = Quaternion.Euler(-80f * block, 0f, 0f);
+            if (parts.leftForearm != null)
+            {
+                // A storybook hero: the shield stays in the fist; the arm swings it up in front of the chest.
+                if (block > 0.01f)
+                {
+                    parts.leftArm.localRotation = Quaternion.Euler(-55f * block, 0f, 25f * block);
+                    parts.leftForearm.localRotation = Quaternion.Euler(-60f * block, 0f, -20f * block);
+                    parts.shield.localRotation = Quaternion.Euler(0f, -70f * block, 0f);
+                }
+                else { parts.leftForearm.localRotation = Quaternion.identity; parts.shield.localRotation = Quaternion.identity; }
+            }
+            else
+            {
+                parts.shield.localPosition = Vector3.Lerp(new Vector3(0f, 1.25f, -0.24f), new Vector3(-0.3f, 1.3f, 0.5f), block);
+                parts.shield.localRotation = Quaternion.Euler(0f, 180f * block, 0f);
+                if (block > 0.01f) parts.leftArm.localRotation = Quaternion.Euler(-80f * block, 0f, 0f);
+            }
             if (Health.Dead) parts.body.localRotation = Quaternion.Euler(-80f, 0f, 0f);
         }
 

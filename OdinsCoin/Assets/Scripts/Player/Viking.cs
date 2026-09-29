@@ -51,13 +51,26 @@ namespace OdinsCoin
             var v = go.AddComponent<Viking>();
             v.controller = cc;
             v.Ship = ship;
-            v.parts = VikingBuilder.Build(go.transform, new Color(0.25f, 0.4f, 0.6f));
+            v.Rebuild(HeroChoice.Load());
             // Start on deck, amidships.
             v.PlaceOnShip(new Vector3(0f, LongshipBuilder.DeckHeight + 0.05f, -1f));
             return v;
         }
 
         void Awake() { if (controller == null) controller = GetComponent<CharacterController>(); }
+
+        /// <summary>The hero this Viking is drawn as.</summary>
+        public CharacterSpec Hero { get; private set; }
+
+        /// <summary>Swap the Viking's look for another hero (from the hero screen): the old model is thrown away.</summary>
+        public void Rebuild(CharacterSpec spec)
+        {
+            Hero = spec;
+            if (parts != null && parts.root != null && parts.root != transform) Destroy(parts.root.gameObject);
+            var model = new GameObject("Hero").transform;
+            model.SetParent(transform, false);
+            parts = HeroBuilder.Build(model, spec);
+        }
 
         /// <summary>Put the Viking back on deck (after dying, for example).</summary>
         public void ReturnToShip()
