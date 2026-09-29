@@ -66,6 +66,11 @@ namespace AirsoftArena
         public Vector2 AimDirection { get; private set; }
         public bool Crouching { get; private set; }
         public bool Sprinting { get; private set; }
+        /// <summary>0..1. Sprinting drains it; when empty you have to catch your breath before sprinting again.</summary>
+        public float Stamina { get; private set; }
+        public bool Winded { get; private set; }
+        /// <summary>Where the last BB that hit us came from (for the "hit from" indicator).</summary>
+        public Vector2 LastHitFrom { get; private set; }
         /// <summary>Aiming down the sights: tighter spread, slower walk, the camera looks further ahead.</summary>
         public bool Aiming { get; private set; }
         /// <summary>Scoped weapons (sniper/marksman) zoom the view much further out when aiming.</summary>
@@ -120,6 +125,7 @@ namespace AirsoftArena
             Loadout = new WeaponInstance[loadout.Length];
             for (int i = 0; i < loadout.Length; i++) Loadout[i] = new WeaponInstance(loadout[i]);
             AimDirection = team == Team.Blue ? Vector2.right : Vector2.left;
+            Stamina = 1f;
         }
 
         // ---------------------------------------------------------------- intentions from controllers
@@ -127,7 +133,7 @@ namespace AirsoftArena
         public void SetMove(Vector2 direction, bool sprint)
         {
             moveInput = Vector2.ClampMagnitude(direction, 1f);
-            Sprinting = sprint && !Crouching && !Aiming;
+            Sprinting = sprint && !Crouching && !Aiming && !Winded && moveInput.sqrMagnitude > 0.01f;
         }
 
         public void SetCrouch(bool crouch) { Crouching = crouch && InPlay; }
@@ -237,6 +243,7 @@ namespace AirsoftArena
             if (shooter != null && shooter.IsHuman && shooter != this) GameHUD.RegisterHitMarker(shooter.Team != Team);
             LastHitBy = shooter;
             LastHitTime = Time.time;
+            LastHitFrom = shooter != null ? shooter.Position : point;
             State = SoldierState.Hit;
             HitWindowLeft = HitCallWindow;
             Effects.Text(point + new Vector2(0f, 0.4f), "*tak*", new Color(1f, 1f, 1f, 0.85f), 0.6f, 11);
@@ -286,6 +293,8 @@ namespace AirsoftArena
 
         public void Respawn()
         {
+            Stamina = 1f;
+            Winded = false;
             State = SoldierState.Alive;
             HasUncalledHit = false;
             foreach (var w in Loadout) w.Refill();
@@ -333,6 +342,12 @@ namespace AirsoftArena
                         if (RespawnLeft <= 0f) Respawn();
                         break;
                 }
+                // Stamina: drains while sprinting, recovers faster when standing still.
+                if (Sprinting) Stamina = Mathf.Max(0f, Stamina - Time.deltaTime * 0.22f);
+                else Stamina = Mathf.Min(1f, Stamina + Time.deltaTime * (moveInput.sqrMagnitude > 0.01f ? 0.12f : 0.28f));
+                if (Stamina <= 0.01f) { Winded = true; Sprinting = false; }
+                else if (Winded && Stamina > 0.35f) Winded = false;
+
                 bool wasReloading = Weapon.IsReloading;
                 foreach (var w in Loadout) w.Tick(Time.time);
                 if (wasReloading && !Weapon.IsReloading) Sfx.PlayAt(SfxId.MagIn, Position, 0.6f);

@@ -22,4 +22,4 @@ Når lista er ferdig går loopen videre til vikingspillet (eget repo).
 - [x] **13. Større kart:** dobbel størrelse på alle baner, lag på 4–8 spillere, og en ny stor bane.
 - [x] **14. Synsavstand og sikting:** zoom med scrollhjulet, sikting med høyre mus (ser lenger, mindre spredning, går saktere) og kikkertsikte på snikskytterrifler.
 - [x] **15. Nytt crosshair:** flere stiler (kryss, prikk, sirkel) og farger, avstand til målet i meter og hint om BB-fall.
-- [ ] **16. Detaljert HUD:** magasin-ikoner og BB-teller, ikon for skytemodus, lagliste, større minikart med zoom, piler til mål utenfor skjermen, "truffet fra"-pil, stamina for sprint og scoreboard på Tab.
+- [x] **16. Detaljert HUD:** magasin-ikoner og BB-teller, ikon for skytemodus, lagliste, større minikart med zoom, piler til mål utenfor skjermen, "truffet fra"-pil, stamina for sprint og scoreboard på Tab.

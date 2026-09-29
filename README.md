@@ -19,6 +19,9 @@ Koden virker med både det gamle Input Manager og det nye Input System.
 | WASD | Gå |
 | Mus | Sikte |
 | Venstre museknapp | Skyte (eller dømme som dommer) |
+| Høyre museknapp | Sikte (kikkertsikte på snikskytterrifler) |
+| Scrollhjul | Zoome inn og ut |
+| Tab | Scoreboard |
 | R | Lade om |
 | B | Bytte skytemodus (semi / burst / auto) |
 | 1 / 2 / 3 | Primærvåpen / pistol / kniv |

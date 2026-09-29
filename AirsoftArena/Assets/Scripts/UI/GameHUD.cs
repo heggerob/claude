@@ -52,6 +52,7 @@ namespace AirsoftArena
                     DrawMatchHud(match);
                     DrawMinimap(match);
                     DrawCrosshair(match);
+                    DrawScoreboard(match);
                     if (match.Phase == MatchPhase.Countdown) Shadowed(new Rect(0, H * 0.3f, W, 120), Mathf.CeilToInt(match.CountdownLeft).ToString(), huge);
                     if (match.Paused) DrawPause(match);
                     break;
@@ -91,7 +92,8 @@ namespace AirsoftArena
             GUI.Label(new Rect(W / 2f - 190f, 36f, 380f, 20f), GameModes.Name(match.Settings.mode) + "  ·  first to " + match.Settings.scoreLimit + " " + GameModes.Unit(match.Settings.mode), centerSmall);
             var watcher = match.PlayerSoldier;
             string hint = watcher != null && match.Rules != null ? match.Rules.PlayerHint(watcher) : null;
-            if (!string.IsNullOrEmpty(hint)) Shadowed(new Rect(0f, 62f, W, 26f), hint, label2);
+            DrawTeamPips(match);
+            if (!string.IsNullOrEmpty(hint)) Shadowed(new Rect(0f, 76f, W, 26f), hint, label2);
 
             // Referee and wind.
             var referee = match.Referee;
@@ -139,42 +141,10 @@ namespace AirsoftArena
 
         void DrawSoldierHud(Soldier s)
         {
-            var w = s.Weapon;
-            var d = w.Data;
-            float x = 12f, y = H - 118f;
-            GUI.Box(new Rect(x - 4f, y - 4f, 360f, 112f), GUIContent.none, panel);
-            GUI.Label(new Rect(x + 4f, y, 350f, 24f), string.Format("<b>[{0}] {1}</b>   {2}", d.ClassCode, d.displayName, d.code), label);
-            if (d.IsMelee)
-            {
-                GUI.Label(new Rect(x + 4f, y + 24f, 350f, 30f), "Knife: sneak up and tap them", label);
-            }
-            else
-            {
-                string ammo = string.Format("<b>{0}</b>  <size=26>{1}</size> / {2}   mags {3}", w.Mode.ToString().ToUpper(), w.AmmoInMag, d.magCapacity, w.SpareMags);
-                GUI.Label(new Rect(x + 4f, y + 22f, 350f, 34f), ammo, label);
-                if (w.IsReloading)
-                {
-                    float p = w.ReloadProgress(Time.time);
-                    GUI.DrawTexture(new Rect(x + 4f, y + 58f, 330f, 6f), whiteTexture, ScaleMode.StretchToFill, true, 0f, new Color(1f, 1f, 1f, 0.2f), 0f, 0f);
-                    GUI.DrawTexture(new Rect(x + 4f, y + 58f, 330f * p, 6f), whiteTexture, ScaleMode.StretchToFill, true, 0f, new Color(1f, 0.85f, 0.3f), 0f, 0f);
-                }
-                else if (w.IsEmpty)
-                {
-                    GUI.Label(new Rect(x + 4f, y + 52f, 350f, 20f), w.SpareMags > 0 ? "<color=#ff8866>EMPTY - press R</color>" : "<color=#ff8866>OUT OF BBs - switch weapon</color>", small);
-                }
-            }
-
-            string slots = "";
-            for (int i = 0; i < s.Loadout.Length; i++)
-            {
-                string n = (i + 1) + " " + s.Loadout[i].Data.displayName;
-                slots += i == s.Slot ? "<b><color=#ffffff>" + n + "</color></b>   " : "<color=#999999>" + n + "</color>   ";
-            }
-            GUI.Label(new Rect(x + 4f, y + 68f, 350f, 20f), slots, small);
-            string stance = s.Scoped ? "SCOPED" : s.Aiming ? "AIMING" : "";
-            if (s.Crouching) stance += (stance.Length > 0 ? " · " : "") + "CROUCHED";
-            if (s.Sprinting) stance = "SPRINTING (can't shoot)";
-            GUI.Label(new Rect(x + 4f, y + 86f, 350f, 20f), stance, small);
+            DrawWeaponPanel(s);
+            DrawStatusPanel(s);
+            DrawHitFrom(s);
+            if (MatchManager.Instance != null) DrawObjectiveArrows(MatchManager.Instance, s);
 
             // Big centre messages.
             var r = new Rect(0f, H * 0.2f, W, 60f);
