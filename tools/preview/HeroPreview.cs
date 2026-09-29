@@ -53,11 +53,24 @@ public static class HeroPreview
         walk.rot[Joints.LeftArm] = Quaternion.Euler(22f, 0f, -6f);
         walk.rot[Joints.RightArm] = Quaternion.Euler(-26f, 0f, 6f);
         walk.rot[Joints.RightForearm] = Quaternion.Euler(-30f, 0f, 0f);
+        // The Jarl: sword pointing down in the right hand, shield at his left side.
+        var jarl = CharacterSpec.Default(OutfitId.Jarl);
+        jarl.body = new BodyShape { height = 1.72f, width = 1.1f, gender = Gender.Male };
+        var jarlModel = WithWeapon(WithWeapon(HeroModel.Build(jarl), HeroModel.BuildWeapon(jarl), Joints.Weapon), HeroModel.BuildOffHand(jarl), Joints.OffHand);
+        var stand = new Pose();
+        stand.rot[Joints.RightArm] = Quaternion.Euler(-12f, 0f, 16f);
+        stand.rot[Joints.RightForearm] = Quaternion.Euler(-35f, 0f, -8f);
+        stand.worldRot[Joints.Weapon] = Quaternion.LookRotation(new Vector3(-0.15f, -1f, 0.22f).normalized, Vector3.forward);
+        stand.rot[Joints.LeftArm] = Quaternion.Euler(12f, 0f, -20f);
+        stand.rot[Joints.LeftForearm] = Quaternion.Euler(-10f, 0f, 6f);
+        stand.worldRot[Joints.OffHand] = Quaternion.Euler(0f, 38f, 0f);
+        stand.rot[Joints.LeftLeg] = Quaternion.Euler(0f, 0f, -4f);
+        stand.rot[Joints.RightLeg] = Quaternion.Euler(0f, 0f, 5f);
+        shots.Add(new Shot { label = "The Jarl", model = jarlModel, pose = stand, yaw = 188f });
         shots.Add(new Shot { label = "The Raider", model = model, pose = carry, yaw = 188f });
-        shots.Add(new Shot { label = "Three-quarter", model = model, pose = carry, yaw = 215f });
-        shots.Add(new Shot { label = "Side", model = model, pose = carry, yaw = 268f });
-        shots.Add(new Shot { label = "Back", model = model, pose = carry, yaw = 20f });
-        shots.Add(new Shot { label = "Walking", model = HeroModel.Build(raider), pose = walk, yaw = 225f });
+        shots.Add(new Shot { label = "Jarl, three-quarter", model = jarlModel, pose = stand, yaw = 215f });
+        shots.Add(new Shot { label = "Jarl, back", model = jarlModel, pose = stand, yaw = 20f });
+        shots.Add(new Shot { label = "Raider, three-quarter", model = model, pose = carry, yaw = 215f });
         // Same outfit on other bodies: the player chooses height, build and gender.
         var tall = CharacterSpec.Default(OutfitId.Raider);
         tall.body = new BodyShape { height = 1.85f, width = 1.25f, gender = Gender.Male };
@@ -68,7 +81,7 @@ public static class HeroPreview
         small.body = new BodyShape { height = 1.45f, width = 0.85f, gender = Gender.Female };
         shots.Add(new Shot { label = "Short, slim", model = HeroModel.Build(small), yaw = 195f });
 
-        const int cellW = 520, cellH = 1040; // 2x supersampled
+        const int cellW = 560, cellH = 1080; // 2x supersampled
         int w = cellW * shots.Count, h = cellH;
         var img = new float[w * h * 3];
         for (int i = 0; i < w * h; i++) { img[i * 3] = Paper.r; img[i * 3 + 1] = Paper.g; img[i * 3 + 2] = Paper.b; }

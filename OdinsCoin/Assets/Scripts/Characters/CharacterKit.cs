@@ -43,10 +43,11 @@ namespace OdinsCoin
                 float lump = thickness * (0.45f + (float)rng.NextDouble() * 0.3f);
                 m.Append(MeshData.Ellipsoid(root, new Vector3(lump, lump * 0.8f, lump), 7, 4));
                 if (rng.NextDouble() < 0.25) continue; // not every clump has a tuft
-                float len = tuftLength * (0.45f + (float)rng.NextDouble() * 0.75f);
-                float fall = droop * (0.7f + (float)rng.NextDouble() * 0.6f);
+                // Broad, short, drooping locks rather than long spikes.
+                float len = tuftLength * (0.35f + (float)rng.NextDouble() * 0.6f);
+                float fall = droop * (0.8f + (float)rng.NextDouble() * 0.6f);
                 Vector3 tip = root + (dir * (1f - fall * 0.5f) + Vector3.down * fall).normalized * len;
-                m.Append(Tuft(root, tip, thickness * (0.4f + (float)rng.NextDouble() * 0.3f)));
+                m.Append(Tuft(root, tip, thickness * (0.55f + (float)rng.NextDouble() * 0.35f)));
             }
             return m;
         }

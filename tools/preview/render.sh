@@ -82,7 +82,7 @@ from PIL import Image
 ref = Image.open('OdinsCoin/docs/reference/characters-concept.png').convert('RGBA')
 ours = Image.open('OdinsCoin/docs/heroes.png').convert('RGBA')
 os.makedirs('OdinsCoin/docs/compare', exist_ok=True)
-crops = {'raider': ((300, 20, 650, 800), 0)}
+crops = {'jarl': ((0, 20, 340, 800), 0), 'raider': ((300, 20, 650, 800), 1)}
 cell = ours.width // 7
 for name, (box, index) in crops.items():
     a = ref.crop(box)

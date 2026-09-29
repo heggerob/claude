@@ -39,6 +39,17 @@ namespace OdinsCoin
             return d.model;
         }
 
+        /// <summary>The off-hand item (a shield...) on its own, on the <see cref="Joints.OffHand"/> joint.</summary>
+        public static VikingModel BuildOffHand(CharacterSpec spec)
+        {
+            var fit = Fit.Of(spec.body);
+            var d = new Dresser { model = new VikingModel(), fit = fit, pal = spec.palette ?? Outfits.Get(spec.outfit).palette(), seed = 9 };
+            d.model.AddJoint(Joints.OffHand, null, Vector3.zero);
+            Weapons.BuildOffHand(d, spec.offHand);
+            d.model.AddOutlines(OutlineWidth * fit.s, d.pal.ink);
+            return d.model;
+        }
+
         /// <summary>Height of the head's centre above the neck joint.</summary>
         public static float HeadCentre(Fit f) { return f.headY - f.neckY; }
 
@@ -77,6 +88,7 @@ namespace OdinsCoin
             switch (hair)
             {
                 case HairStyle.LongBraids: Garments.LongBraids(d, 0.42f); break;
+                case HairStyle.WrappedBraids: Garments.LongBraids(d, 0.4f, true); break;
             }
         }
     }
@@ -103,6 +115,44 @@ namespace OdinsCoin
                     d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 1.35f), MeshData.Extrude(new[] {
                         new Vector2(1.06f, 0.2f), new Vector2(1.1f, 0.21f), new Vector2(1.1f, -0.21f), new Vector2(1.06f, -0.2f) }, 0.022f)
                         .Transformed(Vector3.zero, Quaternion.identity, Vector3.one * s), false);
+                    break;
+                case WeaponId.Sword:
+                    // A long broad sword pointing forward from the fist: leather grip, gold curved guard and pommel,
+                    // a fuller and runes down the blade.
+                    d.Add(Joints.Weapon, d.pal.leatherDark, MeshData.Tube(new[] { new Vector3(0f, 0f, -0.07f * s), new Vector3(0f, 0f, 0.07f * s) }, new[] { 0.018f * s, 0.018f * s }, 8));
+                    d.Add(Joints.Weapon, d.pal.brass, MeshData.Ellipsoid(new Vector3(0f, 0f, -0.095f * s), new Vector3(0.03f, 0.03f, 0.025f) * s, 8, 5));
+                    d.Add(Joints.Weapon, d.pal.brass, MeshData.Tube(new[] { new Vector3(-0.11f * s, 0f, 0.1f * s), new Vector3(0f, 0f, 0.08f * s), new Vector3(0.11f * s, 0f, 0.1f * s) }, new[] { 0.012f * s, 0.016f * s, 0.012f * s }, 6));
+                    d.Add(Joints.Weapon, new Color(0.78f, 0.8f, 0.82f), MeshData.Extrude(new[] {
+                        new Vector2(0.09f, 0.045f), new Vector2(0.8f, 0.04f), new Vector2(0.9f, 0f), new Vector2(0.8f, -0.04f), new Vector2(0.09f, -0.045f) }, 0.014f)
+                        .Transformed(Vector3.zero, Quaternion.Euler(0f, 0f, 90f), Vector3.one * s));
+                    for (int i = 0; i < 6; i++)
+                        d.Add(Joints.Weapon, d.pal.ink, MeshData.Box(new Vector3(0.009f * s, 0f, (0.2f + i * 0.09f) * s), new Vector3(0.003f, i % 2 == 0 ? 0.02f : 0.012f, 0.03f) * s), false);
+                    break;
+            }
+        }
+
+        public static void BuildOffHand(Dresser d, OffHandId id)
+        {
+            float s = d.S;
+            switch (id)
+            {
+                case OffHandId.RoundShield:
+                    // Held by the grip behind the boss, the face turned outwards (+X, away from the body on the left side).
+                    var face = Quaternion.Euler(0f, -90f, 0f);
+                    var centre = new Vector3(-0.05f * s, 0f, 0f);
+                    for (int q = 0; q < 8; q++)
+                        d.Add(Joints.OffHand, q % 2 == 0 ? VikingModel.Shade(d.pal.accent, 0.72f) : VikingModel.Shade(d.pal.leather, 0.8f),
+                            MeshData.Wedge(0.29f * s, 0.03f * s, q * 45f, q * 45f + 45f, 4).Transformed(centre, face, Vector3.one));
+                    d.Add(Joints.OffHand, d.pal.metal, MeshData.Dome(Vector3.zero, new Vector3(0.07f, 0.06f, 0.07f) * s, 12, 4).Transformed(centre + new Vector3(-0.015f * s, 0f, 0f), Quaternion.Euler(0f, 0f, 90f), Vector3.one));
+                    var rim = new Vector3[33];
+                    var radii = new float[33];
+                    for (int i = 0; i < rim.Length; i++)
+                    {
+                        float a = i / 32f * Mathf.PI * 2f;
+                        rim[i] = centre + face * new Vector3(Mathf.Cos(a) * 0.29f * s, Mathf.Sin(a) * 0.29f * s, 0f);
+                        radii[i] = 0.022f * s;
+                    }
+                    d.Add(Joints.OffHand, d.pal.brass, MeshData.Tube(rim, radii, 6));
                     break;
             }
         }

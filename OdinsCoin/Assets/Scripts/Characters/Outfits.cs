@@ -4,8 +4,9 @@ using UnityEngine;
 namespace OdinsCoin
 {
     public enum OutfitId { Raider, Jarl, Navigator, SpearGuard, Seer, Scout }
-    public enum HairStyle { None, LongBraids }
-    public enum WeaponId { None, TwoHandAxe }
+    public enum HairStyle { None, LongBraids, WrappedBraids }
+    public enum WeaponId { None, TwoHandAxe, Sword }
+    public enum OffHandId { None, RoundShield }
 
     /// <summary>A special move or perk that comes with an outfit (used by the game later).</summary>
     public class Ability
@@ -26,6 +27,7 @@ namespace OdinsCoin
         public System.Action<Dresser> dress;
         public HairStyle defaultHair;
         public WeaponId suggestedWeapon;
+        public OffHandId suggestedOffHand;
         public Ability[] abilities;
     }
 
@@ -52,6 +54,29 @@ namespace OdinsCoin
                     Garments.ShoulderPelt(d, 1.1f);
                     Garments.NasalHelmet(d);
                 } } },
+            { OutfitId.Jarl, new Outfit {
+                id = OutfitId.Jarl, title = "The Jarl",
+                palette = () => new Palette {
+                    cloth = new Color(0.16f, 0.17f, 0.21f), clothDark = new Color(0.1f, 0.1f, 0.12f),
+                    accent = new Color(0.62f, 0.16f, 0.11f), fur = new Color(0.84f, 0.8f, 0.72f), furShadow = new Color(0.58f, 0.53f, 0.46f),
+                    brass = new Color(0.82f, 0.62f, 0.26f), hair = new Color(0.74f, 0.3f, 0.12f) },
+                defaultHair = HairStyle.WrappedBraids, suggestedWeapon = WeaponId.Sword, suggestedOffHand = OffHandId.RoundShield,
+                abilities = new[] {
+                    new Ability { id = "rally", name = "Rally the Crew", description = "Your crew rows and fights harder for a while." },
+                    new Ability { id = "tribute", name = "Tribute", description = "Chests sold at home are worth more." } },
+                dress = d =>
+                {
+                    Garments.FurBoots(d);
+                    Garments.Gloves(d);
+                    Garments.JarlCoat(d, 0.2f);
+                    Garments.Tunic(d, false);
+                    Garments.LongSleeves(d);
+                    Garments.RingBelt(d);
+                    Garments.BigCape(d, 1.12f, 2.1f);
+                    Garments.ShoulderPelt(d, 1.3f);
+                    Garments.Brooches(d);
+                    Garments.JarlCrown(d);
+                } } },
         };
 
         public static Outfit Get(OutfitId id)
@@ -72,11 +97,12 @@ namespace OdinsCoin
         /// <summary>Null = the outfit's default palette.</summary>
         public Palette palette;
         public WeaponId weapon = WeaponId.None;
+        public OffHandId offHand = OffHandId.None;
 
         public static CharacterSpec Default(OutfitId outfit)
         {
             var o = Outfits.Get(outfit);
-            return new CharacterSpec { outfit = outfit, hair = o.defaultHair, weapon = o.suggestedWeapon };
+            return new CharacterSpec { outfit = outfit, hair = o.defaultHair, weapon = o.suggestedWeapon, offHand = o.suggestedOffHand };
         }
     }
 }
