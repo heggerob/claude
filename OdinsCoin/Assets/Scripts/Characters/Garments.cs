@@ -44,13 +44,16 @@ namespace OdinsCoin
             foreach (var joint in new[] { Joints.LeftLeg, Joints.RightLeg })
             {
                 float sole = -f.hip, top = f.bootTop + extra * d.S - f.hip, s = d.S;
-                float r = 0.065f * s * Mathf.Sqrt(f.width);
+                float r = 0.052f * s * Mathf.Sqrt(f.width);
+                // A slim shaft, narrowest at the ankle, flaring a little at the top.
                 d.Add(joint, d.pal.leatherDark, MeshData.Lathe(new[] {
-                    new Vector2(r * 0.85f, sole), new Vector2(r * 1.02f, sole + 0.04f * s), new Vector2(r * 0.92f, sole + 0.13f * s),
-                    new Vector2(r * 0.98f, sole + 0.25f * s), new Vector2(r * 1.08f, top) }, 12));
+                    new Vector2(r * 0.95f, sole), new Vector2(r * 1.08f, sole + 0.035f * s), new Vector2(r * 0.86f, sole + 0.1f * s),
+                    new Vector2(r * 0.98f, sole + 0.2f * s), new Vector2(r * 1.12f, top) }, 12));
+                // A long pointed foot that turns up a touch at the toe, and a heel.
                 d.Add(joint, d.pal.leatherDark, MeshData.Tube(new[] {
-                    new Vector3(0f, sole + 0.045f * s, 0f), new Vector3(0f, sole + 0.035f * s, 0.11f * s), new Vector3(0f, sole + 0.05f * s, 0.19f * s) },
-                    new[] { r * 0.88f, r * 0.62f, 0.004f }, 10));
+                    new Vector3(0f, sole + 0.04f * s, -0.01f * s), new Vector3(0f, sole + 0.032f * s, 0.1f * s), new Vector3(0f, sole + 0.035f * s, 0.18f * s), new Vector3(0f, sole + 0.05f * s, 0.23f * s) },
+                    new[] { r * 0.95f, r * 0.7f, r * 0.35f, 0.003f }, 10));
+                d.Add(joint, VikingModel.Shade(d.pal.leatherDark, 0.7f), MeshData.Box(new Vector3(0f, sole + 0.012f * s, -0.025f * s), new Vector3(r * 1.5f, 0.024f * s, r * 1.2f)), false);
                 // Straps wound criss-cross, lighter leather.
                 d.Add(joint, d.pal.leather, CharacterKit.Spiral(sole + 0.07f * s, top - 0.05f * s, r * 1.02f, 1.6f, 0f, 0.0075f * s), false);
                 d.Add(joint, d.pal.leather, CharacterKit.Spiral(sole + 0.07f * s, top - 0.05f * s, r * 1.02f, -1.6f, Mathf.PI, 0.0075f * s), false);
@@ -127,6 +130,9 @@ namespace OdinsCoin
             d.Add(Joints.Body, d.pal.fur, MeshData.Ellipsoid(new Vector3(0f, y + 0.01f * s, -0.005f), new Vector3(r, 0.07f * s, r * 0.72f), 16, 8));
             d.Add(Joints.Body, d.pal.fur, CharacterKit.FurRing(new Vector3(0f, y - 0.02f * s, -0.005f), r * 0.97f, 0.74f, 0.075f * s, 18, 0.12f * s * size, d.seed + 6, 0.95f));
             d.Add(Joints.Body, d.pal.furShadow, CharacterKit.FurRing(new Vector3(0f, y + 0.035f * s, -0.005f), r * 0.72f, 0.78f, 0.05f * s, 16, 0.07f * s, d.seed + 7, 0.5f));
+            // Long wispy strands, in both shades, so the edge reads as shaggy fur rather than a ring.
+            d.Add(Joints.Body, d.pal.fur, CharacterKit.FurRing(new Vector3(0f, y - 0.035f * s, -0.005f), r * 0.98f, 0.74f, 0.04f * s, 30, 0.16f * s * size, d.seed + 9, 1.25f));
+            d.Add(Joints.Body, d.pal.furShadow, CharacterKit.FurRing(new Vector3(0f, y - 0.05f * s, -0.005f), r * 0.93f, 0.74f, 0.035f * s, 20, 0.14f * s * size, d.seed + 10, 1.4f));
             // The pelt rises behind the neck like a mane, framing the head.
             d.Add(Joints.Body, d.pal.fur, MeshData.Ellipsoid(new Vector3(0f, y + 0.06f * s * size, -f.chestR * f.depth * 0.7f), new Vector3(r * 0.75f, 0.075f * s * size, 0.06f * s), 14, 7));
             // Pelt pieces draping down over the chest and back.

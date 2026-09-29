@@ -40,11 +40,15 @@ public static class HeroPreview
         var carry = new Pose();
         // Aim the left arm: elbow down and out, fist up by the shoulder and behind the head.
         Vector3 shoulder = new Vector3(-fit.shoulderX, fit.shoulderY, 0f);
-        Vector3 elbow = shoulder + new Vector3(-0.15f, -0.17f, 0.04f).normalized * fit.upperArm;
-        Vector3 fist = elbow + new Vector3(0.08f, 0.25f, -0.17f).normalized * fit.foreArm;
+        Vector3 elbow = shoulder + new Vector3(-0.2f, -0.12f, 0.05f).normalized * fit.upperArm;
+        Vector3 fist = elbow + new Vector3(0.03f, 0.3f, -0.08f).normalized * fit.foreArm;
         carry.worldRot[Joints.LeftArm] = Quaternion.FromToRotation(Vector3.down, elbow - shoulder);
         carry.worldRot[Joints.LeftForearm] = Quaternion.FromToRotation(Vector3.down, fist - elbow);
-        carry.worldRot[Joints.OffHand] = Quaternion.LookRotation(new Vector3(1f, 0.42f, -0.45f).normalized, new Vector3(0f, 1f, 0.3f));
+        // The haft runs from the fist behind the neck to the other side; the blade faces us.
+        var haft = new Vector3(1f, 0.3f, -0.55f).normalized;
+        carry.worldRot[Joints.OffHand] = Quaternion.LookRotation(haft, Vector3.Cross(haft, Vector3.forward));
+        carry.rot[Joints.LeftLeg] = Quaternion.Euler(0f, -18f, -9f);
+        carry.rot[Joints.RightLeg] = Quaternion.Euler(0f, 20f, 9f);
         carry.rot[Joints.RightArm] = Quaternion.Euler(4f, 0f, 14f);
         carry.rot[Joints.RightForearm] = Quaternion.Euler(-12f, 0f, 0f);
         var walk = new Pose();
@@ -154,7 +158,7 @@ public static class HeroPreview
         small.body = new BodyShape { height = 1.45f, width = 0.85f, gender = Gender.Female };
         shots.Add(new Shot { label = "Short, slim", model = HeroModel.Build(small), yaw = 195f });
 
-        const int cellW = 560, cellH = 1080; // 2x supersampled
+        const int cellW = 680, cellH = 1080; // 2x supersampled
         int w = cellW * shots.Count, h = cellH;
         var img = new float[w * h * 3];
         for (int i = 0; i < w * h; i++) { img[i * 3] = Paper.r; img[i * 3 + 1] = Paper.g; img[i * 3 + 2] = Paper.b; }

@@ -100,6 +100,21 @@ namespace OdinsCoin
     /// <summary>Weapons are add-ons, not part of the character: built on their own and held in the weapon hand.</summary>
     public static class Weapons
     {
+        /// <summary>The first <paramref name="count"/> outline points as a 3D polyline in the blade's plane (x offset for the bevel).</summary>
+        static Vector3[] ToPath(System.Collections.Generic.List<Vector2> pts, float x, float s, int count)
+        {
+            var p = new Vector3[count];
+            for (int i = 0; i < count; i++) p[i] = new Vector3(x, pts[i].y, pts[i].x) * s;
+            return p;
+        }
+
+        static float[] Radii(int count, float r)
+        {
+            var a = new float[count];
+            for (int i = 0; i < count; i++) a[i] = r;
+            return a;
+        }
+
         public static void Build(Dresser d, WeaponId id)
         {
             float s = d.S;
@@ -112,13 +127,26 @@ namespace OdinsCoin
                     d.Add(Joints.Weapon, d.pal.leatherDark, MeshData.Lathe(new[] { new Vector2(0.032f * s, 0f), new Vector2(0.032f * s, 0.04f * s) }, 10).Transformed(new Vector3(0f, 0f, -0.12f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one));
                     foreach (float z in new[] { 0.3f, 0.7f })
                         d.Add(Joints.Weapon, d.pal.metal, MeshData.Lathe(new[] { new Vector2(0.03f * s, 0f), new Vector2(0.03f * s, 0.03f * s) }, 10).Transformed(new Vector3(0f, 0f, z * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one), false);
-                    d.Add(Joints.Weapon, d.pal.metal, MeshData.Extrude(new[] {
-                        new Vector2(0.78f, 0.05f), new Vector2(0.95f, 0.05f), new Vector2(1.0f, 0.12f), new Vector2(1.09f, 0.2f), new Vector2(1.08f, -0.2f),
-                        new Vector2(1.0f, -0.12f), new Vector2(0.95f, -0.05f), new Vector2(0.78f, -0.05f) }, 0.03f)
-                        .Transformed(Vector3.zero, Quaternion.identity, Vector3.one * s));
-                    d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 1.35f), MeshData.Extrude(new[] {
-                        new Vector2(1.06f, 0.2f), new Vector2(1.1f, 0.21f), new Vector2(1.1f, -0.21f), new Vector2(1.06f, -0.2f) }, 0.022f)
-                        .Transformed(Vector3.zero, Quaternion.identity, Vector3.one * s), false);
+                    // The head: a socket round the haft, a narrow neck, then a broad crescent blade flaring up and down.
+                    d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 0.8f), MeshData.Lathe(new[] { new Vector2(0.036f * s, 0f), new Vector2(0.036f * s, 0.1f * s) }, 10)
+                        .Transformed(new Vector3(0f, 0f, 0.78f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one));
+                    var blade = new System.Collections.Generic.List<Vector2>();
+                    blade.Add(new Vector2(0.8f, -0.035f));
+                    blade.Add(new Vector2(0.8f, 0.035f));
+                    blade.Add(new Vector2(0.93f, 0.05f));
+                    for (int i = 0; i <= 8; i++)
+                    {
+                        // The cutting edge: a gentle outward curve from the top horn to the bottom horn.
+                        float t = i / 8f, yy = Mathf.Lerp(0.2f, -0.2f, t);
+                        blade.Add(new Vector2(1.02f + 0.06f * Mathf.Cos((t - 0.5f) * Mathf.PI), yy));
+                    }
+                    blade.Add(new Vector2(0.93f, -0.05f));
+                    // Convex-ish from the first point for the fan: keep the neck as the first vertex.
+                    d.Add(Joints.Weapon, d.pal.metal, MeshData.Extrude(blade.ToArray(), 0.026f).Transformed(Vector3.zero, Quaternion.identity, Vector3.one * s));
+                    var edge = new System.Collections.Generic.List<Vector2>();
+                    for (int i = 0; i <= 8; i++) { float t = i / 8f, yy = Mathf.Lerp(0.2f, -0.2f, t); edge.Add(new Vector2(1.03f + 0.06f * Mathf.Cos((t - 0.5f) * Mathf.PI), yy)); }
+                    for (int i = 8; i >= 0; i--) { float t = i / 8f, yy = Mathf.Lerp(0.2f, -0.2f, t); edge.Add(new Vector2(0.99f + 0.06f * Mathf.Cos((t - 0.5f) * Mathf.PI), yy)); }
+                    d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 1.35f), MeshData.Tube(ToPath(edge, 0.016f, s, 9), Radii(9, 0.012f * s), 4), false);
                     break;
                 case WeaponId.Spear:
                     // A tall spear held about a third of the way up: an ash shaft with leather bindings, a leaf-shaped
