@@ -269,7 +269,7 @@ namespace OdinsCoin
                     var face = Quaternion.Euler(0f, -90f, 0f);
                     var centre = new Vector3(-0.05f * s, 0f, 0f);
                     for (int q = 0; q < 8; q++)
-                        d.Add(Joints.OffHand, q % 2 == 0 ? VikingModel.Shade(d.pal.accent, 0.72f) : VikingModel.Shade(d.pal.leather, 0.8f),
+                        d.Add(Joints.OffHand, q % 2 == 0 ? VikingModel.Shade(d.pal.accent, 0.55f) : VikingModel.Shade(d.pal.leather, 0.62f),
                             MeshData.Wedge(0.29f * s, 0.03f * s, q * 45f, q * 45f + 45f, 4).Transformed(centre, face, Vector3.one));
                     d.Add(Joints.OffHand, d.pal.metal, MeshData.Dome(Vector3.zero, new Vector3(0.07f, 0.06f, 0.07f) * s, 12, 4).Transformed(centre + new Vector3(-0.015f * s, 0f, 0f), Quaternion.Euler(0f, 0f, 90f), Vector3.one));
                     var rim = new Vector3[33];

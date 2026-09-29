@@ -67,7 +67,7 @@ public static class HeroPreview
         stand.worldRot[Joints.Weapon] = Quaternion.LookRotation(new Vector3(-0.15f, -1f, 0.22f).normalized, Vector3.forward);
         stand.rot[Joints.LeftArm] = Quaternion.Euler(12f, 0f, -20f);
         stand.rot[Joints.LeftForearm] = Quaternion.Euler(-10f, 0f, 6f);
-        stand.worldRot[Joints.OffHand] = Quaternion.Euler(0f, 38f, 0f);
+        stand.worldRot[Joints.OffHand] = Quaternion.Euler(0f, 18f, 0f);
         stand.rot[Joints.LeftLeg] = Quaternion.Euler(0f, 0f, -4f);
         stand.rot[Joints.RightLeg] = Quaternion.Euler(0f, 0f, 5f);
         shots.Add(new Shot { label = "The Jarl", model = jarlModel, pose = stand, yaw = 188f });

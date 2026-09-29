@@ -168,20 +168,28 @@ namespace OdinsCoin
         public static MeshData Cape(Vector3 top, float topWidth, float bottomWidth, float length, float wrap, float jag, int seed, float thickness = 0.018f)
         {
             var rng = new System.Random(seed);
-            const int rows = 8, cols = 11;
+            const int rows = 10, cols = 25;
+            // A torn hem: many narrow strips of uneven length rather than a few big teeth.
             var hem = new float[cols];
-            for (int c = 0; c < cols; c++) hem[c] = ((c & 1) == 0 ? 1f : 0.25f) * jag * (0.4f + (float)rng.NextDouble());
+            for (int c = 0; c < cols; c++)
+            {
+                float r0 = (float)rng.NextDouble();
+                hem[c] = ((c & 1) == 0 ? 0.55f + r0 * 0.6f : r0 * 0.25f) * jag;
+            }
+            // Folds: soft vertical waves across the width, deeper towards the hem.
+            float phase = (float)rng.NextDouble() * 6f;
             var grid = new Vector3[rows, cols];
             for (int r = 0; r < rows; r++)
                 for (int c = 0; c < cols; c++)
                 {
-                    float u = c / (float)(cols - 1) * 2f - 1f;  // -1 left .. 1 right (seen from behind)
+                    float u = c / (float)(cols - 1) * 2f - 1f;  // across the back
                     float v = r / (float)(rows - 1);            // 0 top .. 1 hem
                     float width = Mathf.Lerp(topWidth, bottomWidth, v) * 0.5f;
-                    float drop = v * (length + hem[c]);
+                    float drop = v * length + (r == rows - 1 ? hem[c] : v * v * hem[c] * 0.3f);
                     // Wraps around the shoulders at the top, hangs flatter and further back lower down.
                     float back = -(wrap * (1f - u * u) * (1f - 0.5f * v)) - v * 0.1f;
-                    grid[r, c] = top + new Vector3(-u * width, -drop, back);
+                    float fold = Mathf.Sin(u * 9f + phase) * 0.018f * v + Mathf.Sin(u * 17f + phase * 2f) * 0.006f * v;
+                    grid[r, c] = top + new Vector3(-u * width, -drop, back + fold);
                 }
             return Sheet(grid, Vector3.back, thickness);
         }
