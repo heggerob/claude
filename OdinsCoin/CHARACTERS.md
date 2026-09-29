@@ -38,14 +38,19 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
     - **Spydvakt:** bredt spydblad og vimpel med merke på begge sider. Spydet står på bakken, skjoldet er større, og skjerfet ligger på skrå.
     - **Seer:** hetta har spiss og hengende fjær, skuldrene er smalere, og runebrikkene er store og henger i lange snorer.
     - **Speider:** bare armer med armbeskyttere, grønn skulderkappe med spiss foran, pels på én skulder og koggeret på riktig side.
-  - Kjente forskjeller til runde 3:
-    - **Alle:** figurene er fortsatt litt for bredde og klokkeformede i overkroppen. I bildet er overkroppen smal med lag som synes.
-    - **Jarl:** remmer i kryss og ringer på beltet, runer på sverdet og gullkant på skjoldet.
-    - **Raider:** flere lommer på beltet og ei synlig hånd som holder skaftet.
-    - **Navigatør:** pelsen på skuldrene synes for lite, og kartet trenger revne kanter.
-    - **Spydvakt:** splitt foran i lærjakken og mørke bukser under.
-    - **Seer:** lysere grå-blå striper i kappa, og flere kjeder og beinsmykker.
-    - **Speider:** pelslua skal sitte mer på skrå, og løs hårflette skal henge bak.
+  - Runde 3 (ferdig):
+    - **Alle:** overkroppene er smalere enn hodet, som i bildet.
+    - **Jarl:** remmer i kryss med ring, en krone som sitter som en hjelm, koksgrå kåpe med bred gullkant, og et smalere sverd med blodrenne og runer.
+    - **Raider:** større lommer på hoftene.
+    - **Navigatør:** et større, fillete kart med kystlinje, øy og seilrute.
+    - **Spydvakt:** splitt foran i lærvesten, mørke bukser og knehøye støvler.
+    - **Seer:** blekere filler i fjærkappa.
+    - **Speider:** lua sitter på skrå med mørkt stoff synlig, flettet svinger over høyre skulder, og løse lokker henger på samme side.
+  - Til runde 4:
+    - Ansiktene er litt mindre enn i bildet. Hodet kan bli større, eller hodeplaggene kan sitte høyere.
+    - Hendene som holder våpen bør synes bedre.
+    - Pelsen på Navigatørens skulder er for lite synlig.
+    - Buen til Speideren skal henge bak, ikke holdes foran.
 - [x] **9. Bevegelse i plaggene:** (se [docs/motion.png](docs/motion.png)) kapper, skjørt, fletter, pels og vimpler svinger og henger etter når figuren går, snur og hugger (enkel fysikk med fjærer).
 - [ ] **10. Tegneserie-look på alt:** tusj-kanter på skipet, øyene, trærne, husene og havet, skravur med blyant eller tusj i skyggene, og papirkorn over hele bildet.
   - [x] Skravur i skyggene: shaderen `OdinsCoin/InkToon` (i `Resources/Shaders`) gir myk tegnet belysning med kalde skygger, enkle blyantstreker på skyggesiden og kryss-skravur i de mørkeste delene. Ansiktene får ingen skravur, så de holder seg rene. Den brukes på alt som ikke er blankt (havet beholder Lit). `InkStyle.cs` har samme matte, og forhåndsvisningen bruker den.

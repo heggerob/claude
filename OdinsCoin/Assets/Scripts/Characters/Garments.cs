@@ -1061,14 +1061,14 @@ namespace OdinsCoin
             var f = d.fit;
             float r = f.headR, cy = HeroModel.HeadCentre(f), s = d.S;
             float brim = cy + 0.2f * r;
-            var tilt = Quaternion.Euler(-6f, 0f, 8f);
+            var tilt = Quaternion.Euler(-6f, 0f, 12f);
             d.Add(Joints.Head, d.pal.clothDark, MeshData.Dome(Vector3.zero, new Vector3(r * 1.1f, r * 1.05f, r * 1.1f), 16, 6).Transformed(new Vector3(0f, brim, -0.02f * r), tilt, Vector3.one));
             d.Add(Joints.Head, d.pal.fur, CharacterKit.FurRing(Vector3.zero, r * 1.12f, 1f, 0.045f * s, 16, 0.03f * s, d.seed + 81, 0.3f).Transformed(new Vector3(0f, brim + 0.025f * s, -0.02f * r), tilt, Vector3.one));
             // Shaggy fur over the crown, leaving dark cloth showing on one side.
             var rng = new System.Random(d.seed + 82);
             for (int i = 0; i < 10; i++)
             {
-                float a = (float)rng.NextDouble() * Mathf.PI * 1.3f - 0.2f, e = 0.3f + (float)rng.NextDouble() * 0.9f;
+                float a = 0.9f + (float)rng.NextDouble() * Mathf.PI * 1.1f, e = 0.3f + (float)rng.NextDouble() * 0.9f;
                 var p = new Vector3(Mathf.Cos(a) * Mathf.Cos(e), Mathf.Sin(e), Mathf.Sin(a) * Mathf.Cos(e) * 0.6f) * r * 1.08f;
                 d.Add(Joints.Head, i % 3 == 0 ? d.pal.furShadow : d.pal.fur, MeshData.Ellipsoid(p, new Vector3(0.045f, 0.03f, 0.045f) * s, 7, 4).Transformed(new Vector3(0f, brim, -0.02f * r), tilt, Vector3.one));
             }
@@ -1157,14 +1157,18 @@ namespace OdinsCoin
             d.Add(Joints.Head, d.pal.hair, MeshData.Ellipsoid(new Vector3(0f, cy - r * 0.02f, -r * 0.3f), new Vector3(r * 1.02f, r * 0.9f, r * 0.82f), 12, 8));
             foreach (float x in new[] { -1f, 1f })
                 d.Add(Joints.Head, d.pal.hair, CharacterKit.Tuft(new Vector3(x * r * 0.9f, cy + r * 0.2f, r * 0.3f), new Vector3(x * r * 1.02f, cy - r * 0.55f, r * 0.42f), 0.026f * s));
-            var path = new[] { new Vector3(-r * 0.6f, cy - r * 0.55f, -r * 0.75f), new Vector3(-r * 1.05f, cy - r * 1.05f, -r * 0.6f), new Vector3(-r * 1.35f, cy - r * 1.7f, -r * 0.4f), new Vector3(-r * 1.45f, cy - r * 2.3f, -r * 0.3f) };
+            // Loose wavy locks falling to the shoulder on the braid's side.
+            d.Add(Joints.Head, d.pal.hair, CharacterKit.Tuft(new Vector3(r * 0.95f, cy + r * 0.1f, r * 0.05f), new Vector3(r * 1.2f, cy - r * 1.1f, r * 0.1f), 0.03f * s));
+            d.Add(Joints.Head, d.pal.hair, CharacterKit.Tuft(new Vector3(r * 0.9f, cy, -r * 0.3f), new Vector3(r * 1.3f, cy - r * 1.3f, -r * 0.25f), 0.026f * s));
+            // The braid itself, gathered low at the back and swinging out over the right shoulder.
+            var path = new[] { new Vector3(r * 0.6f, cy - r * 0.55f, -r * 0.75f), new Vector3(r * 1.05f, cy - r * 1.05f, -r * 0.6f), new Vector3(r * 1.35f, cy - r * 1.7f, -r * 0.4f), new Vector3(r * 1.45f, cy - r * 2.3f, -r * 0.3f) };
             string bj = d.Swing(Joints.LeftBraid, Joints.Head, path[0], SwingKind.Braid);
             var p0 = path[0];
             for (int i = 0; i < path.Length; i++) path[i] -= p0;
             d.Add(bj, d.pal.hair, CharacterKit.Braid(path, 0.03f * s));
             var end = path[path.Length - 1];
-            d.Add(bj, d.pal.hair, CharacterKit.Tuft(end, end + new Vector3(-0.02f, -0.08f, 0.01f) * s, 0.028f * s));
-            d.Add(bj, d.pal.hair, CharacterKit.Tuft(path[1], path[1] + new Vector3(-0.07f, -0.05f, 0f) * s, 0.015f * s));
+            d.Add(bj, d.pal.hair, CharacterKit.Tuft(end, end + new Vector3(0.02f, -0.08f, 0.01f) * s, 0.028f * s));
+            d.Add(bj, d.pal.hair, CharacterKit.Tuft(path[1], path[1] + new Vector3(0.07f, -0.05f, 0f) * s, 0.015f * s));
         }
 
         /// <summary>One thick braid over the right shoulder, down the front to the waist.</summary>
