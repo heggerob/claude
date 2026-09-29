@@ -82,7 +82,7 @@ from PIL import Image
 ref = Image.open('OdinsCoin/docs/reference/characters-concept.png').convert('RGBA')
 ours = Image.open('OdinsCoin/docs/heroes.png').convert('RGBA')
 os.makedirs('OdinsCoin/docs/compare', exist_ok=True)
-crops = {'jarl': ((0, 20, 340, 800), 0), 'raider': ((300, 20, 650, 800), 1), 'navigator': ((580, 20, 890, 800), 2), 'spear-guard': ((860, 20, 1170, 800), 3), 'seer': ((1110, 20, 1480, 800), 4)}
+crops = {'jarl': ((0, 20, 340, 800), 0), 'raider': ((300, 20, 650, 800), 1), 'navigator': ((580, 20, 890, 800), 2), 'spear-guard': ((860, 20, 1170, 800), 3), 'seer': ((1110, 20, 1480, 800), 4), 'scout': ((1420, 20, 1672, 800), 5)}
 import sys, glob
 labels = [l for l in open(os.environ['HERO_LABELS']) if l.strip()]
 cell = ours.width // len(labels)

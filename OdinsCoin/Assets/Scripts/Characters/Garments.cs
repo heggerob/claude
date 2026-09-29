@@ -849,6 +849,81 @@ namespace OdinsCoin
             }
         }
 
+        // ---------------------------------------------------------------- the scout
+
+        /// <summary>A dark cloth cap pulled low, its crown and brim covered in shaggy fur, worn a little askew.</summary>
+        public static void FurCap(Dresser d)
+        {
+            var f = d.fit;
+            float r = f.headR, cy = HeroModel.HeadCentre(f), s = d.S;
+            float brim = cy + 0.2f * r;
+            var tilt = Quaternion.Euler(-6f, 0f, 8f);
+            d.Add(Joints.Head, d.pal.clothDark, MeshData.Dome(Vector3.zero, new Vector3(r * 1.1f, r * 1.05f, r * 1.1f), 16, 6).Transformed(new Vector3(0f, brim, -0.02f * r), tilt, Vector3.one));
+            d.Add(Joints.Head, d.pal.fur, CharacterKit.FurRing(Vector3.zero, r * 1.12f, 1f, 0.045f * s, 16, 0.03f * s, d.seed + 81, 0.3f).Transformed(new Vector3(0f, brim + 0.025f * s, -0.02f * r), tilt, Vector3.one));
+            // Shaggy fur over the crown, leaving dark cloth showing on one side.
+            var rng = new System.Random(d.seed + 82);
+            for (int i = 0; i < 10; i++)
+            {
+                float a = (float)rng.NextDouble() * Mathf.PI * 1.3f - 0.2f, e = 0.3f + (float)rng.NextDouble() * 0.9f;
+                var p = new Vector3(Mathf.Cos(a) * Mathf.Cos(e), Mathf.Sin(e), Mathf.Sin(a) * Mathf.Cos(e) * 0.6f) * r * 1.08f;
+                d.Add(Joints.Head, i % 3 == 0 ? d.pal.furShadow : d.pal.fur, MeshData.Ellipsoid(p, new Vector3(0.045f, 0.03f, 0.045f) * s, 7, 4).Transformed(new Vector3(0f, brim, -0.02f * r), tilt, Vector3.one));
+            }
+        }
+
+        /// <summary>A green hooded capelet round the neck and shoulders, its hood thrown back, the edge ragged.</summary>
+        public static void Cowl(Dresser d)
+        {
+            var f = d.fit;
+            float s = d.S;
+            d.Add(Joints.Body, d.pal.accent, MeshData.Lathe(new[] {
+                new Vector2(f.chestR * 0.5f, f.neckY - 0.01f * s), new Vector2(f.chestR * 0.7f, f.neckY + 0.04f * s), new Vector2(f.chestR * 0.55f, f.neckY + 0.07f * s) }, 16)
+                .Transformed(Vector3.zero, Quaternion.identity, new Vector3(1f, 1f, 0.95f)));
+            d.Add(Joints.Body, d.pal.accent, CharacterKit.RaggedSkirt(f.neckY + 0.01f * s, f.chestR * 0.62f, f.chest - 0.05f * s, f.shoulderX + 0.06f * s, 0.8f, 18, 0.05f * s, d.seed + 83));
+            // The hood, down, bunched behind the neck.
+            d.Add(Joints.Body, VikingModel.Shade(d.pal.accent, 0.85f), MeshData.Ellipsoid(new Vector3(0f, f.neckY + 0.02f * s, -f.chestR * 0.7f), new Vector3(0.11f, 0.08f, 0.07f) * s, 12, 7));
+            // A shaggy pelt thrown over the right shoulder.
+            d.Add(Joints.Body, d.pal.fur, CharacterKit.Flaps(f.shoulderY + 0.03f * s, 0.14f * s, 3, 0.3f, f.depth, y => y > f.waist ? f.TorsoRadius(y) + 0.08f * s : f.waistR, 0.01f, d.seed + 84, 0.014f * s)
+                .Transformed(Vector3.zero, Quaternion.Euler(0f, 70f, 0f), Vector3.one));
+        }
+
+        /// <summary>A knife in a sheath worn crosswise at the front of the belt.</summary>
+        public static void BeltKnife(Dresser d)
+        {
+            var f = d.fit;
+            float s = d.S;
+            float y = f.waist - 0.06f * s, z = d.SkirtRadius(y) * (d.hasSkirt ? d.skirtDepth : f.depth) + 0.035f * s;
+            var rot = Quaternion.Euler(0f, 0f, -12f);
+            d.Add(Joints.Body, d.pal.leather, MeshData.Box(Vector3.zero, new Vector3(0.2f, 0.028f, 0.02f) * s).Transformed(new Vector3(0.05f * s, y, z), rot, Vector3.one));
+            d.Add(Joints.Body, d.pal.metal, MeshData.Box(Vector3.zero, new Vector3(0.012f, 0.04f, 0.024f) * s).Transformed(new Vector3(-0.06f * s, y + 0.023f * s, z), rot, Vector3.one));
+            d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(new[] { new Vector3(-0.07f * s, y + 0.025f * s, z), new Vector3(-0.15f * s, y + 0.04f * s, z) }, new[] { 0.011f * s, 0.01f * s }, 6));
+        }
+
+        /// <summary>A leather quiver slung across the back, full of red-fletched arrows, with its strap across the chest.</summary>
+        public static void Quiver(Dresser d)
+        {
+            var f = d.fit;
+            float s = d.S;
+            var at = new Vector3(0.06f * s, f.chest - 0.02f * s, -f.chestR * f.depth - 0.05f * s);
+            var tilt = Quaternion.Euler(0f, 0f, -28f);
+            d.Add(Joints.Body, d.pal.leather, MeshData.Lathe(new[] { new Vector2(0.035f * s, -0.22f * s), new Vector2(0.045f * s, 0.14f * s) }, 10).Transformed(at, tilt, Vector3.one));
+            d.Add(Joints.Body, d.pal.leatherDark, MeshData.Lathe(new[] { new Vector2(0.048f * s, 0.1f * s), new Vector2(0.048f * s, 0.14f * s) }, 10).Transformed(at, tilt, Vector3.one), false);
+            for (int i = 0; i < 4; i++)
+            {
+                var off = new Vector3((i - 1.5f) * 0.018f, 0f, (i % 2) * 0.015f) * s;
+                var shaftTop = at + tilt * (off + new Vector3(0f, 0.3f * s, 0f));
+                d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(new[] { at + tilt * (off + new Vector3(0f, 0.1f * s, 0f)), shaftTop }, new[] { 0.005f * s, 0.005f * s }, 4), false);
+                // Fletching: two red vanes.
+                foreach (float side in new[] { -1f, 1f })
+                    d.Add(Joints.Body, new Color(0.7f, 0.2f, 0.14f), MeshData.Extrude(new[] { new Vector2(0f, 0f), new Vector2(0.09f, 0f), new Vector2(0.1f, 0.03f), new Vector2(0.03f, 0.03f) }, 0.004f)
+                        .Transformed(shaftTop - tilt * new Vector3(0f, 0.1f * s, 0f), tilt * Quaternion.Euler(-90f, side * 90f, 0f), Vector3.one * s));
+            }
+            // Strap from the right shoulder across the chest to the left hip.
+            float cz = f.chestR * f.depth;
+            d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(new[] {
+                new Vector3(f.shoulderX * 0.6f, f.shoulderY + 0.01f * s, cz * 0.3f), new Vector3(0f, f.chest, cz + 0.015f), new Vector3(-f.waistR * 0.9f, f.waist + 0.02f * s, f.waistR * f.depth + 0.012f) },
+                new[] { 0.013f * s, 0.014f * s, 0.013f * s }, 5), false);
+        }
+
         // ---------------------------------------------------------------- hair
 
         /// <summary>Two long braids from behind the ears, forward over the shoulders and down the chest, tied with leather.</summary>
@@ -867,6 +942,21 @@ namespace OdinsCoin
             }
             var braid = new[] { new Vector3(-r * 0.95f, cy - r * 0.2f, r * 0.2f), new Vector3(-r * 1.02f, cy - r * 0.8f, r * 0.35f), new Vector3(-r * 0.98f, cy - r * 1.35f, r * 0.45f) };
             d.Add(Joints.Head, d.pal.hair, CharacterKit.Braid(braid, 0.018f * s));
+        }
+
+        /// <summary>Messy hair tied in a low loose braid hanging behind the left shoulder, strands by the cheeks.</summary>
+        public static void LowBraid(Dresser d)
+        {
+            var f = d.fit;
+            float r = f.headR, cy = HeroModel.HeadCentre(f), s = d.S;
+            d.Add(Joints.Head, d.pal.hair, MeshData.Ellipsoid(new Vector3(0f, cy - r * 0.02f, -r * 0.3f), new Vector3(r * 1.02f, r * 0.9f, r * 0.82f), 12, 8));
+            foreach (float x in new[] { -1f, 1f })
+                d.Add(Joints.Head, d.pal.hair, CharacterKit.Tuft(new Vector3(x * r * 0.9f, cy + r * 0.2f, r * 0.3f), new Vector3(x * r * 1.02f, cy - r * 0.55f, r * 0.42f), 0.026f * s));
+            var path = new[] { new Vector3(-r * 0.6f, cy - r * 0.55f, -r * 0.75f), new Vector3(-r * 1.05f, cy - r * 1.05f, -r * 0.6f), new Vector3(-r * 1.35f, cy - r * 1.7f, -r * 0.4f), new Vector3(-r * 1.45f, cy - r * 2.3f, -r * 0.3f) };
+            d.Add(Joints.Head, d.pal.hair, CharacterKit.Braid(path, 0.03f * s));
+            var end = path[path.Length - 1];
+            d.Add(Joints.Head, d.pal.hair, CharacterKit.Tuft(end, end + new Vector3(-0.02f, -0.08f, 0.01f) * s, 0.028f * s));
+            d.Add(Joints.Head, d.pal.hair, CharacterKit.Tuft(path[1], path[1] + new Vector3(-0.07f, -0.05f, 0f) * s, 0.015f * s));
         }
 
         /// <summary>One thick braid over the right shoulder, down the front to the waist.</summary>

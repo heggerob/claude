@@ -125,6 +125,23 @@ public static class HeroPreview
         augur.worldRot[Joints.RightForearm] = Quaternion.FromToRotation(Vector3.down, srFist - srElbow);
         augur.worldRot[Joints.OffHand] = Quaternion.LookRotation(Vector3.up, new Vector3(1f, 0f, 0.3f));
         shots.Add(new Shot { label = "The Old Seer", model = seerModel, pose = augur, yaw = 188f });
+        // The Scout: bow held low and slanting in the right hand, left arm loose.
+        var scout = CharacterSpec.Default(OutfitId.Scout);
+        scout.body = new BodyShape { height = 1.45f, width = 0.85f, gender = Gender.Female };
+        var scFit = Fit.Of(scout.body);
+        var scoutModel = WithWeapon(HeroModel.Build(scout), HeroModel.BuildWeapon(scout), Joints.OffHand);
+        var ready = new Pose();
+        Vector3 scl = new Vector3(-scFit.shoulderX, scFit.shoulderY, 0f);
+        Vector3 sclElbow = scl + new Vector3(-0.08f, -0.2f, 0.0f).normalized * scFit.upperArm;
+        Vector3 sclFist = new Vector3(-scFit.shoulderX - 0.08f, scFit.waist - 0.04f, 0.08f);
+        ready.worldRot[Joints.LeftArm] = Quaternion.FromToRotation(Vector3.down, sclElbow - scl);
+        ready.worldRot[Joints.LeftForearm] = Quaternion.FromToRotation(Vector3.down, sclFist - sclElbow);
+        ready.worldRot[Joints.OffHand] = Quaternion.LookRotation(new Vector3(-0.35f, 0.88f, 0.3f), new Vector3(-0.8f, 0f, 0.3f));
+        ready.rot[Joints.RightArm] = Quaternion.Euler(4f, 0f, 12f);
+        ready.rot[Joints.RightForearm] = Quaternion.Euler(-25f, 0f, 0f);
+        ready.rot[Joints.LeftLeg] = Quaternion.Euler(0f, 0f, -7f);
+        ready.rot[Joints.RightLeg] = Quaternion.Euler(0f, 0f, 7f);
+        shots.Add(new Shot { label = "The Scout", model = scoutModel, pose = ready, yaw = 188f });
         shots.Add(new Shot { label = "Jarl, three-quarter", model = jarlModel, pose = stand, yaw = 215f });
         shots.Add(new Shot { label = "Navigator, three-quarter", model = navModel, pose = reading, yaw = 150f });
         // Same outfit on other bodies: the player chooses height, build and gender.

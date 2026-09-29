@@ -92,6 +92,7 @@ namespace OdinsCoin
                 case HairStyle.SideBraid: Garments.SideBraid(d, 0.36f); break;
                 case HairStyle.ShortLocks: Garments.ShortLocks(d); break;
                 case HairStyle.VeryLongBraids: Garments.LongBraids(d, 0.62f); break;
+                case HairStyle.LowBraid: Garments.LowBraid(d); break;
             }
         }
     }
@@ -193,6 +194,26 @@ namespace OdinsCoin
                             d.Add(Joints.Weapon, d.pal.leatherDark, MeshData.Tube(new[] { hang, end }, new[] { 0.0025f * s, 0.0025f * s }, 4), false);
                             Garments.RuneDisc(d, Joints.Weapon, end + new Vector3(0f, 0f, -0.025f * s), 0.024f * s, Quaternion.Euler(0f, 0f, -90f));
                         }
+                    }
+                    break;
+                case WeaponId.Bow:
+                    {
+                        // A recurve longbow held at the grip, limbs along Z, bending away from the string (+Y) with
+                        // the tips curling back; leather grip wrap, horn nocks and a taut string.
+                        var limb = new Vector3[13];
+                        var radii = new float[13];
+                        for (int i = 0; i < limb.Length; i++)
+                        {
+                            float t = i / (float)(limb.Length - 1) * 2f - 1f;
+                            float bend = 0.1f * (1f - t * t) - 0.05f * Mathf.Pow(Mathf.Abs(t), 6f);
+                            limb[i] = new Vector3(0f, bend * s, t * 0.62f * s);
+                            radii[i] = Mathf.Lerp(0.02f, 0.008f, Mathf.Abs(t)) * s;
+                        }
+                        d.Add(Joints.Weapon, d.pal.leather, MeshData.Tube(limb, radii, 6));
+                        d.Add(Joints.Weapon, d.pal.leatherDark, MeshData.Tube(new[] { limb[5], limb[7] }, new[] { 0.024f * s, 0.024f * s }, 6));
+                        d.Add(Joints.Weapon, d.pal.parchment, MeshData.Tube(new[] { limb[0], limb[0] + new Vector3(0f, -0.01f, -0.02f) * s }, new[] { 0.01f * s, 0.004f * s }, 5), false);
+                        d.Add(Joints.Weapon, d.pal.parchment, MeshData.Tube(new[] { limb[12], limb[12] + new Vector3(0f, -0.01f, 0.02f) * s }, new[] { 0.01f * s, 0.004f * s }, 5), false);
+                        d.Add(Joints.Weapon, d.pal.parchment, MeshData.Tube(new[] { limb[0], limb[12] }, new[] { 0.0025f * s, 0.0025f * s }, 4), false);
                     }
                     break;
                 case WeaponId.Sword:

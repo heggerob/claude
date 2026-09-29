@@ -4,8 +4,8 @@ using UnityEngine;
 namespace OdinsCoin
 {
     public enum OutfitId { Raider, Jarl, Navigator, SpearGuard, Seer, Scout }
-    public enum HairStyle { None, LongBraids, WrappedBraids, SideBraid, ShortLocks, VeryLongBraids }
-    public enum WeaponId { None, TwoHandAxe, Sword, Spear, Staff }
+    public enum HairStyle { None, LongBraids, WrappedBraids, SideBraid, ShortLocks, VeryLongBraids, LowBraid }
+    public enum WeaponId { None, TwoHandAxe, Sword, Spear, Staff, Bow }
     public enum OffHandId { None, RoundShield, Map, KnotShield }
 
     /// <summary>A special move or perk that comes with an outfit (used by the game later).</summary>
@@ -149,6 +149,31 @@ namespace OdinsCoin
                     Garments.Charms(d);
                     Garments.Hood(d);
                     Garments.Antlers(d);
+                } } },
+            { OutfitId.Scout, new Outfit {
+                id = OutfitId.Scout, title = "The Scout",
+                palette = () => new Palette {
+                    cloth = new Color(0.3f, 0.23f, 0.17f), clothDark = new Color(0.19f, 0.15f, 0.12f),
+                    accent = new Color(0.34f, 0.4f, 0.28f), emblem = new Color(0.8f, 0.66f, 0.36f),
+                    fur = new Color(0.82f, 0.76f, 0.64f), hair = new Color(0.42f, 0.28f, 0.17f) },
+                defaultHair = HairStyle.LowBraid, suggestedWeapon = WeaponId.Bow,
+                abilities = new[] {
+                    new Ability { id = "keen", name = "Keen Eyes", description = "Spot treasure and enemies from much further away." },
+                    new Ability { id = "volley", name = "Volley", description = "Loose three arrows at once." } },
+                dress = d =>
+                {
+                    Garments.FurBoots(d, 0.04f);
+                    Garments.Gloves(d);
+                    Garments.LongSkirt(d, 0.3f, 1.4f);
+                    Garments.FurSkirt(d, 0.55f, 0.4f);
+                    Garments.Tunic(d, false);
+                    Garments.LongSleeves(d);
+                    Garments.RaiderBelt(d, 1);
+                    Garments.Tabard(d, 0.42f, 0.09f);
+                    Garments.BeltKnife(d);
+                    Garments.Quiver(d);
+                    Garments.Cowl(d);
+                    Garments.FurCap(d);
                 } } },
         };
 
