@@ -66,6 +66,10 @@ namespace AirsoftArena
         public Vector2 AimDirection { get; private set; }
         public bool Crouching { get; private set; }
         public bool Sprinting { get; private set; }
+        /// <summary>Aiming down the sights: tighter spread, slower walk, the camera looks further ahead.</summary>
+        public bool Aiming { get; private set; }
+        /// <summary>Scoped weapons (sniper/marksman) zoom the view much further out when aiming.</summary>
+        public bool Scoped { get { return Aiming && Weapon.Data.weaponClass == WeaponClass.SniperMarksman; } }
         public WeaponInstance[] Loadout { get; private set; }
         public int Slot { get; private set; }
         public WeaponInstance Weapon { get { return Loadout[Slot]; } }
@@ -123,10 +127,24 @@ namespace AirsoftArena
         public void SetMove(Vector2 direction, bool sprint)
         {
             moveInput = Vector2.ClampMagnitude(direction, 1f);
-            Sprinting = sprint && !Crouching;
+            Sprinting = sprint && !Crouching && !Aiming;
         }
 
         public void SetCrouch(bool crouch) { Crouching = crouch && InPlay; }
+
+        public void SetAiming(bool aiming) { Aiming = aiming && InPlay && !Weapon.Data.IsMelee; }
+
+        /// <summary>Multiplier on weapon spread from stance, movement and aiming.</summary>
+        public float SpreadMultiplier
+        {
+            get
+            {
+                float m = Crouching ? 0.6f : 1f;
+                if (moveInput.sqrMagnitude > 0.01f) m *= 1.6f;
+                if (Aiming) m *= Weapon.Data.weaponClass == WeaponClass.SniperMarksman ? 0.3f : 0.55f;
+                return m;
+            }
+        }
 
         public void SetAim(Vector2 direction)
         {
@@ -166,8 +184,7 @@ namespace AirsoftArena
             if (IsHuman) CameraFollow.Shake(weapon.Data.power == PowerSystem.Spring ? 0.18f : 0.035f * bbs);
             var training = MatchManager.Instance != null ? MatchManager.Instance.Rules as TrainingRules : null;
             if (training != null) training.OnShot(bbs);
-            float spread = Crouching ? 0.6f : 1f;
-            if (moveInput.sqrMagnitude > 0.01f) spread *= 1.6f;
+            float spread = SpreadMultiplier;
             BBSystem.Instance.Fire(this, muzzle, AimDirection, MuzzleHeight, weapon.Data, bbs, spread);
         }
 
@@ -234,6 +251,7 @@ namespace AirsoftArena
             State = SoldierState.Out;
             OutSince = Time.time;
             Crouching = false;
+            Aiming = false;
             Weapon.CancelReload();
 
             switch (reason)
@@ -335,6 +353,7 @@ namespace AirsoftArena
             else
             {
                 speed = WalkSpeed * Weapon.Data.moveSpeedMultiplier;
+                if (Aiming) speed *= 0.55f;
                 if (Crouching) speed *= CrouchMultiplier;
                 else if (Sprinting) speed *= SprintMultiplier;
             }

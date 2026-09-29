@@ -85,6 +85,7 @@ namespace AirsoftArena
         void GoToObjective(Vector2 objective)
         {
             soldier.SetCrouch(false);
+            soldier.SetAiming(false);
             soldier.PullTrigger(false, false);
             wasHeld = false;
             Vector2 to = objective - soldier.Position;
@@ -146,6 +147,8 @@ namespace AirsoftArena
 
             bool shooting = now < burstUntil;
             soldier.SetCrouch(!rushObjective && shooting && crouchWhenShooting && distance > 8f);
+            // Bots aim down sights for long shots, and snipers always do.
+            soldier.SetAiming(!rushObjective && (distance > 14f || soldier.Weapon.Data.weaponClass == WeaponClass.SniperMarksman));
             if (soldier.Crouching) move *= 0.3f;
             MoveDirect(move, false);
 
@@ -171,6 +174,7 @@ namespace AirsoftArena
         void Patrol(MatchManager match, float now)
         {
             soldier.SetCrouch(false);
+            soldier.SetAiming(false);
             soldier.PullTrigger(false, false);
             wasHeld = false;
             if (now >= nextGoal || Vector2.Distance(soldier.Position, goal) < 1.5f)

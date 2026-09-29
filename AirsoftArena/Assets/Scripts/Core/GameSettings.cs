@@ -32,6 +32,15 @@ namespace AirsoftArena
             set { PlayerPrefs.SetFloat(Prefix + "volume", Mathf.Clamp01(value)); }
         }
 
+        public const float DefaultViewDistance = 11f, MinViewDistance = 7f, MaxViewDistance = 18f;
+
+        /// <summary>Camera zoom while playing (orthographic size): bigger = see further.</summary>
+        public static float ViewDistance
+        {
+            get { return PlayerPrefs.GetFloat(Prefix + "viewDistance", DefaultViewDistance); }
+            set { PlayerPrefs.SetFloat(Prefix + "viewDistance", Mathf.Clamp(value, MinViewDistance, MaxViewDistance)); }
+        }
+
         public static void Save() { PlayerPrefs.Save(); }
     }
 }

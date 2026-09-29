@@ -75,6 +75,8 @@ namespace AirsoftArena
         }
 
         public static bool FireHeld() { var m = Mouse.current; return m != null && m.leftButton.isPressed; }
+        public static bool AimHeld() { var m = Mouse.current; return m != null && m.rightButton.isPressed; }
+        public static float Scroll() { var m = Mouse.current; return m != null ? m.scroll.ReadValue().y / 120f : 0f; }
         public static bool FirePressed() { var m = Mouse.current; return m != null && m.leftButton.wasPressedThisFrame; }
         public static Vector2 MousePosition() { var m = Mouse.current; return m != null ? m.position.ReadValue() : Vector2.zero; }
 #else
@@ -114,6 +116,8 @@ namespace AirsoftArena
         }
 
         public static bool FireHeld() { return Input.GetMouseButton(0); }
+        public static bool AimHeld() { return Input.GetMouseButton(1); }
+        public static float Scroll() { return Input.mouseScrollDelta.y; }
         public static bool FirePressed() { return Input.GetMouseButtonDown(0); }
         public static Vector2 MousePosition() { return Input.mousePosition; }
 #endif

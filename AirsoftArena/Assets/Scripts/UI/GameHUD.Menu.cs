@@ -181,7 +181,7 @@ namespace AirsoftArena
             };
             if (GUILayout.Button("TRAINING RANGE\n(free)", GUILayout.Width(170f), GUILayout.Height(48))) Defer(() => match.StartMatch(training));
             GUILayout.EndHorizontal();
-            GUILayout.Label("WASD move · mouse aim + shoot · R reload · B fire mode · 1/2/3 weapons · C crouch · Shift sprint · H call hit · Esc pause", small);
+            GUILayout.Label("WASD move · LMB shoot · RMB aim · scroll zoom · R reload · B fire mode · 1/2/3 weapons · C crouch · Shift sprint · H call hit · Esc pause", small);
         }
 
         // ================================================================ LOADOUT
@@ -425,6 +425,13 @@ namespace AirsoftArena
             bool auto = GUILayout.Toggle(GameSettings.AutoCallHits, "  Auto-call my hits");
             bool shake = GUILayout.Toggle(GameSettings.ScreenShake, "  Screen shake");
             bool tags = GUILayout.Toggle(GameSettings.NameTags, "  Name tags above players");
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("View distance", label, GUILayout.Width(120f));
+            float view = GUILayout.HorizontalSlider(GameSettings.ViewDistance, GameSettings.MinViewDistance, GameSettings.MaxViewDistance, GUILayout.Width(260f));
+            GUILayout.Label(view < 9.5f ? "close" : view < 13.5f ? "normal" : "far", label);
+            GUILayout.EndHorizontal();
+            GUILayout.Label("Tip: scroll the mouse wheel in a match to zoom. Hold right mouse to aim: tighter spread, slower walk, you see further. Snipers get a scope.", small);
+            if (!Mathf.Approximately(view, GameSettings.ViewDistance)) GameSettings.ViewDistance = view;
             GUILayout.Space(10);
             GUILayout.Label("<b>Audio</b>", big);
             GUILayout.BeginHorizontal();

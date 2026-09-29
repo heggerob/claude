@@ -205,7 +205,7 @@ namespace AirsoftArena
             AddFeed("<b>" + GameModes.Name(settings.mode) + "</b> on <b>" + settings.map.name + "</b>" + (Referee != null ? ". Referee: <b>" + Referee.Profile.name + "</b>" : ""));
 
             var follow = CameraFollow.Instance;
-            if (follow != null) follow.Follow(PlayerSoldier != null ? PlayerSoldier.transform : Referee.transform, training ? 17f : 9f);
+            if (follow != null) follow.Follow(PlayerSoldier != null ? PlayerSoldier.transform : Referee.transform, training ? 17f : GameSettings.DefaultViewDistance);
 
             Phase = MatchPhase.Countdown;
             countdownEnd = Time.time + CountdownTime;

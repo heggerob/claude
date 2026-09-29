@@ -171,7 +171,9 @@ namespace AirsoftArena
                 slots += i == s.Slot ? "<b><color=#ffffff>" + n + "</color></b>   " : "<color=#999999>" + n + "</color>   ";
             }
             GUI.Label(new Rect(x + 4f, y + 68f, 350f, 20f), slots, small);
-            string stance = s.Crouching ? "CROUCHED (steadier aim, harder to hit behind cover)" : s.Sprinting ? "SPRINTING (can't shoot)" : "";
+            string stance = s.Scoped ? "SCOPED" : s.Aiming ? "AIMING" : "";
+            if (s.Crouching) stance += (stance.Length > 0 ? " · " : "") + "CROUCHED";
+            if (s.Sprinting) stance = "SPRINTING (can't shoot)";
             GUI.Label(new Rect(x + 4f, y + 86f, 350f, 20f), stance, small);
 
             // Big centre messages.

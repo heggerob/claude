@@ -25,6 +25,7 @@ namespace AirsoftArena
             if (cam == null) cam = Camera.main;
 
             soldier.SetCrouch(GameInput.Held(GameKey.Crouch));
+            soldier.SetAiming(GameInput.AimHeld());
             soldier.SetMove(GameInput.Move(), GameInput.Held(GameKey.Sprint));
 
             if (cam != null)

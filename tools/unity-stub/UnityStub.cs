@@ -67,7 +67,7 @@ namespace UnityEngine {
   public struct ContactFilter2D { public ContactFilter2D NoFilter(){return this;} }
   public static class Physics2D { public static Vector2 gravity; public static int Linecast(Vector2 a,Vector2 b,ContactFilter2D f,List<RaycastHit2D> r){return 0;} public static int CircleCast(Vector2 o,float r,Vector2 d,ContactFilter2D f,List<RaycastHit2D> res,float dist){return 0;} }
   public enum KeyCode { None, W,A,S,D,UpArrow,DownArrow,LeftArrow,RightArrow,LeftShift,C,LeftControl,R,H,B,Q,E,Escape,Alpha1,Alpha2,Alpha3 }
-  public static class Input { public static bool GetKey(KeyCode k){return false;} public static bool GetKeyDown(KeyCode k){return false;} public static bool GetMouseButton(int b){return false;} public static bool GetMouseButtonDown(int b){return false;} public static Vector3 mousePosition; }
+  public static class Input { public static Vector2 mouseScrollDelta; public static bool GetKey(KeyCode k){return false;} public static bool GetKeyDown(KeyCode k){return false;} public static bool GetMouseButton(int b){return false;} public static bool GetMouseButtonDown(int b){return false;} public static Vector3 mousePosition; }
   public enum RuntimeInitializeLoadType { AfterSceneLoad, SubsystemRegistration }
   public class RuntimeInitializeOnLoadMethodAttribute : Attribute { public RuntimeInitializeOnLoadMethodAttribute(RuntimeInitializeLoadType t){} }
   public class CreateAssetMenuAttribute : Attribute { public string menuName, fileName; }
@@ -94,4 +94,4 @@ namespace UnityEngine {
 namespace UnityEngine.InputSystem.Controls { public class ButtonControl { public bool isPressed, wasPressedThisFrame; } public class KeyControl : ButtonControl {} public class Vector2Control { public UnityEngine.Vector2 ReadValue(){return new UnityEngine.Vector2();} } }
 namespace UnityEngine.InputSystem { using Controls;
   public class Keyboard { public static Keyboard current; public KeyControl wKey,aKey,sKey,dKey,upArrowKey,downArrowKey,leftArrowKey,rightArrowKey,leftShiftKey,cKey,leftCtrlKey,rKey,hKey,bKey,qKey,eKey,escapeKey,digit1Key,digit2Key,digit3Key; }
-  public class Mouse { public static Mouse current; public ButtonControl leftButton; public Vector2Control position; } }
+  public class Mouse { public static Mouse current; public ButtonControl leftButton, rightButton; public Vector2Control position, scroll; } }

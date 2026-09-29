@@ -9,6 +9,7 @@ namespace AirsoftArena
         const float SpotRange = 30f;
 
         static float hitMarkerAt = -10f;
+        Texture2D vignette;
         static bool hitMarkerEnemy;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -32,10 +33,12 @@ namespace AirsoftArena
             Vector2 mouse = GameInput.MousePosition();
             var m = new Vector2(mouse.x / scale, (Screen.height - mouse.y) / scale);
 
+            // Looking through a scope: darken the edges of the screen.
+            if (s.Scoped) GUI.DrawTexture(new Rect(0f, 0f, W, H), Vignette(), ScaleMode.StretchToFill, true);
+
             // The gap opens up when moving and closes when crouched, matching the real spread.
             var d = s.Weapon.Data;
-            float spread = d.IsMelee ? 0.5f : d.spreadDegrees;
-            if (s.Crouching) spread *= 0.6f;
+            float spread = d.IsMelee ? 0.5f : d.spreadDegrees * s.SpreadMultiplier;
             if (s.Sprinting) spread *= 3f;
             float gap = 5f + spread * 5f;
             var c = s.CanShoot ? new Color(1f, 1f, 1f, 0.9f) : new Color(1f, 1f, 1f, 0.35f);
@@ -60,6 +63,21 @@ namespace AirsoftArena
                     GUI.matrix = old;
                 }
             }
+        }
+
+        Texture2D Vignette()
+        {
+            if (vignette != null) return vignette;
+            const int n = 64;
+            vignette = new Texture2D(n, n, TextureFormat.RGBA32, false);
+            for (int y = 0; y < n; y++)
+                for (int x = 0; x < n; x++)
+                {
+                    float d = new Vector2(x + 0.5f - n / 2f, y + 0.5f - n / 2f).magnitude / (n / 2f);
+                    vignette.SetPixel(x, y, new Color(0f, 0f, 0f, Mathf.Clamp01((d - 0.55f) * 1.6f) * 0.85f));
+                }
+            vignette.Apply();
+            return vignette;
         }
 
         void Line(Rect r, Color c)
