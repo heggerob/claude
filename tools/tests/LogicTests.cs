@@ -705,11 +705,21 @@ public static class LogicTests
             Check(kinds.Contains(SurfaceKind.Fur), id + ": has fur or hair strands");
             foreach (var p in m.Pieces) if (p.ink) Check(p.surface == SurfaceKind.Plain, id + ": ink shells stay flat");
         }
+        // Hatching: none in the light, more strokes the darker it gets, never black.
+        Check(Math.Abs(Avg(0.6f) - 1f) < 1e-5f && Math.Abs(Avg(1f) - 1f) < 1e-5f, "no hatching in the light");
+        Check(Avg(0.45f) < 0.999f, "shadowed side gets strokes");
+        Check(Avg(0.1f) < Avg(0.35f) && Avg(0.35f) < Avg(0.5f), "darker tone, more hatching");
+        Check(Avg(0f) > 0.6f, "hatching never drowns the colour (" + Avg(0f) + ")");
+        Check(InkStyle.HatchAmount(SurfaceKind.Skin) == 0f && InkStyle.HatchAmount(SurfaceKind.Cloth) == 1f, "faces stay clean, cloth is hatched");
+        Check(InkStyle.Tone(Vector3.up, Vector3.up) == 1f && InkStyle.Tone(Vector3.down, Vector3.up) == 0f, "tone runs from shadow to sun");
+
         var d = new Dresser { pal = new Palette() };
         Check(d.SurfaceOf(d.pal.fur) == SurfaceKind.Fur && d.SurfaceOf(d.pal.leatherDark) == SurfaceKind.Leather
             && d.SurfaceOf(d.pal.accent) == SurfaceKind.Cloth && d.SurfaceOf(d.pal.ink) == SurfaceKind.Plain
             && d.SurfaceOf(VikingModel.Shade(d.pal.metal, 1.35f)) == SurfaceKind.Plain, "palette slots map to surfaces");
     }
+
+    static float Avg(float tone) { float s = 0f; for (int y = 0; y < 40; y++) for (int x = 0; x < 40; x++) s += InkStyle.Hatch(tone, x, y); return s / 1600f; }
 
     static void WavesTests()
     {

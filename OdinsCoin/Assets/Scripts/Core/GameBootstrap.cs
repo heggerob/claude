@@ -142,6 +142,7 @@ namespace OdinsCoin
             RenderSettings.fogEndDistance = FogEnd;
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
             RenderSettings.ambientLight = AmbientColor;
+            InkStyle.SetSun(sun);
             return sun;
         }
 

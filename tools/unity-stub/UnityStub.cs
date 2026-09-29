@@ -14,7 +14,7 @@ namespace UnityEngine {
   public enum CollisionDetectionMode { Discrete, Continuous, ContinuousDynamic, ContinuousSpeculative }
   public struct Bounds { public Bounds(Vector3 c,Vector3 s){center=c;size=s;} public Vector3 center,size; }
   public static class ColorUtility { public static string ToHtmlStringRGBA(Color c){return ((int)(c.r*255)).ToString("X2")+((int)(c.g*255)).ToString("X2")+((int)(c.b*255)).ToString("X2")+((int)(c.a*255)).ToString("X2");} }
-  public class Shader : Object { public static Shader Find(string n){return new Shader{name=n};} }
+  public class Shader : Object { public static Shader Find(string n){return new Shader{name=n};} public bool isSupported=true; public static void SetGlobalVector(string n,Vector4 v){} public static void SetGlobalFloat(string n,float f){} public static void SetGlobalColor(string n,Color c){} }
   public class Material : Object { public Material(Shader s){} public Material(Material m){} public Color color; public bool HasProperty(string n){return true;} public void SetColor(string n,Color c){} public void SetFloat(string n,float f){} public void SetTexture(string n,Texture t){} public void EnableKeyword(string k){} public Texture mainTexture; }
   public class Mesh : Object { public Vector3[] vertices; public int[] triangles; public Vector3[] normals; public Color[] colors; public Vector2[] uv; public Bounds bounds; public UnityEngine.Rendering.IndexFormat indexFormat; public void RecalculateNormals(){} public void RecalculateBounds(){} public void SetTriangles(int[] t,int sub){} public int subMeshCount; public void Clear(){} }
   public class MeshFilter : Component { public Mesh sharedMesh, mesh; }

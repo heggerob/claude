@@ -13,7 +13,7 @@ namespace OdinsCoin
         static Shader lit;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() { cache.Clear(); lit = null; }
+        static void ResetStatics() { cache.Clear(); lit = null; ink = null; inkLooked = false; }
 
         static Shader Lit
         {
@@ -27,12 +27,33 @@ namespace OdinsCoin
             }
         }
 
+        /// <summary>
+        /// Draw solid things in the storybook style (<see cref="InkStyle"/>): hatched shadows, drawn textures. Shiny
+        /// things (the sea) keep the lit shader. Falls back to lit everywhere if the ink shader isn't available.
+        /// </summary>
+        public static bool Storybook = true;
+
+        static Shader ink;
+        static bool inkLooked;
+
+        static Shader Ink
+        {
+            get
+            {
+                if (inkLooked) return ink;
+                inkLooked = true;
+                ink = Shader.Find(InkStyle.ShaderName);
+                if (ink != null && !ink.isSupported) ink = null;
+                return ink;
+            }
+        }
+
         public static Material Get(Color color, float smoothness = 0.1f)
         {
             string key = ColorUtility.ToHtmlStringRGBA(color) + smoothness.ToString("0.00");
             Material m;
             if (cache.TryGetValue(key, out m) && m != null) return m;
-            m = new Material(Lit);
+            m = new Material(Storybook && smoothness < 0.5f && Ink != null ? Ink : Lit);
             m.color = color;
             if (m.HasProperty("_BaseColor")) m.SetColor("_BaseColor", color);
             if (m.HasProperty("_Smoothness")) m.SetFloat("_Smoothness", smoothness);
@@ -55,6 +76,7 @@ namespace OdinsCoin
             var tex = DrawnTextures.Texture(surface);
             m.mainTexture = tex;
             if (m.HasProperty("_BaseMap")) m.SetTexture("_BaseMap", tex);
+            if (m.HasProperty("_Hatch")) m.SetFloat("_Hatch", InkStyle.HatchAmount(surface));
             cache[key] = m;
             return m;
         }
