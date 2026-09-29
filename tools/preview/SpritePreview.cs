@@ -7,7 +7,7 @@ using AirsoftArena;
 
 public static class SpritePreview
 {
-    const int Scale = 6;
+    static int Scale = 3;
     static int W = 1100, H = 760;
     static Color[] canvas;
 
@@ -44,6 +44,12 @@ public static class SpritePreview
             g++;
         }
 
+        // Close-ups at 8x so the pixel detail is visible.
+        Scale = 8;
+        DrawSoldier(new SoldierLook { camo = CamoPattern.Woodland, headGear = HeadGearStyle.Helmet }, Team.Blue, WeaponCatalog.Primaries[0], 330, 640);
+        DrawSoldier(new SoldierLook { camo = CamoPattern.Digital, headGear = HeadGearStyle.Cap, uniform = new Color(0.62f, 0.56f, 0.42f) }, Team.Red, WeaponCatalog.Primaries[3], 640, 640);
+        Scale = 3;
+
         // Tiles.
         Blit(SpriteFactory.Grass, Color.white, 1000, H - 420);
         Blit(SpriteFactory.Crate, new Color(0.55f, 0.42f, 0.3f), 1000, H - 540);
@@ -73,6 +79,8 @@ public static class SpritePreview
         Blit(PixelArt.Foot, Color.white, cx + 0.1f * m, cy + 0.16f * m);
         Blit(PixelArt.Foot, Color.white, cx - 0.1f * m, cy - 0.16f * m);
         Blit(PixelArt.Body(look.camo), look.uniform, cx, cy);
+        Blit(PixelArt.Gear, Color.white, cx, cy);
+        Blit(PixelArt.Armband, Teams.Color(team), cx, cy);
         var art = PixelArt.Gun(weapon);
         Blit(art.sprite, Color.white, cx + art.anchor.x * m, cy + art.anchor.y * m);
         Blit(PixelArt.HeadGear(look.headGear), Teams.Color(team), cx, cy);

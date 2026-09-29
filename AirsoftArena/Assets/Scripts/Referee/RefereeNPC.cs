@@ -28,7 +28,9 @@ namespace AirsoftArena
 
         readonly List<Judgement> pending = new List<Judgement>();
         Rigidbody2D body;
+        Transform rig;
         Vector2 moveInput;
+        Vector2 facing = Vector2.up;
         Vector2 lastAction;
         float lastActionTime = -99f;
         Vector2 wanderOffset;
@@ -48,24 +50,30 @@ namespace AirsoftArena
             var col = go.AddComponent<CircleCollider2D>();
             col.radius = Soldier.Radius;
 
-            var body = new GameObject("Vest").AddComponent<SpriteRenderer>();
-            body.transform.SetParent(go.transform, false);
-            body.sprite = SpriteFactory.Circle;
-            body.color = new Color(1f, 0.92f, 0.1f);
-            body.sortingOrder = 10;
-
-            var cap = new GameObject("Cap").AddComponent<SpriteRenderer>();
-            cap.transform.SetParent(go.transform, false);
-            cap.sprite = SpriteFactory.SmallCircle;
-            cap.color = new Color(0.1f, 0.1f, 0.1f);
-            cap.sortingOrder = 12;
+            // Same pixel figure as the players, in a hi-vis vest and black cap, no gun.
+            var rig = new GameObject("Rig").transform;
+            rig.SetParent(go.transform, false);
+            Layer(go.transform, "Shadow", PixelArt.Shadow, Color.white, 4);
+            Layer(rig, "Hi-vis Body", PixelArt.Body(CamoPattern.Solid), new Color(1f, 0.92f, 0.15f), 10);
+            Layer(rig, "Cap", PixelArt.Cap, new Color(0.12f, 0.12f, 0.12f), 14);
+            Layer(rig, "Goggles", PixelArt.Details, Color.white, 15);
 
             var referee = go.AddComponent<RefereeNPC>();
             referee.Profile = profile;
             referee.HumanControlled = human;
             referee.body = rb;
             referee.Collider = col;
+            referee.rig = rig;
             return referee;
+        }
+
+        static void Layer(Transform parent, string name, Sprite sprite, Color color, int order)
+        {
+            var sr = new GameObject(name).AddComponent<SpriteRenderer>();
+            sr.transform.SetParent(parent, false);
+            sr.sprite = sprite;
+            sr.color = color;
+            sr.sortingOrder = order;
         }
 
         /// <summary>Length above 1 = jogging (human referee holding shift).</summary>
@@ -129,6 +137,10 @@ namespace AirsoftArena
 
         void Update()
         {
+            // Face where we walk.
+            if (moveInput.sqrMagnitude > 0.01f) facing = Vector2.Lerp(facing, moveInput.normalized, Time.deltaTime * 8f);
+            if (rig != null) rig.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(facing.y, facing.x) * Mathf.Rad2Deg);
+
             var match = MatchManager.Instance;
             if (match == null || !match.IsPlaying) return;
             if (!HumanControlled)

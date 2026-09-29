@@ -487,13 +487,15 @@ namespace AirsoftArena
         void DrawSoldierPreview(Rect r, SoldierLook look, WeaponData weapon, Team team)
         {
             if (Event.current.type != EventType.Repaint) return;
-            float s = Mathf.Floor(Mathf.Min(r.height / 20f, r.width / 40f));
+            float s = Mathf.Max(1f, Mathf.Floor(Mathf.Min(r.height / 40f, r.width / 80f)));
             float m = SpriteFactory.PixelsPerUnit * s; // screen px per metre
             var c = new Vector2(r.center.x - 0.3f * m, r.center.y);
             DrawSprite(PixelArt.Shadow, c + new Vector2(0.05f, 0.08f) * m, s, Color.white);
             DrawSprite(PixelArt.Foot, c + new Vector2(0.08f, -0.16f) * m, s, Color.white);
             DrawSprite(PixelArt.Foot, c + new Vector2(-0.08f, 0.16f) * m, s, Color.white);
             DrawSprite(PixelArt.Body(look.camo), c, s, look.uniform);
+            DrawSprite(PixelArt.Gear, c, s, Color.white);
+            DrawSprite(PixelArt.Armband, c, s, Teams.Color(team));
             var art = PixelArt.Gun(weapon);
             DrawSprite(art.sprite, c + new Vector2(art.anchor.x, -art.anchor.y) * m, s, Color.white);
             DrawSprite(PixelArt.HeadGear(look.headGear), c, s, Teams.Color(team));
@@ -508,7 +510,7 @@ namespace AirsoftArena
             GUI.DrawTexture(r, whiteTexture, ScaleMode.StretchToFill, true, 0f, Rarities.Color(item.rarity) * 0.35f + new Color(0f, 0f, 0f, 0.6f), 0f, 0f);
             GUI.DrawTexture(new Rect(r.x, r.yMax - 3f, r.width, 3f), whiteTexture, ScaleMode.StretchToFill, true, 0f, Rarities.Color(item.rarity), 0f, 0f);
             if (Event.current.type != EventType.Repaint) return;
-            float s = Mathf.Floor(r.height / 18f);
+            float s = Mathf.Max(1f, Mathf.Floor(r.height / 36f));
             var c = r.center;
             switch (item.slot)
             {

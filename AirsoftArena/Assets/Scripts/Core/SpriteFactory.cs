@@ -9,7 +9,9 @@ namespace AirsoftArena
     /// </summary>
     public static class SpriteFactory
     {
-        public const int PixelsPerUnit = 16;
+        public const int PixelsPerUnit = 32;
+        /// <summary>Ground and wall tiles are still authored at 16 px per metre.</summary>
+        public const int TilePixelsPerUnit = 16;
 
         static Sprite pixel, circle, smallCircle, bb, grass, crate, sandbag, concrete, forestFloor, shelf, log, canopy, bush, rock, ring, disc64;
 
@@ -20,28 +22,28 @@ namespace AirsoftArena
         public static Sprite Pixel { get { return pixel ?? (pixel = Make(Solid(1, 1, Color.white), 1)); } }
 
         /// <summary>White disc with a darker rim, 12 px across (0.75 m).</summary>
-        public static Sprite Circle { get { return circle ?? (circle = Make(Disc(12, true), PixelsPerUnit)); } }
+        public static Sprite Circle { get { return circle ?? (circle = Make(Disc(24, true), PixelsPerUnit)); } }
 
-        public static Sprite SmallCircle { get { return smallCircle ?? (smallCircle = Make(Disc(6, false), PixelsPerUnit)); } }
+        public static Sprite SmallCircle { get { return smallCircle ?? (smallCircle = Make(Disc(12, false), PixelsPerUnit)); } }
 
         /// <summary>A BB is 6 mm; drawn at 2 px so it is actually visible.</summary>
-        public static Sprite BB { get { return bb ?? (bb = Make(Solid(2, 2, Color.white), PixelsPerUnit)); } }
+        public static Sprite BB { get { return bb ?? (bb = Make(RoundBB(), PixelsPerUnit)); } }
 
-        public static Sprite Grass { get { return grass ?? (grass = Make(GrassTile(), PixelsPerUnit)); } }
-        public static Sprite Crate { get { return crate ?? (crate = Make(CrateTile(), PixelsPerUnit)); } }
-        public static Sprite Sandbag { get { return sandbag ?? (sandbag = Make(SandbagTile(), PixelsPerUnit)); } }
+        public static Sprite Grass { get { return grass ?? (grass = Make(GrassTile(), TilePixelsPerUnit)); } }
+        public static Sprite Crate { get { return crate ?? (crate = Make(CrateTile(), TilePixelsPerUnit)); } }
+        public static Sprite Sandbag { get { return sandbag ?? (sandbag = Make(SandbagTile(), TilePixelsPerUnit)); } }
         /// <summary>White ring, 4 m across. Scale it for zones.</summary>
-        public static Sprite Ring { get { return ring ?? (ring = Make(RingTexture(64, 2.5f), PixelsPerUnit)); } }
+        public static Sprite Ring { get { return ring ?? (ring = Make(RingTexture(128, 5f), PixelsPerUnit)); } }
         /// <summary>Filled white disc, 4 m across.</summary>
-        public static Sprite Disc64 { get { return disc64 ?? (disc64 = Make(RingTexture(64, 64f), PixelsPerUnit)); } }
-        public static Sprite Concrete { get { return concrete ?? (concrete = Make(ConcreteTile(), PixelsPerUnit)); } }
-        public static Sprite ForestFloor { get { return forestFloor ?? (forestFloor = Make(ForestTile(), PixelsPerUnit)); } }
-        public static Sprite Shelf { get { return shelf ?? (shelf = Make(ShelfTile(), PixelsPerUnit)); } }
-        public static Sprite Log { get { return log ?? (log = Make(LogTile(), PixelsPerUnit)); } }
+        public static Sprite Disc64 { get { return disc64 ?? (disc64 = Make(RingTexture(128, 128f), PixelsPerUnit)); } }
+        public static Sprite Concrete { get { return concrete ?? (concrete = Make(ConcreteTile(), TilePixelsPerUnit)); } }
+        public static Sprite ForestFloor { get { return forestFloor ?? (forestFloor = Make(ForestTile(), TilePixelsPerUnit)); } }
+        public static Sprite Shelf { get { return shelf ?? (shelf = Make(ShelfTile(), TilePixelsPerUnit)); } }
+        public static Sprite Log { get { return log ?? (log = Make(LogTile(), TilePixelsPerUnit)); } }
         /// <summary>Tree crown, 3 m across, drawn above players.</summary>
-        public static Sprite Canopy { get { return canopy ?? (canopy = Make(Blob(48, 11, new Color32(38, 72, 40, 255), new Color32(52, 94, 50, 255), new Color32(30, 58, 34, 255)), PixelsPerUnit)); } }
-        public static Sprite Bush { get { return bush ?? (bush = Make(Blob(32, 21, new Color32(64, 110, 52, 255), new Color32(82, 132, 62, 255), new Color32(50, 90, 44, 255)), PixelsPerUnit)); } }
-        public static Sprite Rock { get { return rock ?? (rock = Make(Blob(24, 5, new Color32(128, 128, 122, 255), new Color32(150, 150, 144, 255), new Color32(100, 100, 96, 255)), PixelsPerUnit)); } }
+        public static Sprite Canopy { get { return canopy ?? (canopy = Make(Blob(96, 11, new Color32(38, 72, 40, 255), new Color32(52, 94, 50, 255), new Color32(30, 58, 34, 255)), PixelsPerUnit)); } }
+        public static Sprite Bush { get { return bush ?? (bush = Make(Blob(64, 21, new Color32(64, 110, 52, 255), new Color32(82, 132, 62, 255), new Color32(50, 90, 44, 255)), PixelsPerUnit)); } }
+        public static Sprite Rock { get { return rock ?? (rock = Make(Blob(48, 5, new Color32(128, 128, 122, 255), new Color32(150, 150, 144, 255), new Color32(100, 100, 96, 255)), PixelsPerUnit)); } }
 
         static Sprite Make(Texture2D tex, int ppu)
         {
@@ -50,6 +52,16 @@ namespace AirsoftArena
             tex.Apply();
             // FullRect so the sprite works with SpriteDrawMode.Tiled.
             return Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), ppu, 0, SpriteMeshType.FullRect);
+        }
+
+        /// <summary>A 4 px round BB (about 12 cm on screen, so you can follow it).</summary>
+        static Texture2D RoundBB()
+        {
+            var tex = Solid(4, 4, Color.white);
+            tex.SetPixel(0, 0, Color.clear); tex.SetPixel(3, 0, Color.clear); tex.SetPixel(0, 3, Color.clear); tex.SetPixel(3, 3, Color.clear);
+            tex.SetPixel(1, 2, new Color(1f, 1f, 1f, 1f));
+            tex.SetPixel(2, 1, new Color(0.8f, 0.8f, 0.8f, 1f));
+            return tex;
         }
 
         static Texture2D Solid(int w, int h, Color c)

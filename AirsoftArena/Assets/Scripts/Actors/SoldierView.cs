@@ -12,7 +12,7 @@ namespace AirsoftArena
         Soldier soldier;
         SoldierLook look;
         Transform rig;
-        SpriteRenderer body, headGear, goggles, gun, rag, leftFoot, rightFoot, flash;
+        SpriteRenderer body, gear, armband, headGear, goggles, gun, rag, leftFoot, rightFoot, flash;
         PixelArt.GunArt gunArt;
         Vector3 lastPosition;
         float walkPhase;
@@ -34,13 +34,15 @@ namespace AirsoftArena
             leftFoot = Layer("Left Boot", rig, PixelArt.Foot, Color.white, 8, new Vector2(0f, 0.16f));
             rightFoot = Layer("Right Boot", rig, PixelArt.Foot, Color.white, 8, new Vector2(0f, -0.16f));
             body = Layer("Body", rig, PixelArt.Body(look.camo), look.uniform, 10, Vector2.zero);
-            gun = Layer("Gun", rig, null, Color.white, 11, Vector2.zero);
-            headGear = Layer("Head Gear", rig, PixelArt.HeadGear(look.headGear), Teams.Color(soldier.Team), 12, Vector2.zero);
-            goggles = Layer("Goggles", rig, PixelArt.Details, Color.white, 13, Vector2.zero);
-            flash = Layer("Muzzle Flash", rig, SpriteFactory.SmallCircle, new Color(1f, 0.85f, 0.4f), 14, Vector2.zero);
+            gear = Layer("Gear", rig, PixelArt.Gear, Color.white, 11, Vector2.zero);
+            armband = Layer("Armband", rig, PixelArt.Armband, Teams.Color(soldier.Team), 12, Vector2.zero);
+            gun = Layer("Gun", rig, null, Color.white, 13, Vector2.zero);
+            headGear = Layer("Head Gear", rig, PixelArt.HeadGear(look.headGear), Teams.Color(soldier.Team), 14, Vector2.zero);
+            goggles = Layer("Goggles", rig, PixelArt.Details, Color.white, 15, Vector2.zero);
+            flash = Layer("Muzzle Flash", rig, SpriteFactory.SmallCircle, new Color(1f, 0.85f, 0.4f), 16, Vector2.zero);
             flash.enabled = false;
 
-            rag = Layer("Dead Rag", transform, SpriteFactory.Pixel, new Color(1f, 0.45f, 0.05f), 15, new Vector2(0f, 0.6f));
+            rag = Layer("Dead Rag", transform, SpriteFactory.Pixel, new Color(1f, 0.45f, 0.05f), 17, new Vector2(0f, 0.6f));
             rag.transform.localScale = new Vector3(0.3f, 0.3f, 1f);
             rag.enabled = false;
 
@@ -99,6 +101,8 @@ namespace AirsoftArena
 
             float alpha = inPlay ? 1f : 0.55f;
             body.color = WithAlpha(look.uniform, alpha);
+            gear.color = WithAlpha(Color.white, alpha);
+            armband.color = WithAlpha(Teams.Color(soldier.Team), alpha);
             headGear.color = WithAlpha(Teams.Color(soldier.Team), alpha);
             goggles.color = WithAlpha(Color.white, alpha);
             rag.enabled = !inPlay && Mathf.Repeat(Time.time * 3f, 1f) < 0.7f;
