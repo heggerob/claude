@@ -19,6 +19,7 @@ public static class LogicTests
     {
         Cosmetics();
         Weapons();
+        ShopTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
     }
@@ -46,6 +47,51 @@ public static class LogicTests
             Check(CosmeticCatalog.Get(CosmeticCatalog.DefaultId(slot)).starter, "default for " + slot + " is a starter item");
         var fallback = CosmeticCatalog.BuildLook("nope", null, "bad", "");
         Check(fallback.headGear == HeadGearStyle.Helmet, "unknown ids fall back to defaults");
+    }
+
+    static void ShopTests()
+    {
+        var p = new PlayerProfile();
+        p.money = 1000;
+        var lmg = WeaponCatalog.Get("07-TH6");
+        Check(!p.OwnsWeapon(lmg), "LMG locked at start");
+        Check(p.OwnsWeapon(WeaponCatalog.Get("01-VK4")), "starter rifle owned");
+        Check(Shop.Buy(p, lmg) == PurchaseResult.Ok && p.money == 1000 - lmg.price, "buying LMG deducts price");
+        Check(Shop.Buy(p, lmg) == PurchaseResult.AlreadyOwned, "can't buy twice");
+        p.primaryWeapon = "07-TH6";
+        Check(p.Primary == lmg, "owned primary is used");
+        p.primaryWeapon = "03-LB2";
+        Check(p.Primary.price == 0, "locked primary falls back to a free one");
+        p.money = 10;
+        Check(Shop.Buy(p, CosmeticCatalog.Get("uni_gold")) == PurchaseResult.NotEnoughMoney, "not enough money");
+        Check(Shop.OpenCrate(p, Shop.Crates[0]) == null && p.money == 10, "can't open crate without money");
+
+        // Rarity table edges.
+        var odds = Shop.Crates[0].odds;
+        Check(Shop.RollRarity(odds, 0f) == Rarity.Common, "roll 0 -> common");
+        Check(Shop.RollRarity(odds, 0.999999f) == Rarity.Legendary, "roll ~1 -> legendary");
+        Check(Shop.RollRarity(Shop.Crates[1].odds, 0f) == Rarity.Rare, "operator crate never gives common");
+        foreach (var c in Shop.Crates)
+        {
+            float sum = 0f; foreach (var o in c.odds) sum += o;
+            Check(Math.Abs(sum - 1f) < 0.001f, c.name + " odds sum to 1");
+        }
+
+        // Open lots of crates: every item eventually unlocks, duplicates refund, money is consistent.
+        var hist = new int[4];
+        p = new PlayerProfile();
+        p.money = 1000000;
+        int spent = 0, refunded = 0;
+        for (int i = 0; i < 4000; i++)
+        {
+            var r = Shop.OpenCrate(p, Shop.Crates[0]);
+            spent += r.crate.price; refunded += r.refund;
+            hist[(int)r.item.rarity]++;
+            Check(r.duplicate == (r.refund > 0), "refund only on duplicates");
+        }
+        Check(p.money == 1000000 - spent + refunded, "money adds up after 4000 crates");
+        Check(hist[0] > hist[1] && hist[1] > hist[2] && hist[2] > hist[3] && hist[3] > 0, "rarity histogram is ordered: " + string.Join(",", hist));
+        foreach (var c in CosmeticCatalog.All) Check(p.Owns(c), "crates can unlock " + c.id);
     }
 
     static void Weapons()

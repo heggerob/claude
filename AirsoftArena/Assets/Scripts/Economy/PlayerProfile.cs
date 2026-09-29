@@ -31,6 +31,12 @@ namespace AirsoftArena
         public int refWrongCalls;
         public int refMissed;
 
+        [Header("Loadout")]
+        public List<string> ownedWeapons = new List<string>();
+        public string primaryWeapon = "01-VK4";
+        public string secondaryWeapon = "04-PP2";
+        public int cratesOpened;
+
         [Header("Cosmetics")]
         public List<string> ownedItems = new List<string>();
         public string equippedCamo = CosmeticCatalog.DefaultId(CosmeticSlot.Camo);
@@ -39,6 +45,20 @@ namespace AirsoftArena
         public string equippedTracer = CosmeticCatalog.DefaultId(CosmeticSlot.Tracer);
 
         public float RefStars { get { return refRatings > 0 ? refStarsTotal / refRatings : 3f; } }
+
+        public bool OwnsWeapon(WeaponData weapon) { return weapon != null && (weapon.price <= 0 || ownedWeapons.Contains(weapon.code)); }
+
+        /// <summary>The saved primary, falling back to the first free one if it's missing or not owned.</summary>
+        public WeaponData Primary { get { return OwnedOr(primaryWeapon, WeaponCatalog.Primaries); } }
+        public WeaponData Secondary { get { return OwnedOr(secondaryWeapon, WeaponCatalog.Secondaries); } }
+
+        WeaponData OwnedOr(string code, List<WeaponData> list)
+        {
+            var w = WeaponCatalog.Get(code);
+            if (w != null && list.Contains(w) && OwnsWeapon(w)) return w;
+            foreach (var x in list) if (OwnsWeapon(x)) return x;
+            return list[0];
+        }
 
         public bool Owns(CosmeticItem item) { return item != null && (item.starter || ownedItems.Contains(item.id)); }
 

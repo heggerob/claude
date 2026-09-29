@@ -17,7 +17,7 @@ namespace AirsoftArena
 
         // Lobby choices.
         Role role = Role.Soldier;
-        int primaryIndex, secondaryIndex, refereeIndex = 2;
+        int refereeIndex = 2;
         bool autoCallHits;
         bool confirmReset;
 
@@ -71,8 +71,8 @@ namespace AirsoftArena
             var primaries = WeaponCatalog.Primaries;
             var secondaries = WeaponCatalog.Secondaries;
             var referees = RefereeMarket.All;
-            primaryIndex = Mathf.Clamp(primaryIndex, 0, primaries.Count - 1);
-            secondaryIndex = Mathf.Clamp(secondaryIndex, 0, secondaries.Count - 1);
+            var primary = profile.Primary;
+            var secondary = profile.Secondary;
             refereeIndex = Mathf.Clamp(refereeIndex, 0, referees.Count - 1);
 
             float pw = Mathf.Min(W - 32f, 1000f), ph = Mathf.Min(H - 32f, 680f);
@@ -96,14 +96,12 @@ namespace AirsoftArena
             {
                 GUILayout.BeginVertical(GUILayout.Width(pw * 0.5f));
                 GUILayout.Label("<b>Primary</b>", label);
-                for (int i = 0; i < primaries.Count; i++)
-                    if (Choice(i == primaryIndex, WeaponButton(primaries[i]))) primaryIndex = i;
-                GUILayout.Label(primaries[primaryIndex].StatLine, small);
+                foreach (var w in primaries) WeaponChoice(profile, w, w == primary, true);
+                GUILayout.Label(primary.StatLine, small);
                 GUILayout.Space(6);
                 GUILayout.Label("<b>Secondary</b>", label);
-                for (int i = 0; i < secondaries.Count; i++)
-                    if (Choice(i == secondaryIndex, WeaponButton(secondaries[i]))) secondaryIndex = i;
-                GUILayout.Label(secondaries[secondaryIndex].StatLine, small);
+                foreach (var w in secondaries) WeaponChoice(profile, w, w == secondary, false);
+                GUILayout.Label(secondary.StatLine, small);
                 GUILayout.Label("Melee: [00] Rubber Tanto (always carried)", small);
                 GUILayout.EndVertical();
 
@@ -145,8 +143,8 @@ namespace AirsoftArena
             var settings = new MatchSettings
             {
                 role = role,
-                primary = primaries[primaryIndex],
-                secondary = secondaries[secondaryIndex],
+                primary = primary,
+                secondary = secondary,
                 referee = referees[refereeIndex],
                 autoCallHits = autoCallHits,
             };
@@ -171,6 +169,21 @@ namespace AirsoftArena
             GUILayout.EndHorizontal();
 
             GUILayout.EndArea();
+        }
+
+        /// <summary>Owned weapons select; locked ones show their price and are bought on click.</summary>
+        void WeaponChoice(PlayerProfile profile, WeaponData w, bool selected, bool isPrimary)
+        {
+            bool owned = profile.OwnsWeapon(w);
+            string text = owned ? WeaponButton(w) : WeaponButton(w) + "   <color=#ffd060>BUY $" + w.price + "</color>";
+            if (!Choice(selected, text)) return;
+            Defer(() =>
+            {
+                if (!profile.OwnsWeapon(w) && Shop.Buy(profile, w) != PurchaseResult.Ok) return;
+                if (isPrimary) profile.primaryWeapon = w.code;
+                else profile.secondaryWeapon = w.code;
+                PlayerProfile.Save();
+            });
         }
 
         static string WeaponButton(WeaponData w)

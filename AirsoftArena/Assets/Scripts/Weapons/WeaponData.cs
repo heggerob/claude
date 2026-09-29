@@ -62,7 +62,11 @@ namespace AirsoftArena
         [Tooltip("Multiplier on walking speed. Heavy guns slow you down.")]
         public float moveSpeedMultiplier = 1f;
 
-        [Header("Melee only")]
+        [Header("Shop")]
+        [Tooltip("Price in in-game money. 0 = owned from the start.")]
+        public int price;
+
+                [Header("Melee only")]
         public float meleeRange = 1.3f;
 
         public bool IsMelee { get { return weaponClass == WeaponClass.Melee; } }

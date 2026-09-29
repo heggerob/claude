@@ -58,6 +58,40 @@ namespace AirsoftArena
             };
         }
 
+        static readonly Dictionary<string, int> Prices = new Dictionary<string, int>
+        {
+            { "01-VK4", 0 },
+            { "01-FR7", 450 },
+            { "02-WS9", 0 },
+            { "03-LB2", 750 },
+            { "03-RD1", 600 },
+            { "05-TR3", 350 },
+            { "06-TT3", 500 },
+            { "07-TH6", 950 },
+            { "04-PP2", 0 },
+            { "04-FJ6", 250 },
+            { "04-BZ9", 400 },
+            { "00-RT1", 0 },
+        };
+
+        public static WeaponData Get(string code)
+        {
+            foreach (var list in new[] { Primaries, Secondaries, MeleeWeapons })
+                foreach (var w in list)
+                    if (w.code == code) return w;
+            return null;
+        }
+
+        public static IEnumerable<WeaponData> All
+        {
+            get
+            {
+                foreach (var w in Primaries) yield return w;
+                foreach (var w in Secondaries) yield return w;
+                foreach (var w in MeleeWeapons) yield return w;
+            }
+        }
+
         static WeaponData Make(string code, string name, WeaponClass cls, PowerSystem power, FireModes modes,
             float fps, float rpm, int mag, int mags, float reload, float bb, float hop, float spread, float length, float speed, int pellets = 1)
         {
@@ -79,6 +113,8 @@ namespace AirsoftArena
             w.lengthCm = length;
             w.moveSpeedMultiplier = speed;
             w.pelletsPerShot = pellets;
+            int price;
+            w.price = Prices.TryGetValue(code, out price) ? price : 0;
             return w;
         }
     }
