@@ -29,15 +29,23 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
 - [x] **6. Spydvakten:** hjelm, pelskrage, rødt skjerf, langt spyd med rød vimpel, rundt rødt skjold med mønster.
 - [x] **7. Den gamle seeren:** gevir-hodepynt med runesteiner, lange hvite fletter, lang fillete kjortel, stav med lysende runestein.
 - [x] **8. Speideren:** pelslue, grønt skjerf og grønn tunika, bue og pilkogger.
-- [ ] **8b. Finpuss, runde for runde:** (Runde 1 er ferdig for alle seks: pelsen er bygd om som lurvete skulderkapper, kappene er fillete med folder, Raiderens økse og støvler er rettet, Navigatørens skjørt, Spydvaktens triquetra-skjold, Seerens gevir og Speiderens hetteskjerf.) Punktene over er bare første versjoner. Når alle seks finnes, går jeg tilbake til hver figur og sammenligner med konseptbildet igjen og igjen, til de er så like som mulig. Kjente forskjeller så langt:
-  - **Raider:** Pelsen er for jevn og lys. Den venstre armen med øksa synes for lite. Ermene og de mørke underlagene i skjørtet trenger mer form, og støvlene bør være slankere med spissere tær.
-  - **Jarl:** Kronen trenger flere detaljer (runemønster og gullkanter på hornene). Pelskragen må være mer lurvete og mindre hvit. Kappen trenger folder og tydeligere filler. Remmer og ringer mangler på beltet. Sverdet og skjoldet må ha riktig størrelse og mønster.
-  - **Navigatør:** Skjørtet er for kort og for smalt, og mangler det blå underskjørtet med pelskant. Kappen foran er for flat og trenger folder. Beina er for lange. Kartet trenger revne kanter og bedre tegning, og den ene hånda skal holde kanten av kartet.
-  - **Spydvakt:** Skjoldet bør være litt ovalt og vippe mer mot oss. Knutemønsteret skal være en ekte flettet knute, og vimpelen større. Lærjakken trenger mer form, med splitt foran og mørke bukser, og kappen må være mer fillete.
-  - ~~**Raider:** Øksehodet vender mot oss igjen, med halvmåneformet blad og synlig hånd.~~ Ferdig i runde 1, sammen med bredbent stilling og slanke, spisse støvler.
-  - **Seer:** Geviret må bli tykkere og mer forgreinet, og skal hvile på en tverrstang med mange runeskiver. Flettene trenger perler. Kappen trenger flere lag med fjær, lyse flekker og mønster. Staven må være mer knudrete, og runesteinen skal holdes av røtter. Hun mangler også flere kjeder og beinsmykker.
-  - **Speider:** Pelslua skal dekke hodet mer på skrå, med mørkt stoff synlig på den ene siden. Skulderkappen er for firkantet og lang, og pelsbiten på skulderen for liten. Beltet trenger flere remmer og en kniv foran. Pelsflikene er for lyse og flate. Buen skal være buet, og løs hårflette skal henge bak.
-  - **Alle:** Stoffet trenger folder og tykkelse, pelsen må få strå og ikke klumper, og tegnede teksturer og skravur (punkt 10) er det som mangler mest mot det malte bildet.
+- [ ] **8b. Finpuss, runde for runde:** Punktene over er bare første versjoner. Jeg går tilbake til hver figur og sammenligner med konseptbildet igjen og igjen, til de er så like som mulig.
+  - Runde 1 (ferdig): pelsen er bygd om til lurvete skulderkapper, kappene er fillete med folder, Raiderens økse og støvler er rettet, og Navigatørens skjørt, Spydvaktens triquetra-skjold, Seerens gevir og Speiderens hetteskjerf er på plass.
+  - Runde 2 (ferdig):
+    - **Raider:** skjeggøks på størrelse med ansiktet og pels som åpner seg i en V foran. Pelsen har fått `frontWidth`.
+    - **Jarl:** pelskragen ligger som en boa over skuldrene, kronen har seks takker, og kappekanten er fillete strimler i ulik lengde.
+    - **Navigatør:** skjørtet går til kneet, og det blå underskjørtet synes. Støvlene er slanke og spisse, rullene på hofta er store, og kappen svinger ut.
+    - **Spydvakt:** bredt spydblad og vimpel med merke på begge sider. Spydet står på bakken, skjoldet er større, og skjerfet ligger på skrå.
+    - **Seer:** hetta har spiss og hengende fjær, skuldrene er smalere, og runebrikkene er store og henger i lange snorer.
+    - **Speider:** bare armer med armbeskyttere, grønn skulderkappe med spiss foran, pels på én skulder og koggeret på riktig side.
+  - Kjente forskjeller til runde 3:
+    - **Alle:** figurene er fortsatt litt for bredde og klokkeformede i overkroppen. I bildet er overkroppen smal med lag som synes.
+    - **Jarl:** remmer i kryss og ringer på beltet, runer på sverdet og gullkant på skjoldet.
+    - **Raider:** flere lommer på beltet og ei synlig hånd som holder skaftet.
+    - **Navigatør:** pelsen på skuldrene synes for lite, og kartet trenger revne kanter.
+    - **Spydvakt:** splitt foran i lærjakken og mørke bukser under.
+    - **Seer:** lysere grå-blå striper i kappa, og flere kjeder og beinsmykker.
+    - **Speider:** pelslua skal sitte mer på skrå, og løs hårflette skal henge bak.
 - [x] **9. Bevegelse i plaggene:** (se [docs/motion.png](docs/motion.png)) kapper, skjørt, fletter, pels og vimpler svinger og henger etter når figuren går, snur og hugger (enkel fysikk med fjærer).
 - [ ] **10. Tegneserie-look på alt:** tusj-kanter på skipet, øyene, trærne, husene og havet, skravur med blyant eller tusj i skyggene, og papirkorn over hele bildet.
   - [x] Skravur i skyggene: shaderen `OdinsCoin/InkToon` (i `Resources/Shaders`) gir myk tegnet belysning med kalde skygger, enkle blyantstreker på skyggesiden og kryss-skravur i de mørkeste delene. Ansiktene får ingen skravur, så de holder seg rene. Den brukes på alt som ikke er blankt (havet beholder Lit). `InkStyle.cs` har samme matte, og forhåndsvisningen bruker den.

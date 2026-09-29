@@ -492,15 +492,16 @@ namespace OdinsCoin
             }
             // Big curved horns sweeping out and up from the rim: two at the sides, two smaller at the back,
             // black with gold edges.
-            foreach (var a in new[] { -0.95f, 0.95f, -2.35f, 2.35f })
+            // Spikes round the rim like a crown's points: short ones at the front, big curved ones at the sides,
+            // middling ones at the back.
+            foreach (var a in new[] { -0.45f, 0.45f, -1.05f, 1.05f, -2.35f, 2.35f })
             {
-                bool side = Mathf.Abs(a) < 2f;
+                float len = Mathf.Abs(a) < 0.6f ? 0.6f : Mathf.Abs(a) < 2f ? 1.1f : 0.75f;
                 var dir = new Vector3(Mathf.Sin(a) * scale.x, 0f, Mathf.Cos(a) * scale.z);
-                var root = offset + new Vector3(0f, brim + 0.62f * r, 0f) + dir * r * 1.3f;
-                float len = side ? 1.45f : 0.8f;
+                var root = offset + new Vector3(0f, brim + 0.66f * r, 0f) + dir * r * 1.32f;
                 var path = new[] {
-                    root, root + dir * r * 0.35f * len + Vector3.up * r * 0.25f * len,
-                    root + dir * r * 0.45f * len + Vector3.up * r * 0.65f * len, root + dir * r * 0.3f * len + Vector3.up * r * 0.95f * len + Vector3.forward * 0.1f * r };
+                    root, root + dir * r * 0.3f * len + Vector3.up * r * 0.3f * len,
+                    root + dir * r * 0.42f * len + Vector3.up * r * 0.7f * len, root + dir * r * 0.36f * len + Vector3.up * r * 1.0f * len + Vector3.forward * 0.06f * r };
                 d.Add(Joints.Head, black, MeshData.Tube(path, new[] { 0.04f * s, 0.032f * s, 0.018f * s, 0.003f * s }, 7));
                 var edge = new Vector3[path.Length - 1];
                 for (int k = 1; k < path.Length; k++) edge[k - 1] = path[k] + dir * 0.014f * s * (1f - k * 0.25f) + Vector3.up * 0.004f * s;

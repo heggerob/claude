@@ -179,8 +179,10 @@ namespace OdinsCoin
             var hem = new float[cols];
             for (int c = 0; c < cols; c++)
             {
+                // Strips of very uneven length (a few hang much lower), and the tears between them cut up into the
+                // cloth by different amounts, so it reads as shredded rather than as a saw blade.
                 float r0 = (float)rng.NextDouble();
-                hem[c] = ((c & 1) == 0 ? 0.55f + r0 * 0.6f : r0 * 0.25f) * jag;
+                hem[c] = ((c & 1) == 0 ? 0.3f + 1.3f * r0 * r0 : -0.45f * r0) * jag;
             }
             // Folds: soft vertical waves across the width, deeper towards the hem.
             float phase = (float)rng.NextDouble() * 6f;
