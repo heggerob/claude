@@ -143,8 +143,8 @@ public static class HeroPreview
         ready.worldRot[Joints.OffHand] = Quaternion.LookRotation(new Vector3(-0.35f, 0.88f, 0.3f), new Vector3(-0.8f, 0f, 0.3f));
         ready.rot[Joints.RightArm] = Quaternion.Euler(4f, 0f, 12f);
         ready.rot[Joints.RightForearm] = Quaternion.Euler(-25f, 0f, 0f);
-        ready.rot[Joints.LeftLeg] = Quaternion.Euler(0f, 0f, -7f);
-        ready.rot[Joints.RightLeg] = Quaternion.Euler(0f, 0f, 7f);
+        ready.rot[Joints.LeftLeg] = Quaternion.Euler(0f, -16f, -9f);
+        ready.rot[Joints.RightLeg] = Quaternion.Euler(0f, 18f, 9f);
         shots.Add(new Shot { label = "The Scout", model = scoutModel, pose = ready, yaw = 188f });
         shots.Add(new Shot { label = "Jarl, three-quarter", model = jarlModel, pose = stand, yaw = 215f });
         shots.Add(new Shot { label = "Navigator, three-quarter", model = navModel, pose = reading, yaw = 150f });

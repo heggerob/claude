@@ -121,7 +121,10 @@ namespace OdinsCoin
         }
 
         /// <summary>A thick pelt over the shoulders: the wide shaggy silhouette of the concept art.</summary>
-        public static void ShoulderPelt(Dresser d, float size)
+        public static void ShoulderPelt(Dresser d, float size) { ShoulderPelt(d, size, 0f); }
+
+        /// <summary>The pelt; <paramref name="side"/> +1 keeps it over the right shoulder only (-1 left, 0 both).</summary>
+        public static void ShoulderPelt(Dresser d, float size, float side)
         {
             var f = d.fit;
             float s = d.S;
@@ -133,7 +136,14 @@ namespace OdinsCoin
             float top = f.shoulderY + 0.035f * s;
             // Short over the chest (so brooches, straps and the tunic show), long over the shoulders and back.
             float drop = f.shoulderY - bottom;
-            System.Func<float, float> shortFront = a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return drop * 0.7f * c * c; };
+            System.Func<float, float> shortFront = a =>
+            {
+                float c = Mathf.Max(0f, Mathf.Cos(a));
+                float raise = drop * 0.7f * c * c;
+                // One-sided: pull the hem right up on the other shoulder.
+                if (side != 0f) raise = Mathf.Max(raise, drop * 0.95f * Mathf.Clamp01(-Mathf.Sin(a) * side * 1.5f + 0.2f));
+                return raise;
+            };
             float hug = Mathf.Clamp01(f.chestR * f.depth * 1.25f / (r * 0.8f));
             System.Func<float, float> hugFront = a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return Mathf.Lerp(1f, hug, c * c); };
             d.Add(Joints.Body, d.pal.furShadow, CharacterKit.RaggedSkirt(top - 0.02f * s, f.chestR * 0.78f, bottom - 0.035f * s, r * 1.02f, 0.78f, 26, 0.07f * s * size, d.seed + 7, shortFront, hugFront));
@@ -142,7 +152,9 @@ namespace OdinsCoin
             var rng = new System.Random(d.seed + 8);
             for (int i = 0; i < 16; i++)
             {
-                float a2 = Mathf.PI * 0.35f + (float)rng.NextDouble() * Mathf.PI * 1.3f; // mostly on the shoulders and back
+                float a2 = side != 0f
+                    ? Mathf.PI * 0.5f * side + ((float)rng.NextDouble() - 0.5f) * 1.6f // on the one shoulder
+                    : Mathf.PI * 0.35f + (float)rng.NextDouble() * Mathf.PI * 1.3f;   // mostly on the shoulders and back
                 float t = 0.35f + (float)rng.NextDouble() * 0.6f;
                 float rad = Mathf.Lerp(f.chestR * 0.62f, r, t * t) + 0.01f * s;
                 float y = Mathf.Lerp(top, bottom, t) + 0.012f * s;
@@ -944,12 +956,23 @@ namespace OdinsCoin
             d.Add(Joints.Body, d.pal.accent, MeshData.Lathe(new[] {
                 new Vector2(f.chestR * 0.5f, f.neckY - 0.01f * s), new Vector2(f.chestR * 0.7f, f.neckY + 0.04f * s), new Vector2(f.chestR * 0.55f, f.neckY + 0.07f * s) }, 16)
                 .Transformed(Vector3.zero, Quaternion.identity, new Vector3(1f, 1f, 0.95f)));
-            d.Add(Joints.Body, d.pal.accent, CharacterKit.RaggedSkirt(f.neckY + 0.01f * s, f.chestR * 0.62f, f.chest - 0.05f * s, f.shoulderX + 0.06f * s, 0.8f, 18, 0.05f * s, d.seed + 83));
+            // A short capelet over the shoulders, raised in front so the chest shows.
+            float capeBottom = f.shoulderY - 0.1f * s, capeDrop = f.neckY - capeBottom;
+            d.Add(Joints.Body, d.pal.accent, CharacterKit.RaggedSkirt(f.neckY + 0.01f * s, f.chestR * 0.62f, capeBottom, f.shoulderX + 0.03f * s, 0.8f, 18, 0.05f * s, d.seed + 83,
+                a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return capeDrop * 0.55f * c * c; }, a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return Mathf.Lerp(1f, 0.7f, c * c); }));
+            // The scarf's tail hanging down the front, off to one side.
+            const int rows = 5;
+            var tail = new Vector3[rows, 2];
+            for (int r = 0; r < rows; r++)
+                for (int c = 0; c < 2; c++)
+                {
+                    float v = r / (float)(rows - 1);
+                    float y = f.neckY - 0.02f * s - v * 0.24f * s - (r == rows - 1 && c == 0 ? 0.03f * s : 0f);
+                    tail[r, c] = new Vector3((-0.02f - v * 0.05f + c * 0.07f) * s, y, f.TorsoRadius(Mathf.Max(y, f.waist)) * f.depth + 0.025f + v * 0.01f);
+                }
+            d.Add(Joints.Body, VikingModel.Shade(d.pal.accent, 0.9f), CharacterKit.Sheet(tail, Vector3.forward, 0.012f * s));
             // The hood, down, bunched behind the neck.
             d.Add(Joints.Body, VikingModel.Shade(d.pal.accent, 0.85f), MeshData.Ellipsoid(new Vector3(0f, f.neckY + 0.02f * s, -f.chestR * 0.7f), new Vector3(0.11f, 0.08f, 0.07f) * s, 12, 7));
-            // A shaggy pelt thrown over the right shoulder.
-            d.Add(Joints.Body, d.pal.fur, CharacterKit.Flaps(f.shoulderY + 0.03f * s, 0.14f * s, 3, 0.3f, f.depth, y => y > f.waist ? f.TorsoRadius(y) + 0.08f * s : f.waistR, 0.01f, d.seed + 84, 0.014f * s)
-                .Transformed(Vector3.zero, Quaternion.Euler(0f, 70f, 0f), Vector3.one));
         }
 
         /// <summary>A knife in a sheath worn crosswise at the front of the belt.</summary>
