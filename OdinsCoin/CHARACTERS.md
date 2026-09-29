@@ -38,7 +38,7 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
   - **Seer:** Geviret må bli tykkere og mer forgreinet, og skal hvile på en tverrstang med mange runeskiver. Flettene trenger perler. Kappen trenger flere lag med fjær, lyse flekker og mønster. Staven må være mer knudrete, og runesteinen skal holdes av røtter. Hun mangler også flere kjeder og beinsmykker.
   - **Speider:** Pelslua skal dekke hodet mer på skrå, med mørkt stoff synlig på den ene siden. Skulderkappen er for firkantet og lang, og pelsbiten på skulderen for liten. Beltet trenger flere remmer og en kniv foran. Pelsflikene er for lyse og flate. Buen skal være buet, og løs hårflette skal henge bak.
   - **Alle:** Stoffet trenger folder og tykkelse, pelsen må få strå og ikke klumper, og tegnede teksturer og skravur (punkt 10) er det som mangler mest mot det malte bildet.
-- [ ] **9. Bevegelse i plaggene:** kapper, skjørt, fletter, pels og vimpler svinger og henger etter når figuren går, snur og hugger (enkel fysikk med fjærer).
+- [x] **9. Bevegelse i plaggene:** (se [docs/motion.png](docs/motion.png)) kapper, skjørt, fletter, pels og vimpler svinger og henger etter når figuren går, snur og hugger (enkel fysikk med fjærer).
 - [ ] **10. Tegneserie-look på alt:** tusj-kanter på skipet, øyene, trærne, husene og havet, skravur med blyant eller tusj i skyggene, og papirkorn over hele bildet.
 - [ ] **10b. Tegnede teksturer:** stoff, pels, lær, tre og mønsterkanter lages i kode med penselstrøk og streker, slik at alt ser tegnet ut som på bildet.
 - [ ] **11. I spillet:** velg figur i menyen, bruk figurene som spiller og NPC-er, og la animasjonene passe pinne-lemmene (pust, gange, sving).

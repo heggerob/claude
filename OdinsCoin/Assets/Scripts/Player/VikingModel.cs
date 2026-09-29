@@ -325,6 +325,15 @@ namespace OdinsCoin
         public readonly List<Joint> Joints = new List<Joint>();
         public readonly List<Piece> Pieces = new List<Piece>();
 
+        /// <summary>A joint that swings on a spring (capes, banners, braids).</summary>
+        public class Swing
+        {
+            public string joint;
+            public SwingKind kind;
+        }
+
+        public readonly List<Swing> Swings = new List<Swing>();
+
         public const string Body = "Body", Head = "Head", LeftLeg = "Left Leg", RightLeg = "Right Leg",
             LeftArm = "Left Arm", RightArm = "Right Arm", Weapon = "Weapon", Shield = "Shield";
 

@@ -175,10 +175,65 @@ public static class HeroPreview
         var labels = new List<string>();
         foreach (var s in shots) labels.Add(s.label);
         File.WriteAllLines(args[1], labels.ToArray());
+        if (args.Length > 4) MotionStrip(args[3], args[4], jarlModel);
         Directory.CreateDirectory(args[2]);
         ExportObj(HeroModel.Build(raider), Path.Combine(args[2], "raider.obj"));
         ExportObj(HeroModel.BuildWeapon(raider), Path.Combine(args[2], "two-hand-axe.obj"));
         Console.WriteLine("hero: " + model.TriangleCount + " triangles");
+    }
+
+    /// <summary>
+    /// The Jarl running and stopping, seen from the side: the swinging joints are simulated with the same springs the
+    /// game uses, so the strip shows how capes and braids really move.
+    /// </summary>
+    static void MotionStrip(string rgbaPath, string labelPath, VikingModel model)
+    {
+        var springs = new Dictionary<string, SwingSpring>();
+        foreach (var sw in model.Swings) springs[sw.joint] = SwingSpring.For(sw.kind);
+        var frames = new List<Shot>();
+        var captures = new[] { 0.2f, 0.75f, 2.2f, 2.5f, 2.8f, 4.0f };
+        var names = new[] { "Standing", "Setting off", "Running", "Stopping", "Swinging back", "Settled" };
+        float speed = 0f, t = 0f, dt = 0.01f, stride = 0f;
+        int next = 0;
+        while (next < captures.Length)
+        {
+            float want = t > 0.3f && t < 2.3f ? 5f : 0f;
+            float prev = speed;
+            speed = want > speed ? Mathf.Min(want, speed + 12f * dt) : Mathf.Max(want, speed - 30f * dt);
+            float accel = (speed - prev) / dt;
+            foreach (var s in springs.Values) s.Step(dt, new Vector3(0f, 0f, speed), new Vector3(0f, 0f, accel));
+            stride += speed * dt * 2.2f;
+            t += dt;
+            if (t >= captures[next])
+            {
+                var pose = new Pose();
+                foreach (var kv in springs) pose.rot[kv.Key] = kv.Value.Rotation;
+                float swing = Mathf.Sin(stride) * Mathf.Clamp01(speed / 5f) * 35f;
+                pose.rot[Joints.LeftLeg] = Quaternion.Euler(swing, 0f, 0f);
+                pose.rot[Joints.RightLeg] = Quaternion.Euler(-swing, 0f, 0f);
+                pose.rot[Joints.LeftArm] = Quaternion.Euler(-swing * 0.8f, 0f, -8f);
+                pose.rot[Joints.RightArm] = Quaternion.Euler(swing * 0.8f, 0f, 8f);
+                pose.rot[Joints.Body] = Quaternion.Euler(Mathf.Clamp01(speed / 5f) * 8f, 0f, 0f);
+                frames.Add(new Shot { label = names[next], model = model, pose = pose, yaw = 265f });
+                next++;
+            }
+        }
+        const int cellW = 600, cellH = 1080;
+        int w = cellW * frames.Count, h = cellH;
+        var img = new float[w * h * 3];
+        for (int i = 0; i < w * h; i++) { img[i * 3] = Paper.r; img[i * 3 + 1] = Paper.g; img[i * 3 + 2] = Paper.b; }
+        for (int f = 0; f < frames.Count; f++) Render(img, w, h, f * cellW, cellW, cellH, frames[f]);
+        using (var fs = new BinaryWriter(File.Create(rgbaPath)))
+        {
+            fs.Write(w); fs.Write(h);
+            for (int i = 0; i < w * h; i++)
+            {
+                fs.Write((byte)(Mathf.Clamp01(img[i * 3]) * 255)); fs.Write((byte)(Mathf.Clamp01(img[i * 3 + 1]) * 255)); fs.Write((byte)(Mathf.Clamp01(img[i * 3 + 2]) * 255)); fs.Write((byte)255);
+            }
+        }
+        var labels = new List<string>();
+        foreach (var f in frames) labels.Add(f.label);
+        File.WriteAllLines(labelPath, labels.ToArray());
     }
 
     /// <summary>For pictures only: hang the separately built weapon on the character's weapon hand.</summary>

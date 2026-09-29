@@ -11,6 +11,20 @@ namespace OdinsCoin
         public int seed;
 
         public void Add(string joint, Color color, MeshData mesh, bool outline = true) { model.Add(joint, color, mesh, outline); }
+
+        /// <summary>
+        /// A joint that swings on a spring, pivoting at <paramref name="pivot"/> (in the parent joint's space).
+        /// Meshes added to it must be moved by -pivot first.
+        /// </summary>
+        public string Swing(string name, string parent, Vector3 pivot, SwingKind kind)
+        {
+            if (model.Find(name) == null)
+            {
+                model.AddJoint(name, parent, pivot);
+                model.Swings.Add(new VikingModel.Swing { joint = name, kind = kind });
+            }
+            return name;
+        }
         public float S { get { return fit.s; } }
 
         // The skirt, once made, so layers on top (tabards, fur, pouches) can sit just outside it.
@@ -218,19 +232,22 @@ namespace OdinsCoin
                     float z = d.SkirtRadius(y) * (d.hasSkirt ? d.skirtDepth : f.depth + 0.05f) + 0.014f + 0.02f * v;
                     grid[r, c] = new Vector3(u * width * 0.5f * s, y, z);
                 }
-            d.Add(Joints.Body, d.pal.accent, CharacterKit.Sheet(grid, Vector3.forward, 0.012f * s));
+            // It swings from the belt.
+            var pivot = grid[0, 1];
+            string tab = d.Swing(Joints.Tabard, Joints.Body, pivot, SwingKind.Banner);
+            d.Add(tab, d.pal.accent, CharacterKit.Sheet(grid, Vector3.forward, 0.012f * s).Moved(-pivot));
             // Embroidered border lines down both edges, and a triangle rune, riding on the cloth's surface.
             for (int r = 0; r < rows - 2; r++)
                 foreach (float x in new[] { -1f, 1f })
                 {
-                    Vector3 a = grid[r, 1] + new Vector3(x * width * 0.36f * s, 0f, 0.008f * s), b = grid[r + 1, 1] + new Vector3(x * width * 0.36f * s, 0f, 0.008f * s);
-                    d.Add(Joints.Body, d.pal.emblem, MeshData.Tube(new[] { a, b }, new[] { 0.0035f * s, 0.0035f * s }, 4), false);
+                    Vector3 a = grid[r, 1] + new Vector3(x * width * 0.36f * s, 0f, 0.008f * s) - pivot, b = grid[r + 1, 1] + new Vector3(x * width * 0.36f * s, 0f, 0.008f * s) - pivot;
+                    d.Add(tab, d.pal.emblem, MeshData.Tube(new[] { a, b }, new[] { 0.0035f * s, 0.0035f * s }, 4), false);
                 }
             float cy = top - length * 0.4f * s, tri = 0.03f * s;
             float ez = grid[Mathf.RoundToInt((rows - 1) * 0.4f), 1].z + 0.009f * s;
-            Vector3 c0 = new Vector3(0f, cy + tri, ez), c1 = new Vector3(-tri * 0.9f, cy - tri * 0.6f, ez), c2 = new Vector3(tri * 0.9f, cy - tri * 0.6f, ez);
+            Vector3 c0 = new Vector3(0f, cy + tri, ez) - pivot, c1 = new Vector3(-tri * 0.9f, cy - tri * 0.6f, ez) - pivot, c2 = new Vector3(tri * 0.9f, cy - tri * 0.6f, ez) - pivot;
             foreach (var edge in new[] { new[] { c0, c1 }, new[] { c1, c2 }, new[] { c2, c0 } })
-                d.Add(Joints.Body, d.pal.emblem, MeshData.Tube(edge, new[] { 0.004f * s, 0.004f * s }, 4), false);
+                d.Add(tab, d.pal.emblem, MeshData.Tube(edge, new[] { 0.004f * s, 0.004f * s }, 4), false);
         }
 
         // ---------------------------------------------------------------- headgear
@@ -338,7 +355,8 @@ namespace OdinsCoin
             var f = d.fit;
             float s = d.S;
             var top = new Vector3(0f, f.shoulderY + 0.02f * s, -f.chestR * f.depth * 0.3f);
-            d.Add(Joints.Body, d.pal.accent, CharacterKit.Cape(top, f.shoulderX * 2.6f, f.shoulderX * 2f * flare, length * s, f.chestR * 1.3f, 0.17f * s, d.seed + 41, 0.02f * s));
+            string cape = d.Swing(Joints.Cape, Joints.Body, top, SwingKind.Cape);
+            d.Add(cape, d.pal.accent, CharacterKit.Cape(top, f.shoulderX * 2.6f, f.shoulderX * 2f * flare, length * s, f.chestR * 1.3f, 0.17f * s, d.seed + 41, 0.02f * s).Moved(-top));
             // Front drapes falling over each shoulder, open at the chest.
             if (drapes) foreach (float x in new[] { -1f, 1f })
             {
@@ -514,14 +532,15 @@ namespace OdinsCoin
             float s = d.S;
             var top = new Vector3(0f, f.shoulderY + 0.02f * s, -f.chestR * f.depth * 0.3f);
             float tw = f.shoulderX * 2.4f, bw = f.shoulderX * 3.2f, len = backLength * s, wrap = f.chestR * 1.2f;
-            d.Add(Joints.Body, d.pal.accent, CharacterKit.Cape(top, tw, bw, len, wrap, 0.08f * s, d.seed + 51, 0.016f * s));
+            string cape = d.Swing(Joints.Cape, Joints.Body, top, SwingKind.Cape);
+            d.Add(cape, d.pal.accent, CharacterKit.Cape(top, tw, bw, len, wrap, 0.08f * s, d.seed + 51, 0.016f * s).Moved(-top));
             // Embroidered border across the back, above the torn hem.
             var row = new Vector3[15];
             for (int i = 0; i < row.Length; i++)
-                row[i] = CharacterKit.CapePoint(top, tw, bw, len, wrap, Mathf.Lerp(-0.9f, 0.9f, i / (float)(row.Length - 1)), 0.8f) + new Vector3(0f, 0f, -0.016f * s);
-            d.Add(Joints.Body, d.pal.emblem, CharacterKit.ZigZag(row, Vector3.up, 0.018f * s, 0.004f * s), false);
+                row[i] = CharacterKit.CapePoint(top, tw, bw, len, wrap, Mathf.Lerp(-0.9f, 0.9f, i / (float)(row.Length - 1)), 0.8f) + new Vector3(0f, 0f, -0.016f * s) - top;
+            d.Add(cape, d.pal.emblem, CharacterKit.ZigZag(row, Vector3.up, 0.018f * s, 0.004f * s), false);
             for (int i = 0; i < row.Length; i++) row[i] += Vector3.down * 0.05f * s;
-            d.Add(Joints.Body, d.pal.emblem, CharacterKit.ZigZag(row, Vector3.up, 0.012f * s, 0.0035f * s), false);
+            d.Add(cape, d.pal.emblem, CharacterKit.ZigZag(row, Vector3.up, 0.012f * s, 0.0035f * s), false);
 
             // The long drape over the right shoulder, falling down the front and side.
             const int rows = 9, cols = 4;
@@ -1042,10 +1061,13 @@ namespace OdinsCoin
             foreach (float x in new[] { -1f, 1f })
                 d.Add(Joints.Head, d.pal.hair, CharacterKit.Tuft(new Vector3(x * r * 0.9f, cy + r * 0.2f, r * 0.3f), new Vector3(x * r * 1.02f, cy - r * 0.55f, r * 0.42f), 0.026f * s));
             var path = new[] { new Vector3(-r * 0.6f, cy - r * 0.55f, -r * 0.75f), new Vector3(-r * 1.05f, cy - r * 1.05f, -r * 0.6f), new Vector3(-r * 1.35f, cy - r * 1.7f, -r * 0.4f), new Vector3(-r * 1.45f, cy - r * 2.3f, -r * 0.3f) };
-            d.Add(Joints.Head, d.pal.hair, CharacterKit.Braid(path, 0.03f * s));
+            string bj = d.Swing(Joints.LeftBraid, Joints.Head, path[0], SwingKind.Braid);
+            var p0 = path[0];
+            for (int i = 0; i < path.Length; i++) path[i] -= p0;
+            d.Add(bj, d.pal.hair, CharacterKit.Braid(path, 0.03f * s));
             var end = path[path.Length - 1];
-            d.Add(Joints.Head, d.pal.hair, CharacterKit.Tuft(end, end + new Vector3(-0.02f, -0.08f, 0.01f) * s, 0.028f * s));
-            d.Add(Joints.Head, d.pal.hair, CharacterKit.Tuft(path[1], path[1] + new Vector3(-0.07f, -0.05f, 0f) * s, 0.015f * s));
+            d.Add(bj, d.pal.hair, CharacterKit.Tuft(end, end + new Vector3(-0.02f, -0.08f, 0.01f) * s, 0.028f * s));
+            d.Add(bj, d.pal.hair, CharacterKit.Tuft(path[1], path[1] + new Vector3(-0.07f, -0.05f, 0f) * s, 0.015f * s));
         }
 
         /// <summary>One thick braid over the right shoulder, down the front to the waist.</summary>
@@ -1058,10 +1080,13 @@ namespace OdinsCoin
                 new Vector3(r * 0.5f, cy - r * 0.2f, -r * 0.7f), new Vector3(r * 1.0f, cy - r * 0.75f, -r * 0.1f),
                 new Vector3(f.shoulderX * 0.6f, sy + 0.06f * s, r * 0.6f), new Vector3(f.shoulderX * 0.55f, sy - 0.08f * s, r * 1.0f),
                 new Vector3(f.shoulderX * 0.45f, sy - length * s, r * 1.0f) };
-            d.Add(Joints.Head, d.pal.hair, CharacterKit.Braid(path, 0.038f * s));
+            string bj = d.Swing(Joints.RightBraid, Joints.Head, path[0], SwingKind.Braid);
+            var p0 = path[0];
+            for (int i = 0; i < path.Length; i++) path[i] -= p0;
+            d.Add(bj, d.pal.hair, CharacterKit.Braid(path, 0.038f * s));
             Vector3 end = path[path.Length - 1];
-            d.Add(Joints.Head, d.pal.leatherDark, MeshData.Ellipsoid(CharacterKit.Along(path, 0.9f), new Vector3(0.03f, 0.013f, 0.03f) * s, 8, 4), false);
-            d.Add(Joints.Head, d.pal.hair, CharacterKit.Tuft(end, end + new Vector3(0f, -0.07f * s, 0.01f), 0.026f * s));
+            d.Add(bj, d.pal.leatherDark, MeshData.Ellipsoid(CharacterKit.Along(path, 0.9f), new Vector3(0.03f, 0.013f, 0.03f) * s, 8, 4), false);
+            d.Add(bj, d.pal.hair, CharacterKit.Tuft(end, end + new Vector3(0f, -0.07f * s, 0.01f), 0.026f * s));
             d.Add(Joints.Head, d.pal.hair, MeshData.Ellipsoid(new Vector3(0f, cy - r * 0.1f, -r * 0.25f), new Vector3(r * 0.98f, r * 0.8f, r * 0.8f), 12, 8));
         }
 
@@ -1077,19 +1102,22 @@ namespace OdinsCoin
                     new Vector3(x * r * 0.9f, cy - r * 0.15f, -r * 0.35f), new Vector3(x * r * 1.02f, cy - r * 0.75f, -r * 0.05f),
                     new Vector3(x * f.shoulderX * 0.75f, sy + 0.07f * s, r * 0.55f), new Vector3(x * f.shoulderX * 0.7f, sy - 0.06f * s, r * 0.95f),
                     new Vector3(x * f.shoulderX * 0.62f, sy - length * s, r * 0.95f) };
-                d.Add(Joints.Head, d.pal.hair, CharacterKit.Braid(path, 0.03f * s));
+                string bj = d.Swing(x < 0f ? Joints.LeftBraid : Joints.RightBraid, Joints.Head, path[0], SwingKind.Braid);
+                var p0 = path[0];
+                for (int i = 0; i < path.Length; i++) path[i] -= p0;
+                d.Add(bj, d.pal.hair, CharacterKit.Braid(path, 0.03f * s));
                 if (length > 0.55f)
                     for (int k = 0; k < 3; k++)
-                        d.Add(Joints.Head, k == 1 ? d.pal.parchment : d.pal.leather, MeshData.Lathe(new[] { new Vector2(0.034f * s, -0.012f * s), new Vector2(0.038f * s, 0f), new Vector2(0.034f * s, 0.012f * s) }, 10)
+                        d.Add(bj, k == 1 ? d.pal.parchment : d.pal.leather, MeshData.Lathe(new[] { new Vector2(0.034f * s, -0.012f * s), new Vector2(0.038f * s, 0f), new Vector2(0.034f * s, 0.012f * s) }, 10)
                             .Transformed(CharacterKit.Along(path, 0.45f + k * 0.17f), Quaternion.identity, Vector3.one), false);
                 if (wrapped)
                     for (int k = 0; k < 4; k++)
-                        d.Add(Joints.Head, d.pal.fur, MeshData.Ellipsoid(CharacterKit.Along(path, 0.62f + k * 0.08f), new Vector3(0.034f, 0.024f, 0.034f) * s, 8, 5));
+                        d.Add(bj, d.pal.fur, MeshData.Ellipsoid(CharacterKit.Along(path, 0.62f + k * 0.08f), new Vector3(0.034f, 0.024f, 0.034f) * s, 8, 5));
                 // Leather ties and a loose tassel at the end.
                 Vector3 tie = CharacterKit.Along(path, 0.88f);
-                d.Add(Joints.Head, d.pal.leatherDark, MeshData.Ellipsoid(tie, new Vector3(0.026f, 0.012f, 0.026f) * s, 8, 4), false);
+                d.Add(bj, d.pal.leatherDark, MeshData.Ellipsoid(tie, new Vector3(0.026f, 0.012f, 0.026f) * s, 8, 4), false);
                 Vector3 end = path[path.Length - 1];
-                d.Add(Joints.Head, d.pal.hair, CharacterKit.Tuft(end, end + new Vector3(0f, -0.06f * s, 0.01f), 0.02f * s));
+                d.Add(bj, d.pal.hair, CharacterKit.Tuft(end, end + new Vector3(0f, -0.06f * s, 0.01f), 0.02f * s));
             }
             // Hair showing at the back of the head under the helmet, and loose locks by the cheeks.
             d.Add(Joints.Head, d.pal.hair, MeshData.Ellipsoid(new Vector3(0f, cy - r * 0.1f, -r * 0.25f), new Vector3(r * 0.98f, r * 0.8f, r * 0.8f), 12, 8));

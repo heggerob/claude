@@ -28,6 +28,7 @@ public static class LogicTests
         SaveTests();
         ModelTests();
         HeroTests();
+        SwingTests();
         CombatTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
@@ -219,6 +220,52 @@ public static class LogicTests
         var grid = new Vector3[2, 2] { { new Vector3(0f, 1f, 0f), new Vector3(1f, 1f, 0f) }, { Vector3.zero, new Vector3(1f, 0f, 0f) } };
         Check(cape > 0f && Volume(CharacterKit.Sheet(grid, Vector3.forward, 0.1f)) > 0f && Volume(CharacterKit.Sheet(grid, Vector3.back, 0.1f)) > 0f, "cloth sheets face out whichever way they hang");
         Check(Volume(CharacterKit.RaggedSkirt(0.9f, 0.15f, 0.45f, 0.2f, 0.75f, 20, 0.04f, 1)) > 0f && Volume(CharacterKit.FurRing(Vector3.zero, 0.2f, 0.8f, 0.05f, 20, 0.08f, 3)) > 0f, "skirts and fur face out");
+    }
+
+    static void SwingTests()
+    {
+        var still = SwingSpring.For(SwingKind.Cape);
+        for (int i = 0; i < 100; i++) still.Step(0.02f, Vector3.zero, Vector3.zero);
+        Check(Math.Abs(still.pitch) < 1e-4f && Math.Abs(still.roll) < 1e-4f, "a cape at rest hangs straight");
+
+        // Run forward: it's thrown back as you set off, then trails behind at speed.
+        var cape = SwingSpring.For(SwingKind.Cape);
+        float peak = 0f;
+        for (int i = 0; i < 25; i++) { cape.Step(0.02f, new Vector3(0f, 0f, i * 0.02f * 10f), new Vector3(0f, 0f, 10f)); peak = Math.Max(peak, cape.pitch); }
+        Check(peak > 5f, "setting off throws the cape back (" + peak + ")");
+        for (int i = 0; i < 300; i++) cape.Step(0.02f, new Vector3(0f, 0f, 5f), Vector3.zero);
+        Check(cape.pitch > 10f && cape.pitch < 40f, "running at 5 m/s the cape trails behind (" + cape.pitch + ")");
+        float trailing = cape.pitch;
+        // Stop dead: it swings forward past hanging, then settles.
+        float lowest = trailing;
+        cape.Step(0.02f, Vector3.zero, new Vector3(0f, 0f, -250f));
+        for (int i = 0; i < 200; i++) { cape.Step(0.02f, Vector3.zero, Vector3.zero); lowest = Math.Min(lowest, cape.pitch); }
+        Check(lowest < 0f && lowest >= SwingSpring.For(SwingKind.Cape).minPitch, "stopping swings it forward, but not into the body (" + lowest + ")");
+        Check(Math.Abs(cape.pitch) < 1f, "and it settles back to hanging (" + cape.pitch + ")");
+
+        var side = SwingSpring.For(SwingKind.Braid);
+        for (int i = 0; i < 200; i++) side.Step(0.02f, new Vector3(4f, 0f, 0f), Vector3.zero);
+        Check(side.roll < -3f, "moving right, a braid trails to the left (" + side.roll + ")");
+
+        var wild = SwingSpring.For(SwingKind.Banner);
+        bool bounded = true;
+        for (int i = 0; i < 100; i++) { wild.Step(0.25f, new Vector3(30f, 0f, -30f), new Vector3(500f, 0f, -500f)); if (float.IsNaN(wild.pitch) || Math.Abs(wild.pitch) > 90f || Math.Abs(wild.roll) > 90f) bounded = false; }
+        Check(bounded, "huge jolts and slow frames never make it spin or blow up");
+
+        // Heroes get swinging joints where they have capes, banners and braids.
+        var jarl = HeroModel.Build(CharacterSpec.Default(OutfitId.Jarl));
+        var raider = HeroModel.Build(CharacterSpec.Default(OutfitId.Raider));
+        Func<VikingModel, string, bool> swings = (m, j) => { foreach (var sw in m.Swings) if (sw.joint == j) return true; return false; };
+        Check(swings(jarl, Joints.Cape) && swings(jarl, Joints.LeftBraid) && swings(jarl, Joints.RightBraid), "the jarl's cape and braids swing");
+        Check(swings(raider, Joints.Tabard) && !swings(raider, Joints.Cape), "the raider's banner swings; she has no cape");
+        // Swinging pieces hang from their pivot: the cape is below and behind it.
+        foreach (var p in jarl.Pieces)
+            if (p.joint == Joints.Cape && !p.ink)
+            {
+                float maxY = float.MinValue, minY = float.MaxValue;
+                foreach (var v in p.mesh.Vertices) { maxY = Math.Max(maxY, v.y); minY = Math.Min(minY, v.y); }
+                Check(maxY < 0.1f && minY < -0.8f, "the cape hangs down from its pivot (" + minY + " .. " + maxY + ")");
+            }
     }
 
     static void SoundTests()

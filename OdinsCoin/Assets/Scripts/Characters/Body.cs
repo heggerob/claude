@@ -79,6 +79,8 @@ namespace OdinsCoin
         public const string LeftArm = VikingModel.LeftArm, RightArm = VikingModel.RightArm;
         public const string LeftForearm = "Left Forearm", RightForearm = "Right Forearm";
         public const string Weapon = VikingModel.Weapon, OffHand = "Off Hand", Back = VikingModel.Shield;
+        // Swinging joints, made by the garments that need them.
+        public const string Cape = "Cape", Tabard = "Tabard", LeftBraid = "Left Braid", RightBraid = "Right Braid";
 
         public static void Build(VikingModel m, Fit f)
         {
