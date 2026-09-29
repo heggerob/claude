@@ -53,8 +53,11 @@ namespace OdinsCoin
 
             Ocean = Ocean.Create(transform);
             WorldGen.Build(transform);
+            HomeHarbour.Build(transform);
 
-            Ship = Longship.Create(transform, new Vector3(0f, 0.2f, 0f), 30f);
+            // The voyage starts moored at the home jetty, sail furled.
+            Ship = Longship.Create(transform, HomeHarbour.ShipStart, HomeHarbour.ShipStartHeading);
+            Ship.Furl();
             // The helm only listens to the keyboard while the Viking holds the steering oar.
             Ship.gameObject.AddComponent<ShipKeyboardHelm>().enabled = false;
             Player = Viking.Create(transform, Ship);
@@ -67,13 +70,13 @@ namespace OdinsCoin
             hud.Player = Player;
             Focus = Player.transform;
 
-            // A few barrels drifting around, to show the swell.
+            // A few barrels drifting around the harbour mouth, to show the swell.
             for (int i = 0; i < 8; i++)
             {
                 var barrel = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 barrel.name = "Barrel";
                 barrel.transform.SetParent(transform, false);
-                barrel.transform.position = Quaternion.Euler(0f, i * 45f, 0f) * Vector3.forward * Random.Range(8f, 22f);
+                barrel.transform.position = HomeHarbour.ShipStart + new Vector3(0f, 0f, 40f) + Quaternion.Euler(0f, i * 45f, 0f) * Vector3.forward * Random.Range(8f, 22f);
                 barrel.transform.localScale = new Vector3(0.7f, 0.5f, 0.7f);
                 barrel.GetComponent<Renderer>().sharedMaterial = Materials.Get(Materials.Wood);
                 barrel.AddComponent<Floater>();
@@ -83,7 +86,7 @@ namespace OdinsCoin
             if (rig == null) rig = cam.gameObject.AddComponent<CameraRig>();
             rig.Distance = 7f;
             rig.Height = 1.6f;
-            rig.SnapTo(Focus, 30f);
+            rig.SnapTo(Focus, HomeHarbour.ShipStartHeading);
             Ocean.Follow(cam.transform);
         }
 

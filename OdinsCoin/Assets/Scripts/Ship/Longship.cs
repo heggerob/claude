@@ -24,6 +24,13 @@ namespace OdinsCoin
 
         float rudderAngle;
 
+        /// <summary>Sail down at once (moored in harbour).</summary>
+        public void Furl()
+        {
+            SailTarget = 0f;
+            SailAmount = 0f;
+        }
+
         public static Longship Create(Transform parent, Vector3 position, float heading)
         {
             var go = new GameObject("Longship");

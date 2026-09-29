@@ -20,6 +20,7 @@ public static class LogicTests
         ShipTests();
         CoinTests();
         IslandTests();
+        HarbourTests();
         CombatTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
@@ -46,14 +47,56 @@ public static class LogicTests
 
     static void IslandTests()
     {
-        foreach (var spec in WorldGen.Specs)
+        var all = new List<IslandSpec>(WorldGen.Specs);
+        all.Add(HomeHarbour.Spec);
+        var start = new Vector2(HomeHarbour.ShipStart.x, HomeHarbour.ShipStart.z);
+        foreach (var spec in all)
         {
             Check(Island.Height(spec, spec.centre.x, spec.centre.y) > 3f, spec.name + " rises out of the sea in the middle");
             Check(Island.Height(spec, spec.centre.x + spec.radius * 1.4f, spec.centre.y) < 0f, spec.name + " is sea well past its radius");
-            Check(Vector2.Distance(spec.centre, Vector2.zero) > spec.radius * 1.3f + 12f, spec.name + " leaves room for the ship at the start");
-            foreach (var other in WorldGen.Specs)
+            if (spec != HomeHarbour.Spec)
+                Check(Vector2.Distance(spec.centre, start) > spec.radius * 1.3f + 12f, spec.name + " leaves room for the ship at the start");
+            foreach (var other in all)
                 if (other != spec) Check(Vector2.Distance(spec.centre, other.centre) > (spec.radius + other.radius) * 1.25f, spec.name + " doesn't overlap " + other.name);
         }
+    }
+
+    static void HarbourTests()
+    {
+        var home = HomeHarbour.Spec;
+        Vector3 s = HomeHarbour.ShipStart;
+        // The berth is deep enough for the keel even in a wave trough, along the whole hull.
+        for (float t = -1f; t <= 1f; t += 0.1f)
+        {
+            float hw, keel, g;
+            LongshipBuilder.Station(t, out hw, out keel, out g);
+            float z = s.z + t * LongshipBuilder.Length / 2f;
+            foreach (float side in new[] { -1f, 0f, 1f })
+            {
+                float bottom = Island.Height(home, s.x + side * hw, z);
+                Check(bottom < s.y + keel - Waves.MaxHeight, "berth is deep enough at station " + t.ToString("0.0") + " side " + side + " (" + bottom + ")");
+            }
+        }
+        // The jetty starts on the beach and runs out over the water, clear of the hull.
+        float last = HomeHarbour.JettyStart + (HomeHarbour.JettyPlanks - 1) * 1.6f;
+        float beach = Island.Height(home, 0f, HomeHarbour.JettyStart);
+        Check(beach > 0f && beach < HomeHarbour.JettyTop + 0.35f, "jetty starts on the beach (" + beach + ")");
+        Check(Island.Height(home, 0f, last) < -2f, "jetty end is over deep water");
+        Check(last > s.z, "jetty reaches past the middle of the ship");
+        Check(s.x - LongshipBuilder.Beam / 2f > 1.7f + 0.1f, "moored ship clears the jetty");
+        // Gunnar can trade over the gunwale: the deck edge nearest him is within reach.
+        var deckEdge = new Vector3(s.x - (LongshipBuilder.Beam / 2f - 0.5f), s.y + LongshipBuilder.DeckHeight, HomeHarbour.TraderPosition.z);
+        Check(Vector3.Distance(deckEdge, HomeHarbour.TraderPosition) < HomeHarbour.TradeRange, "Gunnar is in reach from the deck");
+        Check(Vector3.Distance(s, HomeHarbour.TraderPosition) < HomeHarbour.CargoRange, "a moored ship counts for selling cargo");
+
+        // What chests are worth under blessings and curses.
+        var f = new Fortune();
+        Check(TreasureChest.Worth(100, f) == 100, "a plain chest is worth its gold");
+        f.Add(Fates.Blessings[2], 3, 60f);
+        Check(TreasureChest.Worth(100, f) == 170, "Freya's Gift tier 3: +70% (" + TreasureChest.Worth(100, f) + ")");
+        var c = new Fortune();
+        c.Add(Fates.Curses[2], 1, 60f);
+        Check(TreasureChest.Worth(100, c) == 75, "Fenrir's Hunger tier 1: -25% (" + TreasureChest.Worth(100, c) + ")");
     }
 
     static void CoinTests()

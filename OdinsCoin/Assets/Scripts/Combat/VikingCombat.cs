@@ -40,7 +40,7 @@ namespace OdinsCoin
                 if (Time.time >= DeadUntil) Respawn();
                 return;
             }
-            bool free = !viking.AtHelm && !viking.Swimming && (CoinUI.Instance == null || !CoinUI.Instance.IsOpen);
+            bool free = !viking.AtHelm && !viking.Swimming && viking.Carrying == null && (CoinUI.Instance == null || !CoinUI.Instance.IsOpen);
             Blocking = free && GameInput.BlockHeld();
             if (free && !Blocking && GameInput.AttackPressed() && Time.time - swingStart > SwingTime) { swingStart = Time.time; swingHit = false; }
 
@@ -93,6 +93,7 @@ namespace OdinsCoin
         void OnDied()
         {
             DeadUntil = Time.time + RespawnDelay;
+            viking.DropChest();
             CombatHud.Banner("YOU FELL", "Valhalla can wait. Back to the ship...");
         }
 

@@ -12,7 +12,7 @@ Ett punkt om gangen. Hvert punkt kompileres mot den falske Unity-API-en (`tools/
 - [x] **4. Odins mynt:** alteret om bord, myntkast med animasjon, innsats, velsignelser og forbannelser med varighet, og odds som vises.
 - [x] **5. Øyer:** genererte øyer med strender, trær, klostre og skattekister.
 - [x] **6. Kamp:** øks, sverd og skjold, og saksiske vakter med enkel AI.
-- [ ] **7. Bytte og gull:** bære kister om bord og levere dem i hjemmefjorden.
+- [x] **7. Bytte og gull:** bære kister om bord og levere dem i hjemmefjorden (Gunnar på brygga kjøper dem, også rett over ripa).
 - [ ] **8. Runer:** gravere runer i mynten, endre oddsen, lykke-meter og ravnene.
 - [ ] **9. Methallen:** selge bytte, oppgradere skipet og terningspill.
 - [ ] **10. Farer på havet:** storm, fiendeskip og Jormungand.

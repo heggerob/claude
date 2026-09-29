@@ -99,6 +99,8 @@ namespace OdinsCoin
         public float CurseWard;
         public readonly List<ActiveFate> Active = new List<ActiveFate>();
         public int Flips, HeadsCount;
+        /// <summary>Chests sold at home and the gold they brought in, for the mead hall's boasting board.</summary>
+        public int ChestsSold, GoldPlundered;
 
         static Fortune current;
 

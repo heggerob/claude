@@ -1,15 +1,28 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace OdinsCoin
 {
     /// <summary>
     /// A wooden chest with iron bands and gold spilling out. Holds a base amount of gold; Freya's Gift and
-    /// Fenrir's Hunger change what you get when you cash it in (roadmap item 7 adds carrying it home).
+    /// Fenrir's Hunger change what you get when you cash it in. Pick it up, stow it on the ship and sell it
+    /// to Gunnar in the home fjord. Dropped in the sea, it floats.
     /// </summary>
     public class TreasureChest : MonoBehaviour
     {
+        /// <summary>Every chest in the world that hasn't been sold yet.</summary>
+        public static readonly List<TreasureChest> All = new List<TreasureChest>();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() { All.Clear(); }
+
         public int BaseGold;
-        public bool Looted;
+        /// <summary>Held in the Viking's arms right now.</summary>
+        public bool Carried;
+        public bool Sold;
+
+        void OnEnable() { if (!All.Contains(this)) All.Add(this); }
+        void OnDisable() { All.Remove(this); }
 
         public static TreasureChest Create(Transform parent, Vector3 worldPos, float yaw, int gold)
         {
@@ -34,6 +47,56 @@ namespace OdinsCoin
         }
 
         /// <summary>What this chest is worth right now, after blessings and curses.</summary>
-        public int Value { get { return Mathf.RoundToInt(BaseGold * Fortune.Current.LootMultiplier); } }
+        public int Value { get { return Worth(BaseGold, Fortune.Current); } }
+
+        public static int Worth(int baseGold, Fortune fortune) { return Mathf.RoundToInt(baseGold * fortune.LootMultiplier); }
+
+        /// <summary>The nearest chest that can be picked up within <paramref name="range"/>, or null.</summary>
+        public static TreasureChest NearestFree(Vector3 p, float range)
+        {
+            TreasureChest best = null;
+            float bestD = range;
+            foreach (var c in All)
+            {
+                if (c == null || c.Carried || c.Sold) continue;
+                float d = Vector3.Distance(p, c.transform.position + Vector3.up * 0.4f);
+                if (d < bestD) { bestD = d; best = c; }
+            }
+            return best;
+        }
+
+        /// <summary>Into the Viking's arms: no collider while carried, no bobbing.</summary>
+        public void PickUp(Transform carrier)
+        {
+            Carried = true;
+            var floater = GetComponent<Floater>();
+            if (floater != null) Destroy(floater);
+            var col = GetComponent<Collider>();
+            if (col != null) col.enabled = false;
+            transform.SetParent(carrier, false);
+            transform.localPosition = new Vector3(0f, 0.72f, 0.62f);
+            transform.localRotation = Quaternion.identity;
+        }
+
+        /// <summary>Put it down on whatever is under it (ship, land or jetty), or let it float if that's the sea.</summary>
+        public void Drop(Vector3 at, float yaw, Transform world)
+        {
+            Carried = false;
+            var col = GetComponent<Collider>();
+            RaycastHit hit;
+            bool ground = Physics.Raycast(at + Vector3.up * 1.5f, Vector3.down, out hit, 4f) && hit.collider != null
+                          && hit.point.y > Waves.Height(at.x, at.z) - 0.3f;
+            // Stowed on the ship it becomes part of the ship and sails with it.
+            Transform parent = world;
+            if (ground && GameBootstrap.Instance != null && GameBootstrap.Instance.Ship != null && hit.collider.transform.IsChildOfOrSelf(GameBootstrap.Instance.Ship.transform))
+                parent = GameBootstrap.Instance.Ship.transform;
+            transform.SetParent(parent, true);
+            transform.position = ground ? hit.point : at;
+            transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            if (col != null) col.enabled = true;
+            if (!ground) gameObject.AddComponent<Floater>().sink = 0.35f;
+        }
+
+        public bool Stowed(Longship ship) { return !Carried && !Sold && ship != null && transform.IsChildOfOrSelf(ship.transform); }
     }
 }

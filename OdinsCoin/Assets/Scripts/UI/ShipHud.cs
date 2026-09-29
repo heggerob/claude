@@ -24,7 +24,9 @@ namespace OdinsCoin
                 Ship.SpeedKnots, Ship.Heading, Ship.SailAmount * 100f, Ship.Rowing ? "   ROWING" : "", Wind.Knots, arrow, WindWord(relWind),
                 Player != null && Player.AtHelm
                     ? "At the helm: A/D steer · R raise sail · Q lower sail · W row (sail down) · E let go"
-                    : "WASD walk · Shift run · Space jump · LMB axe · RMB shield · E use · scroll zoom · Esc cursor");
+                    : Player != null && Player.Carrying != null
+                        ? "Carrying a chest: put it down on deck (E) to stow it, sell it to Gunnar in the Home Fjord"
+                        : "WASD walk · Shift run · Space jump · LMB axe · RMB shield · E use / pick up · scroll zoom · Esc cursor");
             GUI.Box(new Rect(10, 10, 380, 120), GUIContent.none);
             GUI.Label(new Rect(20, 16, 370, 110), text, style);
 
@@ -61,7 +63,9 @@ namespace OdinsCoin
             float x = Screen.width - 300f, y = 10f;
             int lines = 2 + f.Active.Count;
             GUI.Box(new Rect(x, y, 290f, 28f + lines * 22f), GUIContent.none);
-            GUI.Label(new Rect(x + 10f, y + 6f, 280f, 22f), "<b>" + f.Gold + " gold</b>", style);
+            int cargo;
+            int cargoGold = HomeHarbour.CargoValue(Ship, out cargo);
+            GUI.Label(new Rect(x + 10f, y + 6f, 280f, 22f), "<b>" + f.Gold + " gold</b>" + (cargo > 0 ? string.Format("   <size=12>cargo: {0} chest{1} ≈ {2}</size>", cargo, cargo == 1 ? "" : "s", cargoGold) : ""), style);
             GUI.Label(new Rect(x + 10f, y + 28f, 90f, 22f), "<size=12>Odin's favour</size>", style);
             GUI.Box(new Rect(x + 110f, y + 34f, 170f, 10f), GUIContent.none);
             var old = GUI.color;

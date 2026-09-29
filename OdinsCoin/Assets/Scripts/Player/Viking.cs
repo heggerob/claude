@@ -5,12 +5,14 @@ namespace OdinsCoin
     /// <summary>
     /// The player's Viking. Walks on the deck while the longship rolls and sails (the ship "carries" you:
     /// your position is kept in the ship's local space), jumps, falls overboard, swims, climbs back aboard
-    /// and takes the steering oar.
+    /// and takes the steering oar. Carries treasure chests (slowly, both hands) and sells them to Gunnar at home.
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public class Viking : MonoBehaviour
     {
         public const float WalkSpeed = 4.2f, RunSpeed = 6.5f, SwimSpeed = 2.4f, JumpSpeed = 5.5f;
+        /// <summary>A chest full of gold is heavy: no running, no jumping, slow swimming.</summary>
+        public const float CarrySpeed = 3f, CarrySwimSpeed = 1.5f;
         const float Gravity = 18f;
         const float InteractRange = 1.8f;
         const float ClimbRange = 3.2f;
@@ -19,6 +21,7 @@ namespace OdinsCoin
         public bool AtHelm { get; private set; }
         public bool Swimming { get; private set; }
         public bool OnShip { get; private set; }
+        public TreasureChest Carrying { get; private set; }
         /// <summary>What pressing E would do right now (for the HUD), or null.</summary>
         public string Prompt { get; private set; }
 
@@ -58,6 +61,7 @@ namespace OdinsCoin
         /// <summary>Put the Viking back on deck (after dying, for example).</summary>
         public void ReturnToShip()
         {
+            DropChest();
             if (AtHelm) { AtHelm = false; SetHelm(false); }
             PlaceOnShip(new Vector3(0f, LongshipBuilder.DeckHeight + 0.05f, -1f));
         }
@@ -122,6 +126,7 @@ namespace OdinsCoin
             Vector3 right = new Vector3(forward.z, 0f, -forward.x);
             Vector3 move = forward * input.y + right * input.x;
             float speed = Swimming ? SwimSpeed : GameInput.Held(Key.Sprint) ? RunSpeed : WalkSpeed;
+            if (Carrying != null) speed = Swimming ? CarrySwimSpeed : CarrySpeed;
             if (combat != null && combat.Blocking) speed *= 0.5f;
 
             if (move.sqrMagnitude > 0.01f)
@@ -141,7 +146,7 @@ namespace OdinsCoin
             else if (controller.isGrounded)
             {
                 verticalSpeed = -2f;
-                if (GameInput.Pressed(Key.Jump)) verticalSpeed = JumpSpeed;
+                if (GameInput.Pressed(Key.Jump) && Carrying == null) verticalSpeed = JumpSpeed;
             }
             else
             {
@@ -184,8 +189,23 @@ namespace OdinsCoin
         {
             Prompt = null;
             if (AtHelm) { Prompt = "[E] Leave the steering oar"; return; }
-            if (OnShip && Vector3.Distance(transform.position, Ship.Parts.helm.position) < InteractRange) { Prompt = "[E] Take the steering oar"; return; }
-            if (OnShip && NearAltar()) { Prompt = "[E] Flip Odin's Coin"; return; }
+            if (OnShip && Carrying == null && Vector3.Distance(transform.position, Ship.Parts.helm.position) < InteractRange) { Prompt = "[E] Take the steering oar"; return; }
+            if (OnShip && NearAltar() && Carrying == null) { Prompt = "[E] Flip Odin's Coin"; return; }
+            var home = HomeHarbour.Instance;
+            if (home != null && home.NearTrader(transform.position))
+            {
+                if (Carrying != null) { Prompt = "[E] Sell the chest to Gunnar (" + Carrying.Value + " gold)"; return; }
+                int count;
+                int gold = HomeHarbour.CargoValue(Ship, out count);
+                if (count > 0 && home.ShipInRange(Ship)) { Prompt = string.Format("[E] Sell the cargo: {0} chest{1}, {2} gold", count, count == 1 ? "" : "s", gold); return; }
+            }
+            if (Carrying != null)
+            {
+                Prompt = Swimming && DistanceToShip() < ClimbRange ? "[E] Climb aboard" : "[E] Put the chest down";
+                return;
+            }
+            var chest = TreasureChest.NearestFree(transform.position + Vector3.up * 0.5f, InteractRange);
+            if (chest != null) { Prompt = "[E] Pick up the chest (" + chest.Value + " gold)"; return; }
             if (Swimming && DistanceToShip() < ClimbRange) Prompt = "[E] Climb aboard";
         }
 
@@ -197,16 +217,50 @@ namespace OdinsCoin
                 SetHelm(false);
                 return;
             }
-            if (OnShip && Vector3.Distance(transform.position, Ship.Parts.helm.position) < InteractRange)
+            if (OnShip && Carrying == null && Vector3.Distance(transform.position, Ship.Parts.helm.position) < InteractRange)
             {
                 AtHelm = true;
                 SetHelm(true);
                 return;
             }
-            if (OnShip && NearAltar() && CoinUI.Instance != null)
+            if (OnShip && NearAltar() && CoinUI.Instance != null && Carrying == null)
             {
                 CoinUI.Instance.Open(CoinAltar.Instance);
                 return;
+            }
+            var home = HomeHarbour.Instance;
+            if (home != null && home.NearTrader(transform.position))
+            {
+                if (Carrying != null)
+                {
+                    var sold = Carrying;
+                    Carrying = null;
+                    int gold = home.Sell(sold);
+                    CombatHud.Banner("+" + gold + " GOLD", "Gunnar weighs the silver and nods.");
+                    return;
+                }
+                int count;
+                int cargo = home.SellCargo(Ship, out count);
+                if (count > 0)
+                {
+                    CombatHud.Banner("+" + cargo + " GOLD", string.Format("Gunnar buys {0} chest{1} off your ship.", count, count == 1 ? "" : "s"));
+                    return;
+                }
+            }
+            if (Carrying != null && !(Swimming && DistanceToShip() < ClimbRange))
+            {
+                DropChest();
+                return;
+            }
+            if (Carrying == null)
+            {
+                var chest = TreasureChest.NearestFree(transform.position + Vector3.up * 0.5f, InteractRange);
+                if (chest != null)
+                {
+                    chest.PickUp(transform);
+                    Carrying = chest;
+                    return;
+                }
             }
             if (Swimming && DistanceToShip() < ClimbRange)
             {
@@ -216,6 +270,16 @@ namespace OdinsCoin
                 LongshipBuilder.Station(Mathf.Clamp(local.z / (LongshipBuilder.Length / 2f), -0.7f, 0.7f), out hw, out k, out g);
                 PlaceOnShip(new Vector3(Mathf.Sign(local.x) * (hw - 0.8f), LongshipBuilder.DeckHeight + 0.05f, Mathf.Clamp(local.z, -6f, 6f)));
             }
+        }
+
+        /// <summary>Put the carried chest down in front of us (on deck it becomes cargo; in the sea it floats).</summary>
+        public void DropChest()
+        {
+            if (Carrying == null) return;
+            var chest = Carrying;
+            Carrying = null;
+            var world = GameBootstrap.Instance != null ? GameBootstrap.Instance.transform : null;
+            chest.Drop(transform.position + transform.forward * 0.9f, facing, world);
         }
 
         void SetHelm(bool on)
@@ -256,8 +320,18 @@ namespace OdinsCoin
             if (Swimming) swing = Mathf.Sin(Time.time * 4f) * 40f;
             parts.leftLeg.localRotation = Quaternion.Euler(swing, 0f, 0f);
             parts.rightLeg.localRotation = Quaternion.Euler(-swing, 0f, 0f);
-            parts.leftArm.localRotation = Quaternion.Euler(-swing * 0.8f, 0f, 0f);
-            parts.rightArm.localRotation = Quaternion.Euler(AtHelm ? -60f : swing * 0.8f, 0f, 0f);
+            if (Carrying != null)
+            {
+                // Both arms out front, hugging the chest.
+                parts.leftArm.localRotation = Quaternion.Euler(-70f, 0f, 8f);
+                parts.rightArm.localRotation = Quaternion.Euler(-70f, 0f, -8f);
+            }
+            else
+            {
+                parts.leftArm.localRotation = Quaternion.Euler(-swing * 0.8f, 0f, 0f);
+                parts.rightArm.localRotation = Quaternion.Euler(AtHelm ? -60f : swing * 0.8f, 0f, 0f);
+            }
+            if (parts.axe != null) parts.axe.gameObject.SetActive(Carrying == null);
             // Lean into the swim.
             parts.body.localRotation = Quaternion.Euler(Swimming ? 60f : 0f, 0f, 0f);
         }
