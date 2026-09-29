@@ -81,7 +81,7 @@ namespace UnityEngine {
   public static class Time { public static int frameCount; public static float fixedDeltaTime, time, deltaTime, unscaledDeltaTime, unscaledTime, timeScale; }
   public static class Screen { public static int width, height; }
   public static class Debug { public static void Log(object o){} }
-  public static class PlayerPrefs { static Dictionary<string,object> d=new Dictionary<string,object>(); public static string GetString(string k,string def){object v; return d.TryGetValue(k,out v)?(string)v:def;} public static void SetString(string k,string v){d[k]=v;} public static int GetInt(string k,int def){object v; return d.TryGetValue(k,out v)?(int)v:def;} public static void SetInt(string k,int v){d[k]=v;} public static float GetFloat(string k,float def){object v; return d.TryGetValue(k,out v)?(float)v:def;} public static void SetFloat(string k,float v){d[k]=v;} public static void Save(){} public static void DeleteAll(){d.Clear();} }
+  public static class PlayerPrefs { static Dictionary<string,object> d=new Dictionary<string,object>(); public static string GetString(string k,string def){object v; return d.TryGetValue(k,out v)?(string)v:def;} public static void SetString(string k,string v){d[k]=v;} public static int GetInt(string k,int def){object v; return d.TryGetValue(k,out v)?(int)v:def;} public static void SetInt(string k,int v){d[k]=v;} public static float GetFloat(string k,float def){object v; return d.TryGetValue(k,out v)?(float)v:def;} public static void SetFloat(string k,float v){d[k]=v;} public static void Save(){} public static void DeleteAll(){d.Clear();} public static bool HasKey(string k){return d.ContainsKey(k);} public static void DeleteKey(string k){d.Remove(k);} }
   public static class JsonUtility { public static T FromJson<T>(string s){return default(T);} public static string ToJson(object o){return "";} }
   public enum TextureFormat { RGBA32 } public enum FilterMode { Point } public enum TextureWrapMode { Clamp }
   public class Texture : Object {} 
@@ -93,8 +93,9 @@ namespace UnityEngine {
   public class MeshRenderer : Renderer {}
   public class SpriteRenderer : Renderer { public Sprite sprite; public Color color; public SpriteDrawMode drawMode; public Vector2 size; }
   public class AudioClip : Object { public float[] data; public int frequency; public static AudioClip Create(string n,int len,int ch,int freq,bool stream){return new AudioClip{name=n,data=new float[len],frequency=freq};} public bool SetData(float[] d,int offset){Array.Copy(d,0,data,offset,d.Length); return true;} }
-  public class AudioSource : Behaviour { public bool playOnAwake; public float spatialBlend, volume, pitch, panStereo; public AudioClip clip; public void Play(){} }
-  public class AudioListener : Behaviour {}
+  public class AudioSource : Behaviour { public bool playOnAwake, loop, isPlaying; public float spatialBlend, volume, pitch, panStereo, minDistance, maxDistance, dopplerLevel; public AudioRolloffMode rolloffMode; public AudioClip clip; public void Play(){isPlaying=true;} public void Stop(){isPlaying=false;} public void PlayOneShot(AudioClip c, float v=1f){} }
+  public enum AudioRolloffMode { Logarithmic, Linear, Custom }
+  public class AudioListener : Behaviour { public static float volume = 1f; }
   public enum CameraClearFlags { SolidColor }
   public class Camera : Behaviour { public static Camera main; public bool orthographic; public float orthographicSize, fieldOfView, nearClipPlane, farClipPlane; public CameraClearFlags clearFlags; public Color backgroundColor; public Vector3 ScreenToWorldPoint(Vector3 v){return v;} public Vector3 WorldToScreenPoint(Vector3 v){return v;} }
   public enum RigidbodyInterpolation2D { None, Interpolate } public enum CollisionDetectionMode2D { Discrete, Continuous }
@@ -147,3 +148,5 @@ namespace UnityEngine {
     public override string ToString() { return "(" + x + ", " + y + ", " + z + ", " + w + ")"; }
   }
 }
+
+namespace UnityEngine { public static class Application { public static bool isEditor; public static void Quit(){} } }

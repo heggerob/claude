@@ -87,6 +87,7 @@ namespace OdinsCoin
             readyAt = Time.time + FlipTime + Cooldown;
             pending = Fortune.Current.Flip(wager, Random.value, Random.value);
             flipStart = Time.time;
+            Sfx.At(SfxId.CoinFlip, transform.position + Vector3.up);
             return pending;
         }
 
@@ -113,6 +114,8 @@ namespace OdinsCoin
                 coin.localRotation = pending.heads ? Quaternion.identity : Quaternion.Euler(180f, 0f, 0f);
                 flipStart = -1f;
                 LastResult = pending;
+                Sfx.At(SfxId.CoinLand, transform.position + Vector3.up);
+                Sfx.Play(pending.heads ? SfxId.Blessing : SfxId.Curse, 0.7f);
                 if (Landed != null) Landed(pending);
                 return;
             }

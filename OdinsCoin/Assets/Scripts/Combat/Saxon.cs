@@ -66,6 +66,7 @@ namespace OdinsCoin
             int gold = Mathf.RoundToInt(12 * Fortune.Current.LootMultiplier);
             Fortune.Current.Gold += gold;
             Fortune.Current.AddFavour(Ravens.FavourPerKill);
+            Sfx.At(SfxId.Gold, transform.position + Vector3.up, 0.7f);
             CombatHud.Number(transform.position + Vector3.up * 1.2f, "+" + gold + " gold", Materials.Gold);
         }
 
@@ -101,6 +102,7 @@ namespace OdinsCoin
                         bool front = CombatMath.FromFront(player.transform.position, player.transform.forward, transform.position);
                         combat.Health.TakeDamage(CombatMath.Damage(BaseDamage, 1f, combat.Blocking, front), transform.position);
                         if (combat.Blocking && front) CombatHud.Number(player.transform.position + Vector3.up * 2.4f, "BLOCKED", Color.white);
+                        if (combat.Blocking && front) Sfx.At(SfxId.ShieldBlock, player.transform.position + Vector3.up);
                     }
                 }
                 if (t >= Windup + Recover) attackStart = -10f;

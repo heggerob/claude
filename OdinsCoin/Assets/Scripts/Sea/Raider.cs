@@ -121,6 +121,7 @@ namespace OdinsCoin
                 {
                     lastRamHit = Time.time;
                     TakeDamage(dmg, theirBow);
+                    Sfx.At(SfxId.RamCrash, theirBow);
                     CombatHud.Number(theirBow + Vector3.up * 2f, "RAMMED! -" + Mathf.RoundToInt(dmg), new Color(1f, 0.8f, 0.3f));
                     return;
                 }
@@ -135,6 +136,7 @@ namespace OdinsCoin
                     lastRamHit = Time.time;
                     target.Hull.Holes += closing > 4f ? 2 : 1;
                     target.Hull.Flood(0.08f);
+                    Sfx.At(SfxId.RamCrash, ourBow);
                     CombatHud.Banner("RAMMED!", "The strakes are stove in: bail and plug the holes [E].");
                     Ramming = false;
                     modeTimer = 0f;
@@ -196,6 +198,7 @@ namespace OdinsCoin
             go.transform.position = from;
             LongshipBuilder.Deco(PrimitiveType.Cube, go.transform, Vector3.zero, new Vector3(0.03f, 0.03f, 0.8f), Materials.Wood);
             LongshipBuilder.Deco(PrimitiveType.Cube, go.transform, new Vector3(0f, 0f, -0.38f), new Vector3(0.1f, 0.01f, 0.12f), new Color(0.9f, 0.9f, 0.9f));
+            Sfx.At(SfxId.ArrowWhoosh, from, 0.6f, 0.15f);
             var a = go.AddComponent<Arrow>();
             a.from = from;
             a.to = to;
@@ -226,13 +229,14 @@ namespace OdinsCoin
                 {
                     bool front = CombatMath.FromFront(player.transform.position, player.transform.forward, from);
                     float dmg = CombatMath.Damage(Damage, 1f, combat.Blocking, front);
-                    if (dmg < Damage) CombatHud.Number(player.transform.position + Vector3.up * 2.4f, "BLOCKED", Color.white);
+                    if (dmg < Damage) { CombatHud.Number(player.transform.position + Vector3.up * 2.4f, "BLOCKED", Color.white); Sfx.At(SfxId.ShieldBlock, end); }
                     combat.Health.TakeDamage(dmg, from);
                 }
                 Destroy(gameObject);
                 return;
             }
             // Stuck quivering in the planks (or lost in the sea).
+            Sfx.At(ship != null ? SfxId.ArrowThunk : SfxId.Splash, end, 0.5f, 0.15f);
             if (ship != null) transform.SetParent(ship.transform, true);
             Destroy(gameObject, 12f);
         }

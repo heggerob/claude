@@ -188,6 +188,8 @@ namespace OdinsCoin
             Fortune.Current.AddFavour(Ravens.FavourPerChest);
             chest.Sold = true;
             chest.Carried = false;
+            Sfx.Play(SfxId.Gold, 0.8f);
+            SaveGame.Save();
             chest.gameObject.SetActive(false);
             Destroy(chest.gameObject);
             return gold;

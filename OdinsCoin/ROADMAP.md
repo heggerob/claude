@@ -16,4 +16,4 @@ Ett punkt om gangen. Hvert punkt kompileres mot den falske Unity-API-en (`tools/
 - [x] **8. Runer:** gravere runer i mynten (6 runer, 3 plasser), endre oddsen, lykke-meter og ravnene Hugin og Munin.
 - [x] **9. Methallen:** selge bytte, oppgradere skipet og utstyret (seil, årer, skrog, brynje, øks), terningspill mot Bjørn og skrytetavle.
 - [x] **10. Farer på havet:** storm (regn, lyn, tåke, vann i skroget og øsing), danske vikingskip med bueskyttere og ramming, og Jormungand.
-- [ ] **11. Lyd og meny:** generert lyd, hovedmeny og lagring.
+- [x] **11. Lyd og meny:** generert lyd (25 lyder, hav/vind/regn-løkker), tittelskjerm, pausemeny, innstillinger og automatisk lagring.

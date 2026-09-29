@@ -27,6 +27,7 @@ namespace OdinsCoin
             Health = gameObject.AddComponent<Health>();
             Health.IsPlayer = true;
             Health.BaseMax = 100f;
+            Health.Damaged += (amount, from) => Sfx.At(SfxId.Hurt, transform.position + Vector3.up, 0.8f, 0.1f);
             Health.Damaged += (amount, from) => CombatHud.Number(transform.position + Vector3.up * 2.2f, "-" + Mathf.RoundToInt(amount), new Color(1f, 0.35f, 0.3f));
             Health.Died += OnDied;
         }
@@ -40,9 +41,9 @@ namespace OdinsCoin
                 if (Time.time >= DeadUntil) Respawn();
                 return;
             }
-            bool free = !viking.AtHelm && !viking.Swimming && viking.Carrying == null && !MeadHallUI.IsOpenNow && (CoinUI.Instance == null || !CoinUI.Instance.IsOpen);
+            bool free = !viking.AtHelm && !viking.Swimming && viking.Carrying == null && !MeadHallUI.IsOpenNow && !GameMenu.Blocking && (CoinUI.Instance == null || !CoinUI.Instance.IsOpen);
             Blocking = free && GameInput.BlockHeld();
-            if (free && !Blocking && GameInput.AttackPressed() && Time.time - swingStart > SwingTime) { swingStart = Time.time; swingHit = false; }
+            if (free && !Blocking && GameInput.AttackPressed() && Time.time - swingStart > SwingTime) { swingStart = Time.time; swingHit = false; Sfx.At(SfxId.AxeSwing, transform.position + Vector3.up, 0.6f, 0.12f); }
 
             // The blow lands halfway through the swing.
             float t = (Time.time - swingStart) / SwingTime;
@@ -68,18 +69,21 @@ namespace OdinsCoin
                 bool front = CombatMath.FromFront(saxon.transform.position, saxon.transform.forward, transform.position);
                 float dmg = CombatMath.Damage(SwingDamage, fortune.MeleeDamageMultiplier * Upgrades.Current.AxeMultiplier, saxon.Blocking, front);
                 saxon.Health.TakeDamage(dmg, transform.position);
+                Sfx.At(saxon.Blocking && front ? SfxId.ShieldBlock : SfxId.AxeHit, saxon.transform.position + Vector3.up);
                 saxon.Stagger(transform.position);
             }
             float blow = SwingDamage * fortune.MeleeDamageMultiplier * Upgrades.Current.AxeMultiplier;
             // Jörmungandr's head, while it lies stunned on the gunwale.
             var serpent = Serpent.Instance;
-            if (serpent != null && serpent.HeadInReach(transform.position, transform.forward, Reach, Arc)) serpent.TakeHit(blow);
+            if (serpent != null && serpent.HeadInReach(transform.position, transform.forward, Reach, Arc) && serpent.TakeHit(blow))
+                Sfx.At(SfxId.AxeHit, serpent.Head.position, 1f);
             // Hacking at a raider's strakes from alongside (or aboard).
             foreach (var raider in Raider.All.ToArray())
                 if (!raider.Sinking && raider.WithinReach(transform.position + transform.forward * 1.2f, 0.9f))
                 {
                     float chop = blow * 0.35f;
                     raider.TakeDamage(chop, transform.position);
+                    Sfx.At(SfxId.ArrowThunk, transform.position + transform.forward, 1f, 0.2f);
                     CombatHud.Number(transform.position + transform.forward * 1.5f + Vector3.up * 1.2f, "-" + Mathf.RoundToInt(chop) + " hull", new Color(0.9f, 0.7f, 0.4f));
                 }
         }

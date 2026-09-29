@@ -114,6 +114,9 @@ namespace OdinsCoin
 
         public static Fortune Current { get { return current ?? (current = new Fortune()); } }
 
+        /// <summary>Start over, or swap in a loaded fortune.</summary>
+        public static void SetCurrent(Fortune f) { current = f; }
+
         public static int Tier(int wager) { return wager >= 200 ? 3 : wager >= 50 ? 2 : 1; }
 
         public float HeadsChance

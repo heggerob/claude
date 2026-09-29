@@ -38,6 +38,7 @@ namespace OdinsCoin
             s.Build();
             Instance = s;
             s.headPos = s.CirclePoint(-8f);
+            Sfx.Play(SfxId.SerpentRoar, 0.6f);
             CombatHud.Banner("THE SEA BOILS...", "Something enormous moves beneath the ship.");
             return s;
         }
@@ -103,6 +104,7 @@ namespace OdinsCoin
                         // Pick the side it's on, and a spot along the deck to smash.
                         side = Mathf.Sign(ship.transform.InverseTransformPoint(headPos).x);
                         if (side == 0f) side = 1f;
+                        Sfx.Play(SfxId.SerpentRoar, 0.9f);
                         var player = GameBootstrap.Instance != null ? GameBootstrap.Instance.Player : null;
                         strikeZ = player != null && player.OnShip ? Mathf.Clamp(ship.transform.InverseTransformPoint(player.transform.position).z, -6f, 6f) : Random.Range(-5f, 5f);
                         if (!warned) { warned = true; CombatHud.Banner("JÖRMUNGANDR REARS UP!", "Get clear of where it looks, then hit its head while it's stunned."); }
@@ -141,6 +143,7 @@ namespace OdinsCoin
                 if (combat != null) combat.Health.TakeDamage(combat.Blocking ? StrikeDamage * 0.5f : StrikeDamage, impact);
             }
             CombatHud.Number(impact + Vector3.up * 2f, "CRASH!", new Color(0.6f, 1f, 0.6f));
+            Sfx.At(SfxId.RamCrash, impact, 1f);
         }
 
         /// <summary>An axe blow at the head. Returns true if it landed.</summary>

@@ -86,7 +86,7 @@ namespace OdinsCoin
             if (i > 0.55f)
             {
                 nextFlash -= dt;
-                if (nextFlash <= 0f) { flash = 1f; nextFlash = Random.Range(4f, 11f); }
+                if (nextFlash <= 0f) { flash = 1f; nextFlash = Random.Range(4f, 11f); Sfx.Play(SfxId.Thunder, 0.5f + 0.5f * i); }
             }
             flash = Mathf.MoveTowards(flash, 0f, dt * 7f);
             gloom = Color.Lerp(gloom, new Color(0.9f, 0.92f, 1f), flash * 0.8f);

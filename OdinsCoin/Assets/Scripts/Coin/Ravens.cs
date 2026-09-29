@@ -60,6 +60,7 @@ namespace OdinsCoin
                 huginn.Add(RavenBird.Create(transform, from + Vector3.up * 2f, chests[i].transform, false));
             }
             HuginnLeft = HuginnTime;
+            Sfx.Play(SfxId.Raven, 0.8f);
             return true;
         }
 
@@ -68,6 +69,7 @@ namespace OdinsCoin
         {
             if (altar == null || Fortune.Current.NextFlipBlessed || !Fortune.Current.SpendFavour()) return false;
             Fortune.Current.NextFlipBlessed = true;
+            Sfx.Play(SfxId.Raven, 0.8f);
             muninn = RavenBird.Create(transform, altar.transform.position + new Vector3(0f, 12f, -8f), altar.transform, true);
             return true;
         }

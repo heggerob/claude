@@ -24,6 +24,8 @@ public static class LogicTests
         RuneTests();
         HallTests();
         SeaDangerTests();
+        SoundTests();
+        SaveTests();
         CombatTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
@@ -62,6 +64,67 @@ public static class LogicTests
             foreach (var other in all)
                 if (other != spec) Check(Vector2.Distance(spec.centre, other.centre) > (spec.radius + other.radius) * 1.25f, spec.name + " doesn't overlap " + other.name);
         }
+    }
+
+    static void SoundTests()
+    {
+        foreach (SfxId id in Enum.GetValues(typeof(SfxId)))
+        {
+            var d = SfxSynth.Generate(id);
+            float peak = 0f; double energy = 0; bool finite = true;
+            foreach (var v in d) { if (float.IsNaN(v) || float.IsInfinity(v)) finite = false; peak = Math.Max(peak, Math.Abs(v)); energy += v * v; }
+            float seconds = d.Length / (float)SfxSynth.SampleRate;
+            Check(finite && peak <= 1f, id + " stays in range (peak " + peak + ")");
+            Check(peak > 0.05f && energy > 1.0, id + " is audible (peak " + peak + ")");
+            Check(seconds > 0.02f && seconds < (SfxSynth.IsLoop(id) ? 10f : 4f), id + " has a sensible length (" + seconds + " s)");
+            if (SfxSynth.IsLoop(id))
+            {
+                // The seam: the jump from the last sample back to the first is no bigger than a typical step.
+                double steps = 0;
+                for (int i = 1; i < d.Length; i++) steps += Math.Abs(d[i] - d[i - 1]);
+                double typical = steps / (d.Length - 1);
+                Check(Math.Abs(d[d.Length - 1] - d[0]) < typical * 8 + 0.02, id + " loops without a click");
+            }
+        }
+        var a1 = SfxSynth.Generate(SfxId.CoinFlip);
+        var a2 = SfxSynth.Generate(SfxId.CoinFlip);
+        Check(a1.Length == a2.Length && a1[500] == a2[500], "sounds are generated the same way every time");
+    }
+
+    static void SaveTests()
+    {
+        var f = new Fortune { Gold = 1234, Favour = 0.625f, NextFlipBlessed = true, Flips = 17, HeadsCount = 9, ChestsSold = 5, GoldPlundered = 800, DiceWon = 3, DiceLost = 4 };
+        f.Carved.Add(Runes.Find("ansuz"));
+        f.Carved.Add(Runes.Find("hagalaz"));
+        var u = new Upgrades();
+        u.Levels[(int)UpgradeKind.Sail] = 2;
+        u.Levels[(int)UpgradeKind.Axe] = 3;
+        f.Add(Fates.Blessings[0], 2, 60f);
+        string text = SaveGame.Serialize(f, u);
+        Fortune g; Upgrades v;
+        Check(SaveGame.Deserialize(text, out g, out v), "a save loads");
+        Check(g.Gold == 1234 && Math.Abs(g.Favour - 0.625f) < 1e-6f && g.NextFlipBlessed, "gold, favour and Muninn survive a save");
+        Check(g.Carved.Count == 2 && g.Carved[0].id == "ansuz" && g.Carved[1].id == "hagalaz", "runes survive a save");
+        Check(g.Flips == 17 && g.HeadsCount == 9 && g.ChestsSold == 5 && g.GoldPlundered == 800 && g.DiceWon == 3 && g.DiceLost == 4, "the boasting board survives a save");
+        Check(v.Level(UpgradeKind.Sail) == 2 && v.Level(UpgradeKind.Axe) == 3 && v.Level(UpgradeKind.Hull) == 0, "upgrades survive a save");
+        Check(g.Active.Count == 0, "blessings and curses are fleeting: not saved");
+        Check(Math.Abs(g.HeadsChance - f.HeadsChance + 0.1f * 0f) < 0.2f && g.PayoutMultiplier == f.PayoutMultiplier, "the loaded coin plays the same");
+
+        // Broken or hostile saves don't crash or cheat.
+        Fortune h; Upgrades w;
+        Check(!SaveGame.Deserialize("", out h, out w) && h.Gold == 100, "an empty save gives a fresh start");
+        SaveGame.Deserialize("gold=-50\nfavour=9\nrunes=ansuz,ansuz,nope,fehu,algiz,raidho\nupgrades=99,-3,x,1\ngarbage\n=\n", out h, out w);
+        Check(h.Gold == 0 && h.Favour == 1f, "gold and favour are clamped");
+        Check(h.Carved.Count == Runes.Slots && h.Carved[0].id == "ansuz" && h.Carved[1].id == "fehu", "runes: no duplicates, unknowns skipped, at most " + Runes.Slots);
+        Check(w.Level(UpgradeKind.Sail) == Upgrades.Def(UpgradeKind.Sail).costs.Length && w.Level(UpgradeKind.Oars) == 0, "upgrade levels are clamped (" + w.Level(UpgradeKind.Oars) + ")");
+        // Decimal commas in some locales must not break favour.
+        var prev = System.Threading.Thread.CurrentThread.CurrentCulture;
+        System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("nb-NO");
+        string nb = SaveGame.Serialize(f, u);
+        System.Threading.Thread.CurrentThread.CurrentCulture = prev;
+        Fortune n; Upgrades nu;
+        SaveGame.Deserialize(nb, out n, out nu);
+        Check(Math.Abs(n.Favour - 0.625f) < 1e-6f && nb.Contains("favour=0.625"), "saves are the same on a Norwegian PC");
     }
 
     static void SeaDangerTests()

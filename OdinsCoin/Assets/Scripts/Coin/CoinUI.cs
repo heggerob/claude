@@ -179,7 +179,7 @@ namespace OdinsCoin
                 else
                 {
                     GUI.enabled = fortune.CanCarve(r);
-                    if (GUILayout.Button("Carve · " + r.cost + " g", GUILayout.Width(110f), GUILayout.Height(34))) deferred += () => fortune.Carve(r);
+                    if (GUILayout.Button("Carve · " + r.cost + " g", GUILayout.Width(110f), GUILayout.Height(34))) deferred += () => { if (fortune.Carve(r)) { Sfx.Play(SfxId.Purchase); SaveGame.Save(); } };
                     GUI.enabled = true;
                 }
                 GUILayout.EndHorizontal();

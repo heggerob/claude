@@ -37,6 +37,8 @@ namespace OdinsCoin
 
         public static Upgrades Current { get { return current ?? (current = new Upgrades()); } }
 
+        public static void SetCurrent(Upgrades u) { current = u; }
+
         public readonly int[] Levels = new int[All.Length];
 
         public static UpgradeDef Def(UpgradeKind kind) { return All[(int)kind]; }

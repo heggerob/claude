@@ -76,6 +76,7 @@ namespace OdinsCoin
             transform.SetParent(carrier, false);
             transform.localPosition = new Vector3(0f, 0.72f, 0.62f);
             transform.localRotation = Quaternion.identity;
+            Sfx.At(SfxId.Chest, transform.position, 0.8f);
         }
 
         /// <summary>Put it down on whatever is under it (ship, land or jetty), or let it float if that's the sea.</summary>
@@ -95,6 +96,7 @@ namespace OdinsCoin
             transform.rotation = Quaternion.Euler(0f, yaw, 0f);
             if (col != null) col.enabled = true;
             if (!ground) gameObject.AddComponent<Floater>().sink = 0.35f;
+            Sfx.At(ground ? SfxId.Chest : SfxId.Splash, transform.position, 0.8f);
         }
 
         public bool Stowed(Longship ship) { return !Carried && !Sold && ship != null && transform.IsChildOfOrSelf(ship.transform); }

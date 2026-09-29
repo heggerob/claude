@@ -9,10 +9,41 @@ Et 3D vikingspill i Unity: seil langskipet, raid øyer og kast **Odins mynt** om
 
 1. Lag et nytt **Universal 3D**-prosjekt i Unity Hub (Unity 6 eller 2022.3 LTS).
 2. Kopier `OdinsCoin/Assets/Scripts` inn i `Assets/`-mappen i prosjektet.
-3. Åpne `SampleScene` og trykk **Play**. Alt bygges fra kode.
+3. Åpne `SampleScene` og trykk **Play**. Alt bygges fra kode, også lyden.
+4. Velg **New voyage** på tittelskjermen. Senere velger du **Continue**, for spillet lagres automatisk.
+
+## Kontroller
+
+| Tast | Hva |
+|---|---|
+| WASD | gå (kameraretning) |
+| Shift / Space | løpe / hoppe |
+| Mus | se rundt, scroll zoomer |
+| Venstre / høyre mus | øks / skjold |
+| E | bruke: ta roret, alteret, plukke opp og sette ned kister, selge, øse og tette hull, klatre om bord |
+| Ved roret | A/D styre, R heise seil, Q fire seil, W ro (med seilet nede) |
+| F | kaste mynten (ved alteret) |
+| Esc | meny (pause, innstillinger, lagre og avslutte) |
+
+## Spillet i korte trekk
+
+- **Hjemmefjorden:** Den er trygg. Gunnar på brygga kjøper kister. Bjørn ved methallen selger oppgraderinger (seil, årer, skrog, brynje, øks) og spiller terning.
+- **Odins mynt** på alteret om bord: Satsen dobles eller tapes. Kron gir en velsignelse, og mynt gir en forbannelse.
+- **Runer:** Du kan gravere inntil 3 runer i mynten. Skjermen viser alltid oddsen og hvor mye du i snitt får tilbake.
+- **Odins gunst og ravnene:** Når gunsten er full, sirkler Hugin over skatter, og Munin gjør neste kast til kron.
+- **Farer på havet:** stormer (øs vann), danske vikingskip (ram dem) og Jormungand (hugg den i hodet mens den er bedøvet).
+- Kun spillgull. Aldri ekte penger.
 
 ## Verden
 
-Seks øyer, blant annet to med kloster (Lindholm og Iona Minor). Den røde prikken viser hvor skipet starter.
+Seks øyer, blant annet to med kloster (Lindholm og Iona Minor), og hjemmeøya i sør. Den brune streken er brygga, og den røde viser hvor skipet ligger fortøyd.
+
+Alle lydene er generert i kode, og du kan høre dem i [docs/sounds](docs/sounds).
+
+## Testing uten Unity
+
+- `tools/check.sh` kompilerer alt mot en falsk Unity-API, både for Unity 2022 og Unity 6.
+- `tools/tests/run.sh` kjører logikktestene.
+- `tools/preview/render.sh` tegner kartet og lager WAV-filer av lydene.
 
 ![Verden](docs/world.png)

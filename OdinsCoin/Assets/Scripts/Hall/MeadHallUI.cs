@@ -73,6 +73,7 @@ namespace OdinsCoin
             rerollUsed = false;
             rollStart = Time.time;
             dice = DiceState.Rolling;
+            Sfx.Play(SfxId.DiceRattle, 0.8f);
         }
 
         void Landed()
@@ -94,6 +95,8 @@ namespace OdinsCoin
         {
             outcome = MeadDice.Compare(mine, bjorn);
             change = MeadDice.Settle(Fortune.Current, MeadDice.Stakes[stakeIndex], outcome);
+            Sfx.Play(SfxId.DiceLand, 0.8f);
+            if (outcome > 0) Sfx.Play(SfxId.Gold, 0.7f);
             dice = DiceState.Done;
         }
 
@@ -156,7 +159,7 @@ namespace OdinsCoin
                 {
                     GUI.enabled = up.CanBuy(d.kind, fortune);
                     if (GUILayout.Button(d.levels[level] + "\n<size=12>" + up.NextCost(d.kind) + " gold</size>", GUILayout.Width(190f), GUILayout.Height(40)))
-                        deferred += () => { if (up.Buy(d.kind, fortune)) CombatHud.Banner(d.levels[level].ToUpper(), "Bjørn's cousin will have it done by the time you're aboard."); };
+                        deferred += () => { if (up.Buy(d.kind, fortune)) { Sfx.Play(SfxId.Purchase); SaveGame.Save(); } if (up.Level(d.kind) > level) CombatHud.Banner(d.levels[level].ToUpper(), "Bjørn's cousin will have it done by the time you're aboard."); };
                 }
                 GUI.enabled = true;
                 GUILayout.EndHorizontal();

@@ -54,6 +54,7 @@ namespace OdinsCoin
                     {
                         Vector3 to = pos - spot.Value;
                         Raider.Spawn(boot.transform, spot.Value, Mathf.Atan2(to.x, to.z) * Mathf.Rad2Deg, ship);
+                        Sfx.Play(SfxId.WarHorn, 0.5f);
                         CombatHud.Banner("A SAIL ON THE HORIZON", "Black and red: Danish raiders. They've seen you.");
                     }
                     nextRaider = Random.Range(150f, 300f);
@@ -104,6 +105,7 @@ namespace OdinsCoin
             foreach (var r in Raider.All.ToArray()) Destroy(r.gameObject);
             if (Serpent.Instance != null) Destroy(Serpent.Instance.gameObject);
             ship.Hull.Reset();
+            Sfx.Play(SfxId.Splash, 1f);
             ship.Relocate(HomeHarbour.ShipStart, HomeHarbour.ShipStartHeading);
             if (boot.Player != null) boot.Player.ReturnToShip();
             nextRaider = 180f;

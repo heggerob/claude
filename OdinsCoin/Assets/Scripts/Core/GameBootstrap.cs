@@ -73,6 +73,7 @@ namespace OdinsCoin
             gameObject.AddComponent<MeadHallUI>().Ship = Ship;
             gameObject.AddComponent<Storm>();
             gameObject.AddComponent<SeaDangers>();
+            gameObject.AddComponent<Sfx>();
             var hud = gameObject.AddComponent<ShipHud>();
             hud.Ship = Ship;
             hud.Player = Player;
@@ -96,6 +97,8 @@ namespace OdinsCoin
             rig.Height = 1.6f;
             rig.SnapTo(Focus, HomeHarbour.ShipStartHeading);
             Ocean.Follow(cam.transform);
+            // The title screen goes up last, over the live harbour.
+            gameObject.AddComponent<GameMenu>();
         }
 
         static Camera SetupCamera()

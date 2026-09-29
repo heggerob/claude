@@ -17,3 +17,8 @@ w, h = struct.unpack('<ii', data[:8])
 Image.frombytes('RGBA', (w, h), data[8:]).save(sys.argv[2])
 print('wrote', sys.argv[2])
 PY
+
+# Sounds: every generated effect as a WAV.
+mcs -nowarn:169,414,649,219,618 -define:ENABLE_LEGACY_INPUT_MANAGER -out:$TMP/sounds.exe \
+  tools/unity-stub/UnityStub.cs tools/preview/SoundPreview.cs $(find OdinsCoin/Assets/Scripts -name '*.cs')
+mono $TMP/sounds.exe OdinsCoin/docs/sounds
