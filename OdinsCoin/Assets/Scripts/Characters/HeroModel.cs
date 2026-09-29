@@ -265,11 +265,34 @@ namespace OdinsCoin
                     d.Add(Joints.Weapon, d.pal.leatherDark, MeshData.Tube(new[] { new Vector3(0f, 0f, -0.07f * s), new Vector3(0f, 0f, 0.07f * s) }, new[] { 0.018f * s, 0.018f * s }, 8));
                     d.Add(Joints.Weapon, d.pal.brass, MeshData.Ellipsoid(new Vector3(0f, 0f, -0.095f * s), new Vector3(0.03f, 0.03f, 0.025f) * s, 8, 5));
                     d.Add(Joints.Weapon, d.pal.brass, MeshData.Tube(new[] { new Vector3(-0.11f * s, 0f, 0.1f * s), new Vector3(0f, 0f, 0.08f * s), new Vector3(0.11f * s, 0f, 0.1f * s) }, new[] { 0.012f * s, 0.016f * s, 0.012f * s }, 6));
-                    d.Add(Joints.Weapon, new Color(0.78f, 0.8f, 0.82f), MeshData.Extrude(new[] {
-                        new Vector2(0.09f, 0.045f), new Vector2(0.8f, 0.04f), new Vector2(0.9f, 0f), new Vector2(0.8f, -0.04f), new Vector2(0.09f, -0.045f) }, 0.014f)
+                    // The blade tapers gently to a point.
+                    var steel = new Color(0.78f, 0.8f, 0.82f);
+                    d.Add(Joints.Weapon, steel, MeshData.Extrude(new[] {
+                        new Vector2(0.09f, 0.045f), new Vector2(0.5f, 0.042f), new Vector2(0.8f, 0.032f), new Vector2(0.93f, 0f),
+                        new Vector2(0.8f, -0.032f), new Vector2(0.5f, -0.042f), new Vector2(0.09f, -0.045f) }, 0.014f)
                         .Transformed(Vector3.zero, Quaternion.Euler(0f, 0f, 90f), Vector3.one * s));
-                    for (int i = 0; i < 6; i++)
-                        d.Add(Joints.Weapon, d.pal.ink, MeshData.Box(new Vector3(0.009f * s, 0f, (0.2f + i * 0.09f) * s), new Vector3(0.003f, i % 2 == 0 ? 0.02f : 0.012f, 0.03f) * s), false);
+                    // A darker fuller down the middle, with runes cut into it (on both faces).
+                    d.Add(Joints.Weapon, VikingModel.Shade(steel, 0.78f), MeshData.Box(new Vector3(0f, 0f, 0.43f * s), new Vector3(0.018f, 0.0155f, 0.62f) * s), false);
+                    var glyphs = new[] {
+                        new[] { 0f, -1f, 0f, 1f, 0f, 0.2f, 0.7f, 0.8f },            // ᚠ-ish
+                        new[] { 0f, -1f, 0f, 1f, -0.7f, 0.3f, 0.7f, -0.3f },        // a slash through a stave
+                        new[] { -0.6f, -1f, 0f, 1f, 0f, 1f, 0.6f, -1f },            // ᛏ-ish chevron
+                        new[] { 0f, -1f, 0f, 1f, 0f, 0.6f, 0.7f, 0f },
+                        new[] { -0.6f, 1f, 0.6f, -1f, -0.6f, -1f, 0.6f, 1f } };    // ᚷ cross
+                    for (int i = 0; i < glyphs.Length; i++)
+                    {
+                        float z0 = (0.2f + i * 0.1f) * s, gs = 0.018f * s;
+                        var gl = glyphs[i];
+                        for (int k = 0; k < gl.Length; k += 4)
+                        {
+                            var a = new Vector3(gl[k] * gs * 0.5f, 0f, z0 + gl[k + 1] * gs);
+                            var b = new Vector3(gl[k + 2] * gs * 0.5f, 0f, z0 + gl[k + 3] * gs);
+                            var mid = (a + b) * 0.5f;
+                            var dir = b - a;
+                            d.Add(Joints.Weapon, d.pal.ink, MeshData.Box(Vector3.zero, new Vector3(0.0035f * s, 0.017f * s, dir.magnitude + 0.003f * s))
+                                .Transformed(mid, Quaternion.LookRotation(dir.normalized, Vector3.up), Vector3.one), false);
+                        }
+                    }
                     break;
             }
         }
