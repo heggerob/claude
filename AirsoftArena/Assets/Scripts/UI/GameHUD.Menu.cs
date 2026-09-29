@@ -76,7 +76,7 @@ namespace AirsoftArena
 
             GUILayout.BeginVertical(GUILayout.Width(pw * 0.42f));
             GUILayout.Label("<b>Your soldier</b>", label);
-            DrawSoldierPreview(GUILayoutUtility.GetRect(pw * 0.4f, 150f), profile.Look, profile.Primary, Team.Blue);
+            DrawSoldierPreview(GUILayoutUtility.GetRect(pw * 0.4f, 110f), profile.Look, profile.Primary, Team.Blue);
             GUILayout.Label(WeaponButton(profile.Primary) + "\n" + WeaponButton(profile.Secondary) + "\n[00] Rubber Tanto", small);
             if (GUILayout.Button("Change loadout & look")) Defer(() => tab = MenuTab.Loadout);
             GUILayout.Space(10);
@@ -91,7 +91,17 @@ namespace AirsoftArena
             GUILayout.EndHorizontal();
             var selectedMap = MapLibrary.Get(profile.mapId);
             GUILayout.Label(selectedMap.description, small);
-            GUILayout.Label(string.Format("Team Deathmatch 4v4 vs bots  ·  {0:0}×{1:0} m  ·  first to 20 or 3:00", selectedMap.bounds.width, selectedMap.bounds.height), small);
+            GUILayout.Space(4);
+            GUILayout.Label("<b>Mode</b>", label);
+            GUILayout.BeginHorizontal();
+            foreach (GameMode gm in System.Enum.GetValues(typeof(GameMode)))
+            {
+                var g = gm;
+                if (Choice(profile.mode == g, GameModes.Name(g), GUILayout.Height(28))) Defer(() => { profile.mode = g; PlayerProfile.Save(); });
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.Label(GameModes.Description(profile.mode), small);
+            GUILayout.Label(string.Format("4v4 vs bots  ·  {0:0}×{1:0} m  ·  3:00", selectedMap.bounds.width, selectedMap.bounds.height), small);
             GUILayout.EndVertical();
 
             GUILayout.Space(16);
@@ -127,6 +137,7 @@ namespace AirsoftArena
                 referee = sel,
                 autoCallHits = GameSettings.AutoCallHits,
                 map = MapLibrary.Get(profile.mapId),
+                mode = profile.mode,
             };
             int cost = settings.EntryCost;
             if (profile.money < cost)
@@ -321,8 +332,8 @@ namespace AirsoftArena
                 RefereeProfile.StarText(profile.RefStars), profile.refMatches, profile.refCorrectCalls, profile.refWrongCalls, profile.refMissed), label);
             GUILayout.Label(string.Format("Your fee: <b>${0}</b> per player  ×  8 players  =  <b>${1}</b> per match", profile.RefFeePerPlayer, profile.RefFeePerPlayer * 8), label);
             GUILayout.FlexibleSpace();
-            var settings = new MatchSettings { role = Role.Referee, primary = profile.Primary, secondary = profile.Secondary, map = MapLibrary.Get(profile.mapId) };
-            GUILayout.Label("Map: <b>" + settings.map.name + "</b> (change it in the PLAY tab)", label);
+            var settings = new MatchSettings { role = Role.Referee, primary = profile.Primary, secondary = profile.Secondary, map = MapLibrary.Get(profile.mapId), mode = profile.mode };
+            GUILayout.Label("Map: <b>" + settings.map.name + "</b>   Mode: <b>" + GameModes.Name(settings.mode) + "</b>   (change them in the PLAY tab)", label);
             if (GUILayout.Button("START MATCH AS REFEREE", GUILayout.Height(48))) Defer(() => match.StartMatch(settings));
         }
 

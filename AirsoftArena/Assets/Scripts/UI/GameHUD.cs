@@ -10,7 +10,7 @@ namespace AirsoftArena
     {
         const float RefHeight = 720f;
 
-        GUIStyle label, small, big, huge, title, panel, feed, tag, center, money;
+        GUIStyle label, small, big, huge, title, panel, feed, tag, center, money, label2;
         Texture2D panelTexture, whiteTexture;
         float scale, W, H;
         Camera cam;
@@ -76,7 +76,10 @@ namespace AirsoftArena
                 Teams.Hex(Team.Blue), match.Score[0], seconds / 60, seconds % 60, Teams.Hex(Team.Red), match.Score[1]);
             GUI.Box(new Rect(W / 2f - 190f, 8f, 380f, 50f), GUIContent.none, panel);
             GUI.Label(new Rect(W / 2f - 190f, 10f, 380f, 30f), score, big);
-            GUI.Label(new Rect(W / 2f - 190f, 36f, 380f, 20f), "first to " + match.Settings.scoreLimit, centerSmall);
+            GUI.Label(new Rect(W / 2f - 190f, 36f, 380f, 20f), GameModes.Name(match.Settings.mode) + "  ·  first to " + match.Settings.scoreLimit + " " + GameModes.Unit(match.Settings.mode), centerSmall);
+            var watcher = match.PlayerSoldier;
+            string hint = watcher != null && match.Rules != null ? match.Rules.PlayerHint(watcher) : null;
+            if (!string.IsNullOrEmpty(hint)) Shadowed(new Rect(0f, 62f, W, 26f), hint, label2);
 
             // Referee and wind.
             var referee = match.Referee;
@@ -375,6 +378,7 @@ namespace AirsoftArena
             huge = new GUIStyle(label) { fontSize = 52, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, wordWrap = false };
             title = new GUIStyle(label) { fontSize = 34, fontStyle = FontStyle.Bold, wordWrap = false };
             title.normal.textColor = new Color(1f, 0.85f, 0.3f);
+            label2 = new GUIStyle(label) { alignment = TextAnchor.MiddleCenter, wordWrap = false, fontSize = 16 };
             money = new GUIStyle(label) { fontSize = 26, alignment = TextAnchor.MiddleRight, wordWrap = false };
             money.normal.textColor = new Color(0.55f, 1f, 0.55f);
             tag = new GUIStyle(label) { fontSize = 11, alignment = TextAnchor.LowerCenter, wordWrap = false };

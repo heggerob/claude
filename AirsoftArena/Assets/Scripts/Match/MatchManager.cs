@@ -19,6 +19,7 @@ namespace AirsoftArena
         public float duration = 180f;
         public int scoreLimit = 20;
         public MapDefinition map;
+        public GameMode mode = GameMode.TeamDeathmatch;
 
         public int PlayerCount { get { return teamSize * 2; } }
 
@@ -86,6 +87,8 @@ namespace AirsoftArena
         public bool Paused { get; private set; }
         public readonly List<FeedEntry> Feed = new List<FeedEntry>();
         public MatchResult LastResult { get; private set; }
+        /// <summary>The rules of the current game mode (TDM, CTF, KOTH).</summary>
+        public ModeRules Rules { get; private set; }
 
         public bool IsPlaying { get { return Phase == MatchPhase.Playing && !Paused; } }
 
@@ -177,7 +180,10 @@ namespace AirsoftArena
             }
 
             BBSystem.Instance.Wind = Random.insideUnitCircle * Random.Range(0f, 2.5f);
-            AddFeed("Match on <b>" + settings.map.name + "</b>. Referee: <b>" + Referee.Profile.name + "</b>");
+            settings.scoreLimit = GameModes.ScoreLimit(settings.mode);
+            Rules = GameModes.Create(settings.mode);
+            Rules.Begin(this, matchRoot);
+            AddFeed("<b>" + GameModes.Name(settings.mode) + "</b> on <b>" + settings.map.name + "</b>. Referee: <b>" + Referee.Profile.name + "</b>");
 
             var follow = CameraFollow.Instance;
             if (follow != null) follow.Follow(PlayerSoldier != null ? PlayerSoldier.transform : Referee.transform, 9f);
@@ -220,6 +226,7 @@ namespace AirsoftArena
             PlayerSoldier = null;
             Referee = null;
             PlayerReferee = null;
+            Rules = null;
             Feed.Clear();
             if (BBSystem.Instance != null) BBSystem.Instance.Clear();
             if (Effects.Instance != null) Effects.Instance.ClearAll();
@@ -239,6 +246,7 @@ namespace AirsoftArena
             if (Paused) return;
 
             TimeLeft -= Time.deltaTime;
+            Rules.Tick(Time.deltaTime);
             if (TimeLeft <= 0f || Score[0] >= Settings.scoreLimit || Score[1] >= Settings.scoreLimit) EndMatch();
         }
 
@@ -260,6 +268,7 @@ namespace AirsoftArena
         {
             if (soldier.HasUncalledHit && (reason == OutReason.CalledHit || reason == OutReason.CalledLate)) SelfResolved++;
 
+            if (Rules != null) Rules.OnSoldierOut(soldier);
             var shooter = soldier.LastHitBy;
             switch (reason)
             {
@@ -281,7 +290,7 @@ namespace AirsoftArena
                 AddFeed("Friendly fire! " + Colored(shooter) + " hit teammate " + Colored(victim));
                 return;
             }
-            Score[(int)shooter.Team]++;
+            if (Rules.HitsScore) Score[(int)shooter.Team]++;
             shooter.Stats.pointsScored++;
             AddFeed(Colored(shooter) + " hit " + Colored(victim) + note);
         }
@@ -301,10 +310,17 @@ namespace AirsoftArena
                 if (zombie)
                 {
                     Caught++;
-                    // Cheating costs the team an extra point.
+                    // Cheating costs the team an extra point (in modes where hits score).
                     var other = Teams.Other(soldier.Team);
-                    Score[(int)other]++;
-                    AddFeed("<color=#ffe14a>REF:</color> " + Colored(soldier) + " didn't call their hit! +1 penalty point to " + Teams.Name(other));
+                    if (Rules.HitsScore)
+                    {
+                        Score[(int)other]++;
+                        AddFeed("<color=#ffe14a>REF:</color> " + Colored(soldier) + " didn't call their hit! +1 penalty point to " + Teams.Name(other));
+                    }
+                    else
+                    {
+                        AddFeed("<color=#ffe14a>REF:</color> " + Colored(soldier) + " didn't call their hit!");
+                    }
                     if (soldier.IsHuman) PlayerProfile.Current.honor -= 6f;
                 }
                 soldier.GoOut(OutReason.CaughtByReferee);
@@ -385,6 +401,9 @@ namespace AirsoftArena
                 int result = r.draw ? 80 : r.playerWon ? 120 : 50;
                 AddMoney(profile, r, result, r.draw ? "Draw" : r.playerWon ? "Win bonus" : "Participation");
                 AddMoney(profile, r, stats.pointsScored * 6, "Hits scored x" + stats.pointsScored);
+                AddMoney(profile, r, stats.captures * 30, "Flag captures x" + stats.captures);
+                AddMoney(profile, r, stats.flagReturns * 10, "Flag returns x" + stats.flagReturns);
+                AddMoney(profile, r, Mathf.FloorToInt(stats.hillSeconds / 3f), "Time on the hill " + Mathf.FloorToInt(stats.hillSeconds) + " s");
                 AddMoney(profile, r, -stats.caughtByReferee * CheatFine, "Caught not calling hits x" + stats.caughtByReferee);
                 AddMoney(profile, r, -stats.shotTheReferee * RefShotFine, "Shot the referee x" + stats.shotTheReferee);
 
@@ -473,7 +492,7 @@ namespace AirsoftArena
             if (Feed.Count > 30) Feed.RemoveAt(0);
         }
 
-        static string Colored(Soldier s)
+        public static string Colored(Soldier s)
         {
             return "<color=" + Teams.Hex(s.Team) + ">" + s.DisplayName + "</color>";
         }

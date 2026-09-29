@@ -7,7 +7,7 @@ Arbeidsliste for prototypen. Ett punkt om gangen, og hvert punkt skal kompilere 
 - [x] **3. Butikk og kasser:** kjøp kosmetikk og våpen for spillpenger, og kasser med sjeldenhetsgrader (common–legendary). Eierskap lagres. Butikkfanen og kasseanimasjonen kommer i punkt 4.
 - [x] **4. Ny meny og lobby:** hovedmeny med faner (Spill, Loadout, Butikk, Dommer, Profil, Innstillinger), forhåndsvisning av soldaten og bedre stil.
 - [x] **5. Kart-system og flere baner:** Pallet Yard, Warehouse (innendørs CQB) og Forest. Du velger kart i lobbyen.
-- [ ] **6. Spillmodi:** Capture the Flag og King of the Hill i tillegg til TDM.
+- [x] **6. Spillmodi:** Capture the Flag og King of the Hill i tillegg til TDM.
 - [ ] **7. Progresjon:** XP og rank, våpen som låses opp med rank, og dagsbonus.
 - [ ] **8. Lyd:** generert lyd for skudd, "tak", fløyte, omlading og treff.
 - [ ] **9. Treningsbane:** skyteblinker og måling av rekkevidde og BB-fall.

@@ -43,11 +43,12 @@ Den første planen var laget for en 3D FPS. Dette er hva som er tatt med og hva 
 | Antall magasiner | ✅ Per våpen (`magsCarried`) |
 | Økonomi | ✅ Første versjon: dommerhonorar, seier/tap, bøter |
 | Bevegelse | ✅ Gå, sprinte (kan ikke skyte), huke |
-| Spillmodi | 🔜 Bare TDM foreløpig. Neste: Capture the Flag, King of the Hill |
+| Spillmodi | ✅ Team Deathmatch, Capture the Flag, King of the Hill |
 | Roller (medic, sniper, assault) | 🔜 |
 | Progresjon og opplåsing | 🔜 Alle våpen er åpne i prototypen |
 | Tilbehør (attachments) | 🔜 |
-| Flere kart, innendørs | 🔜 |
+| Kosmetikk og butikk | ✅ Kamo, uniform, hodeplagg, BB-farge, kasser med åpne odds |
+| Flere kart, innendørs | ✅ Pallet Yard, Warehouse (innendørs), Forest |
 | Treningsmodus | 🔜 |
 | Proximity voice og radio (kan ikke skyte mens du bruker radio) | 🔜 Krever flerspiller |
 | Flerspiller / matchmaking | 🔜 FishNet eller Mirror + Steam |

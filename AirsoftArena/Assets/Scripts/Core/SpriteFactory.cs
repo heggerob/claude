@@ -11,10 +11,10 @@ namespace AirsoftArena
     {
         public const int PixelsPerUnit = 16;
 
-        static Sprite pixel, circle, smallCircle, bb, grass, crate, sandbag, concrete, forestFloor, shelf, log, canopy, bush, rock;
+        static Sprite pixel, circle, smallCircle, bb, grass, crate, sandbag, concrete, forestFloor, shelf, log, canopy, bush, rock, ring, disc64;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() { pixel = circle = smallCircle = bb = grass = crate = sandbag = concrete = forestFloor = shelf = log = canopy = bush = rock = null; }
+        static void ResetStatics() { pixel = circle = smallCircle = bb = grass = crate = sandbag = concrete = forestFloor = shelf = log = canopy = bush = rock = ring = disc64 = null; }
 
         /// <summary>1x1 white square, one world unit big. Scale and tint it for rectangles.</summary>
         public static Sprite Pixel { get { return pixel ?? (pixel = Make(Solid(1, 1, Color.white), 1)); } }
@@ -30,6 +30,10 @@ namespace AirsoftArena
         public static Sprite Grass { get { return grass ?? (grass = Make(GrassTile(), PixelsPerUnit)); } }
         public static Sprite Crate { get { return crate ?? (crate = Make(CrateTile(), PixelsPerUnit)); } }
         public static Sprite Sandbag { get { return sandbag ?? (sandbag = Make(SandbagTile(), PixelsPerUnit)); } }
+        /// <summary>White ring, 4 m across. Scale it for zones.</summary>
+        public static Sprite Ring { get { return ring ?? (ring = Make(RingTexture(64, 2.5f), PixelsPerUnit)); } }
+        /// <summary>Filled white disc, 4 m across.</summary>
+        public static Sprite Disc64 { get { return disc64 ?? (disc64 = Make(RingTexture(64, 64f), PixelsPerUnit)); } }
         public static Sprite Concrete { get { return concrete ?? (concrete = Make(ConcreteTile(), PixelsPerUnit)); } }
         public static Sprite ForestFloor { get { return forestFloor ?? (forestFloor = Make(ForestTile(), PixelsPerUnit)); } }
         public static Sprite Shelf { get { return shelf ?? (shelf = Make(ShelfTile(), PixelsPerUnit)); } }
@@ -94,6 +98,19 @@ namespace AirsoftArena
                 tex.SetPixel(x, y, new Color32(104, 146, 76, 255));
                 tex.SetPixel(x, y + 1, new Color32(96, 136, 70, 255));
             }
+            return tex;
+        }
+
+        static Texture2D RingTexture(int size, float thickness)
+        {
+            var tex = Solid(size, size, Color.clear);
+            float r = size / 2f;
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    float d = new Vector2(x + 0.5f - r, y + 0.5f - r).magnitude;
+                    if (d <= r && d >= r - thickness) tex.SetPixel(x, y, Color.white);
+                }
             return tex;
         }
 

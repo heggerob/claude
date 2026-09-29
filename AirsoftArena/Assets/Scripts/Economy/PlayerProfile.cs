@@ -37,6 +37,7 @@ namespace AirsoftArena
         public string secondaryWeapon = "04-PP2";
         public int cratesOpened;
         public string mapId = "pallet_yard";
+        public GameMode mode = GameMode.TeamDeathmatch;
 
         [Header("Cosmetics")]
         public List<string> ownedItems = new List<string>();

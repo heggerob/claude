@@ -72,8 +72,29 @@ namespace AirsoftArena
                 Think(match);
             }
 
-            if (target != null) Fight(now);
+            // Game mode objectives: flags to grab or return, a hill to hold.
+            Vector2 objective = Vector2.zero;
+            bool urgent = false;
+            bool hasObjective = match.Rules != null && match.Rules.BotObjective(soldier, out objective, out urgent);
+
+            if (target != null) Fight(now, hasObjective && urgent, objective);
+            else if (hasObjective) GoToObjective(objective);
             else Patrol(match, now);
+        }
+
+        void GoToObjective(Vector2 objective)
+        {
+            soldier.SetCrouch(false);
+            soldier.PullTrigger(false, false);
+            wasHeld = false;
+            Vector2 to = objective - soldier.Position;
+            if (to.magnitude < 1.2f)
+            {
+                soldier.SetMove(Vector2.zero, false);
+                return;
+            }
+            MoveTowards(objective, to.magnitude > 8f);
+            soldier.SetAim(to);
         }
 
         void Think(MatchManager match)
@@ -100,7 +121,7 @@ namespace AirsoftArena
             if (weapon.IsEmpty || (target == null && weapon.AmmoInMag < weapon.Data.magCapacity * 0.3f)) soldier.Reload();
         }
 
-        void Fight(float now)
+        void Fight(float now, bool rushObjective, Vector2 objective)
         {
             if (!target.InPlay) { target = null; return; }
             Vector2 to = target.Position - soldier.Position;
@@ -115,11 +136,16 @@ namespace AirsoftArena
             }
             Vector2 dir = to / Mathf.Max(0.01f, distance);
             Vector2 move = new Vector2(-dir.y, dir.x) * strafeSign * 0.7f;
-            if (distance > 17f) move += dir;
+            if (rushObjective)
+            {
+                // Carrying a flag or getting onto the hill beats a clean duel.
+                move = (objective - soldier.Position).normalized + move * 0.3f;
+            }
+            else if (distance > 17f) move += dir;
             else if (distance < 7f) move -= dir;
 
             bool shooting = now < burstUntil;
-            soldier.SetCrouch(shooting && crouchWhenShooting && distance > 8f);
+            soldier.SetCrouch(!rushObjective && shooting && crouchWhenShooting && distance > 8f);
             if (soldier.Crouching) move *= 0.3f;
             MoveDirect(move, false);
 

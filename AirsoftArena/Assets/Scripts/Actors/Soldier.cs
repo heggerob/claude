@@ -27,6 +27,9 @@ namespace AirsoftArena
         public int wronglyCalledOut;
         public int overshoots;      // shot someone who already had their rag up
         public int shotTheReferee;
+        public int captures;        // Capture the Flag
+        public int flagReturns;
+        public float hillSeconds;   // King of the Hill
     }
 
     /// <summary>
