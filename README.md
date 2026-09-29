@@ -62,6 +62,13 @@ Se [`AirsoftArena/DESIGN.md`](AirsoftArena/DESIGN.md) for designbeslutninger og 
 
 ![Pixel-art](AirsoftArena/docs/sprites.png)
 
-| Pallet Yard | Warehouse (innendørs) | Forest |
-|---|---|---|
-| ![](AirsoftArena/docs/map_pallet_yard.png) | ![](AirsoftArena/docs/map_warehouse.png) | ![](AirsoftArena/docs/map_forest.png) |
+| Pallet Yard (80×48 m) | Warehouse, innendørs (60×36 m) |
+|---|---|
+| ![](AirsoftArena/docs/map_pallet_yard.png) | ![](AirsoftArena/docs/map_warehouse.png) |
+| **Forest (96×60 m)** | **Old Farm (90×56 m)** |
+| ![](AirsoftArena/docs/map_forest.png) | ![](AirsoftArena/docs/map_old_farm.png) |
+
+Nærbilder i full oppløsning (32 px per meter):
+
+![](AirsoftArena/docs/map_pallet_yard_detail.png)
+![](AirsoftArena/docs/map_warehouse_detail.png)

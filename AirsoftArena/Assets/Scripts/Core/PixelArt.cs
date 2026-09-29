@@ -184,7 +184,7 @@ namespace AirsoftArena
                 for (int y = 11; y <= 20; y++)
                 {
                     bool bridge = y == 15 || y == 16;
-                    tex.SetPixel(21, y, bridge ? (Color)frame : y < 15 ? new Color32(70, 100, 130, 255) : new Color32(60, 88, 118, 255));
+                    tex.SetPixel(21, y, bridge ? (Color)frame : y < 15 ? (Color)new Color32(70, 100, 130, 255) : (Color)new Color32(60, 88, 118, 255));
                 }
                 tex.SetPixel(21, 12, new Color32(170, 205, 235, 255));
                 tex.SetPixel(21, 18, new Color32(150, 190, 225, 255));

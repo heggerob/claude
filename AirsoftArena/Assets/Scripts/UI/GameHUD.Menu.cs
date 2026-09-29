@@ -115,7 +115,15 @@ namespace AirsoftArena
             }
             GUILayout.EndHorizontal();
             GUILayout.Label(GameModes.Description(profile.mode), small);
-            GUILayout.Label(string.Format("4v4 vs bots  ·  {0:0}×{1:0} m  ·  3:00", selectedMap.bounds.width, selectedMap.bounds.height), small);
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Team size", label, GUILayout.Width(80f));
+            foreach (int size in new[] { 4, 6, 8 })
+            {
+                int n = size;
+                if (Choice(profile.teamSize == n, n + "v" + n, GUILayout.Height(26), GUILayout.Width(70f))) Defer(() => { profile.teamSize = n; PlayerProfile.Save(); });
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.Label(string.Format("{2}v{2} vs bots  ·  {0:0}×{1:0} m  ·  3:00", selectedMap.bounds.width, selectedMap.bounds.height, profile.teamSize), small);
             GUILayout.EndVertical();
 
             GUILayout.Space(16);
@@ -152,6 +160,7 @@ namespace AirsoftArena
                 autoCallHits = GameSettings.AutoCallHits,
                 map = MapLibrary.Get(profile.mapId),
                 mode = profile.mode,
+                teamSize = Mathf.Clamp(profile.teamSize, 2, 8),
             };
             int cost = settings.EntryCost;
             if (profile.money < cost)
@@ -376,7 +385,7 @@ namespace AirsoftArena
                 RefereeProfile.StarText(profile.RefStars), profile.refMatches, profile.refCorrectCalls, profile.refWrongCalls, profile.refMissed), label);
             GUILayout.Label(string.Format("Your fee: <b>${0}</b> per player  ×  8 players  =  <b>${1}</b> per match", profile.RefFeePerPlayer, profile.RefFeePerPlayer * 8), label);
             GUILayout.FlexibleSpace();
-            var settings = new MatchSettings { role = Role.Referee, primary = profile.Primary, secondary = profile.Secondary, map = MapLibrary.Get(profile.mapId), mode = profile.mode };
+            var settings = new MatchSettings { role = Role.Referee, primary = profile.Primary, secondary = profile.Secondary, map = MapLibrary.Get(profile.mapId), mode = profile.mode, teamSize = Mathf.Clamp(profile.teamSize, 2, 8) };
             GUILayout.Label("Map: <b>" + settings.map.name + "</b>   Mode: <b>" + GameModes.Name(settings.mode) + "</b>   (change them in the PLAY tab)", label);
             if (GUILayout.Button("START MATCH AS REFEREE", GUILayout.Height(48))) Defer(() => match.StartMatch(settings));
         }

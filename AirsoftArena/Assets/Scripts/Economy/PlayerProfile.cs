@@ -43,6 +43,7 @@ namespace AirsoftArena
         public int cratesOpened;
         public string mapId = "pallet_yard";
         public GameMode mode = GameMode.TeamDeathmatch;
+        public int teamSize = 4;
 
         [Header("Cosmetics")]
         public List<string> ownedItems = new List<string>();
