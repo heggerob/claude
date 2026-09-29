@@ -65,6 +65,7 @@ namespace OdinsCoin
             controller.enabled = false;
             int gold = Mathf.RoundToInt(12 * Fortune.Current.LootMultiplier);
             Fortune.Current.Gold += gold;
+            Fortune.Current.AddFavour(Ravens.FavourPerKill);
             CombatHud.Number(transform.position + Vector3.up * 1.2f, "+" + gold + " gold", Materials.Gold);
         }
 

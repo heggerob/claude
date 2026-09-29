@@ -65,6 +65,7 @@ namespace OdinsCoin
             gameObject.AddComponent<CombatHud>().Player = Player.GetComponent<VikingCombat>();
             CoinAltar.Create(Ship);
             gameObject.AddComponent<CoinUI>();
+            gameObject.AddComponent<Ravens>();
             var hud = gameObject.AddComponent<ShipHud>();
             hud.Ship = Ship;
             hud.Player = Player;

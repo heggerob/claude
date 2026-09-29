@@ -91,12 +91,16 @@ namespace OdinsCoin
         public static readonly int[] Wagers = { 0, 25, 50, 100, 200 };
 
         public int Gold = 100;
-        /// <summary>0..1, filled by winning flips. At 1 the ravens can be called (roadmap item 8).</summary>
+        /// <summary>0..1, filled by winning flips, raids and plunder. When full, Odin's ravens answer your call.</summary>
         public float Favour;
-        /// <summary>Extra heads chance from runes carved into the coin (roadmap item 8).</summary>
+        /// <summary>Extra heads chance from other sources than runes (tests, future upgrades).</summary>
         public float RuneBonus;
-        /// <summary>How much curses are softened by runes, 0..0.5.</summary>
+        /// <summary>How much curses are shortened by other sources than runes, 0..0.5.</summary>
         public float CurseWard;
+        /// <summary>Runes carved into the coin, at most <see cref="Runes.Slots"/>.</summary>
+        public readonly List<RuneCard> Carved = new List<RuneCard>();
+        /// <summary>Muninn remembers a flip that went right: the next one is Odin's eye for sure.</summary>
+        public bool NextFlipBlessed;
         public readonly List<ActiveFate> Active = new List<ActiveFate>();
         public int Flips, HeadsCount;
         /// <summary>Chests sold at home and the gold they brought in, for the mead hall's boasting board.</summary>
@@ -116,7 +120,8 @@ namespace OdinsCoin
             get
             {
                 float luck = Has(FateEffect.Luck, FateKind.Blessing) ? 0.1f * Strength(FateEffect.Luck, FateKind.Blessing) : 0f;
-                return Mathf.Clamp(BaseHeadsChance + RuneBonus + luck, 0.05f, MaxHeadsChance);
+                float runes = (HasRune(RuneEffect.Odds) ? 0.06f : 0f) - (HasRune(RuneEffect.Hail) ? 0.1f : 0f);
+                return Mathf.Clamp(BaseHeadsChance + RuneBonus + runes + luck, 0.05f, MaxHeadsChance);
             }
         }
 
@@ -129,22 +134,24 @@ namespace OdinsCoin
         public FlipResult Flip(int wager, float roll, float pick)
         {
             wager = Mathf.Clamp(wager, 0, Gold);
-            float chance = HeadsChance;
+            float chance = NextFlipBlessed ? 1f : HeadsChance;
             bool heads = roll < chance;
+            NextFlipBlessed = false;
             int tier = Tier(wager);
             var pool = heads ? Fates.Blessings : Fates.Curses;
             var card = pool[Mathf.Clamp(Mathf.FloorToInt(pick * pool.Length), 0, pool.Length - 1)];
 
             Gold -= wager;
-            int payout = heads ? wager * 2 : 0;
+            int payout = heads ? Mathf.RoundToInt(wager * PayoutMultiplier) : 0;
             Gold += payout;
 
             float duration = card.baseDuration * (tier == 3 ? 2f : tier == 2 ? 1.5f : 1f);
-            if (!heads) duration *= 1f - CurseWard;
+            if (heads) duration *= HasRune(RuneEffect.LongBlessings) ? 1.3f : 1f;
+            else duration *= 1f - TotalCurseWard;
             var fate = Add(card, tier, duration);
 
             Flips++;
-            if (heads) { HeadsCount++; Favour = Mathf.Min(1f, Favour + 0.15f * tier); }
+            if (heads) { HeadsCount++; AddFavour(0.15f * tier); }
             else Favour = Mathf.Max(0f, Favour - 0.1f);
 
             return new FlipResult { heads = heads, wager = wager, payout = payout, fate = fate, headsChance = chance };
@@ -163,6 +170,66 @@ namespace OdinsCoin
             var fate = new ActiveFate { card = card, tier = tier, remaining = duration };
             Active.Add(fate);
             return fate;
+        }
+
+        // ---------------------------------------------------------------- runes
+
+        public bool HasRune(RuneEffect effect)
+        {
+            foreach (var r in Carved) if (r.effect == effect) return true;
+            return false;
+        }
+
+        public bool CanCarve(RuneCard rune)
+        {
+            return rune != null && !Carved.Contains(rune) && Carved.Count < Runes.Slots && Gold >= rune.cost;
+        }
+
+        /// <summary>Pay the rune-carver and cut the rune into the rim.</summary>
+        public bool Carve(RuneCard rune)
+        {
+            if (!CanCarve(rune)) return false;
+            Gold -= rune.cost;
+            Carved.Add(rune);
+            return true;
+        }
+
+        /// <summary>Grind a rune off to free its slot. The gold is gone.</summary>
+        public bool GrindOff(RuneCard rune) { return Carved.Remove(rune); }
+
+        /// <summary>Gold paid back per gold wagered when Odin's eye comes up.</summary>
+        public float PayoutMultiplier
+        {
+            get
+            {
+                float m = HasRune(RuneEffect.Hail) ? 2.75f : 2f;
+                if (HasRune(RuneEffect.Wealth)) m += 0.25f;
+                return m;
+            }
+        }
+
+        public float TotalCurseWard { get { return Mathf.Clamp(CurseWard + (HasRune(RuneEffect.Ward) ? 0.3f : 0f), 0f, 0.5f); } }
+
+        /// <summary>Gold back per gold wagered, on average (1 = a fair coin).</summary>
+        public float ExpectedReturn { get { return HeadsChance * PayoutMultiplier; } }
+
+        // ---------------------------------------------------------------- Odin's favour and the ravens
+
+        public const float RavenCost = 1f;
+        public bool CanCallRavens { get { return Favour >= RavenCost - 0.001f; } }
+
+        public void AddFavour(float amount)
+        {
+            if (amount > 0f && HasRune(RuneEffect.Favour)) amount *= 1.5f;
+            Favour = Mathf.Clamp01(Favour + amount);
+        }
+
+        /// <summary>Spend a full favour meter. Returns false if it isn't full.</summary>
+        public bool SpendFavour()
+        {
+            if (!CanCallRavens) return false;
+            Favour = 0f;
+            return true;
         }
 
         public void Tick(float dt)

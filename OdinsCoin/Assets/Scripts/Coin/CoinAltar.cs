@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace OdinsCoin
@@ -16,9 +17,13 @@ namespace OdinsCoin
 
         public const float FlipTime = 1.6f;
         public const float UseRange = 2f;
+        /// <summary>Seconds before the coin can be flipped again: Odin doesn't like to be pestered.</summary>
+        public const float Cooldown = 10f;
 
         public Longship Ship;
         public bool Flipping { get { return flipStart >= 0f; } }
+        /// <summary>Seconds until the coin can be flipped again (0 = ready).</summary>
+        public float ReadyIn { get { return Mathf.Max(0f, readyAt - Time.time); } }
         public FlipResult LastResult { get; private set; }
         /// <summary>Raised when the coin has landed and the result is shown.</summary>
         public event System.Action<FlipResult> Landed;
@@ -26,6 +31,9 @@ namespace OdinsCoin
         Transform coin;
         Vector3 rest;
         float flipStart = -1f;
+        float readyAt;
+        readonly List<Transform> runeMarks = new List<Transform>();
+        int shownRunes = -1;
         FlipResult pending;
         Light glow;
 
@@ -55,6 +63,15 @@ namespace OdinsCoin
                 LongshipBuilder.Deco(PrimitiveType.Cube, coin, new Vector3(Mathf.Cos(a) * 0.1f, -0.026f, Mathf.Sin(a) * 0.1f), new Vector3(0.05f, 0.004f, 0.04f), new Color(0.2f, 0.45f, 0.2f));
             }
 
+            // Rune slots around the rim: small dark notches, lit gold once a rune is carved.
+            for (int i = 0; i < Runes.Slots; i++)
+            {
+                float a = (i / (float)Runes.Slots) * Mathf.PI * 2f + 0.5f;
+                var mark = LongshipBuilder.Deco(PrimitiveType.Cube, coin, new Vector3(Mathf.Cos(a) * 0.15f, 0.028f, Mathf.Sin(a) * 0.15f), new Vector3(0.03f, 0.004f, 0.05f), new Color(0.35f, 0.25f, 0.08f));
+                mark.localRotation = Quaternion.Euler(0f, -a * Mathf.Rad2Deg, 0f);
+                runeMarks.Add(mark);
+            }
+
             glow = new GameObject("Coin Glow").AddComponent<Light>();
             glow.transform.SetParent(transform, false);
             glow.transform.localPosition = new Vector3(0f, 1.6f, 0f);
@@ -66,7 +83,8 @@ namespace OdinsCoin
         /// <summary>Start a flip. The outcome is decided up front; the animation just shows it.</summary>
         public FlipResult Flip(int wager)
         {
-            if (Flipping) return null;
+            if (Flipping || ReadyIn > 0f) return null;
+            readyAt = Time.time + FlipTime + Cooldown;
             pending = Fortune.Current.Flip(wager, Random.value, Random.value);
             flipStart = Time.time;
             return pending;
@@ -76,6 +94,7 @@ namespace OdinsCoin
         {
             AnimateFlip();
             ApplyWorldFates();
+            ShowRunes();
             // Blessings glow gold, curses glow sickly green, while any are active.
             var fortune = Fortune.Current;
             bool blessed = false, cursed = false;
@@ -103,6 +122,15 @@ namespace OdinsCoin
             float spin = t * (turns * 360f + (pending.heads ? 0f : 180f));
             coin.localPosition = rest + Vector3.up * height;
             coin.localRotation = Quaternion.Euler(spin, t * 90f, 0f);
+        }
+
+        void ShowRunes()
+        {
+            int carved = Fortune.Current.Carved.Count;
+            if (carved == shownRunes) return;
+            shownRunes = carved;
+            for (int i = 0; i < runeMarks.Count; i++)
+                runeMarks[i].GetComponent<Renderer>().sharedMaterial = Materials.Get(i < carved ? new Color(1f, 0.85f, 0.4f) : new Color(0.35f, 0.25f, 0.08f));
         }
 
         void ApplyWorldFates()

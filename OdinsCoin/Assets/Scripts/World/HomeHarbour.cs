@@ -141,6 +141,7 @@ namespace OdinsCoin
             Fortune.Current.Gold += gold;
             Fortune.Current.ChestsSold++;
             Fortune.Current.GoldPlundered += gold;
+            Fortune.Current.AddFavour(Ravens.FavourPerChest);
             chest.Sold = true;
             chest.Carried = false;
             chest.gameObject.SetActive(false);

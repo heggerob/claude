@@ -21,6 +21,7 @@ public static class LogicTests
         CoinTests();
         IslandTests();
         HarbourTests();
+        RuneTests();
         CombatTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
@@ -59,6 +60,68 @@ public static class LogicTests
             foreach (var other in all)
                 if (other != spec) Check(Vector2.Distance(spec.centre, other.centre) > (spec.radius + other.radius) * 1.25f, spec.name + " doesn't overlap " + other.name);
         }
+    }
+
+    static void RuneTests()
+    {
+        var f = new Fortune { Gold = 1000 };
+        Check(Math.Abs(f.ExpectedReturn - 1f) < 0.001f, "the bare coin is fair: 1 gold back per gold wagered on average");
+        var ansuz = Runes.Find("ansuz");
+        var hail = Runes.Find("hagalaz");
+        var fehu = Runes.Find("fehu");
+        Check(f.Carve(ansuz) && f.Gold == 1000 - ansuz.cost, "carving a rune costs its gold");
+        Check(!f.Carve(ansuz), "the same rune can't be carved twice");
+        Check(Math.Abs(f.HeadsChance - 0.56f) < 0.001f, "Ansuz: +6% (" + f.HeadsChance + ")");
+        Check(f.Carve(hail) && Math.Abs(f.HeadsChance - 0.46f) < 0.001f && Math.Abs(f.PayoutMultiplier - 2.75f) < 0.001f, "Hagalaz: -10% but 2.75x");
+        Check(f.Carve(fehu) && Math.Abs(f.PayoutMultiplier - 3f) < 0.001f, "Fehu adds 0.25x");
+        Check(f.Carved.Count == Runes.Slots && !f.CanCarve(Runes.Find("algiz")), "only " + Runes.Slots + " runes fit on the rim");
+        Check(f.GrindOff(hail) && f.CanCarve(Runes.Find("algiz")), "grinding a rune off frees its slot");
+        // No single rune turns the coin into a gold mine; even the greediest set stays a gamble.
+        foreach (var r in Runes.All)
+        {
+            var g = new Fortune { Gold = 1000 };
+            g.Carve(r);
+            Check(g.ExpectedReturn <= 1.15f, r.name + " alone keeps the coin near fair (" + g.ExpectedReturn + ")");
+        }
+        var greedy = new Fortune { Gold = 5000 };
+        greedy.Carve(ansuz); greedy.Carve(fehu); greedy.Carve(hail);
+        Check(greedy.ExpectedReturn < 1.45f && greedy.HeadsChance < 0.5f, "Ansuz+Fehu+Hagalaz: pays well, but you lose more often than you win");
+
+        // Algiz shortens curses, Thurisaz lengthens blessings.
+        var w = new Fortune { Gold = 1000 };
+        w.Carve(Runes.Find("algiz"));
+        var cursed = w.Flip(0, 0.99f, 0f);
+        Check(!cursed.heads && Math.Abs(cursed.fate.remaining - cursed.fate.card.baseDuration * 0.7f) < 0.01f, "Algiz: curses 30% shorter");
+        var t = new Fortune { Gold = 1000 };
+        t.Carve(Runes.Find("thurisaz"));
+        var blessed = t.Flip(0, 0f, 0f);
+        Check(blessed.heads && Math.Abs(blessed.fate.remaining - blessed.fate.card.baseDuration * 1.3f) < 0.01f, "Thurisaz: blessings 30% longer");
+
+        // Odin's favour and the ravens.
+        var fav = new Fortune();
+        fav.AddFavour(0.5f);
+        Check(!fav.CanCallRavens && !fav.SpendFavour() && Math.Abs(fav.Favour - 0.5f) < 0.001f, "half favour can't call the ravens");
+        fav.AddFavour(0.7f);
+        Check(fav.CanCallRavens && fav.Favour <= 1f, "favour fills up to 1");
+        Check(fav.SpendFavour() && fav.Favour == 0f && !fav.CanCallRavens, "calling the ravens empties the favour");
+        var raid = new Fortune { Gold = 1000 };
+        raid.Carve(Runes.Find("raidho"));
+        raid.AddFavour(0.2f);
+        Check(Math.Abs(raid.Favour - 0.3f) < 0.001f, "Raidho: favour fills 50% faster");
+        int kills = (int)Math.Ceiling(1f / Ravens.FavourPerKill);
+        Check(kills >= 8 && kills <= 16, "a raid of " + kills + " Saxons fills the favour");
+        // Muninn: the next flip is Odin's eye even with the worst roll, then the coin is back to normal.
+        var mun = new Fortune { Gold = 100 };
+        mun.NextFlipBlessed = true;
+        var sure = mun.Flip(50, 0.9999f, 0.5f);
+        Check(sure.heads && mun.Gold == 150 && !mun.NextFlipBlessed, "Muninn's flip is Odin's eye and pays out");
+        Check(!mun.Flip(0, 0.9999f, 0.5f).heads, "only one flip is blessed");
+
+        // Huginn picks the nearest treasures.
+        var pts = new List<Vector3> { new Vector3(100f, 0f, 0f), new Vector3(10f, 0f, 0f), new Vector3(-30f, 0f, 0f), new Vector3(0f, 0f, 400f), new Vector3(5f, 0f, 5f) };
+        var near = Ravens.Nearest(pts, Vector3.zero, 3);
+        Check(near.Count == 3 && near[0] == 4 && near[1] == 1 && near[2] == 2, "Huginn finds the three nearest chests in order");
+        Check(Ravens.Nearest(pts, Vector3.zero, 10).Count == pts.Count, "never more targets than chests");
     }
 
     static void HarbourTests()

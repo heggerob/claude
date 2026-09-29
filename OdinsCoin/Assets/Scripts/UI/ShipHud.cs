@@ -61,17 +61,38 @@ namespace OdinsCoin
         {
             var f = Fortune.Current;
             float x = Screen.width - 300f, y = 10f;
-            int lines = 2 + f.Active.Count;
+            var ravens = Ravens.Instance;
+            bool huginn = ravens != null && ravens.Marked.Count > 0 && Player != null;
+            int lines = 2 + f.Active.Count + (huginn ? 1 : 0) + (f.Carved.Count > 0 ? 1 : 0);
             GUI.Box(new Rect(x, y, 290f, 28f + lines * 22f), GUIContent.none);
             int cargo;
             int cargoGold = HomeHarbour.CargoValue(Ship, out cargo);
             GUI.Label(new Rect(x + 10f, y + 6f, 280f, 22f), "<b>" + f.Gold + " gold</b>" + (cargo > 0 ? string.Format("   <size=12>cargo: {0} chest{1} ≈ {2}</size>", cargo, cargo == 1 ? "" : "s", cargoGold) : ""), style);
-            GUI.Label(new Rect(x + 10f, y + 28f, 90f, 22f), "<size=12>Odin's favour</size>", style);
+            GUI.Label(new Rect(x + 10f, y + 28f, 100f, 22f), f.CanCallRavens ? "<size=12><color=#ffd060>Ravens ready!</color></size>" : "<size=12>Odin's favour</size>", style);
             GUI.Box(new Rect(x + 110f, y + 34f, 170f, 10f), GUIContent.none);
             var old = GUI.color;
             GUI.color = new Color(1f, 0.8f, 0.3f);
             GUI.DrawTexture(new Rect(x + 111f, y + 35f, 168f * f.Favour, 8f), Texture2D.whiteTexture);
             GUI.color = old;
+            float row = y + 52f + f.Active.Count * 22f;
+            if (f.Carved.Count > 0)
+            {
+                var runes = new System.Text.StringBuilder();
+                foreach (var r in f.Carved) runes.Append(r.glyph).Append(' ');
+                GUI.Label(new Rect(x + 10f, row, 280f, 22f), "<size=12>Runes on the coin:</size> <color=#ffd060>" + runes + "</color>", style);
+                row += 22f;
+            }
+            if (huginn)
+            {
+                float dist;
+                var chest = ravens.NearestMarked(Player.transform.position, out dist);
+                if (chest != null)
+                {
+                    Vector3 to = chest.transform.position - Player.transform.position;
+                    float bearing = Mathf.Repeat(Mathf.Atan2(to.x, to.z) * Mathf.Rad2Deg, 360f);
+                    GUI.Label(new Rect(x + 10f, row, 280f, 22f), string.Format("<size=12>Huginn circles treasure: <b>{0:0} m</b>, bearing {1:000}° · {2:0}s</size>", dist, bearing, ravens.HuginnLeft), style);
+                }
+            }
             for (int i = 0; i < f.Active.Count; i++)
             {
                 var a = f.Active[i];

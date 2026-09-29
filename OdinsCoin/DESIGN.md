@@ -18,8 +18,8 @@ Om bord på langskipet står et lite alter med **Odins mynt**. Myntkastet er gam
   - Lokes lure: våpenet sklir innimellom.
   - Rans garn: skipet lekker.
   - Hels kulde: mindre helse til neste daggry.
-- **Runer:** Du graverer runer inn i mynten og vipper oddsen. Kron kan gå fra 50 % til 60 %, og en rune kan gjøre forbannelsene svakere. Runer finner du i raid.
-- **Lykke-meter:** En serie velsignelser fyller Odins gunst. Når den er full, kan du tilkalle ravnene (Hugin og Munin), som speider ut skatter.
+- **Runer:** Du graverer inntil tre runer inn i myntkanten ved alteret, og betaler med gull. Ansuz gir bedre odds, Algiz korter ned forbannelser, Fehu øker utbetalingen, Thurisaz forlenger velsignelser og Raidho fyller Odins gunst raskere. Hagalaz gir dårligere odds, men større gevinst. Skjermen viser alltid oddsen og hvor mye du i snitt får tilbake per gull. Mellom hvert kast må mynten hvile i 10 sekunder.
+- **Lykke-meter:** Odins gunst fylles når du vinner kast, dreper saksere og selger kister. Når den er full, kan du sende en ravn fra alteret. Hugin sirkler over de tre nærmeste skattene. Munin setter seg på alteret, og da blir neste kast Odins øye.
 - **Ærlighet:** Oddsen står alltid tydelig på skjermen. Ingen ekte penger, bare gull fra spillet.
 
 ## Spill-loopen
