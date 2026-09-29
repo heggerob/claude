@@ -1,0 +1,226 @@
+using UnityEngine;
+
+namespace OdinsCoin
+{
+    /// <summary>
+    /// Shapes for the storybook characters: stick limbs, fur tufts, jagged hems, hanging cloth, braids,
+    /// straps wound around boots. All plain <see cref="MeshData"/>, facing outwards.
+    /// </summary>
+    public static class CharacterKit
+    {
+        /// <summary>A thin straight rod (the black stick arms and legs).</summary>
+        public static MeshData Stick(Vector3 a, Vector3 b, float radius, int segments = 6)
+        {
+            return MeshData.Tube(new[] { a, b }, new[] { radius, radius }, segments);
+        }
+
+        /// <summary>A pointed tuft: a narrow cone from <paramref name="root"/> towards <paramref name="tip"/>.</summary>
+        public static MeshData Tuft(Vector3 root, Vector3 tip, float width)
+        {
+            Vector3 mid = Vector3.Lerp(root, tip, 0.45f) + Vector3.down * 0.15f * Vector3.Distance(root, tip);
+            return MeshData.Tube(new[] { root, mid, tip }, new[] { width, width * 0.7f, 0.002f }, 4);
+        }
+
+        /// <summary>
+        /// A shaggy ring of fur: a soft roll plus tufts sticking out and drooping, like a pelt collar or a boot cuff.
+        /// The ring is an ellipse (radius x, depth factor) around a centre, at the centre's height.
+        /// </summary>
+        public static MeshData FurRing(Vector3 centre, float radius, float depth, float thickness, int tufts, float tuftLength, int seed, float droop = 0.6f)
+        {
+            var rng = new System.Random(seed);
+            var m = new MeshData();
+            // The roll.
+            m.Append(MeshData.Lathe(new[] { new Vector2(radius * 0.92f, -thickness * 0.7f), new Vector2(radius * 1.05f, -thickness * 0.2f), new Vector2(radius * 1.05f, thickness * 0.3f), new Vector2(radius * 0.9f, thickness * 0.7f) }, 20)
+                .Transformed(centre, Quaternion.identity, new Vector3(1f, 1f, depth)));
+            // Soft clumps along the roll, and tufts of varied length hanging out of it, so it reads as fluffy
+            // pelt rather than a row of teeth.
+            for (int i = 0; i < tufts; i++)
+            {
+                float a = (i + (float)rng.NextDouble() * 0.6f) / tufts * Mathf.PI * 2f;
+                Vector3 dir = new Vector3(Mathf.Sin(a), 0f, Mathf.Cos(a) * depth);
+                float y = ((float)rng.NextDouble() - 0.6f) * thickness * 0.8f;
+                Vector3 root = centre + dir * radius * 0.95f + Vector3.up * y;
+                float lump = thickness * (0.45f + (float)rng.NextDouble() * 0.3f);
+                m.Append(MeshData.Ellipsoid(root, new Vector3(lump, lump * 0.8f, lump), 7, 4));
+                if (rng.NextDouble() < 0.25) continue; // not every clump has a tuft
+                float len = tuftLength * (0.45f + (float)rng.NextDouble() * 0.75f);
+                float fall = droop * (0.7f + (float)rng.NextDouble() * 0.6f);
+                Vector3 tip = root + (dir * (1f - fall * 0.5f) + Vector3.down * fall).normalized * len;
+                m.Append(Tuft(root, tip, thickness * (0.4f + (float)rng.NextDouble() * 0.3f)));
+            }
+            return m;
+        }
+
+        /// <summary>
+        /// A skirt or tunic tail: an elliptical cone from the waist down to a ragged hem. Closed underneath
+        /// (the legs come out through the bottom), so it's a solid that shades and outlines cleanly.
+        /// </summary>
+        public static MeshData RaggedSkirt(float topY, float topRadius, float bottomY, float bottomRadius, float depth, int segments, float jag, int seed)
+        {
+            var rng = new System.Random(seed);
+            const int rows = 5;
+            var m = new MeshData();
+            var hem = new float[segments];
+            for (int s = 0; s < segments; s++) hem[s] = ((s & 1) == 0 ? 1f : 0.2f) * jag * (0.5f + (float)rng.NextDouble());
+            for (int r = 0; r <= rows; r++)
+            {
+                float k = r / (float)rows; // 0 = hem, 1 = waist
+                for (int s = 0; s < segments; s++)
+                {
+                    float a = s / (float)segments * Mathf.PI * 2f;
+                    float y = Mathf.Lerp(bottomY - hem[s], topY, k);
+                    // Slight bell: widest just above the hem.
+                    float rad = Mathf.Lerp(bottomRadius, topRadius, k * k) * (1f + 0.04f * Mathf.Sin(k * Mathf.PI));
+                    m.Vertices.Add(new Vector3(Mathf.Sin(a) * rad, y, Mathf.Cos(a) * rad * depth));
+                }
+            }
+            for (int r = 0; r < rows; r++)
+                for (int s = 0; s < segments; s++)
+                {
+                    int a = r * segments + s, b = r * segments + (s + 1) % segments;
+                    int c = a + segments, d = b + segments;
+                    m.Triangles.Add(a); m.Triangles.Add(b); m.Triangles.Add(c);
+                    m.Triangles.Add(b); m.Triangles.Add(d); m.Triangles.Add(c);
+                }
+            // Caps: underneath (following the hem) and on top.
+            int under = m.Vertices.Count;
+            m.Vertices.Add(new Vector3(0f, bottomY + jag, 0f));
+            for (int s = 0; s < segments; s++) { m.Triangles.Add(under); m.Triangles.Add((s + 1) % segments); m.Triangles.Add(s); }
+            int over = m.Vertices.Count;
+            m.Vertices.Add(new Vector3(0f, topY, 0f));
+            int top = rows * segments;
+            for (int s = 0; s < segments; s++) { m.Triangles.Add(over); m.Triangles.Add(top + s); m.Triangles.Add(top + (s + 1) % segments); }
+            return m;
+        }
+
+        /// <summary>
+        /// A piece of cloth with thickness from a grid of points (rows top to bottom, columns left to right as seen
+        /// from the side the cloth faces). <paramref name="facing"/> points out of the front face.
+        /// </summary>
+        public static MeshData Sheet(Vector3[,] grid, Vector3 facing, float thickness)
+        {
+            int rows = grid.GetLength(0), cols = grid.GetLength(1);
+            var m = new MeshData();
+            Vector3 half = facing.normalized * thickness * 0.5f;
+            for (int side = 0; side < 2; side++)
+                for (int r = 0; r < rows; r++)
+                    for (int c = 0; c < cols; c++)
+                        m.Vertices.Add(grid[r, c] + (side == 0 ? half : -half));
+            int back = rows * cols;
+            System.Func<int, int, int> F = (r, c) => r * cols + c;
+            // Whichever way the grid runs, wind the faces so the front one faces `facing`.
+            Vector3 across = grid[0, cols - 1] - grid[0, 0], down = grid[rows - 1, 0] - grid[0, 0];
+            bool flip = Vector3.Dot(Vector3.Cross(across, down), facing) < 0f;
+            System.Action<int, int, int> T = (x, y, z) =>
+            {
+                m.Triangles.Add(x);
+                m.Triangles.Add(flip ? z : y);
+                m.Triangles.Add(flip ? y : z);
+            };
+            for (int r = 0; r < rows - 1; r++)
+                for (int c = 0; c < cols - 1; c++)
+                {
+                    int a = F(r, c), b = F(r, c + 1), d = F(r + 1, c), e = F(r + 1, c + 1);
+                    // Front face.
+                    T(a, b, d);
+                    T(b, e, d);
+                    // Back face (reversed).
+                    T(back + a, back + d, back + b);
+                    T(back + b, back + d, back + e);
+                }
+            // Edges all the way round.
+            var ring = new System.Collections.Generic.List<int>();
+            for (int c = 0; c < cols; c++) ring.Add(F(0, c));
+            for (int r = 1; r < rows; r++) ring.Add(F(r, cols - 1));
+            for (int c = cols - 2; c >= 0; c--) ring.Add(F(rows - 1, c));
+            for (int r = rows - 2; r > 0; r--) ring.Add(F(r, 0));
+            for (int i = 0; i < ring.Count; i++)
+            {
+                int a = ring[i], b = ring[(i + 1) % ring.Count];
+                T(a, back + a, b);
+                T(b, back + a, back + b);
+            }
+            return m;
+        }
+
+        /// <summary>
+        /// A cape hanging from the shoulders down the back: curved around the body, flaring towards a ragged hem.
+        /// Local to the body; <paramref name="top"/> is the middle of the neckline.
+        /// </summary>
+        public static MeshData Cape(Vector3 top, float topWidth, float bottomWidth, float length, float wrap, float jag, int seed, float thickness = 0.018f)
+        {
+            var rng = new System.Random(seed);
+            const int rows = 8, cols = 11;
+            var hem = new float[cols];
+            for (int c = 0; c < cols; c++) hem[c] = ((c & 1) == 0 ? 1f : 0.25f) * jag * (0.4f + (float)rng.NextDouble());
+            var grid = new Vector3[rows, cols];
+            for (int r = 0; r < rows; r++)
+                for (int c = 0; c < cols; c++)
+                {
+                    float u = c / (float)(cols - 1) * 2f - 1f;  // -1 left .. 1 right (seen from behind)
+                    float v = r / (float)(rows - 1);            // 0 top .. 1 hem
+                    float width = Mathf.Lerp(topWidth, bottomWidth, v) * 0.5f;
+                    float drop = v * (length + hem[c]);
+                    // Wraps around the shoulders at the top, hangs flatter and further back lower down.
+                    float back = -(wrap * (1f - u * u) * (1f - 0.5f * v)) - v * 0.1f;
+                    grid[r, c] = top + new Vector3(-u * width, -drop, back);
+                }
+            return Sheet(grid, Vector3.back, thickness);
+        }
+
+        /// <summary>A braid: a chain of lumps along a path, with a bead near the end.</summary>
+        public static MeshData Braid(Vector3[] path, float radius)
+        {
+            var m = new MeshData();
+            float total = 0f;
+            for (int i = 1; i < path.Length; i++) total += Vector3.Distance(path[i - 1], path[i]);
+            int lumps = Mathf.Max(3, Mathf.RoundToInt(total / (radius * 1.5f)));
+            for (int k = 0; k < lumps; k++)
+            {
+                float t = k / (float)(lumps - 1);
+                Vector3 p = Along(path, t);
+                float r = radius * Mathf.Lerp(1f, 0.7f, t);
+                m.Append(MeshData.Ellipsoid(p, new Vector3(r, r * 1.2f, r), 8, 5));
+            }
+            return m;
+        }
+
+        /// <summary>A point a fraction of the way along a polyline.</summary>
+        public static Vector3 Along(Vector3[] path, float t)
+        {
+            float total = 0f;
+            for (int i = 1; i < path.Length; i++) total += Vector3.Distance(path[i - 1], path[i]);
+            float want = Mathf.Clamp01(t) * total;
+            for (int i = 1; i < path.Length; i++)
+            {
+                float seg = Vector3.Distance(path[i - 1], path[i]);
+                if (want <= seg || i == path.Length - 1) return Vector3.Lerp(path[i - 1], path[i], seg > 0f ? Mathf.Clamp01(want / seg) : 0f);
+                want -= seg;
+            }
+            return path[path.Length - 1];
+        }
+
+        /// <summary>A ring band (belts, trims, bracelets) around the Y axis, elliptical.</summary>
+        public static MeshData Band(float y, float height, float radius, float depth, int segments = 18)
+        {
+            return MeshData.Lathe(new[] { new Vector2(radius, y - height / 2f), new Vector2(radius, y + height / 2f) }, segments)
+                .Transformed(Vector3.zero, Quaternion.identity, new Vector3(1f, 1f, depth));
+        }
+
+        /// <summary>A strap wound around a boot or a leg in a spiral, from one height to another.</summary>
+        public static MeshData Spiral(float fromY, float toY, float radius, float turns, float phase, float thickness)
+        {
+            int n = Mathf.Max(8, Mathf.RoundToInt(turns * 14f));
+            var path = new Vector3[n + 1];
+            var radii = new float[n + 1];
+            for (int i = 0; i <= n; i++)
+            {
+                float t = i / (float)n;
+                float a = phase + t * turns * Mathf.PI * 2f;
+                path[i] = new Vector3(Mathf.Sin(a) * radius, Mathf.Lerp(fromY, toY, t), Mathf.Cos(a) * radius);
+                radii[i] = thickness;
+            }
+            return MeshData.Tube(path, radii, 5);
+        }
+    }
+}

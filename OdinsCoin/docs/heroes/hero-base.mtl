@@ -1,0 +1,232 @@
+newmtl m0
+Kd 0.09 0.07 0.06
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m1
+Kd 0.4 0.26 0.15
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m2
+Kd 0.22 0.15 0.1
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m3
+Kd 0.86 0.82 0.74
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m4
+Kd 0.09 0.07 0.06
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m5
+Kd 0.4 0.26 0.15
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m6
+Kd 0.22 0.15 0.1
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m7
+Kd 0.86 0.82 0.74
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m8
+Kd 0.33 0.26 0.2
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m9
+Kd 0.27 0.22 0.18
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m10
+Kd 0.22 0.17 0.13
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m11
+Kd 0.22 0.15 0.1
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m12
+Kd 0.78 0.6 0.27
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m13
+Kd 0.22 0.15 0.1
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m14
+Kd 0.4 0.26 0.15
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m15
+Kd 0.78 0.6 0.27
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m16
+Kd 0.86 0.82 0.74
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m17
+Kd 0.6 0.55 0.48
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m18
+Kd 0.09 0.07 0.06
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m19
+Kd 0.09 0.07 0.06
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m20
+Kd 0.22 0.15 0.1
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m21
+Kd 0.09 0.07 0.06
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m22
+Kd 0.22 0.15 0.1
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m23
+Kd 0.96 0.86 0.74
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m24
+Kd 0.09 0.07 0.06
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m25
+Kd 0.72 0.3 0.14
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m26
+Kd 0.5 0.52 0.55
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m27
+Kd 0.39 0.406 0.429
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m28
+Kd 0.6 0.624 0.66
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+

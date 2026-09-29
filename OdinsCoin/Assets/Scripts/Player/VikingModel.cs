@@ -27,6 +27,50 @@ namespace OdinsCoin
 
         public MeshData Moved(Vector3 position) { return Transformed(position, Quaternion.identity, Vector3.one); }
 
+        /// <summary>Vertex normals averaged over every face touching the same position (welds hard edges too).</summary>
+        public Vector3[] WeldedNormals()
+        {
+            var sum = new Dictionary<long, Vector3>();
+            var keys = new long[Vertices.Count];
+            for (int i = 0; i < Vertices.Count; i++)
+            {
+                var v = Vertices[i];
+                keys[i] = ((long)Mathf.RoundToInt(v.x * 2000f) * 73856093L) ^ ((long)Mathf.RoundToInt(v.y * 2000f) * 19349663L) ^ ((long)Mathf.RoundToInt(v.z * 2000f) * 83492791L);
+            }
+            for (int t = 0; t < Triangles.Count; t += 3)
+            {
+                int a = Triangles[t], b = Triangles[t + 1], c = Triangles[t + 2];
+                Vector3 n = Vector3.Cross(Vertices[b] - Vertices[a], Vertices[c] - Vertices[a]);
+                foreach (int i in new[] { a, b, c })
+                {
+                    Vector3 cur;
+                    sum.TryGetValue(keys[i], out cur);
+                    sum[keys[i]] = cur + n;
+                }
+            }
+            var normals = new Vector3[Vertices.Count];
+            for (int i = 0; i < normals.Length; i++)
+            {
+                Vector3 n;
+                sum.TryGetValue(keys[i], out n);
+                normals[i] = n.sqrMagnitude > 1e-12f ? n.normalized : Vector3.up;
+            }
+            return normals;
+        }
+
+        /// <summary>An inside-out copy pushed out along the normals by <paramref name="width"/>: an ink outline shell.</summary>
+        public MeshData Outline(float width)
+        {
+            var normals = WeldedNormals();
+            var m = new MeshData();
+            for (int i = 0; i < Vertices.Count; i++) m.Vertices.Add(Vertices[i] + normals[i] * width);
+            for (int t = 0; t < Triangles.Count; t += 3)
+            {
+                m.Triangles.Add(Triangles[t]); m.Triangles.Add(Triangles[t + 2]); m.Triangles.Add(Triangles[t + 1]);
+            }
+            return m;
+        }
+
         public Mesh ToMesh(string name)
         {
             var mesh = new Mesh();
@@ -272,6 +316,10 @@ namespace OdinsCoin
             public string joint;
             public Color color;
             public MeshData mesh;
+            /// <summary>Gets an ink outline (small details like eyes and thin trims don't).</summary>
+            public bool outline = true;
+            /// <summary>This piece is itself an ink outline shell.</summary>
+            public bool ink;
         }
 
         public readonly List<Joint> Joints = new List<Joint>();
@@ -296,16 +344,35 @@ namespace OdinsCoin
             return p;
         }
 
-        void AddJoint(string name, string parent, Vector3 local) { Joints.Add(new Joint { name = name, parent = parent, localPosition = local }); }
+        public void AddJoint(string name, string parent, Vector3 local) { Joints.Add(new Joint { name = name, parent = parent, localPosition = local }); }
 
         /// <summary>Add a piece to a joint, merging with others of the same colour (one mesh and material per colour).</summary>
-        void Add(string joint, Color color, MeshData mesh)
+        public void Add(string joint, Color color, MeshData mesh) { Add(joint, color, mesh, true); }
+
+        public void Add(string joint, Color color, MeshData mesh, bool outline)
         {
             foreach (var p in Pieces)
-                if (p.joint == joint && p.color.Equals(color)) { p.mesh.Append(mesh); return; }
-            var piece = new Piece { joint = joint, color = color, mesh = new MeshData() };
+                if (p.joint == joint && p.color.Equals(color) && p.outline == outline && !p.ink) { p.mesh.Append(mesh); return; }
+            var piece = new Piece { joint = joint, color = color, mesh = new MeshData(), outline = outline };
             piece.mesh.Append(mesh);
             Pieces.Add(piece);
+        }
+
+        /// <summary>
+        /// The ink line around everything: for each piece a slightly inflated copy turned inside out, so only its
+        /// far side draws, peeking out around the edges (the "inverted hull" trick; needs no special shader).
+        /// </summary>
+        public void AddOutlines(float width, Color ink)
+        {
+            var shells = new Dictionary<string, MeshData>();
+            foreach (var p in Pieces)
+            {
+                if (!p.outline || p.ink) continue;
+                MeshData shell;
+                if (!shells.TryGetValue(p.joint, out shell)) { shell = new MeshData(); shells[p.joint] = shell; }
+                shell.Append(p.mesh.Outline(width));
+            }
+            foreach (var kv in shells) Pieces.Add(new Piece { joint = kv.Key, color = ink, mesh = kv.Value, outline = false, ink = true });
         }
 
         public int TriangleCount

@@ -27,6 +27,7 @@ public static class LogicTests
         SoundTests();
         SaveTests();
         ModelTests();
+        HeroTests();
         CombatTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
@@ -147,6 +148,37 @@ public static class LogicTests
         float bigTop = float.MinValue;
         foreach (var p in big.Pieces) foreach (var v in p.mesh.Vertices) bigTop = Math.Max(bigTop, (big.RestPosition(p.joint) + v).y);
         Check(Math.Abs(bigTop - maxY * 1.2f) < 0.02f, "size scales the whole Viking (" + bigTop + ")");
+    }
+
+    static void HeroTests()
+    {
+        var model = HeroModel.Build(new HeroLook());
+        float minY = float.MaxValue, maxY = float.MinValue;
+        int shells = 0;
+        bool facesOut = true, shellsInsideOut = true;
+        foreach (var p in model.Pieces)
+        {
+            float v = Volume(p.mesh);
+            if (p.ink) { shells++; if (v >= 0f) shellsInsideOut = false; }
+            else if (v <= 0f) { facesOut = false; Console.WriteLine("  inside-out piece on " + p.joint + " (" + v + ")"); }
+            Vector3 at = model.RestPosition(p.joint);
+            foreach (var vert in p.mesh.Vertices) { minY = Math.Min(minY, (at + vert).y); maxY = Math.Max(maxY, (at + vert).y); }
+        }
+        Check(facesOut, "every hero piece faces outwards");
+        Check(shells >= 6 && shellsInsideOut, "every joint has an ink outline shell, turned inside out (" + shells + ")");
+        Check(minY > -0.02f && minY < 0.01f, "hero stands on the ground (" + minY + ")");
+        Check(maxY > 1.7f && maxY < 1.85f, "hero is about 1.75 m to the top of the helmet (" + maxY + ")");
+        // The signature: a big head (about 1/7 of the height) and stick-thin limbs.
+        Check(HeroModel.HeadRadius * 2f / maxY > 0.13f && HeroModel.HeadRadius * 2f / maxY < 0.18f, "the head is about a seventh of the height");
+        Check(HeroModel.LimbRadius < 0.02f, "limbs are stick-thin");
+        var small = HeroModel.Build(new HeroLook { height = 0.8f });
+        float smallTop = float.MinValue;
+        foreach (var p in small.Pieces) foreach (var vert in p.mesh.Vertices) smallTop = Math.Max(smallTop, (small.RestPosition(p.joint) + vert).y);
+        Check(Math.Abs(smallTop - maxY * 0.8f) < 0.02f, "height scales the whole hero (" + smallTop + ")");
+        float cape = Volume(CharacterKit.Cape(new Vector3(0f, 1.4f, -0.1f), 0.4f, 0.6f, 1f, 0.12f, 0.08f, 2));
+        var grid = new Vector3[2, 2] { { new Vector3(0f, 1f, 0f), new Vector3(1f, 1f, 0f) }, { Vector3.zero, new Vector3(1f, 0f, 0f) } };
+        Check(cape > 0f && Volume(CharacterKit.Sheet(grid, Vector3.forward, 0.1f)) > 0f && Volume(CharacterKit.Sheet(grid, Vector3.back, 0.1f)) > 0f, "cloth sheets face out whichever way they hang");
+        Check(Volume(CharacterKit.RaggedSkirt(0.9f, 0.15f, 0.45f, 0.2f, 0.75f, 20, 0.04f, 1)) > 0f && Volume(CharacterKit.FurRing(Vector3.zero, 0.2f, 0.8f, 0.05f, 20, 0.08f, 3)) > 0f, "skirts and fur face out");
     }
 
     static void SoundTests()

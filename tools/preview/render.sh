@@ -41,3 +41,36 @@ for i, t in enumerate(labels):
 img.save(sys.argv[2])
 print('wrote', sys.argv[2])
 PY
+
+# The storybook heroes, laid out like the concept sheet, plus an .obj of each.
+mcs -nowarn:169,414,649,219,618 -define:ENABLE_LEGACY_INPUT_MANAGER -out:$TMP/heroes.exe \
+  tools/unity-stub/UnityStub.cs tools/preview/HeroPreview.cs $(find OdinsCoin/Assets/Scripts -name '*.cs')
+mono $TMP/heroes.exe $TMP/heroes.rgba $TMP/heroes.txt OdinsCoin/docs/heroes
+python3 - "$TMP/heroes.rgba" "$TMP/heroes.txt" OdinsCoin/docs/heroes.png <<'PY'
+import struct, sys
+from PIL import Image, ImageDraw, ImageFont
+data = open(sys.argv[1], 'rb').read()
+w, h = struct.unpack('<ii', data[:8])
+img = Image.frombytes('RGBA', (w, h), data[8:]).resize((w // 2, h // 2), Image.LANCZOS)
+labels = [l.strip() for l in open(sys.argv[2]) if l.strip()]
+pad = 70
+sheet = Image.new('RGBA', (img.width, img.height + pad), (246, 241, 230, 255))
+sheet.paste(img, (0, 0))
+d = ImageDraw.Draw(sheet)
+try:
+    font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf', 22)
+except Exception:
+    font = ImageFont.load_default()
+cw = img.width // len(labels)
+ink = (74, 58, 46, 255)
+for i, t in enumerate(labels):
+    text = t.upper()
+    tw = d.textlength(text, font=font)
+    x = i * cw + (cw - tw) / 2
+    y = img.height + 18
+    d.line([(i * cw + 30, y - 8), (x - 12, y - 8)], fill=ink, width=1)
+    d.line([(x + tw + 12, y - 8), ((i + 1) * cw - 30, y - 8)], fill=ink, width=1)
+    d.text((x, y), text, font=font, fill=ink)
+sheet.save(sys.argv[3])
+print('wrote', sys.argv[3])
+PY
