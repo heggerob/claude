@@ -368,15 +368,20 @@ namespace OdinsCoin
                 case OffHandId.Map:
                     // A sheet of parchment with torn edges, gently curled, held up facing forward (+Z) above the fist,
                     // with a compass rose and a coastline drawn in ink.
-                    const int rows = 6, cols = 5;
+                    const int rows = 9, cols = 8;
                     var grid = new Vector3[rows, cols];
                     var rng = new System.Random(3);
                     for (int r = 0; r < rows; r++)
                         for (int c = 0; c < cols; c++)
                         {
                             float u = c / (float)(cols - 1) - 0.5f, v = r / (float)(rows - 1);
-                            float torn = (r == 0 || r == rows - 1 || c == 0 || c == cols - 1) ? ((float)rng.NextDouble() - 0.5f) * 0.02f : 0f;
-                            grid[r, c] = new Vector3((u * 0.26f + 0.06f + torn) * s, (0.12f - v * 0.3f + torn) * s, (0.03f + 0.02f * Mathf.Cos(u * 3f)) * s);
+                            // Torn edges: each border point pulled in or out by a different amount.
+                            bool edgeX = c == 0 || c == cols - 1, edgeY = r == 0 || r == rows - 1;
+                            float tx = edgeX ? ((float)rng.NextDouble() - 0.5f) * 0.035f * Mathf.Sign(u) : 0f;
+                            float ty = edgeY ? ((float)rng.NextDouble() - 0.5f) * 0.035f * (r == 0 ? 1f : -1f) : 0f;
+                            // The corners are curled a little towards the reader.
+                            float curl = (edgeX && edgeY) ? 0.02f : 0f;
+                            grid[r, c] = new Vector3((u * 0.3f + 0.07f + tx) * s, (0.14f - v * 0.34f + ty) * s, (0.03f + 0.02f * Mathf.Cos(u * 3f) + curl) * s);
                         }
                     d.Add(Joints.OffHand, d.pal.parchment, CharacterKit.Sheet(grid, Vector3.forward, 0.006f * s));
                     var rose = new Vector3(0.09f * s, -0.01f * s, 0.052f * s);
@@ -389,9 +394,20 @@ namespace OdinsCoin
                         float a = k * Mathf.PI / 4f, len = (k % 2 == 0 ? 0.075f : 0.04f) * s;
                         d.Add(Joints.OffHand, d.pal.ink, MeshData.Tube(new[] { rose, rose + new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * len }, new[] { 0.0035f * s, 0.001f * s }, 4), false);
                     }
-                    var coast = new[] { new Vector3(-0.04f, 0.08f, 0.05f), new Vector3(-0.01f, 0.04f, 0.052f), new Vector3(-0.03f, -0.02f, 0.052f), new Vector3(0.01f, -0.08f, 0.052f), new Vector3(-0.02f, -0.13f, 0.05f) };
-                    for (int i = 0; i < coast.Length; i++) coast[i] *= s;
-                    d.Add(Joints.OffHand, d.pal.ink, CharacterKit.ZigZag(coast, Vector3.right, 0.004f * s, 0.002f * s), false);
+                    // A coastline down the left side, an island, and a dotted sailing route to the rose.
+                    var coast = new[] { new Vector3(-0.03f, 0.1f, 0f), new Vector3(0.0f, 0.05f, 0f), new Vector3(-0.02f, 0.0f, 0f), new Vector3(0.015f, -0.06f, 0f), new Vector3(-0.01f, -0.13f, 0f) };
+                    for (int i = 0; i < coast.Length; i++) { coast[i] *= s; coast[i].z = (0.03f + 0.02f * Mathf.Cos(((coast[i].x / s - 0.07f) / 0.3f) * 3f) + 0.006f) * s + 0.001f; }
+                    d.Add(Joints.OffHand, d.pal.ink, CharacterKit.ZigZag(coast, Vector3.right, 0.005f * s, 0.0025f * s), false);
+                    var isle = new Vector3(0.17f * s, 0.08f * s, 0.05f * s);
+                    var shore = new Vector3[9];
+                    var sr = new float[9];
+                    for (int i = 0; i < shore.Length; i++) { float a = i / 8f * Mathf.PI * 2f; shore[i] = isle + new Vector3(Mathf.Cos(a) * 0.028f, Mathf.Sin(a) * 0.018f * (1f + 0.3f * Mathf.Sin(a * 3f)), 0f) * s; sr[i] = 0.0022f * s; }
+                    d.Add(Joints.OffHand, d.pal.ink, MeshData.Tube(shore, sr, 4), false);
+                    for (int i = 0; i < 6; i++)
+                    {
+                        var p = Vector3.Lerp(new Vector3(0.02f, 0.09f, 0.054f), new Vector3(0.14f, 0.06f, 0.054f), i / 5f) * s + new Vector3(0f, Mathf.Sin(i * 1.3f) * 0.008f * s, 0f);
+                        d.Add(Joints.OffHand, d.pal.ink, MeshData.Ellipsoid(p, Vector3.one * 0.0035f * s, 4, 3), false);
+                    }
                     break;
             }
         }
