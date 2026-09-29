@@ -147,6 +147,7 @@ namespace AirsoftArena
                 {
                     if (soldier == bb.owner || zAt > soldier.Height) continue;
                     Effects.Flash(hit.point, Color.white, 0.5f, 0.15f);
+                    Sfx.PlayAt(SfxId.Tak, hit.point, 0.9f, 0.12f);
                     soldier.ReceiveHit(bb.owner, hit.point);
                     return false;
                 }
@@ -163,6 +164,7 @@ namespace AirsoftArena
                         if (Random.value > 0.25f) continue;
                     }
                     Effects.Flash(hit.point, new Color(0.9f, 0.85f, 0.6f), 0.25f, 0.08f);
+                    Sfx.PlayAt(SfxId.Tick, hit.point, 0.45f, 0.15f);
                     return false;
                 }
 

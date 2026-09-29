@@ -39,6 +39,7 @@ namespace AirsoftArena
         public readonly List<string> moneyLines = new List<string>();
         public readonly List<string> xpLines = new List<string>();
         public int xpGained, levelBefore, levelAfter;
+        public bool soundPlayed;
         public float skillBefore, skillAfter, honorBefore, honorAfter;
 
         public string refereeName;

@@ -197,6 +197,7 @@ namespace AirsoftArena
                         c.Stats.captures++;
                         match.AddFeed("<b>" + MatchManager.Colored(c) + " CAPTURED the <color=" + Teams.Hex(f.team) + ">" + Teams.Name(f.team) + " flag</color>!</b>");
                         Effects.Text(c.Position + new Vector2(0f, 1.2f), "CAPTURE!", Teams.Color(c.Team), 2f, 22);
+                        Sfx.Play(SfxId.Capture, 0.8f);
                         f.carrier = null;
                         f.position = f.home;
                     }

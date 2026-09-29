@@ -51,6 +51,7 @@ public static class SpritePreview
 
         string outPath = args.Length > 0 ? args[0] : "preview.rgba";
         MapPreview.RenderAll(Path.GetDirectoryName(Path.GetFullPath(outPath)));
+        SoundPreview.WriteAll(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(outPath)), "sounds"));
         using (var f = new BinaryWriter(File.Create(outPath)))
         {
             f.Write(W); f.Write(H);

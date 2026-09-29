@@ -145,24 +145,33 @@ namespace AirsoftArena
             int bbs = weapon.PullTrigger(held, pressed, Time.time);
             if (bbs == 0)
             {
-                if (pressed && weapon.IsEmpty) weapon.StartReload(Time.time);
+                if (pressed && weapon.IsEmpty)
+                {
+                    Sfx.PlayAt(SfxId.DryFire, Position, 0.6f);
+                    if (weapon.StartReload(Time.time)) Sfx.PlayAt(SfxId.MagOut, Position, 0.5f);
+                }
                 return;
             }
 
             if (weapon.Data.IsMelee)
             {
+                Sfx.PlayAt(SfxId.Knife, Position, 0.7f);
                 Stab();
                 return;
             }
 
             Vector2 muzzle = view != null ? view.MuzzlePosition : Position + AimDirection * (Radius + 0.2f);
             if (view != null) view.OnFired();
+            Sfx.PlayAt(Sfx.ShotSound(weapon.Data.power), muzzle, 0.55f);
             float spread = Crouching ? 0.6f : 1f;
             if (moveInput.sqrMagnitude > 0.01f) spread *= 1.6f;
             BBSystem.Instance.Fire(this, muzzle, AimDirection, MuzzleHeight, weapon.Data, bbs, spread);
         }
 
-        public void Reload() { if (InPlay) Weapon.StartReload(Time.time); }
+        public void Reload()
+        {
+            if (InPlay && Weapon.StartReload(Time.time)) Sfx.PlayAt(SfxId.MagOut, Position, 0.5f);
+        }
 
         public void CycleFireMode() { Weapon.CycleMode(); }
 
@@ -293,7 +302,9 @@ namespace AirsoftArena
                         if (RespawnLeft <= 0f) Respawn();
                         break;
                 }
+                bool wasReloading = Weapon.IsReloading;
                 foreach (var w in Loadout) w.Tick(Time.time);
+                if (wasReloading && !Weapon.IsReloading) Sfx.PlayAt(SfxId.MagIn, Position, 0.6f);
             }
         }
 

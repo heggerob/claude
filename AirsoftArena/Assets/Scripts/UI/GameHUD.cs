@@ -63,6 +63,7 @@ namespace AirsoftArena
             var old = GUI.backgroundColor;
             GUI.backgroundColor = selected ? new Color(0.45f, 1f, 0.5f) : new Color(0.8f, 0.8f, 0.8f);
             bool clicked = GUILayout.Button((selected ? "▶ " : "") + text, options);
+            if (clicked) Sfx.Play(SfxId.UiClick, 0.5f);
             GUI.backgroundColor = old;
             return clicked;
         }
@@ -252,6 +253,12 @@ namespace AirsoftArena
             float pw = Mathf.Min(W - 32f, 940f), ph = Mathf.Min(H - 32f, 600f);
             GUILayout.BeginArea(new Rect((W - pw) / 2f, (H - ph) / 2f, pw, ph), panel);
 
+            if (!r.soundPlayed)
+            {
+                r.soundPlayed = true;
+                if (r.levelAfter > r.levelBefore) Sfx.Play(SfxId.RankUp, 0.8f);
+                else if (r.playerWon) Sfx.Play(SfxId.Capture, 0.6f);
+            }
             string headline = r.draw ? "DRAW" : "<color=" + Teams.Hex(r.winner) + ">" + Teams.Name(r.winner) + " WINS</color>";
             GUILayout.Label(headline, title);
             GUILayout.Label(string.Format("<color={0}>BLUE {1}</color>  -  <color={2}>{3} RED</color>", Teams.Hex(Team.Blue), r.blueScore, Teams.Hex(Team.Red), r.redScore), big);

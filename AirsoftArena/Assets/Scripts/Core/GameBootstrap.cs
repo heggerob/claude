@@ -42,6 +42,7 @@ namespace AirsoftArena
             MapBuilder.Build(transform, MapLibrary.Get(PlayerProfile.Current.mapId));
             gameObject.AddComponent<BBSystem>();
             gameObject.AddComponent<Effects>();
+            gameObject.AddComponent<Sfx>();
             gameObject.AddComponent<MatchManager>();
             gameObject.AddComponent<GameHUD>();
         }

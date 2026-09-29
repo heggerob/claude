@@ -22,6 +22,7 @@ public static class LogicTests
         ShopTests();
         Maps();
         ProgressionTests();
+        Sounds();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
     }
@@ -96,6 +97,21 @@ public static class LogicTests
         Check(p.money == 1000000 - spent + refunded, "money adds up after 4000 crates");
         Check(hist[0] > hist[1] && hist[1] > hist[2] && hist[2] > hist[3] && hist[3] > 0, "rarity histogram is ordered: " + string.Join(",", hist));
         foreach (var c in CosmeticCatalog.All) Check(p.Owns(c), "crates can unlock " + c.id);
+    }
+
+    static void Sounds()
+    {
+        foreach (SfxId id in Enum.GetValues(typeof(SfxId)))
+        {
+            var data = SfxSynth.Generate(id);
+            float peak = 0f;
+            bool finite = true;
+            foreach (var v in data) { peak = Math.Max(peak, Math.Abs(v)); if (float.IsNaN(v) || float.IsInfinity(v)) finite = false; }
+            Check(data.Length > 50, id + " has samples");
+            Check(finite, id + " has no NaN/inf");
+            Check(peak <= 1f && peak > 0.05f, id + " peak in range: " + peak);
+            Check(data.Length < SfxSynth.SampleRate * 2, id + " shorter than 2 s");
+        }
     }
 
     static void ProgressionTests()

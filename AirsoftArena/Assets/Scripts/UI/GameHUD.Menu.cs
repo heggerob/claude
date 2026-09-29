@@ -24,6 +24,8 @@ namespace AirsoftArena
         List<CosmeticItem> reel;
         CrateResult reelResult;
         float reelStart, reelJitter;
+        int reelLastTick;
+        bool reelRevealed;
 
         void DrawMenu(MatchManager match)
         {
@@ -291,6 +293,8 @@ namespace AirsoftArena
             for (int i = 0; i < ReelLength; i++) reel.Add(i == ReelWinnerIndex ? result.item : Shop.RandomReelItem(crate));
             reelStart = Time.unscaledTime;
             reelJitter = Random.Range(-0.4f, 0.4f) * ReelItemWidth;
+            reelLastTick = 0;
+            reelRevealed = false;
         }
 
         void DrawReel(PlayerProfile profile)
@@ -303,6 +307,13 @@ namespace AirsoftArena
             var strip = new Rect((W - stripWidth) / 2f, H * 0.32f, stripWidth, 130f);
             float target = ReelWinnerIndex * ReelItemWidth + ReelItemWidth / 2f + reelJitter;
             float offset = eased * target - stripWidth / 2f;
+            // Tick each time a new item passes the marker, like a real wheel.
+            int under = Mathf.FloorToInt((offset + stripWidth / 2f) / ReelItemWidth);
+            if (Event.current.type == EventType.Repaint && under != reelLastTick)
+            {
+                reelLastTick = under;
+                Sfx.Play(SfxId.ReelTick, 0.5f, 1f + 0.3f * eased);
+            }
 
             GUI.Box(strip, GUIContent.none, panel);
             GUI.BeginGroup(strip);
@@ -321,6 +332,11 @@ namespace AirsoftArena
             if (t < 1f) return;
 
             var item = reelResult.item;
+            if (!reelRevealed)
+            {
+                reelRevealed = true;
+                Sfx.Play(Sfx.Reveal(item.rarity), 0.8f);
+            }
             string line = "<color=" + Rarities.Hex(item.rarity) + "><b>" + item.RarityLabel + "</b>  " + item.name + "</color>";
             Shadowed(new Rect(0f, strip.yMax + 16f, W, 44f), line, big);
             string sub = reelResult.duplicate ? "Already owned: +$" + reelResult.refund + " back" : "Unlocked! Equip it in LOADOUT.";

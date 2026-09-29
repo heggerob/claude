@@ -58,6 +58,7 @@ Se [`AirsoftArena/DESIGN.md`](AirsoftArena/DESIGN.md) for designbeslutninger og 
 - `tools/check.sh` kompilerer alle scriptene mot en liten falsk Unity-API. Det fanger skrivefeil, men beviser ikke at spillet kjører.
 - `tools/preview/render.sh` tegner all generert pixel-art til `AirsoftArena/docs/sprites.png`.
 - `tools/tests/run.sh` kjører logikktester (kosmetikk, våpen, økonomi) uten Unity.
+- Alle lydeffektene lages i koden. `AirsoftArena/docs/sounds/` har WAV-kopier du kan høre på.
 
 ![Pixel-art](AirsoftArena/docs/sprites.png)
 

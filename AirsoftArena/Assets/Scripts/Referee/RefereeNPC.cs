@@ -78,6 +78,7 @@ namespace AirsoftArena
 
         public void Whistle(string text)
         {
+            Sfx.PlayAt(SfxId.Whistle, Position, 1f, 0.02f);
             Effects.Text(Position + new Vector2(0f, 0.9f), "*FWEEET*", new Color(1f, 0.95f, 0.3f), 1.2f, 15);
             if (!string.IsNullOrEmpty(text)) Effects.Text(Position + new Vector2(0f, 1.4f), text, Color.white, 1.8f, 13);
         }
