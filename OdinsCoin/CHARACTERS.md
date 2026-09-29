@@ -26,13 +26,15 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
 - [x] **3. Jarlen:** svart og gull hornkrone, rød kappe med pels, stort sverd og skjold, røde fletter.
 - [x] **4. Raideren:** hjelm med nesevern, røde fletter, pels på skuldrene, tohånds øks over skulderen, rødt banner foran.
 - [x] **5. Navigatøren:** blått hodetørkle med rune, lys flette, blå kappe med mønsterkant, kart i hånda, rullebeholder i beltet.
-- [ ] **6. Spydvakten:** hjelm, pelskrage, rødt skjerf, langt spyd med rød vimpel, rundt rødt skjold med mønster.
+- [x] **6. Spydvakten:** hjelm, pelskrage, rødt skjerf, langt spyd med rød vimpel, rundt rødt skjold med mønster.
 - [ ] **7. Den gamle seeren:** gevir-hodepynt med runesteiner, lange hvite fletter, lang fillete kjortel, stav med lysende runestein.
 - [ ] **8. Speideren:** pelslue, grønt skjerf og grønn tunika, bue og pilkogger.
 - [ ] **8b. Finpuss, runde for runde:** Punktene over er bare første versjoner. Når alle seks finnes, går jeg tilbake til hver figur og sammenligner med konseptbildet igjen og igjen, til de er så like som mulig. Kjente forskjeller så langt:
   - **Raider:** Pelsen er for jevn og lys. Den venstre armen med øksa synes for lite. Ermene og de mørke underlagene i skjørtet trenger mer form, og støvlene bør være slankere med spissere tær.
   - **Jarl:** Kronen trenger flere detaljer (runemønster og gullkanter på hornene). Pelskragen må være mer lurvete og mindre hvit. Kappen trenger folder og tydeligere filler. Remmer og ringer mangler på beltet. Sverdet og skjoldet må ha riktig størrelse og mønster.
   - **Navigatør:** Skjørtet er for kort og for smalt, og mangler det blå underskjørtet med pelskant. Kappen foran er for flat og trenger folder. Beina er for lange. Kartet trenger revne kanter og bedre tegning, og den ene hånda skal holde kanten av kartet.
+  - **Spydvakt:** Skjoldet bør være litt ovalt og vippe mer mot oss. Knutemønsteret skal være en ekte flettet knute, og vimpelen større. Lærjakken trenger mer form, med splitt foran og mørke bukser, og kappen må være mer fillete.
+  - **Raider (etter at LookRotation ble rettet):** Øksehodet må snus så bladet vender mot oss igjen.
   - **Alle:** Stoffet trenger folder og tykkelse, pelsen må få strå og ikke klumper, og tegnede teksturer og skravur (punkt 10) er det som mangler mest mot det malte bildet.
 - [ ] **9. Bevegelse i plaggene:** kapper, skjørt, fletter, pels og vimpler svinger og henger etter når figuren går, snur og hugger (enkel fysikk med fjærer).
 - [ ] **10. Tegneserie-look på alt:** tusj-kanter på skipet, øyene, trærne, husene og havet, skravur med blyant eller tusj i skyggene, og papirkorn over hele bildet.

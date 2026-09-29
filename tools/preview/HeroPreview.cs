@@ -88,6 +88,26 @@ public static class HeroPreview
         reading.rot[Joints.LeftLeg] = Quaternion.Euler(0f, 0f, -3f);
         reading.rot[Joints.RightLeg] = Quaternion.Euler(0f, 0f, 3f);
         shots.Add(new Shot { label = "The Navigator", model = navModel, pose = reading, yaw = 188f });
+        // The Spear Guard: spear upright in the right fist, the big shield held in front on the left.
+        var guard = CharacterSpec.Default(OutfitId.SpearGuard);
+        guard.body = new BodyShape { height = 1.62f, width = 1f, gender = Gender.Male };
+        var gFit = Fit.Of(guard.body);
+        var guardModel = WithWeapon(WithWeapon(HeroModel.Build(guard), HeroModel.BuildWeapon(guard), Joints.Weapon), HeroModel.BuildOffHand(guard), Joints.OffHand);
+        var guarding = new Pose();
+        Vector3 gr = new Vector3(gFit.shoulderX, gFit.shoulderY, 0f), gl = new Vector3(-gFit.shoulderX, gFit.shoulderY, 0f);
+        Vector3 grElbow = gr + new Vector3(0.12f, -0.2f, -0.02f).normalized * gFit.upperArm;
+        Vector3 grFist = new Vector3(gFit.shoulderX + 0.14f, gFit.chest - 0.02f, 0.06f);
+        Vector3 glElbow = gl + new Vector3(-0.08f, -0.2f, 0.1f).normalized * gFit.upperArm;
+        Vector3 glFist = new Vector3(-0.2f, gFit.waist - 0.06f, 0.17f);
+        guarding.worldRot[Joints.RightArm] = Quaternion.FromToRotation(Vector3.down, grElbow - gr);
+        guarding.worldRot[Joints.RightForearm] = Quaternion.FromToRotation(Vector3.down, grFist - grElbow);
+        guarding.worldRot[Joints.Weapon] = Quaternion.LookRotation(Vector3.up, new Vector3(-1f, 0f, 0.35f));
+        guarding.worldRot[Joints.LeftArm] = Quaternion.FromToRotation(Vector3.down, glElbow - gl);
+        guarding.worldRot[Joints.LeftForearm] = Quaternion.FromToRotation(Vector3.down, glFist - glElbow);
+        guarding.worldRot[Joints.OffHand] = Quaternion.Euler(0f, -22f, 0f);
+        guarding.rot[Joints.LeftLeg] = Quaternion.Euler(0f, 0f, -5f);
+        guarding.rot[Joints.RightLeg] = Quaternion.Euler(0f, 0f, 6f);
+        shots.Add(new Shot { label = "The Spear Guard", model = guardModel, pose = guarding, yaw = 188f });
         shots.Add(new Shot { label = "Jarl, three-quarter", model = jarlModel, pose = stand, yaw = 215f });
         shots.Add(new Shot { label = "Navigator, three-quarter", model = navModel, pose = reading, yaw = 150f });
         // Same outfit on other bodies: the player chooses height, build and gender.
@@ -149,7 +169,7 @@ public static class HeroPreview
         var inv = new Quaternion(-cam.x, -cam.y, -cam.z, cam.w);
         Vector3 forward = cam * Vector3.forward;
         Vector3 light = new Vector3(-0.5f, 0.75f, 0.45f).normalized;
-        float scale = cellH / 2.25f, cx = x0 + cellW / 2f, groundY = cellH * 0.9f;
+        float scale = cellH / 2.45f, cx = x0 + cellW / 2f, groundY = cellH * 0.92f;
         var depth = new float[cellW * cellH];
         for (int i = 0; i < depth.Length; i++) depth[i] = float.MaxValue;
 

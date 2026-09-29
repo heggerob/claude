@@ -76,14 +76,16 @@ print('wrote', sys.argv[3])
 PY
 
 # Side-by-side against the concept sheet: reference on the left, our render on the right.
-python3 - <<'PY'
+HERO_LABELS=$TMP/heroes.txt python3 - <<'PY'
 import os
 from PIL import Image
 ref = Image.open('OdinsCoin/docs/reference/characters-concept.png').convert('RGBA')
 ours = Image.open('OdinsCoin/docs/heroes.png').convert('RGBA')
 os.makedirs('OdinsCoin/docs/compare', exist_ok=True)
-crops = {'jarl': ((0, 20, 340, 800), 0), 'raider': ((300, 20, 650, 800), 1), 'navigator': ((580, 20, 890, 800), 2)}
-cell = ours.width // 7
+crops = {'jarl': ((0, 20, 340, 800), 0), 'raider': ((300, 20, 650, 800), 1), 'navigator': ((580, 20, 890, 800), 2), 'spear-guard': ((860, 20, 1170, 800), 3)}
+import sys, glob
+labels = [l for l in open(os.environ['HERO_LABELS']) if l.strip()]
+cell = ours.width // len(labels)
 for name, (box, index) in crops.items():
     a = ref.crop(box)
     b = ours.crop((index * cell, 0, (index + 1) * cell, ours.height - 70))

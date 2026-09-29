@@ -90,6 +90,7 @@ namespace OdinsCoin
                 case HairStyle.LongBraids: Garments.LongBraids(d, 0.42f); break;
                 case HairStyle.WrappedBraids: Garments.LongBraids(d, 0.4f, true); break;
                 case HairStyle.SideBraid: Garments.SideBraid(d, 0.36f); break;
+                case HairStyle.ShortLocks: Garments.ShortLocks(d); break;
             }
         }
     }
@@ -116,6 +117,38 @@ namespace OdinsCoin
                     d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 1.35f), MeshData.Extrude(new[] {
                         new Vector2(1.06f, 0.2f), new Vector2(1.1f, 0.21f), new Vector2(1.1f, -0.21f), new Vector2(1.06f, -0.2f) }, 0.022f)
                         .Transformed(Vector3.zero, Quaternion.identity, Vector3.one * s), false);
+                    break;
+                case WeaponId.Spear:
+                    // A tall spear held about a third of the way up: an ash shaft with leather bindings, a leaf-shaped
+                    // iron head on a socket, and a red pennant with a knot rune tied below the head.
+                    d.Add(Joints.Weapon, d.pal.leather, MeshData.Tube(new[] { new Vector3(0f, 0f, -1.12f * s), new Vector3(0f, 0f, 1.0f * s) }, new[] { 0.02f * s, 0.018f * s }, 8));
+                    foreach (float z in new[] { 0.7f, 0.82f })
+                        d.Add(Joints.Weapon, d.pal.leatherDark, MeshData.Lathe(new[] { new Vector2(0.024f * s, 0f), new Vector2(0.024f * s, 0.05f * s) }, 8).Transformed(new Vector3(0f, 0f, z * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one), false);
+                    d.Add(Joints.Weapon, d.pal.metal, MeshData.Lathe(new[] { new Vector2(0.024f * s, 0f), new Vector2(0.018f * s, 0.08f * s) }, 8).Transformed(new Vector3(0f, 0f, 0.98f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one));
+                    d.Add(Joints.Weapon, d.pal.metal, MeshData.Extrude(new[] {
+                        new Vector2(1.05f, 0.0f), new Vector2(1.1f, 0.045f), new Vector2(1.22f, 0.035f), new Vector2(1.32f, 0.0f), new Vector2(1.22f, -0.035f), new Vector2(1.1f, -0.045f) }, 0.016f)
+                        .Transformed(Vector3.zero, Quaternion.Euler(0f, 0f, 90f), Vector3.one * s));
+                    d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 1.35f), MeshData.Box(new Vector3(0f, 0f, 1.2f * s), new Vector3(0.006f, 0.012f, 0.2f) * s), false);
+                    {
+                        // The pennant: tied at the shaft, flying sideways with two torn tails.
+                        const int prow = 4, pcol = 6;
+                        var grid = new Vector3[prow, pcol];
+                        for (int r = 0; r < prow; r++)
+                            for (int c = 0; c < pcol; c++)
+                            {
+                                float u = c / (float)(pcol - 1), v = r / (float)(prow - 1);
+                                float tail = u > 0.7f ? (r == 1 || r == 2 ? -0.05f : 0.03f) * (u - 0.7f) / 0.3f : 0f;
+                                grid[r, c] = new Vector3(0.01f * s * Mathf.Sin(u * 5f), (0.02f + u * 0.26f + tail) * s, (0.92f - v * (0.16f - 0.07f * u) - u * 0.08f) * s);
+                            }
+                        d.Add(Joints.Weapon, d.pal.accent, CharacterKit.Sheet(grid, Vector3.right, 0.008f * s));
+                        var c0 = new Vector3(0.014f * s, 0.11f * s, 0.86f * s);
+                        var ring = new Vector3[13];
+                        var rr = new float[13];
+                        for (int i = 0; i < ring.Length; i++) { float a = i / 12f * Mathf.PI * 2f; ring[i] = c0 + new Vector3(0f, Mathf.Cos(a), Mathf.Sin(a)) * 0.028f * s; rr[i] = 0.003f * s; }
+                        d.Add(Joints.Weapon, d.pal.emblem, MeshData.Tube(ring, rr, 4), false);
+                        var tri = new[] { c0 + new Vector3(0f, 0f, 0.04f) * s, c0 + new Vector3(0f, 0.035f, -0.022f) * s, c0 + new Vector3(0f, -0.035f, -0.022f) * s, c0 + new Vector3(0f, 0f, 0.04f) * s };
+                        d.Add(Joints.Weapon, d.pal.emblem, MeshData.Tube(tri, new[] { 0.003f * s, 0.003f * s, 0.003f * s, 0.003f * s }, 4), false);
+                    }
                     break;
                 case WeaponId.Sword:
                     // A long broad sword pointing forward from the fist: leather grip, gold curved guard and pommel,
@@ -154,6 +187,43 @@ namespace OdinsCoin
                         radii[i] = 0.022f * s;
                     }
                     d.Add(Joints.OffHand, d.pal.brass, MeshData.Tube(rim, radii, 6));
+                    break;
+                case OffHandId.KnotShield:
+                    {
+                        // A big shield of red planks with an iron rim and boss and a pale triple-knot painted on it,
+                        // held in front of the body, face forward (+Z).
+                        float rad = 0.33f * s;
+                        var at = new Vector3(0f, 0.02f * s, 0.06f * s);
+                        for (int q = 0; q < 6; q++)
+                        {
+                            // Vertical planks: slices of the disc, alternating shades.
+                            float x0 = -rad + q * rad / 3f, x1 = x0 + rad / 3f;
+                            var plank = new System.Collections.Generic.List<Vector2>();
+                            for (int k = 0; k <= 6; k++) { float x = Mathf.Lerp(x0, x1, k / 6f); plank.Add(new Vector2(x, Mathf.Sqrt(Mathf.Max(0f, rad * rad - x * x)))); }
+                            for (int k = 6; k >= 0; k--) { float x = Mathf.Lerp(x0, x1, k / 6f); plank.Add(new Vector2(x, -Mathf.Sqrt(Mathf.Max(0f, rad * rad - x * x)))); }
+                            d.Add(Joints.OffHand, q % 2 == 0 ? d.pal.accent : VikingModel.Shade(d.pal.accent, 0.85f),
+                                MeshData.Extrude(plank.ToArray(), 0.028f * s).Transformed(at, Quaternion.Euler(0f, 90f, 0f), Vector3.one));
+                        }
+                        var kRim = new Vector3[33];
+                        var kRr = new float[33];
+                        for (int i = 0; i < kRim.Length; i++) { float a = i / 32f * Mathf.PI * 2f; kRim[i] = at + new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * rad; kRr[i] = 0.02f * s; }
+                        d.Add(Joints.OffHand, d.pal.metal, MeshData.Tube(kRim, kRr, 6));
+                        d.Add(Joints.OffHand, d.pal.metal, MeshData.Dome(Vector3.zero, new Vector3(0.065f, 0.055f, 0.065f) * s, 12, 4).Transformed(at + new Vector3(0f, 0f, 0.012f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one));
+                        // The triple knot: three overlapping loops around the boss, and a circle through them.
+                        for (int k = 0; k < 3; k++)
+                        {
+                            float a0 = k * Mathf.PI * 2f / 3f + Mathf.PI / 2f;
+                            var loopCentre = at + new Vector3(Mathf.Cos(a0), Mathf.Sin(a0), 0f) * rad * 0.34f + new Vector3(0f, 0f, 0.017f * s);
+                            var loop = new Vector3[17];
+                            var lr = new float[17];
+                            for (int i = 0; i < loop.Length; i++) { float a = i / 16f * Mathf.PI * 2f; loop[i] = loopCentre + new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * rad * 0.33f; lr[i] = 0.011f * s; }
+                            d.Add(Joints.OffHand, d.pal.emblem, MeshData.Tube(loop, lr, 4), false);
+                        }
+                        var circle = new Vector3[25];
+                        var cr = new float[25];
+                        for (int i = 0; i < circle.Length; i++) { float a = i / 24f * Mathf.PI * 2f; circle[i] = at + new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * rad * 0.52f + new Vector3(0f, 0f, 0.018f * s); cr[i] = 0.009f * s; }
+                        d.Add(Joints.OffHand, d.pal.emblem, MeshData.Tube(circle, cr, 4), false);
+                    }
                     break;
                 case OffHandId.Map:
                     // A sheet of parchment with torn edges, gently curled, held up facing forward (+Z) above the fist,

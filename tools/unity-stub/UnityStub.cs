@@ -63,7 +63,16 @@ namespace UnityEngine {
     public static Vector3 operator*(Quaternion q,Vector3 v){var u=new Vector3(q.x,q.y,q.z); var t=2f*Vector3.Cross(u,v); return v+q.w*t+Vector3.Cross(u,t);}
     public static Quaternion Inverse(Quaternion q){return new Quaternion(-q.x,-q.y,-q.z,q.w);}
     public static Quaternion FromToRotation(Vector3 a,Vector3 b){a=a.normalized;b=b.normalized; var c=Vector3.Cross(a,b); float d=Vector3.Dot(a,b); var q=new Quaternion(c.x,c.y,c.z,1+d); float m=(float)Math.Sqrt(q.x*q.x+q.y*q.y+q.z*q.z+q.w*q.w); return m<1e-5f? identity : new Quaternion(q.x/m,q.y/m,q.z/m,q.w/m);}
-    public static Quaternion LookRotation(Vector3 f){return LookRotation(f,Vector3.up);} public static Quaternion LookRotation(Vector3 f,Vector3 up){float yaw=(float)Math.Atan2(f.x,f.z)*Mathf.Rad2Deg; float pitch=-(float)Math.Atan2(f.y,Math.Sqrt(f.x*f.x+f.z*f.z))*Mathf.Rad2Deg; return Euler(pitch,yaw,0);}
+    public static Quaternion LookRotation(Vector3 f){return LookRotation(f,Vector3.up);} public static Quaternion LookRotation(Vector3 f,Vector3 up){
+      // Like Unity: z = forward, y = up made perpendicular to it, x = y cross z. Falls back to yaw/pitch if up is parallel.
+      var z=f.normalized; var x=Vector3.Cross(up,z); if(x.sqrMagnitude<1e-10f){float yaw=(float)Math.Atan2(f.x,f.z)*Mathf.Rad2Deg; float pitch=-(float)Math.Atan2(f.y,Math.Sqrt(f.x*f.x+f.z*f.z))*Mathf.Rad2Deg; return Euler(pitch,yaw,0);}
+      x=x.normalized; var y=Vector3.Cross(z,x);
+      float m00=x.x,m01=y.x,m02=z.x,m10=x.y,m11=y.y,m12=z.y,m20=x.z,m21=y.z,m22=z.z; float tr=m00+m11+m22; Quaternion q;
+      if(tr>0f){float s=(float)Math.Sqrt(tr+1f)*2f; q=new Quaternion((m21-m12)/s,(m02-m20)/s,(m10-m01)/s,0.25f*s);}
+      else if(m00>m11&&m00>m22){float s=(float)Math.Sqrt(1f+m00-m11-m22)*2f; q=new Quaternion(0.25f*s,(m01+m10)/s,(m02+m20)/s,(m21-m12)/s);}
+      else if(m11>m22){float s=(float)Math.Sqrt(1f+m11-m00-m22)*2f; q=new Quaternion((m01+m10)/s,0.25f*s,(m12+m21)/s,(m02-m20)/s);}
+      else {float s=(float)Math.Sqrt(1f+m22-m00-m11)*2f; q=new Quaternion((m02+m20)/s,(m12+m21)/s,0.25f*s,(m10-m01)/s);}
+      return q; }
     public static Quaternion Slerp(Quaternion a,Quaternion b,float t){return Lerp(a,b,t);} public static Quaternion Lerp(Quaternion a,Quaternion b,float t){t=Mathf.Clamp01(t); var q=new Quaternion(a.x+(b.x-a.x)*t,a.y+(b.y-a.y)*t,a.z+(b.z-a.z)*t,a.w+(b.w-a.w)*t); float m=(float)Math.Sqrt(q.x*q.x+q.y*q.y+q.z*q.z+q.w*q.w); return new Quaternion(q.x/m,q.y/m,q.z/m,q.w/m);} public static Quaternion RotateTowards(Quaternion a,Quaternion b,float d){return b;} public static float Angle(Quaternion a,Quaternion b){return 0;} public Vector3 eulerAngles{get{return Vector3.zero;}} }
   public struct Matrix4x4 { public static Matrix4x4 TRS(Vector3 p,Quaternion q,Vector3 s){return new Matrix4x4();} }
   public struct Color { public float r,g,b,a; public Color(float r,float g,float b,float a=1){this.r=r;this.g=g;this.b=b;this.a=a;}

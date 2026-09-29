@@ -4,9 +4,9 @@ using UnityEngine;
 namespace OdinsCoin
 {
     public enum OutfitId { Raider, Jarl, Navigator, SpearGuard, Seer, Scout }
-    public enum HairStyle { None, LongBraids, WrappedBraids, SideBraid }
-    public enum WeaponId { None, TwoHandAxe, Sword }
-    public enum OffHandId { None, RoundShield, Map }
+    public enum HairStyle { None, LongBraids, WrappedBraids, SideBraid, ShortLocks }
+    public enum WeaponId { None, TwoHandAxe, Sword, Spear }
+    public enum OffHandId { None, RoundShield, Map, KnotShield }
 
     /// <summary>A special move or perk that comes with an outfit (used by the game later).</summary>
     public class Ability
@@ -101,6 +101,31 @@ namespace OdinsCoin
                     Garments.FurCollar(d);
                     Garments.SideCloak(d, 0.62f, 0.62f);
                     Garments.Bandana(d);
+                } } },
+            { OutfitId.SpearGuard, new Outfit {
+                id = OutfitId.SpearGuard, title = "The Spear Guard",
+                palette = () => new Palette {
+                    cloth = new Color(0.4f, 0.28f, 0.18f), clothDark = new Color(0.22f, 0.16f, 0.12f),
+                    accent = new Color(0.6f, 0.18f, 0.12f), emblem = new Color(0.9f, 0.82f, 0.68f),
+                    fur = new Color(0.74f, 0.64f, 0.5f), furShadow = new Color(0.5f, 0.42f, 0.32f),
+                    hair = new Color(0.8f, 0.64f, 0.42f), metal = new Color(0.42f, 0.43f, 0.45f) },
+                defaultHair = HairStyle.ShortLocks, suggestedWeapon = WeaponId.Spear, suggestedOffHand = OffHandId.KnotShield,
+                abilities = new[] {
+                    new Ability { id = "wall", name = "Shield Wall", description = "Blocks arrows and blows from the front while braced." },
+                    new Ability { id = "reach", name = "Long Reach", description = "Strike enemies from further away." } },
+                dress = d =>
+                {
+                    Garments.FurBoots(d, 0.07f);
+                    Garments.Gloves(d);
+                    Garments.LongSkirt(d, 0.2f, 1.3f);
+                    Garments.Tunic(d, false);
+                    Garments.LongSleeves(d);
+                    Garments.StuddedTrim(d);
+                    Garments.RingBuckleBelt(d);
+                    Garments.BigCape(d, 0.9f, 1.4f);
+                    Garments.ShoulderPelt(d, 1.2f);
+                    Garments.Scarf(d);
+                    Garments.NasalHelmet(d);
                 } } },
         };
 

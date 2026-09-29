@@ -35,12 +35,15 @@ namespace OdinsCoin
         // ---------------------------------------------------------------- feet and hands
 
         /// <summary>Tall boots with pointed toes, criss-cross straps and fur cuffs.</summary>
-        public static void FurBoots(Dresser d)
+        public static void FurBoots(Dresser d) { FurBoots(d, 0f); }
+
+        /// <summary>Fur-cuffed boots, <paramref name="extra"/> metres taller than the body's usual boot top.</summary>
+        public static void FurBoots(Dresser d, float extra)
         {
             var f = d.fit;
             foreach (var joint in new[] { Joints.LeftLeg, Joints.RightLeg })
             {
-                float sole = -f.hip, top = f.bootTop - f.hip, s = d.S;
+                float sole = -f.hip, top = f.bootTop + extra * d.S - f.hip, s = d.S;
                 float r = 0.065f * s * Mathf.Sqrt(f.width);
                 d.Add(joint, d.pal.leatherDark, MeshData.Lathe(new[] {
                     new Vector2(r * 0.85f, sole), new Vector2(r * 1.02f, sole + 0.04f * s), new Vector2(r * 0.92f, sole + 0.13f * s),
@@ -593,10 +596,92 @@ namespace OdinsCoin
             }
         }
 
+        // ---------------------------------------------------------------- the spear guard
+
+        /// <summary>A red scarf wound round the neck, its two ends hanging down across the chest.</summary>
+        public static void Scarf(Dresser d)
+        {
+            var f = d.fit;
+            float s = d.S;
+            float y = f.shoulderY + 0.035f * s;
+            d.Add(Joints.Body, d.pal.accent, MeshData.Lathe(new[] {
+                new Vector2(f.chestR * 0.55f, y - 0.035f * s), new Vector2(f.chestR * 0.72f, y - 0.01f * s), new Vector2(f.chestR * 0.68f, y + 0.03f * s), new Vector2(f.chestR * 0.45f, y + 0.05f * s) }, 16)
+                .Transformed(Vector3.zero, Quaternion.identity, new Vector3(1f, 1f, 0.95f)));
+            float cz = f.chestR * f.depth + 0.02f;
+            foreach (float side in new[] { -1f, 1f })
+            {
+                const int rows = 5;
+                var grid = new Vector3[rows, 2];
+                for (int r = 0; r < rows; r++)
+                    for (int c = 0; c < 2; c++)
+                    {
+                        float v = r / (float)(rows - 1);
+                        float len = side < 0f ? 0.26f : 0.2f;
+                        float x = side * 0.02f * s + Mathf.Lerp(0f, 0.09f, v) * s * (side < 0f ? 1f : 0.4f) + (c - 0.5f) * 0.065f * s;
+                        float yy = y - 0.02f * s - v * len * s - (r == rows - 1 && c == 0 ? 0.025f * s : 0f);
+                        grid[r, c] = new Vector3(x, yy, cz + v * 0.02f + (side < 0f ? 0.012f : 0f));
+                    }
+                d.Add(Joints.Body, side < 0f ? d.pal.accent : VikingModel.Shade(d.pal.accent, 0.82f), CharacterKit.Sheet(grid, Vector3.forward, 0.012f * s));
+            }
+        }
+
+        /// <summary>A leather jerkin: brass studs down both front edges and around the hem of its short skirt.</summary>
+        public static void StuddedTrim(Dresser d)
+        {
+            var f = d.fit;
+            float s = d.S;
+            foreach (float x in new[] { -0.045f, 0.045f })
+                for (int i = 0; i < 9; i++)
+                {
+                    float y = Mathf.Lerp(f.chest - 0.04f * s, d.hasSkirt ? d.skirtBottom + 0.03f * s : f.waist, i / 8f);
+                    float r = y > f.waist ? f.TorsoRadius(y) * f.depth : d.SkirtRadius(y) * d.skirtDepth;
+                    d.Add(Joints.Body, d.pal.brass, MeshData.Ellipsoid(new Vector3(x * s, y, r + 0.008f * s), Vector3.one * 0.008f * s, 5, 3), false);
+                }
+            if (!d.hasSkirt) return;
+            for (int i = 0; i < 18; i++)
+            {
+                float a = i / 18f * Mathf.PI * 2f;
+                float y = d.skirtBottom + 0.035f * s, r = d.SkirtRadius(y) + 0.006f;
+                d.Add(Joints.Body, d.pal.brass, MeshData.Ellipsoid(new Vector3(Mathf.Sin(a) * r, y, Mathf.Cos(a) * r * d.skirtDepth), Vector3.one * 0.0075f * s, 5, 3), false);
+            }
+        }
+
+        /// <summary>A belt with a big round ring buckle and one pouch hanging at the right hip.</summary>
+        public static void RingBuckleBelt(Dresser d)
+        {
+            var f = d.fit;
+            float s = d.S;
+            float y = f.waist, r = f.waistR * 1.06f, depth = f.depth + 0.05f;
+            d.Add(Joints.Body, d.pal.leatherDark, CharacterKit.Band(y, 0.05f * s, r, depth));
+            var at = new Vector3(0f, y, r * depth + 0.006f);
+            d.Add(Joints.Body, d.pal.metal, MeshData.Lathe(new[] { new Vector2(0.034f * s, -0.007f * s), new Vector2(0.036f * s, 0f), new Vector2(0.034f * s, 0.007f * s), new Vector2(0.02f * s, 0.007f * s), new Vector2(0.02f * s, -0.007f * s) }, 16)
+                .Transformed(at, Quaternion.Euler(90f, 0f, 0f), Vector3.one));
+            float px = f.waistR * 0.95f, py = y - 0.1f * s;
+            var pouch = new Vector3(px, py, d.SkirtRadius(py) * d.skirtDepth * 0.6f + 0.03f * s);
+            d.Add(Joints.Body, d.pal.leather, MeshData.Box(pouch, new Vector3(0.06f, 0.085f, 0.045f) * s));
+            d.Add(Joints.Body, d.pal.leatherDark, MeshData.Box(pouch + new Vector3(0f, 0.03f * s, 0.024f * s), new Vector3(0.064f, 0.03f, 0.008f) * s), false);
+            d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(new[] { new Vector3(px, y, f.waistR * depth * 0.7f), pouch + new Vector3(0f, 0.04f * s, 0f) }, new[] { 0.007f * s, 0.007f * s }, 4), false);
+        }
+
         // ---------------------------------------------------------------- hair
 
         /// <summary>Two long braids from behind the ears, forward over the shoulders and down the chest, tied with leather.</summary>
         public static void LongBraids(Dresser d, float length) { LongBraids(d, length, false); }
+
+        /// <summary>Short locks showing under the helmet at the temples and nape, and one thin braid by the left cheek.</summary>
+        public static void ShortLocks(Dresser d)
+        {
+            var f = d.fit;
+            float r = f.headR, cy = HeroModel.HeadCentre(f), s = d.S;
+            d.Add(Joints.Head, d.pal.hair, MeshData.Ellipsoid(new Vector3(0f, cy - r * 0.05f, -r * 0.3f), new Vector3(r * 0.98f, r * 0.85f, r * 0.8f), 12, 8));
+            foreach (float x in new[] { -1f, 1f })
+            {
+                d.Add(Joints.Head, d.pal.hair, CharacterKit.Tuft(new Vector3(x * r * 0.9f, cy + r * 0.1f, r * 0.25f), new Vector3(x * r * 1.0f, cy - r * 0.5f, r * 0.4f), 0.026f * s));
+                d.Add(Joints.Head, d.pal.hair, CharacterKit.Tuft(new Vector3(x * r * 0.7f, cy - r * 0.3f, -r * 0.7f), new Vector3(x * r * 0.75f, cy - r * 1.05f, -r * 0.6f), 0.03f * s));
+            }
+            var braid = new[] { new Vector3(-r * 0.95f, cy - r * 0.2f, r * 0.2f), new Vector3(-r * 1.02f, cy - r * 0.8f, r * 0.35f), new Vector3(-r * 0.98f, cy - r * 1.35f, r * 0.45f) };
+            d.Add(Joints.Head, d.pal.hair, CharacterKit.Braid(braid, 0.018f * s));
+        }
 
         /// <summary>One thick braid over the right shoulder, down the front to the waist.</summary>
         public static void SideBraid(Dresser d, float length)
