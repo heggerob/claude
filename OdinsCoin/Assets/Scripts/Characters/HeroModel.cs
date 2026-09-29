@@ -87,7 +87,7 @@ namespace OdinsCoin
         {
             switch (hair)
             {
-                case HairStyle.LongBraids: Garments.LongBraids(d, 0.42f); break;
+                case HairStyle.LongBraids: Garments.LongBraids(d, 0.34f); break;
                 case HairStyle.WrappedBraids: Garments.LongBraids(d, 0.4f, true); break;
                 case HairStyle.SideBraid: Garments.SideBraid(d, 0.36f); break;
                 case HairStyle.ShortLocks: Garments.ShortLocks(d); break;
@@ -101,6 +101,12 @@ namespace OdinsCoin
     public static class Weapons
     {
         /// <summary>The first <paramref name="count"/> outline points as a 3D polyline in the blade's plane (x offset for the bevel).</summary>
+        /// <summary>The axe's cutting edge, t = 0 at the top horn to 1 at the tip of the beard, pushed out by <paramref name="off"/>.</summary>
+        static Vector2 Edge(float t, float off)
+        {
+            return new Vector2(0.99f + 0.035f * Mathf.Sin(t * Mathf.PI) - 0.02f * t + off, Mathf.Lerp(0.13f, -0.2f, t));
+        }
+
         static Vector3[] ToPath(System.Collections.Generic.List<Vector2> pts, float x, float s, int count)
         {
             var p = new Vector3[count];
@@ -130,22 +136,25 @@ namespace OdinsCoin
                     // The head: a socket round the haft, a narrow neck, then a broad crescent blade flaring up and down.
                     d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 0.8f), MeshData.Lathe(new[] { new Vector2(0.036f * s, 0f), new Vector2(0.036f * s, 0.1f * s) }, 10)
                         .Transformed(new Vector3(0f, 0f, 0.78f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one));
+                    // A bearded head about the size of the face: a short top horn, a long beard sweeping down.
                     var blade = new System.Collections.Generic.List<Vector2>();
                     blade.Add(new Vector2(0.8f, -0.035f));
                     blade.Add(new Vector2(0.8f, 0.035f));
-                    blade.Add(new Vector2(0.93f, 0.05f));
+                    blade.Add(new Vector2(0.9f, 0.07f));
+                    blade.Add(new Vector2(0.96f, 0.12f));
                     for (int i = 0; i <= 8; i++)
                     {
-                        // The cutting edge: a gentle outward curve from the top horn to the bottom horn.
-                        float t = i / 8f, yy = Mathf.Lerp(0.2f, -0.2f, t);
-                        blade.Add(new Vector2(1.02f + 0.06f * Mathf.Cos((t - 0.5f) * Mathf.PI), yy));
+                        // The cutting edge: a gentle outward curve from the top horn down to the tip of the beard.
+                        float t = i / 8f;
+                        blade.Add(Edge(t, 0f));
                     }
-                    blade.Add(new Vector2(0.93f, -0.05f));
+                    blade.Add(new Vector2(0.93f, -0.16f));
+                    blade.Add(new Vector2(0.87f, -0.11f));
                     // Convex-ish from the first point for the fan: keep the neck as the first vertex.
-                    d.Add(Joints.Weapon, d.pal.metal, MeshData.Extrude(blade.ToArray(), 0.026f).Transformed(Vector3.zero, Quaternion.identity, Vector3.one * s));
+                    d.Add(Joints.Weapon, d.pal.metal, MeshData.Extrude(blade.ToArray(), 0.022f).Transformed(Vector3.zero, Quaternion.identity, Vector3.one * s));
                     var edge = new System.Collections.Generic.List<Vector2>();
-                    for (int i = 0; i <= 8; i++) { float t = i / 8f, yy = Mathf.Lerp(0.2f, -0.2f, t); edge.Add(new Vector2(1.03f + 0.06f * Mathf.Cos((t - 0.5f) * Mathf.PI), yy)); }
-                    for (int i = 8; i >= 0; i--) { float t = i / 8f, yy = Mathf.Lerp(0.2f, -0.2f, t); edge.Add(new Vector2(0.99f + 0.06f * Mathf.Cos((t - 0.5f) * Mathf.PI), yy)); }
+                    for (int i = 0; i <= 8; i++) edge.Add(Edge(i / 8f, 0.008f));
+                    for (int i = 8; i >= 0; i--) edge.Add(Edge(i / 8f, -0.025f));
                     d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 1.35f), MeshData.Tube(ToPath(edge, 0.016f, s, 9), Radii(9, 0.012f * s), 4), false);
                     break;
                 case WeaponId.Spear:

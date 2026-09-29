@@ -161,7 +161,13 @@ namespace OdinsCoin
         public static void ShoulderPelt(Dresser d, float size) { ShoulderPelt(d, size, 0f); }
 
         /// <summary>The pelt; <paramref name="side"/> +1 keeps it over the right shoulder only (-1 left, 0 both).</summary>
-        public static void ShoulderPelt(Dresser d, float size, float side)
+        public static void ShoulderPelt(Dresser d, float size, float side) { ShoulderPelt(d, size, side, 0.7f, 1f); }
+
+        /// <summary>
+        /// ...and <paramref name="frontOpen"/> (0–1) how far the front is lifted to show the chest,
+        /// <paramref name="frontWidth"/> how wide that opening is (1 = narrow, 2+ = a wide V from shoulder to shoulder).
+        /// </summary>
+        public static void ShoulderPelt(Dresser d, float size, float side, float frontOpen, float frontWidth)
         {
             var f = d.fit;
             float s = d.S;
@@ -176,7 +182,7 @@ namespace OdinsCoin
             System.Func<float, float> shortFront = a =>
             {
                 float c = Mathf.Max(0f, Mathf.Cos(a));
-                float raise = drop * 0.7f * c * c;
+                float raise = drop * frontOpen * Mathf.Pow(c, 2f / Mathf.Max(0.1f, frontWidth));
                 // One-sided: pull the hem right up on the other shoulder and across the chest, so it hangs off one
                 // shoulder only.
                 if (side != 0f) raise = Mathf.Max(raise, (drop + 0.03f * s) * Mathf.Clamp01(-Mathf.Sin(a) * side * 1.5f + 0.2f + c * 2.5f));

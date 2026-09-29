@@ -51,7 +51,7 @@ namespace OdinsCoin
                     Garments.Tunic(d, true);
                     Garments.RaiderBelt(d, 4);
                     Garments.Tabard(d, 0.52f, 0.1f);
-                    Garments.ShoulderPelt(d, 1.1f);
+                    Garments.ShoulderPelt(d, 1.1f, 0f, 0.95f, 2.6f);
                     Garments.NasalHelmet(d);
                 } } },
             { OutfitId.Jarl, new Outfit {
