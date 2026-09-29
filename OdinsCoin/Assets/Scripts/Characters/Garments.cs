@@ -830,10 +830,10 @@ namespace OdinsCoin
             d.Add(Joints.Body, d.pal.leather, CharacterKit.Band(f.waist, 0.03f * s, d.SkirtRadius(f.waist) * 1.06f, d.skirtDepth + 0.02f));
             RuneDisc(d, Joints.Body, new Vector3(0f, f.waist, d.SkirtRadius(f.waist) * (d.skirtDepth + 0.02f) + 0.06f * s), 0.045f * s, Quaternion.Euler(90f, 0f, 0f));
             // Charms hanging from the belt on cords.
-            foreach (float x in new[] { -0.09f, -0.05f, 0.07f })
+            foreach (float x in new[] { -0.11f, -0.07f, -0.035f, 0.06f, 0.1f })
             {
                 var top = new Vector3(x * s, f.waist - 0.02f * s, d.SkirtRadius(f.waist) * d.skirtDepth + 0.02f);
-                var end = top + new Vector3(0f, -0.2f * s, 0.02f * s);
+                var end = top + new Vector3(0f, -(0.16f + Mathf.Abs(x) * 1.2f) * s, 0.02f * s);
                 d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(new[] { top, end }, new[] { 0.003f * s, 0.003f * s }, 4), false);
                 if (x > 0f) RuneDisc(d, Joints.Body, end, 0.028f * s, Quaternion.Euler(90f, 0f, 0f));
                 else d.Add(Joints.Body, d.pal.parchment, MeshData.Ellipsoid(end, new Vector3(0.018f, 0.028f, 0.016f) * s, 7, 5));
@@ -853,34 +853,65 @@ namespace OdinsCoin
                 d.Add(joint, d.pal.ink, MeshData.Tube(new[] { c + (a * seg[0] + b * seg[1]) * radius, c + (a * seg[2] + b * seg[3]) * radius }, new[] { 0.0035f * s, 0.0035f * s }, 4), false);
         }
 
-        /// <summary>Great antlers rising from the hood, hung with rune discs and bone charms on cords.</summary>
+        /// <summary>
+        /// Great branching antlers rising from the hood, lashed to a wooden crossbar behind the head; rune discs, bones
+        /// and bead strings hang on cords all along the bar and the antlers.
+        /// </summary>
         public static void Antlers(Dresser d)
         {
             var f = d.fit;
             float r = f.headR, cy = HeroModel.HeadCentre(f), s = d.S;
             var horn = d.pal.leather;
+            var rng = new System.Random(d.seed + 71);
+            // The crossbar, just above the hood behind the head.
+            float barY = cy + r * 1.05f, barZ = -r * 0.45f, half = 0.3f * s;
+            d.Add(Joints.Head, VikingModel.Shade(horn, 0.9f), MeshData.Tube(new[] { new Vector3(-half, barY - 0.02f * s, barZ), new Vector3(0f, barY + 0.01f * s, barZ), new Vector3(half, barY - 0.02f * s, barZ) }, new[] { 0.016f * s, 0.018f * s, 0.016f * s }, 7));
             foreach (float x in new[] { -1f, 1f })
             {
-                var root = new Vector3(x * r * 0.55f, cy + r * 1.1f, -r * 0.3f);
-                var beam = new[] { root, root + new Vector3(x * 0.1f, 0.06f, 0f) * s, root + new Vector3(x * 0.22f, 0.13f, -0.02f) * s, root + new Vector3(x * 0.33f, 0.24f, -0.03f) * s, root + new Vector3(x * 0.38f, 0.36f, -0.02f) * s };
-                d.Add(Joints.Head, horn, MeshData.Tube(beam, new[] { 0.034f * s, 0.03f * s, 0.025f * s, 0.018f * s, 0.008f * s }, 7));
-                // Tines branching upwards off the beam.
-                foreach (var t in new[] { new[] { 1f, 0.12f, 0.02f }, new[] { 2f, 0.16f, -0.03f }, new[] { 3f, 0.12f, 0.05f } })
+                var root = new Vector3(x * r * 0.5f, cy + r * 1.05f, -r * 0.35f);
+                // A thick beam sweeping out and then curving up and in.
+                var beam = new[] {
+                    root, root + new Vector3(x * 0.09f, 0.07f, -0.01f) * s, root + new Vector3(x * 0.2f, 0.16f, -0.02f) * s,
+                    root + new Vector3(x * 0.28f, 0.28f, -0.02f) * s, root + new Vector3(x * 0.27f, 0.4f, 0.0f) * s, root + new Vector3(x * 0.22f, 0.48f, 0.02f) * s };
+                d.Add(Joints.Head, horn, MeshData.Tube(beam, new[] { 0.04f * s, 0.036f * s, 0.03f * s, 0.024f * s, 0.016f * s, 0.006f * s }, 8));
+                // Four tines, the lower ones reaching forward-up, the upper ones straight up.
+                foreach (var t in new[] { new[] { 1f, 0.15f, 0.05f, 0.06f }, new[] { 2f, 0.18f, -0.04f, 0.04f }, new[] { 3f, 0.16f, 0.06f, 0.02f }, new[] { 4f, 0.12f, -0.05f, 0f } })
                 {
                     var at = beam[(int)t[0]];
-                    var tip = at + new Vector3(x * t[2], t[1], 0.02f) * s;
-                    d.Add(Joints.Head, horn, MeshData.Tube(new[] { at, (at + tip) * 0.5f + new Vector3(0f, 0f, 0.01f * s), tip }, new[] { 0.018f * s, 0.013f * s, 0.005f * s }, 6));
+                    var tip = at + new Vector3(x * t[2], t[1], t[3]) * s;
+                    var mid = Vector3.Lerp(at, tip, 0.5f) + new Vector3(x * 0.015f, 0f, 0.01f) * s;
+                    d.Add(Joints.Head, horn, MeshData.Tube(new[] { at, mid, tip }, new[] { 0.022f * s, 0.015f * s, 0.004f * s }, 6));
                 }
-                // Charms hanging from the beam.
+                // Charms on cords from the beam.
                 for (int k = 0; k < 3; k++)
                 {
                     var hang = Vector3.Lerp(beam[1], beam[3], k / 2f);
-                    float drop = (0.1f + 0.05f * k) * s;
-                    var end = hang + Vector3.down * drop;
-                    d.Add(Joints.Head, d.pal.leatherDark, MeshData.Tube(new[] { hang, end }, new[] { 0.0025f * s, 0.0025f * s }, 4), false);
-                    if (k == 1) d.Add(Joints.Head, d.pal.parchment, MeshData.Ellipsoid(end + Vector3.down * 0.02f * s, new Vector3(0.01f, 0.03f, 0.01f) * s, 6, 4));
-                    else RuneDisc(d, Joints.Head, end + Vector3.down * 0.035f * s, 0.036f * s, Quaternion.Euler(90f, 0f, 0f));
+                    Charm(d, hang, (0.08f + 0.06f * (k % 2)) * s, k, rng);
                 }
+            }
+            // Charms hanging along the crossbar.
+            for (int k = 0; k < 6; k++)
+            {
+                float x = Mathf.Lerp(-half * 0.95f, half * 0.95f, k / 5f);
+                if (Mathf.Abs(x) < r * 0.6f) continue; // not in front of the face
+                Charm(d, new Vector3(x, barY - 0.02f * s, barZ + 0.02f * s), (0.06f + 0.05f * (k % 3)) * s, k + 3, rng);
+            }
+        }
+
+        /// <summary>A cord with a rune disc, a bone or a string of beads at the end.</summary>
+        static void Charm(Dresser d, Vector3 from, float drop, int kind, System.Random rng)
+        {
+            float s = d.S;
+            var end = from + new Vector3(((float)rng.NextDouble() - 0.5f) * 0.01f * s, -drop, 0f);
+            d.Add(Joints.Head, d.pal.leatherDark, MeshData.Tube(new[] { from, end }, new[] { 0.0025f * s, 0.0025f * s }, 4), false);
+            switch (kind % 3)
+            {
+                case 0: RuneDisc(d, Joints.Head, end + Vector3.down * 0.035f * s, 0.036f * s, Quaternion.Euler(90f, 0f, 0f)); break;
+                case 1: d.Add(Joints.Head, d.pal.parchment, MeshData.Ellipsoid(end + Vector3.down * 0.025f * s, new Vector3(0.011f, 0.032f, 0.011f) * s, 6, 5)); break;
+                default:
+                    for (int i = 0; i < 4; i++)
+                        d.Add(Joints.Head, i % 2 == 0 ? d.pal.leather : d.pal.parchment, MeshData.Ellipsoid(end + Vector3.down * (0.012f + i * 0.018f) * s, Vector3.one * 0.01f * s, 6, 4), false);
+                    break;
             }
         }
 
@@ -1024,6 +1055,10 @@ namespace OdinsCoin
                     new Vector3(x * f.shoulderX * 0.75f, sy + 0.07f * s, r * 0.55f), new Vector3(x * f.shoulderX * 0.7f, sy - 0.06f * s, r * 0.95f),
                     new Vector3(x * f.shoulderX * 0.62f, sy - length * s, r * 0.95f) };
                 d.Add(Joints.Head, d.pal.hair, CharacterKit.Braid(path, 0.03f * s));
+                if (length > 0.55f)
+                    for (int k = 0; k < 3; k++)
+                        d.Add(Joints.Head, k == 1 ? d.pal.parchment : d.pal.leather, MeshData.Lathe(new[] { new Vector2(0.034f * s, -0.012f * s), new Vector2(0.038f * s, 0f), new Vector2(0.034f * s, 0.012f * s) }, 10)
+                            .Transformed(CharacterKit.Along(path, 0.45f + k * 0.17f), Quaternion.identity, Vector3.one), false);
                 if (wrapped)
                     for (int k = 0; k < 4; k++)
                         d.Add(Joints.Head, d.pal.fur, MeshData.Ellipsoid(CharacterKit.Along(path, 0.62f + k * 0.08f), new Vector3(0.034f, 0.024f, 0.034f) * s, 8, 5));
