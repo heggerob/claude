@@ -755,20 +755,55 @@ namespace OdinsCoin
         {
             var f = d.fit;
             float s = d.S;
-            foreach (float x in new[] { -0.045f, 0.045f })
+            // Below the belt the jerkin is split up the front: how far apart its edges are at a height.
+            System.Func<float, float> split = y => y >= f.waist - 0.02f * s || !d.hasSkirt ? 0.045f * s
+                : Mathf.Lerp(0.045f * s, 0.075f * s, Mathf.InverseLerp(f.waist, d.skirtBottom, y));
+            foreach (float x in new[] { -1f, 1f })
                 for (int i = 0; i < 9; i++)
                 {
                     float y = Mathf.Lerp(f.chest - 0.04f * s, d.hasSkirt ? d.skirtBottom + 0.03f * s : f.waist, i / 8f);
                     float r = y > f.waist ? f.TorsoRadius(y) * f.depth : d.SkirtRadius(y) * d.skirtDepth;
-                    d.Add(Joints.Body, d.pal.brass, MeshData.Ellipsoid(new Vector3(x * s, y, r + 0.008f * s), Vector3.one * 0.008f * s, 5, 3), false);
+                    d.Add(Joints.Body, d.pal.brass, MeshData.Ellipsoid(new Vector3(x * split(y), y, r + 0.008f * s), Vector3.one * 0.008f * s, 5, 3), false);
                 }
             if (!d.hasSkirt) return;
+            // The split itself: the dark under-tunic showing between the jerkin's edges, which are bound in lighter leather.
+            const int rows = 6;
+            var gap = new Vector3[rows, 2];
+            var edgeL = new Vector3[rows];
+            var edgeR = new Vector3[rows];
+            var er = new float[rows];
+            for (int r = 0; r < rows; r++)
+            {
+                float y = Mathf.Lerp(f.waist - 0.03f * s, d.skirtBottom - 0.005f * s, r / (float)(rows - 1));
+                float z = d.SkirtRadius(y) * d.skirtDepth + 0.004f;
+                float w = split(y) - 0.012f * s;
+                gap[r, 0] = new Vector3(-w, y, z);
+                gap[r, 1] = new Vector3(w, y, z);
+                edgeL[r] = new Vector3(-split(y) + 0.004f * s, y, z + 0.004f * s);
+                edgeR[r] = new Vector3(split(y) - 0.004f * s, y, z + 0.004f * s);
+                er[r] = 0.006f * s;
+            }
+            d.Add(Joints.Body, d.pal.clothDark, CharacterKit.Sheet(gap, Vector3.forward, 0.006f * s), false);
+            d.Add(Joints.Body, d.pal.leather, MeshData.Tube(edgeL, er, 5), false);
+            d.Add(Joints.Body, d.pal.leather, MeshData.Tube(edgeR, er, 5), false);
             for (int i = 0; i < 18; i++)
             {
                 float a = i / 18f * Mathf.PI * 2f;
                 float y = d.skirtBottom + 0.035f * s, r = d.SkirtRadius(y) + 0.006f;
                 d.Add(Joints.Body, d.pal.brass, MeshData.Ellipsoid(new Vector3(Mathf.Sin(a) * r, y, Mathf.Cos(a) * r * d.skirtDepth), Vector3.one * 0.0075f * s, 5, 3), false);
             }
+        }
+
+        /// <summary>Dark wool trousers from the hip down into the boots, over the stick legs.</summary>
+        public static void Trousers(Dresser d, float bootExtra)
+        {
+            var f = d.fit;
+            float s = d.S;
+            float r = 0.034f * s * Mathf.Sqrt(f.width);
+            float bottom = f.bootTop + bootExtra * s - f.hip - 0.02f * s;
+            foreach (var leg in new[] { Joints.LeftLeg, Joints.RightLeg })
+                d.Add(leg, d.pal.clothDark, MeshData.Lathe(new[] {
+                    new Vector2(r * 0.8f, bottom), new Vector2(r * 0.85f, (bottom - 0.02f * s) * 0.5f), new Vector2(r, -0.05f * s), new Vector2(r * 1.05f, 0.02f * s) }, 10));
         }
 
         /// <summary>A belt with a big round ring buckle and one pouch hanging at the right hip.</summary>

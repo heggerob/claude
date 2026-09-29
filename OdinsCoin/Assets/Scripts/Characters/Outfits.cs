@@ -115,9 +115,10 @@ namespace OdinsCoin
                     new Ability { id = "reach", name = "Long Reach", description = "Strike enemies from further away." } },
                 dress = d =>
                 {
-                    Garments.FurBoots(d, 0.07f);
+                    Garments.FurBoots(d, 0.13f);
+                    Garments.Trousers(d, 0.13f);
                     Garments.Gloves(d);
-                    Garments.LongSkirt(d, 0.2f, 1.3f);
+                    Garments.LongSkirt(d, 0.3f, 1.3f);
                     Garments.Tunic(d, false);
                     Garments.LongSleeves(d);
                     Garments.StuddedTrim(d);
