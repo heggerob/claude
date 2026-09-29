@@ -166,6 +166,8 @@ namespace OdinsCoin
             // They keep their shield up while waiting to strike.
             Blocking = attackStart < 0f && speed < 0.5f;
             parts.shield.localPosition = Blocking ? new Vector3(-0.3f, 1.3f, 0.5f) : new Vector3(0f, 1.25f, -0.24f);
+            // On the back the painted side faces out behind; raised, it turns to face the enemy.
+            parts.shield.localRotation = Blocking ? Quaternion.Euler(0f, 180f, 0f) : Quaternion.identity;
         }
     }
 }

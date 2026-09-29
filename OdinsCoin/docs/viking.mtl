@@ -1,0 +1,320 @@
+newmtl m0
+Kd 0.25 0.4 0.6
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m1
+Kd 0.36 0.24 0.14
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m2
+Kd 0.85 0.68 0.28
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m3
+Kd 0.175 0.28 0.42
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m4
+Kd 0.52 0.43 0.33
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m5
+Kd 0.93 0.74 0.6
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m6
+Kd 0.36 0.33 0.27
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m7
+Kd 0.414 0.276 0.161
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m8
+Kd 0.36 0.24 0.14
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m9
+Kd 0.36 0.33 0.27
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m10
+Kd 0.414 0.276 0.161
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m11
+Kd 0.36 0.24 0.14
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m12
+Kd 0.25 0.4 0.6
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m13
+Kd 0.93 0.74 0.6
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m14
+Kd 0.36 0.24 0.14
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m15
+Kd 0.82 0.82 0.85
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m16
+Kd 0.25 0.4 0.6
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m17
+Kd 0.93 0.74 0.6
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m18
+Kd 0.36 0.24 0.14
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m19
+Kd 0.82 0.82 0.85
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m20
+Kd 0.93 0.74 0.6
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m21
+Kd 0.884 0.703 0.57
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m22
+Kd 0.949 0.607 0.468
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m23
+Kd 0.95 0.95 0.93
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m24
+Kd 0.2 0.4 0.65
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m25
+Kd 0.08 0.08 0.1
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m26
+Kd 0.663 0.357 0.136
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m27
+Kd 0.78 0.42 0.16
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m28
+Kd 0.702 0.378 0.144
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m29
+Kd 0.9 0.72 0.3
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m30
+Kd 0.55 0.56 0.6
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m31
+Kd 0.413 0.42 0.45
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m32
+Kd 0.504 0.336 0.196
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m33
+Kd 0.36 0.24 0.14
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m34
+Kd 0.55 0.56 0.6
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m35
+Kd 0.85 0.87 0.9
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m36
+Kd 0.75 0.15 0.12
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m37
+Kd 0.93 0.88 0.76
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m38
+Kd 0.55 0.56 0.6
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+
+newmtl m39
+Kd 0.36 0.24 0.14
+Ka 0 0 0
+Ks 0.05 0.05 0.05
+Ns 10
+d 1
+illum 2
+

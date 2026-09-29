@@ -26,6 +26,7 @@ public static class LogicTests
         SeaDangerTests();
         SoundTests();
         SaveTests();
+        ModelTests();
         CombatTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
@@ -64,6 +65,88 @@ public static class LogicTests
             foreach (var other in all)
                 if (other != spec) Check(Vector2.Distance(spec.centre, other.centre) > (spec.radius + other.radius) * 1.25f, spec.name + " doesn't overlap " + other.name);
         }
+    }
+
+    /// <summary>Signed volume: positive when every face points outwards (Unity's front faces are clockwise).</summary>
+    static float Volume(MeshData m)
+    {
+        double v = 0;
+        for (int i = 0; i < m.Triangles.Count; i += 3)
+        {
+            Vector3 a = m.Vertices[m.Triangles[i]], b = m.Vertices[m.Triangles[i + 1]], c = m.Vertices[m.Triangles[i + 2]];
+            v += Vector3.Dot(a, Vector3.Cross(b - a, c - a)) / 6.0;
+        }
+        return (float)v;
+    }
+
+    static void ModelTests()
+    {
+        // Every shape faces outwards and has about the right volume.
+        float lathe = Volume(MeshData.Lathe(new[] { new Vector2(1f, 0f), new Vector2(1f, 1f) }, 32));
+        Check(lathe > 3.0f && lathe < 3.2f, "a lathe cylinder faces out, volume ~pi (" + lathe + ")");
+        float ball = Volume(MeshData.Ellipsoid(new Vector3(5f, 2f, 1f), new Vector3(1f, 1f, 1f), 24, 16));
+        Check(ball > 4.0f && ball < 4.25f, "an ellipsoid faces out, volume ~4.19 even off-centre (" + ball + ")");
+        float dome = Volume(MeshData.Dome(Vector3.zero, Vector3.one, 24, 10));
+        Check(dome > 2.0f && dome < 2.1f, "a dome faces out, volume ~2.09 (" + dome + ")");
+        float box = Volume(MeshData.Box(new Vector3(1f, 2f, 3f), new Vector3(1f, 2f, 3f)));
+        Check(Math.Abs(box - 6f) < 0.001f, "a box faces out (" + box + ")");
+        float tube = Volume(MeshData.Tube(new[] { new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0f), new Vector3(1f, 2f, 0f) }, new[] { 0.2f, 0.2f, 0.2f }, 24));
+        Check(tube > 0.2f, "a tube faces out (" + tube + ")");
+        float tubeZ = Volume(MeshData.Tube(new[] { new Vector3(0f, 0f, 0f), new Vector3(0f, 0f, 1f) }, new[] { 0.5f, 0.5f }, 32));
+        Check(tubeZ > 0.75f && tubeZ < 0.8f, "a tube along Z faces out, volume ~0.785 (" + tubeZ + ")");
+        var cw = new[] { new Vector2(0f, 0f), new Vector2(0f, 1f), new Vector2(1f, 1f), new Vector2(1f, 0f) };
+        var ccw = new[] { new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(1f, 1f), new Vector2(0f, 1f) };
+        Check(Math.Abs(Volume(MeshData.Extrude(cw, 0.5f)) - 0.5f) < 0.001f && Math.Abs(Volume(MeshData.Extrude(ccw, 0.5f)) - 0.5f) < 0.001f, "extrusions face out whichever way the outline was drawn");
+        var disc = new MeshData();
+        for (int q = 0; q < 4; q++) disc.Append(MeshData.Wedge(1f, 0.1f, q * 90f, q * 90f + 90f, 16));
+        float dv = Volume(disc);
+        Check(dv > 0.3f && dv < 0.32f, "four wedges make a disc facing out, volume ~0.314 (" + dv + ")");
+
+        // The Viking himself.
+        var look = new VikingLook();
+        var model = VikingModel.Build(look);
+        float minY = float.MaxValue, maxY = float.MinValue, minZ = float.MaxValue, maxZ = float.MinValue;
+        bool finite = true, indices = true;
+        foreach (var p in model.Pieces)
+        {
+            Vector3 at = model.RestPosition(p.joint);
+            foreach (var v in p.mesh.Vertices)
+            {
+                Vector3 w = at + v;
+                if (float.IsNaN(w.x) || float.IsNaN(w.y) || float.IsNaN(w.z)) finite = false;
+                if (p.joint == VikingModel.Weapon || p.joint == VikingModel.Shield) continue;
+                minY = Math.Min(minY, w.y); maxY = Math.Max(maxY, w.y); minZ = Math.Min(minZ, w.z); maxZ = Math.Max(maxZ, w.z);
+            }
+            foreach (int t in p.mesh.Triangles) if (t < 0 || t >= p.mesh.Vertices.Count) indices = false;
+        }
+        Check(finite && indices, "the model has no NaNs or bad indices");
+        Check(Math.Abs(minY) < 0.02f, "feet on the ground (" + minY + ")");
+        Check(maxY > 1.9f && maxY < 2.05f, "about 1.95 m tall with the helmet (" + maxY + ")");
+        Check(maxZ - minZ < 0.6f, "not too deep front to back (" + (maxZ - minZ) + ")");
+        Check(model.TriangleCount > 2000 && model.TriangleCount < 12000, "low-poly but smooth: " + model.TriangleCount + " triangles");
+        foreach (var name in new[] { VikingModel.Body, VikingModel.Head, VikingModel.LeftLeg, VikingModel.RightLeg, VikingModel.LeftArm, VikingModel.RightArm, VikingModel.Weapon, VikingModel.Shield })
+            Check(model.Find(name) != null, "joint " + name + " exists");
+        int perJointColour = 0;
+        var seen = new HashSet<string>();
+        bool opaque = true;
+        foreach (var p in model.Pieces)
+        {
+            if (!seen.Add(p.joint + "|" + p.color.r + "," + p.color.g + "," + p.color.b + "," + p.color.a)) perJointColour++;
+            if (Math.Abs(p.color.a - 1f) > 1e-4f) opaque = false;
+        }
+        Check(opaque, "every colour is fully opaque");
+        Check(perJointColour == 0, "one mesh per colour per joint");
+        Check(model.Pieces.Count < 60, "few enough meshes to draw cheaply (" + model.Pieces.Count + ")");
+        // Hands reach the weapon joint; the head sits on the neck.
+        Check(Math.Abs(model.RestPosition(VikingModel.Weapon).y - (VikingModel.ShoulderHeight - VikingModel.ArmLength)) < 0.001f, "the weapon is in the hand");
+        // Horns, swords and size change the model.
+        int plain = model.TriangleCount;
+        Check(VikingModel.Build(new VikingLook { horns = true }).TriangleCount > plain, "horns add geometry");
+        Check(VikingModel.Build(new VikingLook { sword = true }).TriangleCount != plain, "a sword replaces the axe");
+        var big = VikingModel.Build(new VikingLook { size = 1.2f });
+        float bigTop = float.MinValue;
+        foreach (var p in big.Pieces) foreach (var v in p.mesh.Vertices) bigTop = Math.Max(bigTop, (big.RestPosition(p.joint) + v).y);
+        Check(Math.Abs(bigTop - maxY * 1.2f) < 0.02f, "size scales the whole Viking (" + bigTop + ")");
     }
 
     static void SoundTests()
