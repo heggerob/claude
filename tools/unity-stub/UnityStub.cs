@@ -139,3 +139,11 @@ namespace UnityEngine.InputSystem.Controls { public class ButtonControl { public
 namespace UnityEngine.InputSystem { using Controls;
   public class Keyboard { public static Keyboard current; public KeyControl wKey,aKey,sKey,dKey,upArrowKey,downArrowKey,leftArrowKey,rightArrowKey,leftShiftKey,cKey,leftCtrlKey,rKey,hKey,bKey,fKey,spaceKey,tabKey,qKey,eKey,escapeKey,digit1Key,digit2Key,digit3Key; }
   public class Mouse { public static Mouse current; public ButtonControl leftButton, rightButton, middleButton; public Vector2Control position, delta, scroll; } }
+namespace UnityEngine {
+  public struct Vector4 {
+    public float x, y, z, w;
+    public Vector4(float x, float y, float z, float w) { this.x = x; this.y = y; this.z = z; this.w = w; }
+    public static Vector4 zero { get { return new Vector4(0f, 0f, 0f, 0f); } }
+    public override string ToString() { return "(" + x + ", " + y + ", " + z + ", " + w + ")"; }
+  }
+}

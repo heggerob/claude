@@ -3,8 +3,8 @@ using UnityEngine;
 namespace OdinsCoin
 {
     /// <summary>
-    /// Home: an island with a wooden jetty, a longhouse (the mead hall comes in roadmap item 9)
-    /// and Gunnar the trader at the end of the jetty, who buys every chest you bring back.
+    /// Home: an island with a wooden jetty, Gunnar the trader at the end of it (he buys every chest you bring
+    /// back) and the mead hall up the hill, where Bjørn sells upgrades and plays dice.
     /// The voyage starts here, moored alongside the jetty.
     /// </summary>
     public class HomeHarbour : MonoBehaviour
@@ -17,7 +17,24 @@ namespace OdinsCoin
         public static readonly IslandSpec Spec = new IslandSpec
         {
             name = "Home Fjord", centre = new Vector2(0f, -120f), radius = 52f, height = 20f, seed = 41, trees = 30, chests = 0,
+            // The mead hall and its yard, and the beach where the jetty lands.
+            keepClear = new[] { new Vector3(-14f, -90f, 15f), new Vector3(0f, -78f, 7f) },
+            terraces = new[] { new Vector4(-14f, -91f, 12f, 7f) },
         };
+
+        /// <summary>The mead hall stands up the hill from the jetty, its door facing the water.</summary>
+        public static readonly Vector2 HallPosition = new Vector2(-14f, -92f);
+        public const float HallYaw = 190f;
+
+        /// <summary>Where Bjørn stands (x, z), just outside the hall door.</summary>
+        public static Vector2 KeeperSpot
+        {
+            get
+            {
+                Vector3 local = Quaternion.Euler(0f, HallYaw, 0f) * new Vector3(2.4f, 0f, -9.6f);
+                return HallPosition + new Vector2(local.x, local.z);
+            }
+        }
 
         /// <summary>Where the longship starts: alongside the jetty, bow out to sea.</summary>
         public static readonly Vector3 ShipStart = new Vector3(4.3f, 0.2f, -54f);
@@ -31,7 +48,9 @@ namespace OdinsCoin
         /// <summary>Gunnar stands at the edge of the jetty, close enough to trade over the ship's side.</summary>
         public static readonly Vector3 TraderPosition = new Vector3(1.1f, JettyTop, -56f);
 
+        public const float KeeperRange = 3f;
         public Transform Trader { get; private set; }
+        public Transform Keeper { get; private set; }
         public Island Island { get; private set; }
 
         public static HomeHarbour Build(Transform parent)
@@ -75,9 +94,10 @@ namespace OdinsCoin
         {
             var house = new GameObject("Longhouse").transform;
             house.SetParent(transform, false);
-            float ground = Island.Height(Spec, -14f, -92f);
-            house.position = new Vector3(-14f, ground - 0.2f, -92f);
-            house.rotation = Quaternion.Euler(0f, 10f, 0f);
+            float ground = Island.Height(Spec, HallPosition.x, HallPosition.y);
+            house.position = new Vector3(HallPosition.x, ground - 0.05f, HallPosition.y);
+            // The door (local -z) faces down the hill towards the jetty.
+            house.rotation = Quaternion.Euler(0f, HallYaw, 0f);
             var timber = new Color(0.42f, 0.28f, 0.16f);
             var turf = new Color(0.34f, 0.46f, 0.24f);
             foreach (var wall in new[] {
@@ -99,6 +119,28 @@ namespace OdinsCoin
             // Dragon heads on the gable ends.
             LongshipBuilder.Deco(PrimitiveType.Cube, house, new Vector3(0f, 7.6f, -8.6f), new Vector3(0.4f, 0.9f, 0.4f), Materials.DarkWood);
             LongshipBuilder.Deco(PrimitiveType.Cube, house, new Vector3(0f, 7.6f, 8.6f), new Vector3(0.4f, 0.9f, 0.4f), Materials.DarkWood);
+            // Warm light spilling out of the door, and a sign-post with a drinking horn.
+            var door = new GameObject("Hall Light").AddComponent<Light>();
+            door.transform.SetParent(house, false);
+            door.transform.localPosition = new Vector3(0f, 1.6f, -7f);
+            door.type = LightType.Point;
+            door.color = new Color(1f, 0.7f, 0.4f);
+            door.range = 7f;
+            door.intensity = 1.4f;
+            LongshipBuilder.Deco(PrimitiveType.Cube, house, new Vector3(0f, 1.2f, -7.9f), new Vector3(2.2f, 2.6f, 0.1f), new Color(0.12f, 0.08f, 0.05f));
+
+            // Bjørn the mead-keeper, by the door with a barrel and a dice table.
+            var k = new GameObject("Bjørn the Mead-Keeper").transform;
+            k.SetParent(transform, false);
+            Vector2 spot = KeeperSpot;
+            k.position = new Vector3(spot.x, Island.Height(Spec, spot.x, spot.y), spot.y);
+            k.rotation = house.rotation * Quaternion.Euler(0f, 180f, 0f);
+            VikingBuilder.Build(k, new Color(0.5f, 0.2f, 0.15f), new Color(0.55f, 0.3f, 0.15f), new Color(0.2f, 0.3f, 0.6f), false);
+            LongshipBuilder.Deco(PrimitiveType.Cylinder, k, new Vector3(-1.1f, 0.5f, 0.2f), new Vector3(0.8f, 0.5f, 0.8f), Materials.Wood);  // mead barrel
+            LongshipBuilder.Deco(PrimitiveType.Cube, k, new Vector3(0f, 0.45f, 1f), new Vector3(1.4f, 0.9f, 0.8f), Materials.DarkWood);      // dice table
+            for (int i = 0; i < 3; i++)
+                LongshipBuilder.Deco(PrimitiveType.Cube, k, new Vector3(-0.3f + i * 0.28f, 0.95f, 1f), new Vector3(0.12f, 0.12f, 0.12f), new Color(0.92f, 0.88f, 0.78f));
+            Keeper = k;
         }
 
         void BuildTrader()
@@ -116,6 +158,8 @@ namespace OdinsCoin
         }
 
         public bool NearTrader(Vector3 p) { return Trader != null && Vector3.Distance(p, Trader.position) < TradeRange; }
+
+        public bool NearKeeper(Vector3 p) { return Keeper != null && Vector3.Distance(p, Keeper.position) < KeeperRange; }
 
         public bool ShipInRange(Longship ship) { return ship != null && Trader != null && Vector3.Distance(ship.transform.position, Trader.position) <= CargoRange; }
 

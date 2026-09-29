@@ -22,6 +22,7 @@ public static class LogicTests
         IslandTests();
         HarbourTests();
         RuneTests();
+        HallTests();
         CombatTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
@@ -60,6 +61,79 @@ public static class LogicTests
             foreach (var other in all)
                 if (other != spec) Check(Vector2.Distance(spec.centre, other.centre) > (spec.radius + other.radius) * 1.25f, spec.name + " doesn't overlap " + other.name);
         }
+    }
+
+    static void HallTests()
+    {
+        // The hall and Bjørn stand on dry, fairly level ground, clear of trees, and apart from Gunnar.
+        var home = HomeHarbour.Spec;
+        var k = HomeHarbour.KeeperSpot;
+        var hall = HomeHarbour.HallPosition;
+        float hk = Island.Height(home, k.x, k.y), hh = Island.Height(home, hall.x, hall.y);
+        Check(hk > Island.SandLevel && hh > Island.SandLevel, "hall and keeper are on dry land (" + hk + ", " + hh + ")");
+        Check(Math.Abs(hk - hh) < 0.3f, "Bjørn stands on the hall's terrace (" + (hk - hh) + ")");
+        // The hall's corners sit on the level terrace too, so it doesn't float or sink into the hill.
+        foreach (var c in new[] { new Vector2(-8f, -8f), new Vector2(8f, -8f), new Vector2(-8f, 8f), new Vector2(8f, 8f) })
+        {
+            Vector3 w = Quaternion.Euler(0f, HomeHarbour.HallYaw, 0f) * new Vector3(c.x, 0f, c.y);
+            float hc = Island.Height(home, hall.x + w.x, hall.y + w.z);
+            Check(Math.Abs(hc - hh) < 0.5f, "hall corner " + c + " is level (" + (hc - hh) + ")");
+        }
+        Check(k.y > hall.y, "Bjørn stands on the jetty side of the hall");
+        Check(home.InClearing(k) && home.InClearing(hall) && home.InClearing(new Vector2(0f, HomeHarbour.JettyStart)), "trees keep clear of the hall and jetty");
+        Check(Vector2.Distance(k, new Vector2(HomeHarbour.TraderPosition.x, HomeHarbour.TraderPosition.z)) > HomeHarbour.KeeperRange + HomeHarbour.TradeRange, "Bjørn and Gunnar don't share a prompt");
+        foreach (var other in WorldGen.Specs) Check(!other.InClearing(other.centre), other.name + " has no clearings");
+
+        // Upgrades.
+        var f = new Fortune { Gold = 10000 };
+        var up = new Upgrades();
+        Check(up.SailMultiplier == 1f && up.OarMultiplier == 1f && up.HealthBonus == 0f && up.AxeMultiplier == 1f, "no upgrades: no bonuses");
+        int before = f.Gold;
+        Check(up.Buy(UpgradeKind.Sail, f) && f.Gold == before - 150 && Math.Abs(up.SailMultiplier - 1.1f) < 0.001f, "first sail upgrade: 150 gold, +10%");
+        while (up.Buy(UpgradeKind.Sail, f)) { }
+        Check(up.Maxed(UpgradeKind.Sail) && up.NextCost(UpgradeKind.Sail) == -1 && Math.Abs(up.SailMultiplier - 1.3f) < 0.001f, "sail maxes out at +30%");
+        var poor = new Fortune { Gold = 50 };
+        Check(!up.Buy(UpgradeKind.Axe, poor) && poor.Gold == 50 && up.Level(UpgradeKind.Axe) == 0, "can't buy what you can't afford");
+        foreach (var d in Upgrades.All)
+        {
+            Check(d.levels.Length == d.costs.Length, d.name + " has a name for every level");
+            for (int i = 1; i < d.costs.Length; i++) Check(d.costs[i] > d.costs[i - 1], d.name + " gets pricier per level");
+        }
+        var leaky = new Fortune();
+        leaky.Add(Fates.Curses[1], 3, 60f); // Rán's Net, tier 3: -50%
+        var hull = new Upgrades();
+        Check(Math.Abs(hull.LeakMultiplier(leaky) - 0.5f) < 0.001f, "Rán's Net tier 3 halves the speed");
+        hull.Buy(UpgradeKind.Hull, f); hull.Buy(UpgradeKind.Hull, f);
+        Check(Math.Abs(hull.LeakMultiplier(leaky) - 0.85f) < 0.001f, "oak strakes shrug off 70% of it (" + hull.LeakMultiplier(leaky) + ")");
+        Check(Math.Abs(hull.LeakMultiplier(new Fortune()) - 1f) < 0.001f, "no curse, no slowdown");
+
+        // Dice.
+        Check(MeadDice.Rank(new[] { 1, 1, 1 }) > MeadDice.Rank(new[] { 6, 6, 5 }), "any triple beats any total");
+        Check(MeadDice.Rank(new[] { 2, 2, 2 }) < MeadDice.Rank(new[] { 3, 3, 3 }), "higher triple wins");
+        Check(MeadDice.Compare(new[] { 6, 4, 1 }, new[] { 5, 5, 1 }) == 0, "equal totals tie");
+        Check(MeadDice.Compare(new[] { 6, 4, 2 }, new[] { 5, 5, 1 }) == 1 && MeadDice.Compare(new[] { 1, 2, 3 }, new[] { 2, 2, 3 }) == -1, "higher total wins");
+        Check(MeadDice.Lowest(new[] { 4, 1, 6 }) == 1, "lowest die found");
+        // Enumerate every pair of hands: the game is exactly even.
+        int wins = 0, losses = 0, ties = 0;
+        var all = new List<int[]>();
+        for (int a = 1; a <= 6; a++) for (int b = 1; b <= 6; b++) for (int c = 1; c <= 6; c++) all.Add(new[] { a, b, c });
+        foreach (var x in all) foreach (var y in all) { int o = MeadDice.Compare(x, y); if (o > 0) wins++; else if (o < 0) losses++; else ties++; }
+        Check(wins == losses && wins + losses + ties == 216 * 216, "dice: you win exactly as often as Bjørn (" + wins + " / " + losses + " / " + ties + ")");
+        // With Odin's Favour, rerolling the lowest die when not ahead helps.
+        var rng = new System.Random(5);
+        int favWins = 0, favLosses = 0;
+        for (int i = 0; i < 20000; i++)
+        {
+            var me = MeadDice.Roll(rng); var him = MeadDice.Roll(rng);
+            if (MeadDice.Compare(me, him) <= 0) me[MeadDice.Lowest(me)] = rng.Next(1, 7);
+            int o = MeadDice.Compare(me, him);
+            if (o > 0) favWins++; else if (o < 0) favLosses++;
+        }
+        Check(favWins > favLosses, "Odin's Favour tilts the dice your way (" + favWins + " vs " + favLosses + ")");
+        var d10 = new Fortune { Gold = 100 };
+        Check(MeadDice.Settle(d10, 25, 1) == 25 && d10.Gold == 125 && d10.DiceWon == 1, "a win pays the stake");
+        Check(MeadDice.Settle(d10, 25, -1) == -25 && d10.Gold == 100 && d10.DiceLost == 1, "a loss costs the stake");
+        Check(MeadDice.Settle(d10, 25, 0) == 0 && d10.Gold == 100, "a tie costs nothing");
     }
 
     static void RuneTests()

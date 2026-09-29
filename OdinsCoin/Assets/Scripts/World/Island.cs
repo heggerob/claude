@@ -14,6 +14,17 @@ namespace OdinsCoin
         public bool monastery;
         public int trees = 25;
         public int chests = 2;
+        /// <summary>Level terraces cut into the slope for buildings: (x, z, radius, height) in world metres.</summary>
+        public Vector4[] terraces;
+        /// <summary>Areas kept free of trees and boulders: (x, z, radius) in world metres.</summary>
+        public Vector3[] keepClear;
+
+        public bool InClearing(Vector2 p)
+        {
+            if (keepClear == null) return false;
+            foreach (var k in keepClear) if (Vector2.Distance(p, new Vector2(k.x, k.y)) < k.z) return true;
+            return false;
+        }
     }
 
     /// <summary>
@@ -41,8 +52,17 @@ namespace OdinsCoin
             // Dome shape, then hills and crags on top.
             float dome = Mathf.Clamp01(1f - t * t);
             float hills = Noise(x * 0.035f + s.seed * 13.1f, z * 0.035f) * 0.6f + Noise(x * 0.09f, z * 0.09f + s.seed * 7.7f) * 0.25f;
-            float h = s.height * dome * (0.55f + hills) - 3.2f * Mathf.Clamp01((t - 0.75f) * 2f);
-            return h + 0.6f;
+            float h = s.height * dome * (0.55f + hills) - 3.2f * Mathf.Clamp01((t - 0.75f) * 2f) + 0.6f;
+            if (s.terraces != null)
+                foreach (var pad in s.terraces)
+                {
+                    // Flat inside the radius, blending back into the hillside over the next 8 m.
+                    float r = Mathf.Sqrt((x - pad.x) * (x - pad.x) + (z - pad.y) * (z - pad.y));
+                    float k = Mathf.Clamp01((r - pad.z) / 8f);
+                    k = k * k * (3f - 2f * k);
+                    h = Mathf.Lerp(pad.w, h, k);
+                }
+            return h;
         }
 
         // Cheap smooth noise 0..1 (sum of sines, deterministic).
@@ -163,7 +183,7 @@ namespace OdinsCoin
                 float r = s.radius * Mathf.Lerp(minT, maxT, (float)rng.NextDouble());
                 var p = s.centre + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * r;
                 if (Height(s, p.x, p.y) < SandLevel + 0.2f && maxT < 0.9f) continue;
-                bool clear = true;
+                bool clear = !s.InClearing(p);
                 foreach (var q in avoid) if (Vector2.Distance(p, q) < spacing) { clear = false; break; }
                 if (clear) return p;
             }

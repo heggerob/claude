@@ -34,7 +34,7 @@ namespace OdinsCoin
         }
     }
 
-    /// <summary>Hit points for anyone who can fight. Max health follows Hel's Chill for the player.</summary>
+    /// <summary>Hit points for anyone who can fight. The player's max health follows mail upgrades and Hel's Chill.</summary>
     public class Health : MonoBehaviour
     {
         public float BaseMax = 100f;
@@ -45,7 +45,7 @@ namespace OdinsCoin
         public event System.Action<float, Vector3> Damaged; // amount, from
         public event System.Action Died;
 
-        public float Max { get { return IsPlayer ? BaseMax * Fortune.Current.HealthMultiplier : BaseMax; } }
+        public float Max { get { return IsPlayer ? (BaseMax + Upgrades.Current.HealthBonus) * Fortune.Current.HealthMultiplier : BaseMax; } }
 
         void Awake() { Current = BaseMax; }
 

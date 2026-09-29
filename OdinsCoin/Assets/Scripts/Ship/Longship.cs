@@ -80,9 +80,10 @@ namespace OdinsCoin
 
             // Sail and oars.
             SailAmount = Mathf.MoveTowards(SailAmount, Mathf.Clamp01(SailTarget), dt * 0.35f);
-            float thrust = ShipTuning.SailThrust(SailAmount, t.forward);
-            if (Rowing && SailAmount < 0.15f) thrust += ShipTuning.RowThrust;
-            thrust *= Fortune.Current.ShipThrustMultiplier; // Rán's Net drags at the hull
+            var up = Upgrades.Current;
+            float thrust = ShipTuning.SailThrust(SailAmount, t.forward) * up.SailMultiplier;
+            if (Rowing && SailAmount < 0.15f) thrust += ShipTuning.RowThrust * up.OarMultiplier;
+            thrust *= up.LeakMultiplier(Fortune.Current); // Rán's Net drags at the hull; a tarred hull resists
             Vector3 forwardFlat = t.forward;
             forwardFlat.y = 0f;
             Body.AddForce(forwardFlat.normalized * thrust);

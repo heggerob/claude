@@ -105,6 +105,7 @@ namespace OdinsCoin
         public int Flips, HeadsCount;
         /// <summary>Chests sold at home and the gold they brought in, for the mead hall's boasting board.</summary>
         public int ChestsSold, GoldPlundered;
+        public int DiceWon, DiceLost;
 
         static Fortune current;
 

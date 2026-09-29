@@ -40,7 +40,7 @@ namespace OdinsCoin
                 if (Time.time >= DeadUntil) Respawn();
                 return;
             }
-            bool free = !viking.AtHelm && !viking.Swimming && viking.Carrying == null && (CoinUI.Instance == null || !CoinUI.Instance.IsOpen);
+            bool free = !viking.AtHelm && !viking.Swimming && viking.Carrying == null && !MeadHallUI.IsOpenNow && (CoinUI.Instance == null || !CoinUI.Instance.IsOpen);
             Blocking = free && GameInput.BlockHeld();
             if (free && !Blocking && GameInput.AttackPressed() && Time.time - swingStart > SwingTime) { swingStart = Time.time; swingHit = false; }
 
@@ -66,7 +66,7 @@ namespace OdinsCoin
                 if (saxon.Health.Dead) continue;
                 if (!CombatMath.InArc(transform.position, transform.forward, saxon.transform.position, Reach, Arc)) continue;
                 bool front = CombatMath.FromFront(saxon.transform.position, saxon.transform.forward, transform.position);
-                float dmg = CombatMath.Damage(SwingDamage, fortune.MeleeDamageMultiplier, saxon.Blocking, front);
+                float dmg = CombatMath.Damage(SwingDamage, fortune.MeleeDamageMultiplier * Upgrades.Current.AxeMultiplier, saxon.Blocking, front);
                 saxon.Health.TakeDamage(dmg, transform.position);
                 saxon.Stagger(transform.position);
             }

@@ -97,7 +97,7 @@ namespace OdinsCoin
 
             if (combat == null) combat = GetComponent<VikingCombat>();
             // At the altar the coin screen has the controls; when dead, nothing moves.
-            if ((CoinUI.Instance != null && CoinUI.Instance.IsOpen) || (combat != null && combat.Busy))
+            if ((CoinUI.Instance != null && CoinUI.Instance.IsOpen) || MeadHallUI.IsOpenNow || (combat != null && combat.Busy))
             {
                 Prompt = null;
                 controller.Move(Vector3.down * 2f * dt);
@@ -192,6 +192,12 @@ namespace OdinsCoin
             if (OnShip && Carrying == null && Vector3.Distance(transform.position, Ship.Parts.helm.position) < InteractRange) { Prompt = "[E] Take the steering oar"; return; }
             if (OnShip && NearAltar() && Carrying == null) { Prompt = "[E] Flip Odin's Coin"; return; }
             var home = HomeHarbour.Instance;
+            if (home != null && home.NearKeeper(transform.position))
+            {
+                if (Carrying != null) { Prompt = "[E] Sell the chest to Bjørn (" + Carrying.Value + " gold)"; return; }
+                Prompt = "[E] Enter the mead hall";
+                return;
+            }
             if (home != null && home.NearTrader(transform.position))
             {
                 if (Carrying != null) { Prompt = "[E] Sell the chest to Gunnar (" + Carrying.Value + " gold)"; return; }
@@ -229,6 +235,18 @@ namespace OdinsCoin
                 return;
             }
             var home = HomeHarbour.Instance;
+            if (home != null && home.NearKeeper(transform.position))
+            {
+                if (Carrying != null)
+                {
+                    var chest = Carrying;
+                    Carrying = null;
+                    int paid = home.Sell(chest);
+                    CombatHud.Banner("+" + paid + " GOLD", "Bjørn pours you a horn of mead on the house.");
+                }
+                else if (MeadHallUI.Instance != null) MeadHallUI.Instance.Open();
+                return;
+            }
             if (home != null && home.NearTrader(transform.position))
             {
                 if (Carrying != null)
