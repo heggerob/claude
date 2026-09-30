@@ -33,6 +33,7 @@ namespace OdinsCoin
 
             DrawFortune();
             DrawDangers();
+            DrawFirstSteps();
 
             // Nearest land.
             // The lead line: the depth under her keel, called out when the bottom comes up.
@@ -189,6 +190,39 @@ namespace OdinsCoin
         }
 
         /// <summary>Hull water, the storm, and the health of whatever is attacking you.</summary>
+        bool openedChest;
+        GUIStyle stepStyle;
+
+        void OnEnable() { TreasureChest.Opened += NoteOpened; }
+        void OnDisable() { TreasureChest.Opened -= NoteOpened; }
+        void NoteOpened(TreasureChest chest) { openedChest = true; }
+
+        /// <summary>The first voyage's hint, under the ship's panel, until the first chest is staked or sold.</summary>
+        void DrawFirstSteps()
+        {
+            var u = Upgrades.Current;
+            if (u.Steps >= (int)FirstSteps.Step.Done) return;
+            if (Event.current.type == EventType.Layout)
+            {
+                var s = new FirstSteps.State {
+                    onShip = Player != null && Player.OnShip, atHelm = Player != null && Player.AtHelm,
+                    carrying = Player != null && Player.Carrying != null, openedChest = openedChest,
+                    chestOnDeck = Stake.OnDeck(Ship).Count > 0, stakedOrSold = FirstSteps.Staked || Fortune.Current.ChestsSold > 0,
+                    knots = Ship.SpeedKnots };
+                u.Steps = (int)FirstSteps.Next((FirstSteps.Step)u.Steps, s);
+            }
+            var line = FirstSteps.Line((FirstSteps.Step)u.Steps);
+            if (line == null) return;
+            if (stepStyle == null)
+            {
+                stepStyle = new GUIStyle(GUI.skin.label) { fontSize = 15, richText = true, wordWrap = true, alignment = TextAnchor.MiddleCenter };
+                stepStyle.normal.textColor = new Color(1f, 0.93f, 0.75f);
+            }
+            var r = new Rect(Screen.width / 2f - 290f, 140f, 580f, 46f);
+            GUI.Box(r, GUIContent.none);
+            GUI.Label(new Rect(r.x + 10f, r.y + 2f, r.width - 20f, r.height - 4f), line, stepStyle);
+        }
+
         void DrawDangers()
         {
             float y = 162f;

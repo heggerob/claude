@@ -248,6 +248,29 @@ public static class LogicTests
             Check(TreasureChest.TrimColour(0).r != TreasureChest.TrimColour(1).r && TreasureChest.TrimColour(1).b != TreasureChest.TrimColour(2).b, "a chest's bands show its tier");
             Check(Stake.Offer(200, 400).Contains("400") && Stake.Offer(200, 400).Contains("50%"), "the offer shows what you could win and the odds");
             Check(Stake.Foresight(true).Contains("Odin's eye") && Stake.Foresight(false).Contains("serpent"), "the Seer's Foresight tells how the coin will fall");
+
+            // The first voyage's hints, one at a time.
+            var fs = new FirstSteps.State();
+            var step = FirstSteps.Step.Board;
+            step = FirstSteps.Next(step, fs);
+            Check(step == FirstSteps.Step.Board && FirstSteps.Line(step).Contains("1/6"), "a new player is first told to go aboard");
+            fs.onShip = true; step = FirstSteps.Next(step, fs);
+            fs.atHelm = true; step = FirstSteps.Next(step, fs);
+            Check(step == FirstSteps.Step.Sail, "aboard and at the helm, the next hint is to get under way");
+            fs.knots = 4f; step = FirstSteps.Next(step, fs);
+            Check(step == FirstSteps.Step.Plunder, "under way, the hint is to go and find treasure");
+            fs.atHelm = false; fs.knots = 0f; fs.onShip = false; fs.carrying = true; step = FirstSteps.Next(step, fs);
+            Check(step == FirstSteps.Step.Stow, "carrying a chest, the hint is to bring it aboard");
+            fs.carrying = false; fs.chestOnDeck = true; step = FirstSteps.Next(step, fs);
+            Check(step == FirstSteps.Step.Stake && FirstSteps.Hint(step).Contains("altar"), "with a chest on deck, the hint is to stake it or sell it");
+            fs.stakedOrSold = true; step = FirstSteps.Next(step, fs);
+            Check(step == FirstSteps.Step.Done && FirstSteps.Line(step) == null, "once a chest is staked or sold the hints are gone");
+            Check(FirstSteps.Next(FirstSteps.Step.Board, new FirstSteps.State { chestOnDeck = true }) == FirstSteps.Step.Stake, "doing things out of order skips the hints already past");
+            var stepSave = new Upgrades();
+            stepSave.Steps = 3;
+            Fortune stepF; Upgrades stepU;
+            SaveGame.Deserialize(SaveGame.Serialize(new Fortune(), stepSave), out stepF, out stepU);
+            Check(stepU.Steps == 3, "how far through the first voyage's hints survives a save");
             // Over many throws of a single chest staked again and again, the average stays what it was: a fair game.
             var rng = new System.Random(11);
             double total = 0; const int trials = 20000;

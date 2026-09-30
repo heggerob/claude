@@ -587,6 +587,7 @@ namespace OdinsCoin
                 var chest = Carrying;
                 Carrying = null;
                 chest.Drop(altar.transform.position + altar.transform.right * 1.1f, altar.transform.eulerAngles.y, world);
+                FirstSteps.Staked = true;
                 altar.FlipForStake(Stake.CurrentOdds, heads =>
                 {
                     if (chest == null) return;
@@ -610,6 +611,7 @@ namespace OdinsCoin
             // Everything at once: only on a second press.
             if (Time.time - stakeAllConfirm >= Stake.ConfirmWindow) { stakeAllConfirm = Time.time; return true; }
             stakeAllConfirm = -10f;
+            FirstSteps.Staked = true;
             altar.FlipForStake(Stake.CurrentOdds, heads =>
             {
                 int total = 0;

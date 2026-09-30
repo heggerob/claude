@@ -43,6 +43,7 @@ namespace OdinsCoin
             if (u.Dug.Count > 0) Line(sb, "dug", string.Join(",", u.Dug.ToArray()));
             if (u.Maps.Count > 0) Line(sb, "maps", string.Join(",", u.Maps.ToArray()));
             if (u.Caves.Count > 0) Line(sb, "caves", string.Join(",", u.Caves.ToArray()));
+            if (u.Steps > 0) Line(sb, "steps", u.Steps.ToString(CultureInfo.InvariantCulture));
             if (u.Vitality + u.Endurance + u.Luck > 0)
                 Line(sb, "gifts", u.Vitality.ToString(CultureInfo.InvariantCulture) + "," + u.Endurance.ToString(CultureInfo.InvariantCulture) + "," + u.Luck.ToString(CultureInfo.InvariantCulture));
             if (!string.IsNullOrEmpty(u.Commission))
@@ -96,6 +97,10 @@ namespace OdinsCoin
                     case "dug":
                         foreach (var name in value.Split(','))
                             if (Places.Find(name.Trim()) != null && !u.Dug.Contains(name.Trim())) u.Dug.Add(name.Trim());
+                        break;
+                    case "steps":
+                        int steps;
+                        if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out steps)) u.Steps = System.Math.Max(0, System.Math.Min(steps, (int)FirstSteps.Step.Done));
                         break;
                     case "caves":
                         foreach (var name in value.Split(','))
