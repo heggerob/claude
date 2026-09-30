@@ -247,16 +247,16 @@ namespace OdinsCoin
                     }
                     break;
                 case WeaponId.Spear:
-                    // A tall spear held about a third of the way up: an ash shaft with leather bindings, a leaf-shaped
+                    // A spear about 1.3 times a man's height, held about a third of the way up: an ash shaft with leather bindings, a leaf-shaped
                     // iron head on a socket, and a red pennant with a knot rune tied below the head.
-                    d.Add(Joints.Weapon, d.pal.leather, MeshData.Tube(new[] { new Vector3(0f, 0f, -1.02f * s), new Vector3(0f, 0f, 1.0f * s) }, new[] { 0.02f * s, 0.018f * s }, 8));
-                    foreach (float z in new[] { 0.76f, 0.88f })
+                    d.Add(Joints.Weapon, d.pal.leather, MeshData.Tube(new[] { new Vector3(0f, 0f, -1.02f * s), new Vector3(0f, 0f, 0.75f * s) }, new[] { 0.02f * s, 0.018f * s }, 8));
+                    foreach (float z in new[] { 0.51f, 0.63f })
                         d.Add(Joints.Weapon, d.pal.leatherDark, MeshData.Lathe(new[] { new Vector2(0.024f * s, 0f), new Vector2(0.024f * s, 0.05f * s) }, 8).Transformed(new Vector3(0f, 0f, z * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one), false);
-                    d.Add(Joints.Weapon, d.pal.metal, MeshData.Lathe(new[] { new Vector2(0.024f * s, 0f), new Vector2(0.018f * s, 0.08f * s) }, 8).Transformed(new Vector3(0f, 0f, 0.98f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one));
+                    d.Add(Joints.Weapon, d.pal.metal, MeshData.Lathe(new[] { new Vector2(0.024f * s, 0f), new Vector2(0.018f * s, 0.08f * s) }, 8).Transformed(new Vector3(0f, 0f, 0.73f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one));
                     d.Add(Joints.Weapon, d.pal.metal, MeshData.Extrude(new[] {
                         new Vector2(1.04f, 0.0f), new Vector2(1.13f, 0.068f), new Vector2(1.32f, 0.052f), new Vector2(1.5f, 0.0f), new Vector2(1.32f, -0.052f), new Vector2(1.13f, -0.068f) }, 0.018f)
-                        .Transformed(Vector3.zero, Quaternion.identity, Vector3.one * s));
-                    d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 1.35f), MeshData.Box(new Vector3(0f, 0f, 1.26f * s), new Vector3(0.024f, 0.008f, 0.36f) * s), false);
+                        .Transformed(new Vector3(0f, 0f, -0.25f * s), Quaternion.identity, Vector3.one * s));
+                    d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 1.35f), MeshData.Box(new Vector3(0f, 0f, 1.01f * s), new Vector3(0.024f, 0.008f, 0.36f) * s), false);
                     {
                         // The pennant: tied at the shaft, flying sideways with two torn tails.
                         const int prow = 4, pcol = 6;
@@ -268,13 +268,13 @@ namespace OdinsCoin
                                 float tail = u > 0.7f ? (r == 1 || r == 2 ? -0.05f : 0.03f) * (u - 0.7f) / 0.3f : 0f;
                                 // Hanging in still air: it droops away from the shaft in a slow curve.
                                 float droop = 0.2f * u * u + 0.06f * u;
-                                grid[r, c] = new Vector3(0.012f * s * Mathf.Sin(u * 5f), (0.02f + u * 0.3f + tail) * s, (1.02f - v * (0.22f - 0.08f * u) - droop) * s);
+                                grid[r, c] = new Vector3(0.012f * s * Mathf.Sin(u * 5f), (0.02f + u * 0.3f + tail) * s, (0.77f - v * (0.22f - 0.08f * u) - droop) * s);
                             }
                         d.Add(Joints.Weapon, d.pal.accent, CharacterKit.Sheet(grid, Vector3.right, 0.008f * s));
                         // The knot sign, painted on both faces of the cloth.
                         foreach (float cx in new[] { 0.015f, 0.004f })
                         {
-                            var c0 = new Vector3(cx * s, 0.13f * s, 0.88f * s);
+                            var c0 = new Vector3(cx * s, 0.13f * s, 0.63f * s);
                             var ring = new Vector3[13];
                             var rr = new float[13];
                             for (int i = 0; i < ring.Length; i++) { float a = i / 12f * Mathf.PI * 2f; ring[i] = c0 + new Vector3(0f, Mathf.Cos(a), Mathf.Sin(a)) * 0.036f * s; rr[i] = 0.003f * s; }
