@@ -436,6 +436,13 @@ public static class LogicTests
         SaveGame.Deserialize("gold=1\ncommission=Atlantis,99999\nraided=Nowhere,Iona\n", out cfg, out cfu);
         Check(cfu.Commission == null && cfu.Raided.Count == 1, "made-up places in a save are ignored");
 
+        // The land takes the wind: full wind out at sea, a lull in Bergen's harbour with the wind off the mountains.
+        var northSea = map.ToWorld(57f, 3f);
+        var vagen = map.ToWorld(60.395f, 5.31f);
+        Check(WindShelter.Factor(map, northSea, Vector3.right) > 0.99f && WindShelter.Factor(map, northSea, Vector3.back) > 0.99f, "out on the North Sea the wind blows full from every side");
+        Check(WindShelter.Factor(map, vagen, Vector3.left) < 0.5f && WindShelter.Factor(map, vagen, Vector3.right) > 0.95f,
+            "in Bergen's harbour an east wind off the mountains drops to " + WindShelter.Factor(map, vagen, Vector3.left).ToString("0.00") + ", a west wind off the sea blows full");
+
         // Merchants sail for one of the market towns near where they're met.
         var nearBergen = MerchantTraffic.PickPort(map, map.ToWorld(60.3f, 4.9f));
         Check(nearBergen != null && PlaceLife.HasMarket(nearBergen) && Vector3.Distance(Places.Position(map, nearBergen), map.ToWorld(60.3f, 4.9f)) < 700000f,

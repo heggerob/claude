@@ -274,6 +274,21 @@ namespace OdinsCoin
             if (Abilities.Has("rally")) oars *= Abilities.RallyOars;
         }
 
+        /// <summary>How much of the wind reaches her here (1 in open water, less in the lee of the land), updated twice a second.</summary>
+        public float Lee { get; private set; } = 1f;
+        float nextLee;
+
+        void UpdateLee()
+        {
+            if (Time.time < nextLee) return;
+            nextLee = Time.time + 0.5f;
+            var map = RealWorld.Active ? WorldMap.Current : null;
+            if (map == null) { Lee = 1f; return; }
+            var p = transform.position;
+            float target = WindShelter.Factor(map, new Vector3((float)WorldOrigin.GlobalX(p), 0f, (float)WorldOrigin.GlobalZ(p)), Wind.Direction);
+            Lee = Mathf.MoveTowards(Lee, target, 0.1f); // gusts and lulls come and go, not in a blink
+        }
+
         /// <summary>The bow and stern cleats the mooring lines are made fast to, and the bow where the anchor rode runs out (her own space).</summary>
         Vector3 BowCleat { get { return new Vector3(0f, Freeboard, HalfLength * 0.8f); } }
         Vector3 SternCleat { get { return new Vector3(0f, Freeboard, -HalfLength * 0.8f); } }
@@ -401,6 +416,7 @@ namespace OdinsCoin
         void SailByPhysics()
         {
             if (OnPassage) return;
+            UpdateLee();
             var d = Design;
             float dt = Time.fixedDeltaTime;
             var t = transform;
@@ -436,7 +452,7 @@ namespace OdinsCoin
             // Water, wind, sails, oars and rudder, in the ship's own frame.
             Vector3 vel = t.InverseTransformDirection(Compat.Velocity(Body));
             Vector3 ang = t.InverseTransformDirection(Body.angularVelocity);
-            Vector3 wind = t.InverseTransformDirection(Wind.Direction * Wind.Knots * 0.514f);
+            Vector3 wind = t.InverseTransformDirection(Wind.Direction * Wind.Knots * 0.514f * Lee);
             float sails, oars;
             Drive(out sails, out oars);
             var driven = Actual;

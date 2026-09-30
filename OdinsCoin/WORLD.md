@@ -169,6 +169,9 @@ med ror, seil i vinden og årer.
   - Bonusen øker med avstanden hjemmefra og med antall vakter. Borre, like ved, gir 230 gull; Reykjavík gir 1 120.
   - Du har ett oppdrag om gangen. HUD-en viser avstand og kurs dit, og bonusen utbetales idet stedet er plyndret.
   - Oppdraget og de plyndrede stedene lagres.
+- [x] **17. Le for vinden (`World/WindShelter.cs`):** landet tar vinden. I le av en øy eller en fjellside dør
+  brisen ut, omtrent tolv ganger landets høyde nedover, som i fjordene. I Bergen havn faller østavinden fra fjellene
+  til 15 %, mens vestavinden fra havet blåser fullt. Skipet merker det, og HUD-en viser «in the lee of the land».
 
 ## Merk
 
