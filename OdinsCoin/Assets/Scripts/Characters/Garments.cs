@@ -757,8 +757,9 @@ namespace OdinsCoin
             if (!d.hasSkirt) return;
             float top = d.skirtBottom + 0.15f * s, hem = d.skirtBottom - below * s;
             // Stays inside the skirt; only its hem shows below.
-            d.Add(Joints.Body, d.pal.accent, CharacterKit.RaggedSkirt(top, d.SkirtRadius(top) * 0.9f, hem, d.skirtBottomR * 0.93f, d.skirtDepth - 0.03f, 20, 0.03f * s, d.seed + 91));
-            d.Add(Joints.Body, d.pal.fur, CharacterKit.FurRing(new Vector3(0f, hem + 0.012f * s, 0f), d.skirtBottomR * 0.92f, d.skirtDepth - 0.03f, 0.022f * s, 18, 0.03f * s, d.seed + 92, 1f));
+            // A dark under-layer with a pale fur trim round its hem, as in the concept art.
+            d.Add(Joints.Body, d.pal.clothDark, CharacterKit.RaggedSkirt(top, d.SkirtRadius(top) * 0.9f, hem, d.skirtBottomR * 0.93f, d.skirtDepth - 0.03f, 20, 0.03f * s, d.seed + 91));
+            d.Add(Joints.Body, d.pal.fur, CharacterKit.FurRing(new Vector3(0f, hem + 0.02f * s, 0f), d.skirtBottomR * 0.97f, d.skirtDepth - 0.02f, 0.03f * s, 20, 0.045f * s, d.seed + 92, 1f));
         }
 
         /// <summary>A soft cloth bandana tied over the head, a studded leather band across the brow, a rune on the front,
