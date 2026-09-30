@@ -131,7 +131,10 @@ namespace OdinsCoin
                     grid[i, 0] = new Vector3(0f, ridge, z);
                     grid[i, 1] = new Vector3(side * (width / 2f + 1f), wallH - 0.8f, z);
                 }
-                m.Add(Joint, roofColour, CharacterKit.Sheet(grid, new Vector3(side, 1f, 0f), 0.35f), true, hall ? SurfaceKind.Wood : SurfaceKind.Fur);
+                var roof = CharacterKit.Sheet(grid, new Vector3(side, 1f, 0f), 0.35f);
+                // Turf roofs grow the same drawn grass as the meadows.
+                if (hall) m.Add(Joint, roofColour, roof, true, SurfaceKind.Wood);
+                else m.Add(Joint, roofColour, TerrainPatch.GroundUvs(roof), true, SurfaceKind.Grass);
             }
             // A smoke hole's little hood on the ridge.
             m.Add(Joint, look.timber, MeshData.Box(new Vector3(0f, wallH + roofH - 0.1f, length * 0.12f), new Vector3(1f, 0.6f, 1.2f)), true, SurfaceKind.Wood);
@@ -156,13 +159,13 @@ namespace OdinsCoin
         {
             float len = 22f, w = 9f;
             foreach (float side in new[] { -1f, 1f })
-                m.Add(Joint, look.stone, MeshData.Box(new Vector3(side * w / 2f, 0.7f, 0f), new Vector3(1.2f, 1.4f, len)), true, SurfaceKind.Plain);
+                m.Add(Joint, look.stone, MeshData.Box(new Vector3(side * w / 2f, 0.7f, 0f), new Vector3(1.2f, 1.4f, len)), true, SurfaceKind.Stone);
             var back = new[] { new Vector2(-w / 2f, 0f), new Vector2(w / 2f, 0f), new Vector2(w / 2f, 1.4f), new Vector2(0f, 5.8f), new Vector2(-w / 2f, 1.4f) };
             m.Add(Joint, look.wall, MeshData.Extrude(back, 0.3f).Transformed(new Vector3(0f, 0f, -len / 2f), Quaternion.Euler(0f, 90f, 0f), Vector3.one), true, SurfaceKind.Wood);
             foreach (float side in new[] { -1f, 1f })
             {
                 var grid = new Vector3[2, 2] { { new Vector3(0f, 5.8f, -len / 2f), new Vector3(side * (w / 2f + 0.8f), 1.1f, -len / 2f) }, { new Vector3(0f, 5.8f, len / 2f), new Vector3(side * (w / 2f + 0.8f), 1.1f, len / 2f) } };
-                m.Add(Joint, look.turf, CharacterKit.Sheet(grid, new Vector3(side, 1f, 0f), 0.3f), true, SurfaceKind.Fur);
+                m.Add(Joint, look.turf, TerrainPatch.GroundUvs(CharacterKit.Sheet(grid, new Vector3(side, 1f, 0f), 0.3f)), true, SurfaceKind.Grass);
             }
         }
 

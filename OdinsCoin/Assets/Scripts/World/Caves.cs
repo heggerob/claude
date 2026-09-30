@@ -81,13 +81,8 @@ namespace OdinsCoin
 
         static readonly Color RockA = new Color(0.44f, 0.42f, 0.4f), RockB = new Color(0.34f, 0.33f, 0.32f), Floor = new Color(0.3f, 0.27f, 0.23f);
 
-        /// <summary>Turf drawn at the same scale as the grass round it: its texture laid on from above.</summary>
-        static MeshData Turf(MeshData mesh)
-        {
-            mesh.Uvs.Clear();
-            foreach (var v in mesh.Vertices) mesh.Uvs.Add(new Vector2(v.x, v.z) / TerrainPatch.TextureTile);
-            return mesh;
-        }
+        /// <summary>Turf drawn at the same scale as the grass round it.</summary>
+        static MeshData Turf(MeshData mesh) { return TerrainPatch.GroundUvs(mesh); }
 
         /// <summary>The chamber: boulder walls either side and at the back, a rock roof over, a floor, open at the front (+Z).</summary>
         public static VikingModel Model()

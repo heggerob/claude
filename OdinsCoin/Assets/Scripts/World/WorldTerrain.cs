@@ -86,6 +86,17 @@ namespace OdinsCoin
             }
         }
 
+        /// <summary>
+        /// Lays the ground's drawn texture on a mesh at the land's own scale (seen from above), for turf and grass
+        /// on things built on the land: roofs, knolls.
+        /// </summary>
+        public static MeshData GroundUvs(MeshData mesh)
+        {
+            mesh.Uvs.Clear();
+            foreach (var v in mesh.Vertices) mesh.Uvs.Add(new Vector2(v.x, v.z) / TextureTile);
+            return mesh;
+        }
+
         static double Repeat(double v) { double p = TextureTile * 64.0; return v - System.Math.Floor(v / p) * p; }
 
         /// <summary>The drawn texture on each kind of ground.</summary>
