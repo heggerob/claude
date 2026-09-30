@@ -205,9 +205,16 @@ namespace OdinsCoin
         public string skin;
         public WeaponId weapon = WeaponId.None;
         public OffHandId offHand = OffHandId.None;
+        /// <summary>Skin tone, an index into <see cref="SkinTones"/> (0 = the concept art's peach).</summary>
+        public int skinTone;
 
-        /// <summary>The colours this character is painted in: its own palette, else its skin, else the outfit's.</summary>
-        public Palette Paint() { return palette ?? Skins.Paint(outfit, skin); }
+        /// <summary>The colours this character is painted in: its own palette, else its skin, else the outfit's, with the skin tone on top.</summary>
+        public Palette Paint()
+        {
+            var p = palette != null ? palette.Copy() : Skins.Paint(outfit, skin);
+            SkinTones.Apply(p, skinTone);
+            return p;
+        }
 
         public static CharacterSpec Default(OutfitId outfit)
         {

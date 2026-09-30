@@ -37,6 +37,7 @@ namespace OdinsCoin
             sb.Append("weapon=").Append(spec.weapon).Append('\n');
             sb.Append("offhand=").Append(spec.offHand).Append('\n');
             if (spec.skin != null) sb.Append("skin=").Append(spec.skin).Append('\n');
+            if (spec.skinTone != 0) sb.Append("tone=").Append(spec.skinTone.ToString(CultureInfo.InvariantCulture)).Append('\n');
             return sb.ToString();
         }
 
@@ -69,6 +70,7 @@ namespace OdinsCoin
                 else if ((v = Value(line, "weapon")) != null) { WeaponId w; if (TryEnum(v, out w)) spec.weapon = w; }
                 else if ((v = Value(line, "offhand")) != null) { OffHandId oh; if (TryEnum(v, out oh)) spec.offHand = oh; }
                 else if ((v = Value(line, "skin")) != null) { var s = Skins.Get(v); if (s != null && s.outfit == spec.outfit && !s.IsClassic) spec.skin = s.id; }
+                else if ((v = Value(line, "tone")) != null) { int t; if (int.TryParse(v, NumberStyles.Integer, CultureInfo.InvariantCulture, out t)) spec.skinTone = SkinTones.Clamp(t); }
             }
             return spec;
         }

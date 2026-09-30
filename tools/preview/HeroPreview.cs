@@ -190,6 +190,13 @@ public static class HeroPreview
             pose.pos[Joints.Weapon] = full.Find(Joints.Weapon).localPosition + HeroPose.GripSlide(cp, Fit.Of(spec.body).s);
             shots.Add(new Shot { label = HeroChoice.Name(spec.weapon) + " carry (in game)", model = full, pose = pose, yaw = 200f });
         }
+        // Skin tones, chosen on the hero screen apart from the clothes' colours.
+        for (int t = 0; t < SkinTones.Count; t++)
+        {
+            var toned = CharacterSpec.Default(OutfitId.Scout);
+            toned.skinTone = t;
+            shots.Add(new Shot { label = "Skin: " + SkinTones.Name(t), model = HeroModel.Build(toned), yaw = 190f });
+        }
         // Faces: the dash eyes turn to ^ ^ when happy and > < when hurt.
         shots.Add(new Shot { label = "Happy (heads!)", model = HeroModel.Build(CharacterSpec.Default(OutfitId.Scout)), yaw = 182f, face = Expression.Happy });
         shots.Add(new Shot { label = "Hurt", model = HeroModel.Build(CharacterSpec.Default(OutfitId.Navigator)), yaw = 182f, face = Expression.Hurt });
@@ -374,7 +381,9 @@ public static class HeroPreview
     {
         var j = m.Find(joint);
         Vector3 local = pose.pos.ContainsKey(joint) ? pose.pos[joint] : j.localPosition;
-        Quaternion own = pose.rot.ContainsKey(joint) ? pose.rot[joint] : Quaternion.Euler(j.restEuler);
+        // The posture joints (body, legs, head) keep their standing-tall rest under any pose; others are set outright.
+        bool posture = joint == Joints.Body || joint == Joints.LeftLeg || joint == Joints.RightLeg || joint == Joints.Head;
+        Quaternion own = pose.rot.ContainsKey(joint) ? (posture ? Quaternion.Euler(j.restEuler) * pose.rot[joint] : pose.rot[joint]) : Quaternion.Euler(j.restEuler);
         if (j.parent == null) { pos = local; rot = own; return; }
         Vector3 pp; Quaternion pr;
         World(m, pose, j.parent, out pp, out pr);

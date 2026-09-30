@@ -90,8 +90,7 @@ namespace OdinsCoin
                 float z = Mathf.Sqrt(Mathf.Max(0f, r * r * 0.96f - x * x)) - 0.005f * s;
                 var face = Quaternion.Euler(0f, Mathf.Atan2(x, z) * Mathf.Rad2Deg, 0f);
                 var at = new Vector3(x, eyeY, z) - pivot;
-                var eye = MeshData.Ellipsoid(Vector3.zero, new Vector3(0.078f * r, 0.23f * r, 0.06f * r), 8, 6);
-                d.Add(Joints.Eyes, ink, eye.Transformed(at, face, Vector3.one), false);
+                d.Add(Joints.Eyes, ink, Eye(r).Transformed(at, face, Vector3.one), false);
                 // Happy: a little arch, like a smile turned into an eye.
                 var arch = new Vector3[7];
                 var ar = new float[7];
@@ -110,6 +109,20 @@ namespace OdinsCoin
                     at + face * new Vector3(-inward * 0.08f * r, -0.11f * r, 0.012f * r) };
                 d.Add(Joints.EyesHurt, ink, MeshData.Tube(chev, new[] { 0.034f * r, 0.036f * r, 0.034f * r }, 6), false);
             }
+        }
+
+        /// <summary>
+        /// One eye as in the concept art: two round dots stacked on top of each other and joined, a tall pill with
+        /// round ends (not an oval), flattened onto the face.
+        /// </summary>
+        public static MeshData Eye(float headR)
+        {
+            float w = 0.08f * headR, half = 0.15f * headR;
+            var profile = new System.Collections.Generic.List<Vector2>();
+            // The outline of a stadium: the lower circle, straight sides, the upper circle.
+            for (int i = 0; i <= 6; i++) { float a = -Mathf.PI * 0.5f + i / 6f * Mathf.PI * 0.5f; profile.Add(new Vector2(Mathf.Max(0.0005f, Mathf.Cos(a) * w), -half + Mathf.Sin(a) * w)); }
+            for (int i = 0; i <= 6; i++) { float a = i / 6f * Mathf.PI * 0.5f; profile.Add(new Vector2(Mathf.Max(0.0005f, Mathf.Cos(a) * w), half + Mathf.Sin(a) * w)); }
+            return MeshData.Lathe(profile.ToArray(), 12).Transformed(Vector3.zero, Quaternion.identity, new Vector3(1f, 1f, 0.75f));
         }
 
         static void Hair(Dresser d, HairStyle hair)

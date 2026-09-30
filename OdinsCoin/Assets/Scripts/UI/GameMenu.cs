@@ -210,8 +210,10 @@ namespace OdinsCoin
             if (Stepper(outfit.title, s =>
             {
                 var body = editing.body;
+                int tone = editing.skinTone;
                 editing = CharacterSpec.Default(HeroChoice.Cycle(editing.outfit, s));
                 editing.body = body;
+                editing.skinTone = tone;
             })) RebuildPlayer();
             foreach (var a in outfit.abilities)
                 GUILayout.Label("<b>" + a.name + "</b>  <color=#aaaaaa>" + a.description + "</color>", small);
@@ -230,6 +232,7 @@ namespace OdinsCoin
             GUILayout.Label("Build: " + (editing.body.width < 0.9f ? "slim" : editing.body.width > 1.1f ? "broad" : "sturdy"), text);
             float nw = GUILayout.HorizontalSlider(editing.body.width, 0.8f, 1.25f);
             if (Mathf.Abs(nw - editing.body.width) > 0.001f) { editing.body.width = BodyShape.ClampWidth(nw); heroDirty = true; }
+            if (Stepper("Skin: " + SkinTones.Name(editing.skinTone), s => editing.skinTone = ((editing.skinTone + s) % SkinTones.Count + SkinTones.Count) % SkinTones.Count)) RebuildPlayer();
             // Sliders rebuild the model a few times a second at most, and once more when they stop moving.
             if (heroDirty && Time.unscaledTime - lastRebuild > 0.25f) RebuildPlayer();
             GUILayout.Space(8);

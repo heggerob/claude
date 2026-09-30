@@ -1363,11 +1363,15 @@ namespace OdinsCoin
                     d.Add(Joints.Body, new Color(0.7f, 0.2f, 0.14f), MeshData.Extrude(new[] { new Vector2(0f, 0f), new Vector2(0.1f, 0f), new Vector2(0.11f, 0.04f), new Vector2(0.03f, 0.04f) }, 0.005f)
                         .Transformed(shaftTop - tilt * new Vector3(0f, 0.1f * s, 0f), tilt * Quaternion.Euler(-90f, side * 90f, 0f), Vector3.one * s));
             }
-            // Strap from the left shoulder across the chest to the right hip.
+            // Strap from the left shoulder across the chest to the right hip, worn over the cowl and pelt so it shows
+            // as in the concept art, with a buckle on the breast.
             float cz = f.chestR * f.depth;
-            d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(new[] {
-                new Vector3(-f.shoulderX * 0.6f, f.shoulderY + 0.01f * s, cz * 0.3f), new Vector3(0f, f.chest, cz + 0.015f), new Vector3(f.waistR * 0.9f, f.waist + 0.02f * s, f.waistR * f.depth + 0.012f) },
-                new[] { 0.013f * s, 0.014f * s, 0.013f * s }, 5), false);
+            var strap = new[] {
+                new Vector3(-f.shoulderX * 0.6f, f.shoulderY + 0.03f * s, cz * 0.35f), new Vector3(-f.shoulderX * 0.25f, f.shoulderY - 0.06f * s, cz + 0.05f * s),
+                new Vector3(0.02f * s, f.chest - 0.03f * s, cz + 0.05f * s), new Vector3(f.waistR * 0.95f, f.waist + 0.02f * s, f.waistR * f.depth + 0.035f * s) };
+            d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(strap, new[] { 0.014f * s, 0.016f * s, 0.016f * s, 0.015f * s }, 5), false);
+            var buckle = Vector3.Lerp(strap[1], strap[2], 0.5f) + new Vector3(0f, 0f, 0.012f * s);
+            d.Add(Joints.Body, d.pal.brass, MeshData.Box(buckle, new Vector3(0.03f, 0.024f, 0.008f) * s), false);
         }
 
         // ---------------------------------------------------------------- hair

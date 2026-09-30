@@ -97,6 +97,10 @@ namespace OdinsCoin
             m.AddJoint(Weapon, RightForearm, new Vector3(0f, -f.foreArm - 0.035f * f.s, 0.01f));
             m.AddJoint(OffHand, LeftForearm, new Vector3(0f, -f.foreArm - 0.035f * f.s, 0.01f));
             m.AddJoint(Back, Body, new Vector3(0f, f.waist + 0.15f * f.s, -f.chestR * f.depth - 0.05f));
+            // Standing tall: chest up, chin up.
+            m.Find(Body).restEuler = new Vector3(HeroPose.Lean, 0f, 0f);
+            m.Find(LeftLeg).restEuler = m.Find(RightLeg).restEuler = new Vector3(-HeroPose.Lean, 0f, 0f);
+            m.Find(Head).restEuler = new Vector3(HeroPose.HeadUp, 0f, 0f);
         }
     }
 }

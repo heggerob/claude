@@ -119,6 +119,18 @@ namespace OdinsCoin
         /// <summary>A slow breath: the body rocks forward and back by a degree or two, about every four seconds.</summary>
         public static float Breath(float time) { return Mathf.Sin(time * 1.6f) * 1.4f; }
 
+        /// <summary>
+        /// Proud posture, as in the concept art: the body leans back a little from the ankles so the chest is carried
+        /// high (the legs turn the other way to stay upright), and the head is lifted to look up and out.
+        /// </summary>
+        public const float Lean = -3.5f, HeadUp = -9f;
+
+        /// <summary>The body's rotation for a forward tilt of <paramref name="pitch"/> degrees on top of the posture.</summary>
+        public static Quaternion Torso(float pitch) { return Quaternion.Euler(Lean + pitch, 0f, 0f); }
+
+        /// <summary>A leg swung by <paramref name="swing"/> degrees, standing straight under the leaning body.</summary>
+        public static Quaternion Leg(float swing) { return Quaternion.Euler(swing - Lean, 0f, 0f); }
+
         /// <summary>Local rotations for carrying a big axe over the right shoulder: arm out, elbow folded, haft back.</summary>
         public static readonly Vector3 AxeCarryArm = new Vector3(-10f, 0f, 55f);
         public static readonly Vector3 AxeCarryForearm = new Vector3(-150f, 0f, 0f);

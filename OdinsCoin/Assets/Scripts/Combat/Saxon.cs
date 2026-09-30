@@ -154,8 +154,8 @@ namespace OdinsCoin
         {
             walkCycle += dt * (speed > 0.1f ? 2f + speed * 1.4f : 0f);
             float swing = speed > 0.1f ? Mathf.Sin(walkCycle) * Mathf.Clamp(speed * 8f, 0f, 35f) : 0f;
-            parts.leftLeg.localRotation = Quaternion.Euler(swing, 0f, 0f);
-            parts.rightLeg.localRotation = Quaternion.Euler(-swing, 0f, 0f);
+            parts.leftLeg.localRotation = HeroPose.Leg(swing);
+            parts.rightLeg.localRotation = HeroPose.Leg(-swing);
             // Sword raised high during the windup (the tell), then brought down.
             float armAngle = swing * 0.8f;
             if (attackStart > 0f)
@@ -170,7 +170,7 @@ namespace OdinsCoin
                 if (attackStart > 0f) elbow = HeroPose.ChopElbow((Time.time - attackStart) / (Windup + 0.15f));
                 parts.rightForearm.localRotation = Quaternion.Euler(elbow, 0f, 0f);
             }
-            parts.body.localRotation = Quaternion.Euler(HeroPose.Breath(Time.time + home.x), 0f, 0f);
+            parts.body.localRotation = HeroPose.Torso(HeroPose.Breath(Time.time + home.x));
             // They keep their shield up while waiting to strike.
             Blocking = attackStart < 0f && speed < 0.5f;
             HeroPose.Block(parts, Blocking ? 1f : 0f);

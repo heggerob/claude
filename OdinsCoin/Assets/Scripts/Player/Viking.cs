@@ -365,8 +365,8 @@ namespace OdinsCoin
             walkCycle += dt * (speed > 0.1f ? 2f + speed * 1.4f : 0f);
             float swing = speed > 0.1f ? Mathf.Sin(walkCycle) * Mathf.Clamp(speed * 8f, 0f, 38f) : 0f;
             if (Swimming) swing = Mathf.Sin(Time.time * 4f) * 40f;
-            parts.leftLeg.localRotation = Quaternion.Euler(swing, 0f, 0f);
-            parts.rightLeg.localRotation = Quaternion.Euler(-swing, 0f, 0f);
+            parts.leftLeg.localRotation = HeroPose.Leg(swing);
+            parts.rightLeg.localRotation = HeroPose.Leg(-swing);
             bailAnim = Mathf.Max(0f, bailAnim - dt);
             if (bailAnim > 0f)
             {
@@ -395,7 +395,7 @@ namespace OdinsCoin
             }
             if (parts.axe != null) parts.axe.gameObject.SetActive(Carrying == null);
             // Lean into the swim; standing, a slow breath.
-            parts.body.localRotation = Quaternion.Euler(Swimming ? 60f : HeroPose.Breath(Time.time), 0f, 0f);
+            parts.body.localRotation = HeroPose.Torso(Swimming ? 60f : HeroPose.Breath(Time.time));
         }
     }
 

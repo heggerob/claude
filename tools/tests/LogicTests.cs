@@ -744,6 +744,34 @@ public static class LogicTests
 
     static void HeroChoiceTests()
     {
+        // Skin tone: its own choice, saved with the hero, painted on the face, and kept by special colour sets.
+        {
+            var toned = CharacterSpec.Default(OutfitId.Jarl);
+            toned.skinTone = 5;
+            Check(HeroChoice.Parse(HeroChoice.Serialize(toned)).skinTone == 5, "the hero remembers its skin tone");
+            Check(HeroChoice.Parse("outfit=Jarl\ntone=99\n").skinTone == 0 && HeroChoice.Parse("outfit=Jarl\ntone=-3\n").skinTone == 0 && HeroChoice.Parse("outfit=Jarl\ntone=x\n").skinTone == 0,
+                "a broken skin tone falls back to the first");
+            Check(toned.Paint().skin.Equals(SkinTones.Get(5)) && CharacterSpec.Default(OutfitId.Jarl).Paint().skin.Equals(SkinTones.Peach), "the skin tone paints the face");
+            var draugr = CharacterSpec.Default(OutfitId.Raider); draugr.skin = "raider.draugr"; draugr.skinTone = 3;
+            Check(!draugr.Paint().skin.Equals(SkinTones.Get(3)), "a special colour set keeps its own skin");
+            var custom = CharacterSpec.Default(OutfitId.Scout); custom.palette = new Palette(); custom.skinTone = 2;
+            Check(custom.Paint().skin.Equals(SkinTones.Get(2)) && custom.palette.skin.Equals(SkinTones.Peach), "painting doesn't change the hero's own palette");
+            var tones = new System.Collections.Generic.HashSet<Color>();
+            for (int t = 0; t < SkinTones.Count; t++) tones.Add(SkinTones.Get(t));
+            Check(tones.Count == SkinTones.Count && SkinTones.Names.Length == SkinTones.Count, "every skin tone is different and has a name");
+        }
+        // The eyes are pills (two round dots stacked and joined), much taller than wide.
+        {
+            var eye = HeroModel.Eye(1f);
+            float minX = float.MaxValue, maxX = float.MinValue, minY = float.MaxValue, maxY = float.MinValue;
+            foreach (var v in eye.Vertices) { minX = Math.Min(minX, v.x); maxX = Math.Max(maxX, v.x); minY = Math.Min(minY, v.y); maxY = Math.Max(maxY, v.y); }
+            float w = maxX - minX, h = maxY - minY;
+            Check(h > 2.4f * w && h < 3.4f * w, "an eye is a tall pill (" + w + " x " + h + ")");
+            // Straight sides: halfway between the centre and the top the eye is still full width, unlike an oval.
+            float widest = 0f;
+            foreach (var v in eye.Vertices) if (Math.Abs(v.y - h * 0.25f) < h * 0.08f) widest = Math.Max(widest, Math.Abs(v.x));
+            Check(widest > w * 0.49f, "the eye's sides run straight between its round ends");
+        }
         var spec = CharacterSpec.Default(OutfitId.Seer);
         spec.body = new BodyShape { height = 1.74f, width = 0.85f, gender = Gender.Female };
         spec.weapon = WeaponId.Spear;
