@@ -134,6 +134,14 @@ public static class LogicTests
         var bigTurn = run(ShipDesign.Krakenhall, new ShipPhysics.State { u = 3f }, new ShipPhysics.Controls { rudder = 1f, oarsPort = 1f, oarsStarboard = 1f }, calm, 10f);
         var smallTurn = run(ShipDesign.Skerrycutter, new ShipPhysics.State { u = 3f }, new ShipPhysics.Controls { rudder = 1f, oarsPort = 1f, oarsStarboard = 1f }, calm, 10f);
         Check(smallTurn.heading > bigTurn.heading * 1.5f, "the little skerrycutter turns far quicker than the flagship (" + smallTurn.heading + " vs " + bigTurn.heading + " deg in 10 s)");
+        // Each class gets a model the size of its design: as long as its hull, masts standing well above the deck.
+        foreach (var d in ShipDesign.All)
+        {
+            var model = ShipModel.Build(d, new ShipLook());
+            float minZ = float.MaxValue, maxZ = float.MinValue, top = float.MinValue;
+            foreach (var p in model.Pieces) foreach (var v in p.mesh.Vertices) { minZ = Math.Min(minZ, v.z); maxZ = Math.Max(maxZ, v.z); top = Math.Max(top, v.y); }
+            Check(maxZ - minZ > d.length && maxZ - minZ < d.length * 1.4f && top > d.freeboard + 8f, d.title + "'s model matches its design (" + (maxZ - minZ) + " m long, " + top + " m tall)");
+        }
         // Oars pull in strokes.
         Check(ShipPhysics.Oars(18, 1f, 2f, 0.25f) > ShipPhysics.Oars(18, 1f, 2f, 0.75f) * 2f, "the oars pull hardest mid-stroke");
     }

@@ -66,7 +66,7 @@ PY
 # The storybook heroes, laid out like the concept sheet, plus an .obj of each.
 mcs -nowarn:169,414,649,219,618 -define:ENABLE_LEGACY_INPUT_MANAGER -out:$TMP/heroes.exe \
   tools/unity-stub/UnityStub.cs tools/preview/HeroPreview.cs $(find OdinsCoin/Assets/Scripts -name '*.cs')
-mono $TMP/heroes.exe $TMP/heroes.rgba $TMP/heroes.txt OdinsCoin/docs/heroes $TMP/motion.rgba $TMP/motion.txt $TMP/skins.rgba $TMP/skins.txt $TMP/turn.rgba $TMP/turn.txt $TMP/attacks.rgba $TMP/attacks.txt $TMP/footsteps.txt
+mono $TMP/heroes.exe $TMP/heroes.rgba $TMP/heroes.txt OdinsCoin/docs/heroes $TMP/motion.rgba $TMP/motion.txt $TMP/skins.rgba $TMP/skins.txt $TMP/turn.rgba $TMP/turn.txt $TMP/attacks.rgba $TMP/attacks.txt $TMP/footsteps.txt $TMP/ships.rgba $TMP/ships.txt
 python3 - "$TMP/heroes.rgba" "$TMP/heroes.txt" OdinsCoin/docs/heroes.png <<'PY'
 import struct, sys
 from PIL import Image, ImageDraw, ImageFont
@@ -234,7 +234,8 @@ for r in range(rows):
 sheet.save(sys.argv[3])
 print('wrote', sys.argv[3])
 PY
-python3 - "$TMP/motion.rgba" "$TMP/motion.txt" OdinsCoin/docs/motion.png <<'PY'
+for strip in motion ships; do
+python3 - "$TMP/$strip.rgba" "$TMP/$strip.txt" OdinsCoin/docs/$strip.png <<'PY'
 import struct, sys
 from PIL import Image, ImageDraw, ImageFont
 data = open(sys.argv[1], 'rb').read()
@@ -255,6 +256,7 @@ for i, t in enumerate(labels):
 sheet.save(sys.argv[3])
 print('wrote', sys.argv[3])
 PY
+done
 
 # Side-by-side against the concept sheet: reference on the left, our render on the right.
 HERO_LABELS=$TMP/heroes.txt python3 - <<'PY'

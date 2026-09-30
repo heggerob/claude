@@ -232,6 +232,7 @@ public static class HeroPreview
         if (args.Length > 8) TurnSheet(args[7], args[8]);
         if (args.Length > 10) AttackSheet(args[9], args[10]);
         if (args.Length > 11) FootstepTrace(args[11]);
+        if (args.Length > 13) ShipSheet(args[12], args[13]);
         Directory.CreateDirectory(args[2]);
         ExportObj(HeroModel.Build(raider), Path.Combine(args[2], "raider.obj"));
         ExportObj(HeroModel.BuildWeapon(raider), Path.Combine(args[2], "two-hand-axe.obj"));
@@ -365,6 +366,38 @@ public static class HeroPreview
             }
         }
         File.WriteAllLines(path, lines.ToArray());
+    }
+
+    /// <summary>The ship classes side by side (docs/ships.png), each framed to fit, keel on the ground line.</summary>
+    static void ShipSheet(string rgbaPath, string labelPath)
+    {
+        const int cellW = 1000, cellH = 760;
+        var designs = ShipDesign.All;
+        int w = cellW * designs.Length, h = cellH;
+        var img = new float[w * h * 3];
+        for (int i = 0; i < w * h; i++) { img[i * 3] = Paper.r; img[i * 3 + 1] = Paper.g; img[i * 3 + 2] = Paper.b; }
+        var labels = new List<string>();
+        for (int k = 0; k < designs.Length; k++)
+        {
+            var d = designs[k];
+            float mast = 0f;
+            foreach (var s in d.sails) mast = Mathf.Max(mast, s.height * 1.75f * 1.05f);
+            float top = mast + d.draught + d.freeboard;
+            float zoom = Mathf.Min(0.84f * 2.45f / (top * 1.12f), 0.8f * cellW * 2.45f / (cellH * d.length * 1.25f));
+            var pose = new Pose();
+            pose.pos[ShipModel.Joint] = new Vector3(0f, d.draught, 0f);
+            Render(img, w, h, k * cellW, cellW, cellH, new Shot { model = ShipModel.Build(d, new ShipLook()), pose = pose, yaw = 235f, zoom = zoom });
+            labels.Add(d.title + " (" + d.length.ToString("0") + " m, " + (d.Mass / 1000f).ToString("0") + " t)");
+        }
+        using (var fs = new BinaryWriter(File.Create(rgbaPath)))
+        {
+            fs.Write(w); fs.Write(h);
+            for (int i = 0; i < w * h; i++)
+            {
+                fs.Write((byte)(Mathf.Clamp01(img[i * 3]) * 255)); fs.Write((byte)(Mathf.Clamp01(img[i * 3 + 1]) * 255)); fs.Write((byte)(Mathf.Clamp01(img[i * 3 + 2]) * 255)); fs.Write((byte)255);
+            }
+        }
+        File.WriteAllLines(labelPath, labels.ToArray());
     }
 
     static string F(float v) { return v.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture); }

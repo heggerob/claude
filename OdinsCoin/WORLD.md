@@ -32,7 +32,10 @@ med ror, seil i vinden og årer.
     - **Wavewolf** (30 m): slank raider med latinseil akter, som går høyere mot vinden.
     - **Stormbreaker** (44 m): tremastet krigsgalei med akterkastell og 30 årer per side.
     - **Krakenhall** (62 m, over 1 000 tonn): firemastet flaggskip.
-  - Gjenstår: modellene (utseendet).
+  - Modellene (`Ship/ShipModel.cs`, se [docs/ships.png](docs/ships.png)): klinkbygd, tjæret skrog med stigende
+    ripe og gullstriper, dragehode med horn og tenner i baugen, halekrøll akter, rød-svart stripete råseil med stor
+    rune, svarte latinseil, akterkastell med lykter på de store, skjoldrader langs ripa, årerekker og et hengslet ror.
+    Flaggskipet har en hall på dekket. Målene kommer fra designet, så utseende og fysikk stemmer overens.
 - [ ] **7. Ekte skipsfysikk:** oppdrift fra skrogets form, motstand i vannet, sideveis grep fra kjølen,
   seil som gir kraft etter vinkelen mot den tilsynelatende vinden, ror som bare virker når skipet har fart,
   og årer som tar tak i vannet i takt.
