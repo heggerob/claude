@@ -177,7 +177,7 @@ namespace OdinsCoin
                     Garments.FurSkirt(d, 0.52f, 0.34f);
                     Garments.Tunic(d, false);
                     Garments.Bracers(d);
-                    Garments.RaiderBelt(d, 1);
+                    Garments.RaiderBelt(d, 2);
                     Garments.Tabard(d, 0.46f, 0.09f);
                     Garments.BeltKnife(d);
                     Garments.Quiver(d);

@@ -225,10 +225,12 @@ namespace OdinsCoin
         {
             var f = d.fit;
             float s = d.S;
-            float y = f.waist, r = f.waistR * 1.06f;
+            float y = f.waist, r = f.waistR * 1.06f, depth = f.depth + 0.05f;
+            // Cinched over the skirt, not lost under it.
+            if (d.hasSkirt) { r = Mathf.Max(r, d.SkirtRadius(y) * 1.06f); depth = Mathf.Max(depth, d.skirtDepth + 0.04f); }
             // A broad belt with a big square brass buckle, as in the concept art.
-            d.Add(Joints.Body, d.pal.leatherDark, CharacterKit.Band(y, 0.07f * s, r, f.depth + 0.05f));
-            float front = r * (f.depth + 0.05f);
+            d.Add(Joints.Body, d.pal.leatherDark, CharacterKit.Band(y, 0.07f * s, r, depth));
+            float front = r * depth;
             d.Add(Joints.Body, d.pal.brass, MeshData.Box(new Vector3(0f, y, front + 0.005f), new Vector3(0.09f, 0.078f, 0.016f) * s));
             d.Add(Joints.Body, d.pal.leatherDark, MeshData.Box(new Vector3(0f, y, front + 0.013f), new Vector3(0.05f, 0.04f, 0.008f) * s), false);
             // A second, thinner hip belt slung lower and askew.
