@@ -254,7 +254,7 @@ namespace OdinsCoin
             float h = TerrainDetail.Height(map, x, z);
             float dx = TerrainDetail.Height(map, x + 3.0, z) - h, dz = TerrainDetail.Height(map, x, z + 3.0) - h;
             float slope = Mathf.Sqrt(dx * dx + dz * dz) / 3f;
-            return TerrainDetail.Kind(h / WorldMap.Scale, slope);
+            return TerrainDetail.Kind(h / WorldMap.Scale, slope, TerrainDetail.Shore(x, z));
         }
 
         void Update()

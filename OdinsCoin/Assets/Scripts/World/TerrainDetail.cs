@@ -41,15 +41,24 @@ namespace OdinsCoin
         }
 
         /// <summary>What the ground is: sand on the shore, grass on the lower slopes, rock on steep and high ground, snow on the peaks.</summary>
-        public static Ground Kind(float realHeight, float slope)
+        public static Ground Kind(float realHeight, float slope) { return Kind(realHeight, slope, 0f); }
+
+        /// <summary>...with the top of the beach raised or lowered by <paramref name="shore"/> (m, see <see cref="Shore"/>).</summary>
+        public static Ground Kind(float realHeight, float slope, float shore)
         {
             if (realHeight < -0.5f) return Ground.Seabed;
             if (realHeight > 1500f || (realHeight > 1100f && slope < 0.5f)) return Ground.Snow;
             // Only a strip of beach at the waterline: the low farmland of the south is green, not a desert.
-            if (realHeight < 0.22f && slope < 0.35f) return Ground.Sand;
+            if (realHeight < 0.22f + shore && slope < 0.35f) return Ground.Sand;
             if (slope > 0.7f || realHeight > 850f) return Ground.Rock;
             return Ground.Grass;
         }
+
+        /// <summary>
+        /// How far up the beach reaches at a spot (m, about -0.2..0.2): it wanders along the coast, so the edge of
+        /// the grass winds in and out instead of following the squares of the land.
+        /// </summary>
+        public static float Shore(double x, double z) { return Fbm(x / 60.0 + 5.3, z / 60.0 - 8.1, 2) * 0.4f; }
 
         // ---------------------------------------------------------------- noise
 

@@ -16,6 +16,8 @@ namespace OdinsCoin
 
         public readonly List<Vector3> Vertices = new List<Vector3>();
         public readonly List<int>[] Triangles;
+        /// <summary>The patch's south-west corner (global).</summary>
+        double x0, z0;
 
         public TerrainPatch()
         {
@@ -31,6 +33,7 @@ namespace OdinsCoin
         public static TerrainPatch Build(WorldMap map, double x0, double z0, float size, int quads, float sink = 0f)
         {
             var p = new TerrainPatch();
+            p.x0 = x0; p.z0 = z0;
             float step = size / quads, s = WorldMap.Scale;
             var h = new float[quads + 1, quads + 1];
             for (int j = 0; j <= quads; j++)
@@ -65,7 +68,7 @@ namespace OdinsCoin
             float mean = (a.y + b.y + c.y) / 3f;
             float slope = (Mathf.Max(a.y, Mathf.Max(b.y, c.y)) - Mathf.Min(a.y, Mathf.Min(b.y, c.y))) / step;
             // Ground dug out for a cave is bare rock.
-            var kind = dug ? Ground.Rock : TerrainDetail.Kind(mean / s, slope);
+            var kind = dug ? Ground.Rock : TerrainDetail.Kind(mean / s, slope, TerrainDetail.Shore(x0 + (a.x + b.x + c.x) / 3f, z0 + (a.z + b.z + c.z) / 3f));
             var list = Triangles[(int)kind];
             foreach (var v in new[] { a, b, c })
             {
