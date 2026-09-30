@@ -51,6 +51,15 @@ namespace OdinsCoin
                 float set = Mathf.Repeat(Mathf.Atan2(Ship.Stream.x, Ship.Stream.z) * Mathf.Rad2Deg, 360f);
                 GUI.Label(new Rect(20f, Screen.height - 82f, 560f, 22f), string.Format("<color=#9fd0ff>Current:</color> {0:0.0} kn setting {1:000}°", Ship.Stream.magnitude * 1.9438f, set), style);
             }
+            // The wreck with your lost treasure: where it is from here.
+            Wreck.Tidy();
+            if (Wreck.At.HasValue && Ship != null)
+            {
+                var here = Ship.transform.position;
+                float dx = Wreck.At.Value.x - (float)WorldOrigin.GlobalX(here), dz = Wreck.At.Value.z - (float)WorldOrigin.GlobalZ(here);
+                float bearing = Mathf.Repeat(Mathf.Atan2(dx, dz) * Mathf.Rad2Deg, 360f);
+                GUI.Label(new Rect(20f, Screen.height - 106f, 560f, 22f), string.Format("<color=#ff9a70>Wreck:</color> {0} chest{1} awash, {2}, bearing {3:000}°", Wreck.Left, Wreck.Left == 1 ? "" : "s", Distance(Mathf.Sqrt(dx * dx + dz * dz)), bearing), style);
+            }
             // Bjorn's commission: where it is from here.
             var commission = Upgrades.Current.Commission;
             if (!string.IsNullOrEmpty(commission) && RealWorld.Active && WorldMap.Current != null && Places.Find(commission) != null && Ship != null)

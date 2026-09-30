@@ -259,6 +259,20 @@ public static class LogicTests
             Check(Mathf.Abs((float)(total / trials) - 100f) < 8f, "staking a chest all the way to Odin's hoard is a fair bet on average (" + (total / trials).ToString("0") + " for 100)");
         }
 
+        // A sunk ship's chests lie awash round the wreck, close together but none on top of another.
+        foreach (int count in new[] { 1, 3, 8 })
+        {
+            bool near = true, apart = true;
+            for (int i = 0; i < count; i++)
+            {
+                var p = Wreck.Scatter(i, count);
+                near &= p.magnitude <= Wreck.Spread + 0.01f && p.magnitude > 1f;
+                for (int j = 0; j < i; j++) apart &= Vector3.Distance(p, Wreck.Scatter(j, count)) > 1.1f;
+            }
+            Check(near && apart, count + " chests lie round the wreck, within reach and not on top of each other");
+        }
+        Check(!Wreck.At.HasValue && Wreck.Left == 0, "no wreck until a ship goes down");
+
         // Faster time on a quiet passage, never with danger about.
         string why;
         Check(TimeWarp.Allowed(true, 5000f, false, 0f, false, out why) && why == null, "a quiet passage can run fast");

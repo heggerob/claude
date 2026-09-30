@@ -103,13 +103,13 @@ namespace OdinsCoin
             bilge.localPosition = new Vector3(0f, ship.DeckY + 0.06f + level * 0.55f, 0f);
         }
 
-        /// <summary>The ship fills and goes down. Rán keeps the cargo; the crew wakes up back home.</summary>
+        /// <summary>The ship fills and goes down. The cargo lies awash at the wreck; the crew wakes up back home.</summary>
         void Founder(GameBootstrap boot)
         {
             var ship = boot.Ship;
-            int lost = 0;
-            foreach (var chest in TreasureChest.All.ToArray())
-                if (chest != null && chest.Stowed(ship)) { chest.Sold = true; Destroy(chest.gameObject); lost++; }
+            var onDeck = Stake.OnDeck(ship);
+            int lost = onDeck.Count;
+            Wreck.Sink(boot.transform, ship.transform.position, onDeck);
             foreach (var r in Raider.All.ToArray()) Destroy(r.gameObject);
             if (Serpent.Instance != null) Destroy(Serpent.Instance.gameObject);
             ship.Hull.Reset();
@@ -118,7 +118,7 @@ namespace OdinsCoin
             if (boot.Player != null) boot.Player.ReturnToShip();
             nextRaider = 180f;
             CombatHud.Banner("RÁN TAKES YOUR SHIP", lost > 0
-                ? "The sea goddess keeps " + lost + " chest" + (lost == 1 ? "" : "s") + ". Your kin tow the wreck home and patch it up."
+                ? lost + " chest" + (lost == 1 ? " lies" : "s lie") + " awash where she sank. Your kin patch her up at home: sail back and fetch them."
                 : "Your kin tow the wreck home and patch it up.");
         }
     }

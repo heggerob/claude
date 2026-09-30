@@ -153,6 +153,12 @@ namespace OdinsCoin
                 if (place.name == Upgrades.Current.Commission) { mark = "⚑"; name = "<color=#9a1c10><b>" + place.name + " (Bjorn's commission)</b></color>"; }
                 GUI.Label(new Rect(p.x - 5f, p.y - 9f, 220f, 18f), mark + " " + name, label);
             }
+            // The wreck with your lost treasure.
+            if (Wreck.At.HasValue)
+            {
+                var wp = ToScreen(view, screen, Wreck.At.Value.x, Wreck.At.Value.z);
+                if (screen.Contains(wp)) GUI.Label(new Rect(wp.x - 6f, wp.y - 9f, 200f, 18f), "<color=#9a1c10>✕ <b>Wreck</b> (" + Wreck.Left + " chests)</color>", label);
+            }
             // Home.
             var home = HomeHarbour.HomeCentre + HomeHarbour.Drift;
             var hp = ToScreen(view, screen, WorldOrigin.GlobalX(home), WorldOrigin.GlobalZ(home));

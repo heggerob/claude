@@ -25,7 +25,7 @@ Sea of Thieves med vikinger og Zelda-utforsking, enkelt og artig. Gamblingen er 
 - [x] **12. Satse skatten ved alteret (`Coin/Stake.cs`):** legg en kiste på alteret og kast. Kron gir neste trinn (vanlig, sølv, gull,
   Odins skatt, dobbel verdi), mynt betyr at Odin tar den. «Alt eller ingenting» satser hele dekket. Oddsen vises
   alltid. Velsignelser og forbannelser fjernes fra mynten.
-- [ ] **13. Skatten er i fare om bord:** synker skipet, synker kistene og kan dykkes opp igjen der det sank.
+- [x] **13. Skatten er i fare om bord (`Sea/Wreck.cs`):** synker skipet, synker kistene og kan dykkes opp igjen der det sank. Kistene ligger i vannkanten rundt en brukket mast som flyter over stedet. Vraket vises på HUD-en (avstand og retning) og på sjøkartet til siste kiste er hentet.
 - [ ] **14. Enkel styring:** W og S for seil og A og D for ror ved roret. Anker og fortøyning skjer av seg selv ved
   brygga. Færre taster og menyer.
 - [ ] **15. Verdensskala** (du bestemmer): krympet verden, eller full størrelse som nå.
