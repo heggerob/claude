@@ -392,12 +392,24 @@ namespace OdinsCoin
             switch (id)
             {
                 case OffHandId.RoundShield:
-                    // Held by the grip behind the boss, the face turned outwards (+X, away from the body on the left side).
+                    // Held by the grip behind the boss; the face with the boss is on -X.
                     var face = Quaternion.Euler(0f, -90f, 0f);
                     var centre = new Vector3(-0.05f * s, 0f, 0f);
-                    for (int q = 0; q < 8; q++)
-                        d.Add(Joints.OffHand, q % 2 == 0 ? VikingModel.Shade(d.pal.accent, 0.55f) : VikingModel.Shade(d.pal.leather, 0.62f),
-                            MeshData.Wedge(0.29f * s, 0.03f * s, q * 45f, q * 45f + 45f, 4).Transformed(centre, face, Vector3.one));
+                    {
+                        // Dark red-stained planks, as in the concept art, with thin dark seams between them.
+                        float rs = 0.29f * s;
+                        for (int q = 0; q < 6; q++)
+                        {
+                            float z0 = -rs + q * rs / 3f, z1 = z0 + rs / 3f - 0.004f * s;
+                            var plank = new System.Collections.Generic.List<Vector2>();
+                            for (int k = 0; k <= 6; k++) { float z = Mathf.Lerp(z0, z1, k / 6f); plank.Add(new Vector2(z, Mathf.Sqrt(Mathf.Max(0f, rs * rs - z * z)))); }
+                            for (int k = 6; k >= 0; k--) { float z = Mathf.Lerp(z0, z1, k / 6f); plank.Add(new Vector2(z, -Mathf.Sqrt(Mathf.Max(0f, rs * rs - z * z)))); }
+                            var wood = Color.Lerp(d.pal.accent, d.pal.leather, q % 2 == 0 ? 0.35f : 0.55f);
+                            d.Add(Joints.OffHand, wood, MeshData.Extrude(plank.ToArray(), 0.03f * s).Transformed(centre, Quaternion.identity, Vector3.one), true, SurfaceKind.Wood);
+                        }
+                        // A dark backing disc on the inner side (the boss is on -X, the outer face) that shows through the seams.
+                        d.Add(Joints.OffHand, VikingModel.Shade(d.pal.leatherDark, 0.6f), MeshData.Wedge(rs * 0.99f, 0.024f * s, 0f, 360f, 24).Transformed(centre + new Vector3(0.006f * s, 0f, 0f), face, Vector3.one), false);
+                    }
                     d.Add(Joints.OffHand, d.pal.metal, MeshData.Dome(Vector3.zero, new Vector3(0.07f, 0.06f, 0.07f) * s, 12, 4).Transformed(centre + new Vector3(-0.015f * s, 0f, 0f), Quaternion.Euler(0f, 0f, 90f), Vector3.one));
                     var rim = new Vector3[33];
                     var radii = new float[33];
