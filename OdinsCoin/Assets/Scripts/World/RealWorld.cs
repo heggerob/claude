@@ -277,6 +277,8 @@ namespace OdinsCoin
             // Raven feathers hidden on the high ground round about.
             var feathers = Feathers.Spots(place, plots, ground);
             Feathers.Build(root, place, feathers);
+            // Kept clear of trees and boulders, so each one can be seen and reached.
+            foreach (var feather in feathers) Scenery.Clearings.Add(new Vector3(feather.x, feather.z, 2.5f));
             // A rune ring round it, with a gift for whoever works it out.
             ShrineRing.Build(root, place, WorldOrigin.ToScene(mark.x, mark.z, mark.y), p => TerrainDetail.Height(map, WorldOrigin.GlobalX(p), WorldOrigin.GlobalZ(p)));
             Scenery.Clearings.Add(new Vector3(mark.x, mark.z, 8f));
