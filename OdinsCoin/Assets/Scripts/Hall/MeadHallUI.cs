@@ -415,9 +415,12 @@ namespace OdinsCoin
             var f = Fortune.Current;
             GUILayout.Label("<b>The boasting board</b>  <color=#aaaaaa>(carved into the hall's main post)</color>", text);
             GUILayout.Space(4);
+            var u = Upgrades.Current;
+            int places = Places.All.Length;
             GUILayout.Label(string.Format(
-                "Chests brought home: <b>{0}</b>\nGold plundered: <b>{1}</b>\nOdin's coin flipped: <b>{2}</b> times, Odin's eye <b>{3}</b> times\nDice with Bjorn: <b>{4}</b> won, <b>{5}</b> lost\nRunes on your coin: <b>{6}</b>",
-                f.ChestsSold, f.GoldPlundered, f.Flips, f.HeadsCount, f.DiceWon, f.DiceLost, f.Carved.Count), text);
+                "Chests brought home: <b>{0}</b>\nGold plundered: <b>{1}</b>\nTreasure staked at Odin's altar: <b>{2}</b> times, Odin smiled <b>{3}</b> times\nDice with Bjorn: <b>{4}</b> won, <b>{5}</b> lost\n" +
+                "Rune rings woken: <b>{6}</b> of {7}\nHoards dug up: <b>{8}</b> of {7}\nCaves emptied: <b>{9}</b> of {7}\nRaven feathers: <b>{10}</b> of {11}",
+                f.ChestsSold, f.GoldPlundered, f.Flips, f.HeadsCount, f.DiceWon, f.DiceLost, u.Shrines.Count, places, u.Dug.Count, u.Caves.Count, u.Feathers.Count, Feathers.Total), text);
         }
 
         void EnsureStyles()

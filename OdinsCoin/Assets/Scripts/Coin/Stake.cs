@@ -81,9 +81,17 @@ namespace OdinsCoin
             return odinsEye ? "\n<color=#ffd060>Foresight: the coin will show Odin's eye.</color>" : "\n<color=#88cc88>Foresight: the coin will show the serpent.</color>";
         }
 
+        /// <summary>Count a stake for the boasting board: how many thrown, how many Odin smiled on.</summary>
+        public static void Tally(Fortune f, bool won)
+        {
+            f.Flips++;
+            if (won) f.HeadsCount++;
+        }
+
         /// <summary>How the one who staked takes it (the altar already chimes or hisses as the coin lands): a grin or a wince.</summary>
         public static void Cheer(Transform staker, Vector3 at, bool won)
         {
+            Tally(Fortune.Current, won);
             Face.On(staker, won ? Expression.Happy : Expression.Hurt, won ? 3f : 1.5f);
         }
 
