@@ -45,6 +45,7 @@ namespace OdinsCoin
             {
                 CameraRig.Instance.Sensitivity = PlayerPrefs.GetFloat(SensitivityKey, 2.2f);
                 CameraRig.Instance.InvertY = PlayerPrefs.GetInt(InvertKey, 0) == 1;
+                CameraRig.Instance.FirstPerson = PlayerPrefs.GetInt(CameraRig.FirstPersonKey, 1) == 1;
             }
         }
 
@@ -293,6 +294,9 @@ namespace OdinsCoin
             bool inv = PlayerPrefs.GetInt(InvertKey, 0) == 1;
             bool ni = GUILayout.Toggle(inv, " Invert mouse Y");
             if (ni != inv) { PlayerPrefs.SetInt(InvertKey, ni ? 1 : 0); ApplySettings(); }
+            bool fp = PlayerPrefs.GetInt(CameraRig.FirstPersonKey, 1) == 1;
+            bool nfp = GUILayout.Toggle(fp, " First person (V switches in play)");
+            if (nfp != fp) { PlayerPrefs.SetInt(CameraRig.FirstPersonKey, nfp ? 1 : 0); ApplySettings(); }
 
             GUILayout.FlexibleSpace();
             if (GUILayout.Button("Back  [Esc]", GUILayout.Height(34))) deferred += CloseSettings;

@@ -41,6 +41,8 @@ namespace OdinsCoin
         Vector3 smoothedEye;
         // A jolt of the view (degrees of pitch and roll), dying away; the hit marker and the hurt flash, counting down.
         float kick, kickRoll, hitMark, hurtFlash;
+        // Where the last blow came from, relative to where you look (degrees, 0 ahead, 90 on your right).
+        float hurtFrom;
         /// <summary>How quickly a jolt dies away (per second), and how long the hit marker and hurt flash last (s).</summary>
         public const float KickDecay = 12f, HitMarkTime = 0.22f, HurtFlashTime = 0.45f;
 
@@ -54,11 +56,32 @@ namespace OdinsCoin
         /// <summary>Your blow landed: flash the crosshair.</summary>
         public void HitMarker() { hitMark = HitMarkTime; }
 
-        /// <summary>You were hurt: redden the edges of the view and jolt it.</summary>
-        public void Hurt(float amount)
+        /// <summary>You were hurt from <paramref name="from"/>: redden the edge of the view on that side and jolt it.</summary>
+        public void Hurt(float amount, Vector3 from)
         {
             hurtFlash = HurtFlashTime;
+            var to = from - transform.position;
+            hurtFrom = to.sqrMagnitude > 0.01f ? AngleOff(FlatForward, to) : 0f;
             Kick(Mathf.Clamp(amount * 0.12f, 1.5f, 6f));
+        }
+
+        /// <summary>How far <paramref name="to"/> is round from <paramref name="forward"/> on the ground (degrees, + to the right).</summary>
+        public static float AngleOff(Vector3 forward, Vector3 to)
+        {
+            return Mathf.Atan2(forward.z * to.x - forward.x * to.z, forward.x * to.x + forward.z * to.z) * Mathf.Rad2Deg;
+        }
+
+        /// <summary>
+        /// How red each edge of the view turns (top, right, bottom, left) for a blow from <paramref name="angle"/>
+        /// degrees off your view: strongest on the side it came from, the bottom for a blow from behind, and a
+        /// little all round so every hit shows.
+        /// </summary>
+        public static Vector4 HurtEdges(float angle)
+        {
+            float a = angle * Mathf.Deg2Rad;
+            float ahead = Mathf.Cos(a), right = Mathf.Sin(a);
+            return new Vector4(0.25f + 0.75f * Mathf.Max(0f, ahead), 0.25f + 0.75f * Mathf.Max(0f, right),
+                               0.25f + 0.75f * Mathf.Max(0f, -ahead), 0.25f + 0.75f * Mathf.Max(0f, -right));
         }
 
         /// <summary>What's left of a jolt after <paramref name="dt"/> seconds.</summary>
@@ -199,12 +222,16 @@ namespace OdinsCoin
             float cx = Screen.width / 2f, cy = Screen.height / 2f;
             if (hurtFlash > 0f)
             {
-                // Blood-red at the edges of the view, fading.
-                GUI.color = new Color(0.7f, 0.05f, 0.03f, 0.45f * hurtFlash / HurtFlashTime);
-                float band = Screen.height * 0.08f;
+                // Blood-red at the edges of the view, most on the side the blow came from, fading.
+                var edges = HurtEdges(hurtFrom);
+                float fade = 0.55f * hurtFlash / HurtFlashTime, band = Screen.height * 0.08f;
+                GUI.color = new Color(0.7f, 0.05f, 0.03f, fade * edges.x);
                 GUI.DrawTexture(new Rect(0f, 0f, Screen.width, band), Texture2D.whiteTexture);
+                GUI.color = new Color(0.7f, 0.05f, 0.03f, fade * edges.z);
                 GUI.DrawTexture(new Rect(0f, Screen.height - band, Screen.width, band), Texture2D.whiteTexture);
+                GUI.color = new Color(0.7f, 0.05f, 0.03f, fade * edges.w);
                 GUI.DrawTexture(new Rect(0f, band, band, Screen.height - band * 2f), Texture2D.whiteTexture);
+                GUI.color = new Color(0.7f, 0.05f, 0.03f, fade * edges.y);
                 GUI.DrawTexture(new Rect(Screen.width - band, band, band, Screen.height - band * 2f), Texture2D.whiteTexture);
             }
             if (hitMark > 0f)

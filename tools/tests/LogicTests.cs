@@ -123,6 +123,12 @@ public static class LogicTests
         Check(VikingCombat.AimedArc(10f) > 4f && VikingCombat.AimedArc(10f) < 6f && VikingCombat.AimedArc(1f) == VikingCombat.BowAimArc
             && VikingCombat.AimedArc(25f) < VikingCombat.AimedArc(10f), "an aimed arrow must be on target: a man's width either side, tighter the further off");
         Check(CameraRig.Settle(4f, 0.25f) < 0.3f && CameraRig.Settle(4f, 0.02f) > 3f, "a jolt of the view dies away within a quarter second");
+        Check(Mathf.Abs(CameraRig.AngleOff(Vector3.forward, Vector3.right) - 90f) < 1e-3f && Mathf.Abs(CameraRig.AngleOff(Vector3.forward, Vector3.left) + 90f) < 1e-3f,
+            "a foe on your right is 90 degrees round to the right");
+        var fromRight = CameraRig.HurtEdges(90f);
+        var fromBehind = CameraRig.HurtEdges(180f);
+        Check(fromRight.y > 0.95f && fromRight.w < 0.3f && fromBehind.z > 0.95f && fromBehind.x < 0.3f,
+            "a blow from the right reddens the right edge most; one from behind, the bottom edge");
         var facer = new Locomotion();
         facer.Reset(Vector2.zero, 0f);
         for (int i = 0; i < 30; i++) { facer.Face(90f); facer.Step(new Vector2(1f, 0f), Viking.WalkSpeed, 1f / 60f); facer.Face(90f); }

@@ -195,3 +195,4 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
   - **Tredjeperson:** V bytter til kameraet bak helten og tilbake, og valget huskes.
   - [x] Førstepersonsslag: en arm som løftes over hodet blir brettet fram, så du ser hendene og skaftet over øynene mens du lader opp et overhogg. En arm som henger løftes fram, og løftet blir mindre jo nærmere rett fram armen peker.
   - [x] Følelse i kampen: treffer du, blinker siktet og bildet rykker litt. Blir du truffet, rykker bildet mer, og kantene av synsfeltet blir blodrøde et øyeblikk. Buen siktes i førsteperson: pila flyr opptil 30 m dit siktet peker og treffer bare den som står der, innenfor omtrent en manns bredde.
+  - [x] Den røde kanten er sterkest på siden slaget kom fra (nederst om det kom bakfra), så du vet hvor du skal snu deg. Førsteperson kan også slås av og på i innstillingene.
