@@ -32,7 +32,10 @@ namespace OdinsCoin
         readonly HeroAnimator animator = new HeroAnimator();
         static AttackMove Slash { get { return HeroAttacks.For(WeaponId.Sword); } }
 
-        public static Saxon Create(Transform parent, Vector3 position)
+        public static Saxon Create(Transform parent, Vector3 position) { return Create(parent, position, null); }
+
+        /// <summary>A guard in the given kit (a Saxon's, if none).</summary>
+        public static Saxon Create(Transform parent, Vector3 position, CharacterSpec look)
         {
             var go = new GameObject("Saxon Guard");
             go.transform.SetParent(parent, true);
@@ -46,7 +49,7 @@ namespace OdinsCoin
             s.home = position;
             s.wanderTarget = position;
             s.loco.Reset(Vector2.zero, Random.Range(0f, 360f));
-            s.parts = HeroBuilder.Build(go.transform, NpcHeroes.Saxon(All.Count + Mathf.RoundToInt(position.x * 7f + position.z * 13f)));
+            s.parts = HeroBuilder.Build(go.transform, look ?? NpcHeroes.Saxon(All.Count + Mathf.RoundToInt(position.x * 7f + position.z * 13f)));
             s.Health = go.AddComponent<Health>();
             s.Health.BaseMax = 60f;
             s.Health.Damaged += (amount, from) => OdinsCoin.Face.On(s, Expression.Hurt, 0.7f);

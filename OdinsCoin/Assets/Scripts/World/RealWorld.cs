@@ -220,8 +220,13 @@ namespace OdinsCoin
                 var scene = WorldOrigin.ToScene(at.x, at.z, TerrainDetail.Height(map, at.x, at.z) + 0.05f);
                 chests.Add(TreasureChest.Create(site, scene, (float)rng.NextDouble() * 360f, plunder.minGold + rng.Next(plunder.maxGold - plunder.minGold + 1)));
             }
+            int n = 0;
             foreach (var at in PlaceLife.Stations(map, plots, main, plunder.guards, 8f, seed + 1))
-                Saxon.Create(site, WorldOrigin.ToScene(at.x, at.z, TerrainDetail.Height(map, at.x, at.z) + 0.3f));
+            {
+                var look = PlaceLife.SaxonGuards(place) ? NpcHeroes.Saxon(seed + n) : NpcHeroes.NorseGuard(seed + n);
+                n++;
+                Saxon.Create(site, WorldOrigin.ToScene(at.x, at.z, TerrainDetail.Height(map, at.x, at.z) + 0.3f), look);
+            }
             return chests;
         }
 

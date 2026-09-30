@@ -42,6 +42,22 @@ namespace OdinsCoin
             return spec;
         }
 
+        /// <summary>A Norse hall's housecarl: the Spear Guard's kit in red and brown, with an axe and a round shield.</summary>
+        public static CharacterSpec NorseGuard(int seed)
+        {
+            var spec = CharacterSpec.Default(OutfitId.SpearGuard);
+            spec.body = RandomBody(seed);
+            var p = Outfits.Get(OutfitId.SpearGuard).palette();
+            p.cloth = new Color(0.5f, 0.2f, 0.14f);
+            p.clothDark = new Color(0.3f, 0.14f, 0.1f);
+            p.accent = new Color(0.28f, 0.22f, 0.16f);
+            p.hair = Hair(seed);
+            spec.palette = p;
+            spec.weapon = WeaponId.Sword;
+            spec.offHand = OffHandId.RoundShield;
+            return spec;
+        }
+
         /// <summary>A Danish raider archer: the Raider's furs in soot and dark leather, with a bow.</summary>
         public static CharacterSpec DanishRaider(int seed)
         {

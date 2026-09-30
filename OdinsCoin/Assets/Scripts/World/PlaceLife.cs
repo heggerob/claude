@@ -37,6 +37,9 @@ namespace OdinsCoin
             }
         }
 
+        /// <summary>Who guards a place: Saxons (and the Irish and Scots) at the monasteries and in England, housecarls in the North.</summary>
+        public static bool SaxonGuards(Place p) { return p.kind == PlaceKind.Monastery || p.name == "Lundenwic"; }
+
         /// <summary>Does this place have a market to sell plunder at?</summary>
         public static bool HasMarket(Place p) { return p.kind == PlaceKind.Town; }
 
