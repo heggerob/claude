@@ -21,14 +21,17 @@ namespace OdinsCoin
             float baseH = map.GroundHeight((float)x, (float)z);
             double rx = x / s, rz = z / s;
             float real = baseH / s;
-            // Rolling detail everywhere, strongest in the mountains: crags a few tens of metres high.
-            float hills = Fbm(rx / 700.0, rz / 700.0, 4) * Mathf.Clamp(real * 0.08f, 3f, 70f);
-            // At the waterline, gentle bumps that break the coast into skerries, holms and coves.
-            float coast = Mathf.Clamp01(1f - Mathf.Abs(real) / 20f);
-            float skerries = Fbm(rx / 160.0 + 31.7, rz / 160.0 - 12.3, 2) * 4f * coast;
+            // Rolling detail on the land, strongest in the mountains: crags a few tens of metres high. It fades out
+            // at the waterline, so the real coast (and the shallows off it) stays where it is and navigable.
+            float onLand = Mathf.Clamp01(real / 15f + 0.2f);
+            float hills = Fbm(rx / 700.0, rz / 700.0, 4) * Mathf.Clamp(real * 0.08f, 3f, 70f) * onLand;
+            // Right at the waterline, small bumps that fray the coast into a few holms and coves.
+            float coast = Mathf.Clamp01(1f - Mathf.Abs(real - 1f) / 6f);
+            float skerries = Fbm(rx / 160.0 + 31.7, rz / 160.0 - 12.3, 2) * 2.2f * coast;
             // Out at sea, the detail fades so the sea floor stays smooth.
             float sea = real < -25f ? Mathf.Clamp01(1f + (real + 25f) / 60f) : 1f;
-            return baseH + (hills * sea + skerries) * s;
+            // The rivers and sounds too narrow for the map's grid, carved in.
+            return Channels.Carve(map, x, z, baseH + (hills * sea + skerries) * s);
         }
 
         /// <summary>What the ground is: sand on the shore, grass on the lower slopes, rock on steep and high ground, snow on the peaks.</summary>

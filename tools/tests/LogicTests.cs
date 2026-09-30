@@ -314,6 +314,10 @@ public static class LogicTests
         // (on the fine coast layer, which has the narrow fjords, rivers mouths and lakes).
         bool haveCoast = System.IO.File.Exists("OdinsCoin/Assets/Resources/World/coast.bytes");
         if (haveCoast) map.Detail = WorldDetail.FromBytes(System.IO.File.ReadAllBytes("OdinsCoin/Assets/Resources/World/coast.bytes"));
+        // The harbours the game uses are baked (tools/world/bake_harbours.sh): water joined to the open sea.
+        var harboursPath = "OdinsCoin/Assets/Resources/World/harbours.txt";
+        Check(System.IO.File.Exists(harboursPath), "the baked harbours are in the game's resources");
+        Places.LoadHarbours(System.IO.File.Exists(harboursPath) ? System.IO.File.ReadAllText(harboursPath) : null);
         var names = new HashSet<string>();
         int halls = 0, monasteries = 0;
         foreach (var place in Places.All)
@@ -326,6 +330,7 @@ public static class LogicTests
             bool found = Places.Harbour(map, place, out harbour);
             float away = Vector3.Distance(harbour, Places.Position(map, place)) / 1000f;
             Check(found && Places.Depth(map, harbour) >= Places.HarbourDepth && away <= place.harbourReach, place.name + " has a harbour " + away.ToString("0.0") + " km off, " + Places.Depth(map, harbour).ToString("0") + " m deep");
+            Check(found && Places.Reachable(map, harbour, 15000f, 50f), place.name + "'s harbour can be reached from the open sea");
         }
         // Home: a stretch of open water off Kaupang, big enough for the home island and its harbour.
         if (haveCoast)
@@ -334,6 +339,7 @@ public static class LogicTests
             bool open = RealWorld.FindHomeWater(map, Places.Find(RealWorld.HomePlace), out home);
             float off = Vector3.Distance(home, Places.Position(map, Places.Find(RealWorld.HomePlace))) / 1000f;
             Check(open && RealWorld.OpenWater(map, home, RealWorld.HomeWater) && off < 20f, "the home island sits in open water " + off.ToString("0.0") + " km off Kaupang");
+            Check(Places.Reachable(map, home, 15000f, 50f), "from home, the open sea can be reached");
         }
         Check(Places.All.Length >= 20 && halls >= 5 && monasteries >= 2, "there are halls to base at and monasteries to raid (" + halls + ", " + monasteries + ")");
         // Each place's settlement stands on its real land: a jetty to the water, buildings on dry ground, none overlapping.

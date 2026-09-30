@@ -45,13 +45,13 @@ namespace OdinsCoin
             new Place { name = "Avaldsnes", modern = "Karmøy", kind = PlaceKind.Hall, latitude = 59.352f, longitude = 5.279f, blurb = "The king's hall on Karmsund, taking toll from every ship on the North Way." },
             new Place { name = "Borg", modern = "Lofoten", kind = PlaceKind.Hall, latitude = 68.244f, longitude = 13.787f, harbourReach = 6f, blurb = "The chieftain's great hall in Lofoten, eighty metres long." },
             new Place { name = "Borre", modern = "Horten", kind = PlaceKind.Hall, latitude = 59.39f, longitude = 10.46f, blurb = "The burial mounds and hall of the kings of Vestfold." },
-            new Place { name = "Tønsberg", modern = "Tønsberg", kind = PlaceKind.Town, latitude = 59.267f, longitude = 10.408f, blurb = "An old town on the Vestfold shore, sheltered behind its islands." },
+            new Place { name = "Tønsberg", modern = "Tønsberg", kind = PlaceKind.Town, latitude = 59.267f, longitude = 10.408f, harbourReach = 6f, blurb = "An old town on the Vestfold shore, sheltered behind its islands." },
             new Place { name = "Bjarkøy", modern = "Harstad", kind = PlaceKind.Hall, latitude = 68.996f, longitude = 16.556f, harbourReach = 6f, blurb = "The seat of Tore Hund, trading furs with the Sámi and beyond." },
             new Place { name = "Stavanger", modern = "Stavanger", kind = PlaceKind.Landing, latitude = 58.97f, longitude = 5.733f, blurb = "Where Harald Fairhair's fleets gathered for Hafrsfjord." },
             // Denmark and the south.
             new Place { name = "Hedeby", modern = "Haithabu", kind = PlaceKind.Town, latitude = 54.491f, longitude = 9.566f, harbourReach = 8f, blurb = "The greatest market of the North, behind the Danevirke on the Schlei." },
             new Place { name = "Ribe", modern = "Ribe", kind = PlaceKind.Town, latitude = 55.328f, longitude = 8.762f, harbourReach = 10f, blurb = "Denmark's oldest town, facing the North Sea and Frisia." },
-            new Place { name = "Roskilde", modern = "Roskilde", kind = PlaceKind.Hall, latitude = 55.642f, longitude = 12.08f, harbourReach = 5f, blurb = "The Danish kings' seat at the head of its fjord." },
+            new Place { name = "Roskilde", modern = "Roskilde", kind = PlaceKind.Hall, latitude = 55.642f, longitude = 12.08f, harbourReach = 10f, blurb = "The Danish kings' seat at the head of its fjord." },
             new Place { name = "Aros", modern = "Aarhus", kind = PlaceKind.Town, latitude = 56.156f, longitude = 10.21f, blurb = "A walled town on the east coast of Jutland." },
             new Place { name = "Jomsborg", modern = "Wolin", kind = PlaceKind.Fortress, latitude = 53.84f, longitude = 14.62f, harbourReach = 12f, blurb = "The Jomsvikings' sea fortress, its harbour inside the walls." },
             // Sweden and the Baltic.
@@ -82,12 +82,44 @@ namespace OdinsCoin
         /// <summary>The least depth a harbour needs for the big ships (m).</summary>
         public const float HarbourDepth = 2.5f;
 
+        // Harbours worked out ahead of time (tools/world/bake_harbours.sh) by FloodHarbour: name -> lat, lon.
+        static Dictionary<string, Vector2> baked;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() { baked = null; }
+
+        /// <summary>Use these baked harbours ("name|lat|lon" lines); null or empty clears them.</summary>
+        public static void LoadHarbours(string text)
+        {
+            baked = new Dictionary<string, Vector2>();
+            if (string.IsNullOrEmpty(text)) return;
+            foreach (var line in text.Split('\n'))
+            {
+                var parts = line.Trim().Split('|');
+                float lat, lon;
+                if (parts.Length == 3 && float.TryParse(parts[1], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out lat)
+                    && float.TryParse(parts[2], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out lon))
+                    baked[parts[0]] = new Vector2(lat, lon);
+            }
+        }
+
+        static void EnsureBaked()
+        {
+            if (baked != null) return;
+            var asset = Resources.Load<TextAsset>("World/harbours");
+            LoadHarbours(asset != null ? asset.text : null);
+        }
+
         /// <summary>
-        /// The place's harbour: the nearest spot of sea at least <see cref="HarbourDepth"/> deep within its reach,
+        /// The place's harbour: the baked one (water joined to the open sea, found by <see cref="FloodHarbour"/>) if
+        /// there is one, else the nearest spot of sea at least <see cref="HarbourDepth"/> deep within its reach,
         /// searched outward in rings on the real map. False if there is none.
         /// </summary>
         public static bool Harbour(WorldMap map, Place p, out Vector3 harbour)
         {
+            EnsureBaked();
+            Vector2 ll;
+            if (baked.TryGetValue(p.name, out ll)) { harbour = map.ToWorld(ll.x, ll.y); return true; }
             var at = Position(map, p);
             harbour = at;
             float step = 150f * WorldMap.Scale, reach = p.harbourReach * 1000f * WorldMap.Scale;
@@ -109,7 +141,96 @@ namespace OdinsCoin
             return false;
         }
 
+        /// <summary>
+        /// The place's harbour, the thorough way: flood the water that joins the open sea (anything at least
+        /// <see cref="HarbourDepth"/> deep, spreading in from the deep sea and the edges of the search), then take the
+        /// flooded spot nearest the place, within its reach. Slow (a flood over tens of kilometres), so it's baked.
+        /// </summary>
+        public static bool FloodHarbour(WorldMap map, Place p, out Vector3 harbour)
+        {
+            float s = WorldMap.Scale;
+            var at = Position(map, p);
+            harbour = at;
+            float reach = p.harbourReach * 1000f;
+            float cell = 100f;
+            int n = Mathf.CeilToInt((reach + 20000f) / cell); // far enough out that a lagoon rarely touches the edge
+            int size = 2 * n + 1;
+            var depth = new float[size * size];
+            for (int j = 0; j < size; j++)
+                for (int i = 0; i < size; i++)
+                    depth[j * size + i] = -TerrainDetail.Height(map, at.x + (i - n) * cell * s, at.z + (j - n) * cell * s) / s;
+            var wet = new bool[size * size];
+            var queue = new Queue<int>();
+            for (int j = 0; j < size; j++)
+                for (int i = 0; i < size; i++)
+                {
+                    int id = j * size + i;
+                    bool edge = i == 0 || j == 0 || i == size - 1 || j == size - 1;
+                    if ((edge && depth[id] >= HarbourDepth) || depth[id] >= 15f) { wet[id] = true; queue.Enqueue(id); }
+                }
+            while (queue.Count > 0)
+            {
+                int c = queue.Dequeue(), i = c % size, j = c / size;
+                for (int k = 0; k < 8; k++)
+                {
+                    // All eight neighbours, so a narrow channel running on the diagonal still joins up.
+                    int ni = i + Dx[k], nj = j + Dz[k];
+                    if (ni < 0 || nj < 0 || ni >= size || nj >= size) continue;
+                    int id = nj * size + ni;
+                    if (wet[id] || depth[id] < HarbourDepth) continue;
+                    wet[id] = true;
+                    queue.Enqueue(id);
+                }
+            }
+            float best = float.MaxValue;
+            for (int j = 0; j < size; j++)
+                for (int i = 0; i < size; i++)
+                {
+                    if (!wet[j * size + i]) continue;
+                    // Not right on the edge of the deep: a spot with a little room round it.
+                    float d = ((i - n) * (i - n) + (j - n) * (j - n)) * cell * cell;
+                    if (d < best) { best = d; harbour = at + new Vector3((i - n) * cell * s, 0f, (j - n) * cell * s); }
+                }
+            return best <= reach * reach;
+        }
+
+        /// <summary>
+        /// Can a ship get from this spot out to open water (at least <paramref name="openDepth"/> deep) without
+        /// crossing anything shallower than <see cref="HarbourDepth"/>? A flood fill over the detailed land on a
+        /// grid of <paramref name="cell"/> metres, out to <paramref name="radius"/>; reaching the edge afloat counts.
+        /// </summary>
+        public static bool Reachable(WorldMap map, Vector3 from, float radius = 15000f, float cell = 80f, float openDepth = 15f)
+        {
+            float s = WorldMap.Scale;
+            int n = Mathf.CeilToInt(radius / cell);
+            int size = 2 * n + 1;
+            var seen = new bool[size * size];
+            var queue = new Queue<int>();
+            System.Func<int, int, float> depth = (i, j) => -TerrainDetail.Height(map, from.x + (i - n) * cell * s, from.z + (j - n) * cell * s) / s;
+            if (depth(n, n) < HarbourDepth) return false;
+            queue.Enqueue(n * size + n);
+            seen[n * size + n] = true;
+            while (queue.Count > 0)
+            {
+                int c = queue.Dequeue(), i = c % size, j = c / size;
+                if (i == 0 || j == 0 || i == size - 1 || j == size - 1) return true;
+                if (depth(i, j) >= openDepth) return true;
+                for (int k = 0; k < 8; k++)
+                {
+                    // All eight neighbours, so a narrow channel running on the diagonal still joins up.
+                    int ni = i + Dx[k], nj = j + Dz[k];
+                    int id = nj * size + ni;
+                    if (seen[id]) continue;
+                    seen[id] = true;
+                    if (depth(ni, nj) >= HarbourDepth) queue.Enqueue(id);
+                }
+            }
+            return false;
+        }
+
+        static readonly int[] Dx = { 1, -1, 0, 0, 1, 1, -1, -1 }, Dz = { 0, 0, 1, -1, 1, -1, 1, -1 };
+
         /// <summary>Depth of water (m, real) at a global position; 0 on land.</summary>
-        public static float Depth(WorldMap map, Vector3 p) { return Mathf.Max(0f, -map.GroundHeight(p.x, p.z) / WorldMap.Scale); }
+        public static float Depth(WorldMap map, Vector3 p) { return Mathf.Max(0f, -TerrainDetail.Height(map, p.x, p.z) / WorldMap.Scale); }
     }
 }

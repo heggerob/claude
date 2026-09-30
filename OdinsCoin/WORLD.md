@@ -138,6 +138,17 @@ med ror, seil i vinden og årer.
 - [x] **12. Lagret posisjon:** lagringen husker hvor skipet ligger ute i den ekte verdenen, med kursen, og
   «Continue» setter deg tilbake der med mannskapet om bord (hvis det fortsatt er åpent vann). Ligger skipet
   hjemme, starter du ved brygga som før.
+- [x] **13. Havner du faktisk kommer inn til:** en test viste at 12 av 26 havner lå i innestengt vann, i dammer eller
+  innsjøer uten forbindelse til havet.
+  - Havnene finnes nå med et flomsøk fra åpent hav (`Places.FloodHarbour`), som bare godtar vann et skip kan seile
+    inn fra sjøen. De bakes til `Resources/World/harbours.txt` med `tools/world/bake_harbours.sh`.
+  - Elver og sund som er for smale for kartets 200 m-rutenett er gravd inn som seilløp (`World/Channels.cs`):
+    Themsen til Lundenwic, Humber og Ouse til Jorvik, Schlei til Hedeby, Roskildefjorden, Byfjorden ved Tønsberg,
+    og vannveien fra Sigtuna til Mälaren. Jorvik og Lundenwic har nå havn ved selve byen i stedet for 40–50 km unna.
+  - Den oppdiktede detaljen dempes ved vannlinjen, så grunne kyster ikke blir til falske øyer og innsjøer.
+  - En test seiler fra hver havn (og fra hjemmeøya) ut til åpent hav på et rutenett på 50 m.
+  - Bilder av stedene ovenfra med husene, brygga, havna, kistene og vaktene: [Kaupang](docs/place-kaupang.png),
+    [Lindisfarne](docs/place-lindisfarne.png), [Hedeby](docs/place-hedeby.png).
 
 ## Merk
 
