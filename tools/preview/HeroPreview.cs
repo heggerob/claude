@@ -227,39 +227,65 @@ public static class HeroPreview
         Console.WriteLine("hero: " + model.TriangleCount + " triangles");
     }
 
+    /// <summary>A pose from the game's animator (see HeroAnimator.Apply), on top of the standing posture.</summary>
+    static Pose FromAnimator(HeroAnimator.Frame f)
+    {
+        var pose = new Pose();
+        pose.rot[Joints.Body] = Quaternion.Euler(f.body);
+        pose.pos[Joints.Body] = new Vector3(0f, f.lift, 0f);
+        pose.rot[Joints.LeftLeg] = Quaternion.Euler(f.leftLeg);
+        pose.rot[Joints.RightLeg] = Quaternion.Euler(f.rightLeg);
+        pose.rot[Joints.Head] = Quaternion.Euler(f.head);
+        pose.rot[Joints.LeftArm] = Quaternion.Euler(f.leftArm);
+        pose.rot[Joints.RightArm] = Quaternion.Euler(f.rightArm);
+        pose.rot[Joints.LeftForearm] = Quaternion.Euler(f.leftElbow, 0f, 0f);
+        pose.rot[Joints.RightForearm] = Quaternion.Euler(f.rightElbow, 0f, 0f);
+        return pose;
+    }
+
     /// <summary>
-    /// The Jarl running and stopping, seen from the side: the swinging joints are simulated with the same springs the
-    /// game uses, so the strip shows how capes and braids really move.
+    /// The Jarl through a little run, driven by the game's own footstep locomotion and animator: setting off,
+    /// walking, sprinting, banking into a turn (seen from the front), a jump, the landing and the stop. The swinging
+    /// joints are simulated with the same springs the game uses, so capes and braids move as they will in play.
     /// </summary>
     static void MotionStrip(string rgbaPath, string labelPath, VikingModel model)
     {
         var springs = new Dictionary<string, SwingSpring>();
         foreach (var sw in model.Swings) springs[sw.joint] = SwingSpring.For(sw.kind);
         var frames = new List<Shot>();
-        var captures = new[] { 0.2f, 0.75f, 2.2f, 2.5f, 2.8f, 4.0f };
-        var names = new[] { "Standing", "Setting off", "Running", "Stopping", "Swinging back", "Settled" };
-        float speed = 0f, t = 0f, dt = 0.01f, stride = 0f;
+        var captures = new[] { 0.2f, 0.55f, 1.4f, 2.5f, 2.9f, 3.28f, 3.55f, 3.72f, 4.9f };
+        var names = new[] { "Standing", "Setting off", "Walking", "Sprinting", "Banking into a turn", "Jump: rising", "Falling", "Landing", "Stopping" };
+        var loco = new Locomotion { sprintSpeed = 6.5f };
+        loco.Reset(Vector2.zero, 0f);
+        var anim = new HeroAnimator();
+        float t = 0f, dt = 1f / 120f, y = 0f, vy = 0f;
+        bool jumped = false;
         int next = 0;
         while (next < captures.Length)
         {
-            float want = t > 0.3f && t < 2.3f ? 5f : 0f;
-            float prev = speed;
-            speed = want > speed ? Mathf.Min(want, speed + 12f * dt) : Mathf.Max(want, speed - 30f * dt);
-            float accel = (speed - prev) / dt;
-            foreach (var s in springs.Values) s.Step(dt, new Vector3(0f, 0f, speed), new Vector3(0f, 0f, accel));
-            stride += speed * dt * 2.2f;
+            // The script: walk, sprint, swing right, jump, keep running, let go.
+            Vector2 wish = t < 0.3f ? Vector2.zero : t < 4.3f ? new Vector2(0f, 1f) : Vector2.zero;
+            if (t > 2.6f && t < 3.0f) wish = new Vector2(1f, 1f);
+            float maxSpeed = t > 1.6f ? 6.5f : 4.2f;
+            if (!jumped && t >= 3.15f) { jumped = true; vy = 5.5f; }
+            bool grounded = y <= 0f && vy <= 0f;
+            if (grounded) loco.Step(wish, maxSpeed, dt); else loco.Air(wish, dt);
+            vy -= 18f * dt;
+            y += vy * dt;
+            if (y <= 0f) { y = 0f; if (vy < 0f && !grounded) { } }
+            grounded = y <= 0f;
+            anim.Step(dt, loco, grounded, vy, false, t);
+            if (grounded) vy = Mathf.Max(vy, 0f);
+            foreach (var s in springs.Values) s.Step(dt, new Vector3(0f, 0f, loco.speed), new Vector3(0f, 0f, loco.acceleration));
             t += dt;
             if (t >= captures[next])
             {
-                var pose = new Pose();
+                var pose = FromAnimator(anim.pose);
                 foreach (var kv in springs) pose.rot[kv.Key] = kv.Value.Rotation;
-                float swing = Mathf.Sin(stride) * Mathf.Clamp01(speed / 5f) * 35f;
-                pose.rot[Joints.LeftLeg] = Quaternion.Euler(swing, 0f, 0f);
-                pose.rot[Joints.RightLeg] = Quaternion.Euler(-swing, 0f, 0f);
-                pose.rot[Joints.LeftArm] = Quaternion.Euler(-swing * 0.8f, 0f, -8f);
-                pose.rot[Joints.RightArm] = Quaternion.Euler(swing * 0.8f, 0f, 8f);
-                pose.rot[Joints.Body] = Quaternion.Euler(Mathf.Clamp01(speed / 5f) * 8f, 0f, 0f);
-                frames.Add(new Shot { label = names[next], model = model, pose = pose, yaw = 265f });
+                // (The jump is drawn at half height so the whole hero stays in the frame.)
+                pose.pos[Joints.Body] += new Vector3(0f, y * 0.5f, 0f);
+                // Side-on, except the turn, which is seen from the front to show the bank and the head looking round.
+                frames.Add(new Shot { label = names[next], model = model, pose = pose, yaw = next == 4 ? 180f : 265f });
                 next++;
             }
         }

@@ -50,6 +50,9 @@ namespace OdinsCoin
         float stepFrom, stepTo, desired;
         bool moving;
 
+        /// <summary>Where the player wants to face (degrees): the head looks there before the body turns.</summary>
+        public float Desired { get { return desired; } }
+
         /// <summary>0 standing still .. 1 full sprint.</summary>
         public float Gait { get { return Mathf.Clamp01(speed / sprintSpeed); } }
 

@@ -35,6 +35,7 @@ public static class LogicTests
         NpcHeroTests();
         StickAnimTests();
         LocomotionTests();
+        AnimatorTests();
         ClothWindTests();
         FaceTests();
         RestTests();
@@ -1022,6 +1023,115 @@ public static class LogicTests
         }
         Check(Vector2.Distance(slow.position, fast.position) < 0.35f && Mathf.Abs(Mathf.DeltaAngle(slow.heading, fast.heading)) < 8f,
             "movement doesn't depend on the frame rate (" + Vector2.Distance(slow.position, fast.position) + " m apart)");
+    }
+
+    static float[] lastDelta;
+
+    static float[] Channels(HeroAnimator.Frame p)
+    {
+        return new[] { p.body.x, p.body.y, p.body.z, p.head.x, p.head.y, p.head.z, p.leftLeg.x, p.leftLeg.z, p.rightLeg.x, p.rightLeg.z,
+                       p.leftArm.x, p.leftArm.z, p.rightArm.x, p.rightArm.z, p.leftElbow, p.rightElbow, p.lift * 100f };
+    }
+
+    /// <summary>
+    /// Drive a walker and an animator together. Returns the worst jolt: the largest change in any joint's
+    /// per-frame movement from one frame to the next (a pop shows up as a sudden change of speed, whereas a fast
+    /// but smooth running stride doesn't).
+    /// </summary>
+    static float Animate(Locomotion l, HeroAnimator an, Vector2 wish, float maxSpeed, float seconds, bool grounded, float vy, ref float time)
+    {
+        const float dt = 1f / 60f;
+        float worst = 0f;
+        for (float t = 0f; t < seconds; t += dt)
+        {
+            var before = Channels(an.pose);
+            if (grounded) l.Step(wish, maxSpeed, dt); else l.Air(wish, dt);
+            an.Step(dt, l, grounded, vy, false, time += dt);
+            var after = Channels(an.pose);
+            var delta = new float[after.Length];
+            for (int i = 0; i < after.Length; i++)
+            {
+                delta[i] = after[i] - before[i];
+                if (lastDelta != null) worst = Mathf.Max(worst, Mathf.Abs(delta[i] - lastDelta[i]));
+            }
+            lastDelta = delta;
+        }
+        return worst;
+    }
+
+    static void AnimatorTests()
+    {
+        const float walk = 4.2f, sprint = 6.5f;
+        float time = 0f;
+        var d = new Damped();
+        for (int i = 0; i < 30; i++) d.Step(1f, 1f / 60f, 0.1f);
+        float at30 = d.value;
+        for (int i = 0; i < 60; i++) d.Step(1f, 1f / 60f, 0.1f);
+        Check(at30 > 0.8f && at30 < 1f && Mathf.Abs(d.value - 1f) < 0.01f, "a damped value settles on its target without overshooting");
+
+        // Standing: legs together, arms down, just breathing.
+        var l = Walker(); var an = new HeroAnimator();
+        Animate(l, an, Vector2.zero, walk, 1f, true, 0f, ref time);
+        Check(Mathf.Abs(an.pose.leftLeg.x) < 1f && Mathf.Abs(an.pose.rightLeg.x) < 1f && Mathf.Abs(an.pose.body.x) < 2f, "standing still, the hero stands still");
+
+        // Walking: the legs scissor and each arm swings against its own side's leg.
+        Animate(l, an, new Vector2(0f, 1f), walk, 1.5f, true, 0f, ref time);
+        float walkLegs = 0f, walkLean = 0f; bool opposed = true, scissor = true;
+        for (int i = 0; i < 60; i++)
+        {
+            Animate(l, an, new Vector2(0f, 1f), walk, 1f / 60f, true, 0f, ref time);
+            var p = an.pose;
+            walkLegs = Mathf.Max(walkLegs, Mathf.Abs(p.leftLeg.x));
+            walkLean += p.body.x / 60f;
+            if (Mathf.Abs(p.leftLeg.x) > 8f && Mathf.Sign(p.leftLeg.x) == Mathf.Sign(p.rightLeg.x)) scissor = false;
+            if (Mathf.Abs(p.leftLeg.x) > 8f && Mathf.Abs(p.leftArm.x) > 4f && Mathf.Sign(p.leftLeg.x) == Mathf.Sign(p.leftArm.x)) opposed = false;
+        }
+        Check(walkLegs > 12f && scissor, "walking, the legs step one forward, one back (" + walkLegs + ")");
+        Check(opposed, "each arm swings against the leg on its side");
+
+        // Sprinting: longer strides, a deeper lean, elbows bent to pump.
+        Animate(l, an, new Vector2(0f, 1f), sprint, 1.5f, true, 0f, ref time);
+        float runLegs = 0f, runLean = 0f, runElbow = 0f;
+        for (int i = 0; i < 60; i++)
+        {
+            Animate(l, an, new Vector2(0f, 1f), sprint, 1f / 60f, true, 0f, ref time);
+            runLegs = Mathf.Max(runLegs, Mathf.Abs(an.pose.leftLeg.x));
+            runLean += an.pose.body.x / 60f;
+            runElbow += an.pose.leftElbow / 60f;
+        }
+        Check(runLegs > walkLegs * 1.15f && runLean > walkLean + 2f, "sprinting strides out and leans in (" + runLegs + ", " + runLean + ")");
+        Check(runElbow < -60f, "sprinting pumps the arms with bent elbows (" + runElbow + ")");
+
+        // Turning right: the body banks right, the head looks round first.
+        float bank = 0f, look = 0f;
+        for (int i = 0; i < 20; i++)
+        {
+            Animate(l, an, new Vector2(1f, 0f), sprint, 1f / 60f, true, 0f, ref time);
+            bank = Mathf.Min(bank, an.pose.body.z);
+            look = Mathf.Max(look, an.pose.head.y);
+        }
+        Check(bank < -2f, "the body banks into a turn (" + bank + ")");
+        Check(look > 10f, "the head looks where it's going before the body gets there (" + look + ")");
+
+        // A jump: tucked up in the air, a squash on landing, and never a jolt.
+        l = Walker(); an = new HeroAnimator(); lastDelta = null;
+        float jolt = Animate(l, an, new Vector2(0f, 1f), sprint, 1.5f, true, 0f, ref time);
+        jolt = Mathf.Max(jolt, Animate(l, an, new Vector2(0f, 1f), sprint, 0.35f, false, 3f, ref time));
+        Check(an.pose.leftLeg.x < -15f && an.pose.leftArm.z > 15f, "in the air the knees come up and the arms go out (" + an.pose.leftLeg.x + ")");
+        jolt = Mathf.Max(jolt, Animate(l, an, new Vector2(0f, 1f), sprint, 0.3f, false, -7f, ref time));
+        float lowest = 0f, deepest = 0f;
+        for (int i = 0; i < 20; i++)
+        {
+            jolt = Mathf.Max(jolt, Animate(l, an, new Vector2(0f, 1f), sprint, 1f / 60f, true, i == 0 ? -7f : 0f, ref time));
+            lowest = Mathf.Min(lowest, an.pose.lift);
+            deepest = Mathf.Max(deepest, an.pose.body.x);
+        }
+        Check(lowest < -0.02f && deepest > 12f, "landing squashes down and folds forward (" + lowest + ", " + deepest + ")");
+        Animate(l, an, new Vector2(0f, 1f), sprint, 1f, true, 0f, ref time);
+        Check(an.pose.lift > -0.01f, "and springs back up");
+        jolt = Mathf.Max(jolt, Animate(l, an, new Vector2(-1f, -0.2f), sprint, 1.5f, true, 0f, ref time));
+        jolt = Mathf.Max(jolt, Animate(l, an, Vector2.zero, sprint, 1f, true, 0f, ref time));
+        Check(jolt < 4f, "no joint jumps more than a few degrees in one frame, whatever the hero does (" + jolt + ")");
     }
 
     static void StickAnimTests()

@@ -35,6 +35,7 @@ namespace OdinsCoin
         float facing;
         /// <summary>Speed, turning and footsteps: turning takes steps, speed builds up and dies down.</summary>
         readonly Locomotion loco = new Locomotion { sprintSpeed = RunSpeed };
+        readonly HeroAnimator animator = new HeroAnimator();
         bool locoStarted;
 
         /// <summary>The Viking's walking and turning, for animation.</summary>
@@ -374,12 +375,10 @@ namespace OdinsCoin
         void Animate(float dt)
         {
             if (parts == null) return;
-            // The legs swing with the footsteps: one stride is left then right.
-            float reach = loco.Stepping ? Mathf.Max(14f, Mathf.Clamp(loco.speed * 8f, 0f, 38f)) : 0f;
-            float swing = Mathf.Sin(loco.Stride * Mathf.PI * 2f) * reach;
-            if (Swimming) swing = Mathf.Sin(Time.time * 4f) * 40f;
-            parts.leftLeg.localRotation = HeroPose.Leg(swing);
-            parts.rightLeg.localRotation = HeroPose.Leg(-swing);
+            // Walking, sprinting, turning, jumping and landing, all smoothed: see HeroAnimator.
+            bool grounded = controller == null || !controller.enabled || controller.isGrounded || AtHelm;
+            animator.Step(dt, loco, grounded, verticalSpeed, Swimming, Time.time);
+            animator.Apply(parts);
             bailAnim = Mathf.Max(0f, bailAnim - dt);
             if (bailAnim > 0f)
             {
@@ -398,17 +397,17 @@ namespace OdinsCoin
             }
             else
             {
-                parts.leftArm.localRotation = Quaternion.Euler(-swing * 0.8f, 0f, 0f);
-                parts.rightArm.localRotation = Quaternion.Euler(AtHelm ? -60f : swing * 0.8f, 0f, 0f);
-                // Stick arms bend at the elbow as they swing; the helm hand reaches for the oar.
-                HeroPose.Elbows(parts, HeroPose.WalkElbow(-swing * 0.8f), AtHelm ? -30f : HeroPose.WalkElbow(swing * 0.8f));
+                // The helm hand reaches for the oar.
+                if (AtHelm)
+                {
+                    parts.rightArm.localRotation = Quaternion.Euler(-60f, 0f, 0f);
+                    if (parts.rightForearm != null) parts.rightForearm.localRotation = Quaternion.Euler(-30f, 0f, 0f);
+                }
                 // A big axe rides on the shoulder, like the raider on the concept sheet.
                 if (!AtHelm && !Swimming && Hero != null && HeroPose.CarryFor(Hero.weapon).set) HeroPose.Carry(parts, Hero.weapon, 1f);
                 else RestWeapon();
             }
             if (parts.axe != null) parts.axe.gameObject.SetActive(Carrying == null);
-            // Lean into the swim; standing, a slow breath.
-            parts.body.localRotation = HeroPose.Torso(Swimming ? 60f : HeroPose.Breath(Time.time));
         }
     }
 
