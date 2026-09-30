@@ -117,7 +117,8 @@ namespace OdinsCoin
         public bool FlipForStake(float chance, System.Action<bool> done)
         {
             if (Flipping || Time.time < stakeReadyAt) return false;
-            stakeHeads = Random.value < chance;
+            stakeHeads = NextStakeRoll() < chance;
+            stakeRoll = -1f;
             stakeDone = done;
             pending = null;
             flipStart = Time.time;
@@ -127,6 +128,13 @@ namespace OdinsCoin
         }
 
         float stakeReadyAt;
+        /// <summary>The next stake's throw, rolled ahead so the Seer can foresee it (-1 until it's rolled).</summary>
+        float stakeRoll = -1f;
+
+        float NextStakeRoll() { if (stakeRoll < 0f) stakeRoll = Random.value; return stakeRoll; }
+
+        /// <summary>How the next stake will land at these odds, as the Seer foresees it: true for Odin's eye.</summary>
+        public bool ForeseeStake(float chance) { return NextStakeRoll() < chance; }
 
         /// <summary>Whether the altar will take a stake now.</summary>
         public bool ReadyForStake { get { return !Flipping && Time.time >= stakeReadyAt; } }

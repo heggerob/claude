@@ -75,6 +75,12 @@ namespace OdinsCoin
             light.gameObject.AddComponent<FadeLight>();
         }
 
+        /// <summary>What the Seer's Foresight adds to the altar's prompt, knowing how the next throw will land.</summary>
+        public static string Foresight(bool odinsEye)
+        {
+            return odinsEye ? "\n<color=#ffd060>Foresight: the coin will show Odin's eye.</color>" : "\n<color=#88cc88>Foresight: the coin will show the serpent.</color>";
+        }
+
         /// <summary>The line shown for a stake: what you have, what you could have, and the odds.</summary>
         public static string Offer(int now, int ifWon)
         {

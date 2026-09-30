@@ -247,6 +247,7 @@ public static class LogicTests
             Check(TreasureChest.TierName(0) == "chest" && TreasureChest.TierName(3) == "Odin's hoard", "the tiers have names");
             Check(TreasureChest.TrimColour(0).r != TreasureChest.TrimColour(1).r && TreasureChest.TrimColour(1).b != TreasureChest.TrimColour(2).b, "a chest's bands show its tier");
             Check(Stake.Offer(200, 400).Contains("400") && Stake.Offer(200, 400).Contains("50%"), "the offer shows what you could win and the odds");
+            Check(Stake.Foresight(true).Contains("Odin's eye") && Stake.Foresight(false).Contains("serpent"), "the Seer's Foresight tells how the coin will fall");
             // Over many throws of a single chest staked again and again, the average stays what it was: a fair game.
             var rng = new System.Random(11);
             double total = 0; const int trials = 20000;

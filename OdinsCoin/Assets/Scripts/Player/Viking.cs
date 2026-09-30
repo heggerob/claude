@@ -551,6 +551,15 @@ namespace OdinsCoin
         /// <summary>What E does at Odin's altar: stake the chest in your arms, or everything on deck (asked twice).</summary>
         string AltarPrompt()
         {
+            var line = AltarOffer();
+            // The Seer sees how the coin will fall before anything is staked.
+            if (line != null && line.Contains("[E]") && Abilities.Has("foresight") && CoinAltar.Instance != null)
+                line +=Stake.Foresight(CoinAltar.Instance.ForeseeStake(Stake.CurrentOdds));
+            return line;
+        }
+
+        string AltarOffer()
+        {
             var fortune = Fortune.Current;
             if (Carrying != null)
             {

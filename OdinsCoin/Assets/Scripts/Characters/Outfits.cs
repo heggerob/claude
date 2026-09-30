@@ -144,7 +144,7 @@ namespace OdinsCoin
                     parchment = new Color(0.88f, 0.84f, 0.74f), emblem = new Color(0.55f, 0.82f, 1f) },
                 defaultHair = HairStyle.VeryLongBraids, suggestedWeapon = WeaponId.Staff,
                 abilities = new[] {
-                    new Ability { id = "foresight", name = "Foresight", description = "See how Odin's coin will land before you wager." },
+                    new Ability { id = "foresight", name = "Foresight", description = "See how Odin's coin will land before you stake your treasure." },
                     new Ability { id = "ward", name = "Ward of Runes", description = "Curses on you and your crew wear off faster." } },
                 dress = d =>
                 {
