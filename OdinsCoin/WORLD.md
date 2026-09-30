@@ -68,6 +68,8 @@ med ror, seil i vinden og årer.
     - toppmaster over råa med lange, kløftede vimpler i husets farge og en gullknapp;
     - vanter i en vifte fra ripa til mastetoppen, med ratliner å klatre i, og en utkikkstønne på stormasta;
     - et baugspryd med forstag til formasta og vaterstag ned til stevnen.
+    - på Stormbreaker og Krakenhall et forkastell med tinner å skyte mellom, og gullbånd som akterkastellet;
+    - rader med firkantede åreporter langs skroget, med røde lokk slått opp.
   - Seilplanen er den samme, så fysikken er uendret.
     Flaggskipet har en hall på dekket. Målene kommer fra designet, så utseende og fysikk stemmer overens.
 - [x] **7. Ekte skipsfysikk:** oppdrift fra skrogets form, motstand i vannet, sideveis grep fra kjølen,

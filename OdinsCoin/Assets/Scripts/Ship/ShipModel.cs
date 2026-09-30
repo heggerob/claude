@@ -49,6 +49,8 @@ namespace OdinsCoin
             Hull(m, d, look);
             Posts(m, d, look);
             if (d.length >= 40f) SternCastle(m, d, look);
+            if (d.length >= 40f) Forecastle(m, d, look);
+            if (d.length >= 25f && d.oarsPerSide > 0) OarPorts(m, d, look);
             Rigging(m, d, look, sails);
             Oars(m, d, look);
             if (d.length >= 25f) Shields(m, d, look);
@@ -178,6 +180,59 @@ namespace OdinsCoin
                 var at = new Vector3(side * w * 0.5f, floor + h * 0.72f + 1.4f, z0 + 0.3f);
                 m.Add(Joint, look.iron, MeshData.Box(at, new Vector3(0.35f, 0.5f, 0.35f)), true, SurfaceKind.Metal);
                 m.Add(Joint, new Color(1f, 0.8f, 0.4f), MeshData.Box(at, new Vector3(0.25f, 0.35f, 0.4f)), false);
+            }
+        }
+
+        /// <summary>
+        /// A raised fighting deck at the bow: walled, with a crenellated rail for archers to shoot between, and a
+        /// gold band to match the stern castle. The great ships' outline is high at both ends.
+        /// </summary>
+        static void Forecastle(VikingModel m, ShipDesign d, ShipLook look)
+        {
+            float k, g, hb;
+            Section(d, 0.72f, out k, out g, out hb);
+            float z0 = d.length / 2f * 0.6f, z1 = d.length / 2f * 0.86f;
+            float floor = g + 0.1f, h = 1.8f + d.length * 0.012f, w = hb * 1.85f;
+            m.Add(Joint, look.hull, MeshData.Box(new Vector3(0f, floor + h * 0.35f, (z0 + z1) / 2f), new Vector3(w, h * 0.7f, z1 - z0)), true, SurfaceKind.Wood);
+            m.Add(Joint, look.deck, MeshData.Box(new Vector3(0f, floor + h * 0.72f, (z0 + z1) / 2f), new Vector3(w * 0.96f, 0.15f, (z1 - z0) * 0.98f)), false, SurfaceKind.Wood);
+            m.Add(Joint, look.gold, MeshData.Box(new Vector3(0f, floor + h * 0.55f, (z0 + z1) / 2f), new Vector3(w * 1.02f, 0.16f, (z1 - z0) * 1.01f)), false, SurfaceKind.Metal);
+            // Crenellations: solid merlons along both sides and across the front, gaps between for the bows.
+            float top = floor + h * 0.72f;
+            int merlons = Mathf.Max(3, Mathf.RoundToInt((z1 - z0) / 1.1f));
+            foreach (float side in new[] { -1f, 1f })
+                for (int i = 0; i < merlons; i++)
+                {
+                    float z = Mathf.Lerp(z0 + 0.4f, z1 - 0.4f, i / (float)(merlons - 1));
+                    m.Add(Joint, look.strake, MeshData.Box(new Vector3(side * w * 0.47f, top + 0.45f, z), new Vector3(0.25f, 0.9f, 0.6f)), true, SurfaceKind.Wood);
+                }
+            for (int i = 0; i < 3; i++)
+                m.Add(Joint, look.strake, MeshData.Box(new Vector3((i - 1) * w * 0.33f, top + 0.45f, z1 - 0.15f), new Vector3(0.6f, 0.9f, 0.25f)), true, SurfaceKind.Wood);
+        }
+
+        /// <summary>
+        /// A row of square oar ports down each side, their lids painted red and swung up, like the gun ports of
+        /// the great ships of later ages: a threatening line along the hull.
+        /// </summary>
+        static void OarPorts(VikingModel m, ShipDesign d, ShipLook look)
+        {
+            float span = d.length * 0.62f;
+            var lid = look.shieldA;
+            var dark = new Color(0.06f, 0.05f, 0.04f);
+            float size = 0.28f + d.length * 0.004f;
+            for (int i = 0; i < d.oarsPerSide; i++)
+            {
+                float z = Mathf.Lerp(-span / 2f, span / 2f, (i + 0.5f) / d.oarsPerSide) + d.length * 0.03f;
+                float k, g, hb;
+                Section(d, 2f * z / d.length, out k, out g, out hb);
+                float y = g - size * 1.6f;
+                foreach (float side in new[] { -1f, 1f })
+                {
+                    float x = side * (hb + 0.03f);
+                    m.Add(Joint, dark, MeshData.Box(new Vector3(x, y, z), new Vector3(0.06f, size, size)), false);
+                    // The lid, hinged at the top and swung out and up.
+                    m.Add(Joint, lid, MeshData.Box(new Vector3(x + side * size * 0.35f, y + size * 0.75f, z), new Vector3(0.05f, size * 0.95f, size * 1.05f))
+                        .Transformed(Vector3.zero, Quaternion.identity, Vector3.one), false, SurfaceKind.Wood);
+                }
             }
         }
 
