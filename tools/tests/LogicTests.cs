@@ -137,6 +137,38 @@ public static class LogicTests
         for (int i = 0; i < 30; i++) { facer.Face(90f); facer.Step(new Vector2(1f, 0f), Viking.WalkSpeed, 1f / 60f); facer.Face(90f); }
         Check(facer.heading == 90f && facer.Stepping && facer.speed > 1f, "the body faces your view at once while the legs keep stepping");
 
+        // Scenery: trees, rocks and grass on the land round you.
+        {
+            System.Func<double, double, float> flatLand = (x, z) => 5f;
+            System.Func<double, double, Ground> grass = (x, z) => Ground.Grass;
+            var plan1 = Scenery.Plan(3, -2, flatLand, grass);
+            var plan2 = Scenery.Plan(3, -2, flatLand, grass);
+            bool same = plan1.Count == plan2.Count;
+            for (int i = 0; same && i < plan1.Count; i++) same = plan1[i].x == plan2[i].x && plan1[i].kind == plan2[i].kind && plan1[i].size == plan2[i].size;
+            Check(plan1.Count > 10 && same, "the same spot always has the same trees and stones");
+            bool inside = true;
+            foreach (var p in plan1) inside &= p.x >= 3 * Scenery.TileSize && p.x < 4 * Scenery.TileSize && p.z >= -2 * Scenery.TileSize && p.z < -1 * Scenery.TileSize;
+            Check(inside, "each tile's scenery stands inside the tile");
+            Check(Scenery.Plan(3, -2, (x, z) => -0.2f, grass).Count == 0, "nothing grows under the tide line");
+            Check(Scenery.Plan(3, -2, flatLand, (x, z) => Ground.Snow).Count == 0 && Scenery.Plan(3, -2, flatLand, (x, z) => Ground.Seabed).Count == 0, "no scenery on snow or seabed");
+            Scenery.Clearings.Clear();
+            Scenery.Clearings.Add(new Vector3(3.5f * Scenery.TileSize, -1.5f * Scenery.TileSize, 200f));
+            Check(Scenery.Plan(3, -2, flatLand, grass).Count == 0 && Scenery.Cleared(3.5 * Scenery.TileSize, -1.5 * Scenery.TileSize), "nothing grows in a town's clearing");
+            Scenery.Clearings.Clear();
+            int trees = 0, cells = 0;
+            PropKind k;
+            for (int i = 0; i < 1000; i++) { cells++; if (Scenery.Pick(Ground.Grass, 1f, i / 1000f, out k) && Scenery.Solid(k)) trees++; }
+            int openTrees = 0;
+            for (int i = 0; i < 1000; i++) if (Scenery.Pick(Ground.Grass, 0f, i / 1000f, out k) && Scenery.Solid(k)) openTrees++;
+            Check(trees > 150 && openTrees == 0, "deep forest is thick with trees; open grassland has none");
+            Check(Scenery.Pick(Ground.Sand, 0.5f, 0.005f, out k) && k == PropKind.Driftwood, "driftwood lies on the beaches");
+            Check(Scenery.Solid(PropKind.Pine) && Scenery.Solid(PropKind.Boulder) && !Scenery.Solid(PropKind.Tuft) && !Scenery.Solid(PropKind.Bush), "you walk into trunks and boulders, through grass and bushes");
+            var tileModel = Scenery.Model(plan1, 3 * Scenery.TileSize, -2 * Scenery.TileSize);
+            int colours = 0;
+            foreach (var piece in tileModel.Pieces) if (!piece.ink) colours++;
+            Check(colours > 0 && colours <= 13, "a whole tile of scenery is drawn as a handful of merged meshes, one per colour");
+        }
+
         // Faster time on a quiet passage, never with danger about.
         string why;
         Check(TimeWarp.Allowed(true, 5000f, false, 0f, false, out why) && why == null, "a quiet passage can run fast");

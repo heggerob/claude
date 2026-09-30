@@ -496,6 +496,22 @@ public static class HeroPreview
             foreach (var piece in model.Pieces)
                 m.Pieces.Add(new VikingModel.Piece { joint = J, color = piece.color, mesh = piece.mesh.Transformed(at, turn, Vector3.one), surface = piece.surface, outline = piece.outline, ink = piece.ink });
         }
+        // Trees, rocks and grass, as the game scatters them, clear of the plots.
+        Scenery.Clearings.Clear();
+        foreach (var plot in plots)
+            if (plot.kind != BuildingKind.Jetty) Scenery.Clearings.Add(new Vector3(plot.at.x, plot.at.z, Scenery.PlotClearing(plot.kind)));
+        var t0 = WorldTerrain.ChunkOf(centre.x - half, centre.z - half, Scenery.TileSize);
+        var t1 = WorldTerrain.ChunkOf(centre.x + half, centre.z + half, Scenery.TileSize);
+        int propCount = 0;
+        for (int tz = t0.y; tz <= t1.y; tz++)
+            for (int tx = t0.x; tx <= t1.x; tx++)
+            {
+                var props = Scenery.Plan(tx, tz, (x, z) => SceneryField.GroundHeight(map, x, z), (x, z) => SceneryField.GroundKind(map, x, z));
+                propCount += props.Count;
+                foreach (var piece in Scenery.Model(props, centre.x, centre.z).Pieces)
+                    m.Pieces.Add(new VikingModel.Piece { joint = J, color = piece.color, mesh = piece.mesh, surface = piece.surface, outline = piece.outline, ink = piece.ink });
+            }
+        Console.WriteLine("scenery props: " + propCount);
         // A Wavewolf alongside the jetty, bow to seaward.
         var wolf = ShipDesign.Wavewolf;
         var berth = jetty.at + jettyTurn * new Vector3(2f + wolf.beam / 2f + 0.5f, 0.2f, 22f) - centre;

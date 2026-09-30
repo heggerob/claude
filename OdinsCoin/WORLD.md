@@ -188,7 +188,8 @@ med ror, seil i vinden og årer.
 
 - [x] **20. Verden i øyehøyde (se [docs/scene-kaupang-fp.png](docs/scene-kaupang-fp.png)):** siden spillet nå spilles i førsteperson, viser forhåndsvisningen også havna slik du ser den når du står på brygga.
   - Lavt land er gress. Sand er det bare nærmest vannkanten, der det før var sand opp til 2,5 m over havet.
-  - [ ] Mer liv på bakken rundt deg: trær, steiner, gresstuer, gjerder, åkrer og folk i byene, så verden ikke er tom når du går rundt i den.
+  - [x] Landskapet rundt deg (`World/Scenery.cs`): furu og bjørk i skogholt der støyen sier skog, busker, gresstuer, steiner og kampesteiner, og drivved på strendene. Samme sted har alltid de samme trærne. Ingenting vokser på tomtene i byene eller rundt hjemmehavna, eller under tidevannslinja. Stammer og kampesteiner er faste, men du går gjennom gress og busker. Det bygges i ruter på 64 m, der alt med samme farge slås sammen til én mesh, og holdes på rundt 350 m rundt deg.
+  - [ ] Gjerder, åkrer og folk i byene.
 
 ## Merk
 

@@ -16,6 +16,8 @@ namespace OdinsCoin
         public const string HomePlace = "Kaupang";
         /// <summary>How much open water the home island needs round it (m).</summary>
         public const float HomeWater = 450f;
+        /// <summary>Round the home harbour nothing grows, so its jetty, hall and huts stand clear (m).</summary>
+        public const float HomeClearing = 220f;
         /// <summary>The view: the far clip and where the fog starts and ends (m), long enough to see the mountains.</summary>
         public const float FarClip = 70000f, FogStart = 1500f, FogEnd = 45000f;
 
@@ -80,6 +82,9 @@ namespace OdinsCoin
             WorldOrigin.OffsetZ = home.z - homeCentre.z;
             WorldOrigin.Containers.Add(world);
             WorldTerrain.Create(null, map, focus);
+            // Trees, rocks and grass on the land round you, clear of the home harbour's buildings.
+            Scenery.Clearings.Add(new Vector3(home.x, home.z, HomeClearing));
+            SceneryField.Create(null, map, focus);
             var sites = world.gameObject.AddComponent<PlaceSites>();
             sites.Setup(map, world, focus);
             world.gameObject.AddComponent<FloatingOrigin>().follow = focus;
@@ -239,6 +244,9 @@ namespace OdinsCoin
             int i = 0;
             var plots = Settlements.Layout(map, place);
             layouts[place] = plots;
+            // Nothing grows on the plots.
+            foreach (var plot in plots)
+                if (plot.kind != BuildingKind.Jetty) Scenery.Clearings.Add(new Vector3(plot.at.x, plot.at.z, Scenery.PlotClearing(plot.kind)));
             foreach (var plot in plots)
             {
                 var b = new GameObject(plot.kind.ToString()).transform;
