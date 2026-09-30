@@ -378,6 +378,23 @@ public static class LogicTests
         foreach (var sp in spots) { float r = Vector2.Distance(new Vector2(sp.x, sp.z), new Vector2(100f, 200f)); if (r < 5.9f || r > 10.01f) round = false; }
         Check(round && PlaceLife.Spots(new Vector3(100f, 0f, 200f), 5, 10f, 7)[3] == spots[3], "chests and guards stand round the main building, the same every visit");
 
+        // The sea chart: sea in blues, land in ochres, the coast inked, and places and the ship where they belong.
+        Check(SeaChart.Tint(-200f).b > SeaChart.Tint(-200f).r && SeaChart.Tint(300f).r > SeaChart.Tint(300f).b && SeaChart.Tint(-500f).g < SeaChart.Tint(-5f).g,
+            "on the chart the sea is blue and darker when deep, the land is ochre");
+        var chartPx = SeaChart.Paint(map, 200, Mathf.RoundToInt(200f * map.Height / map.Width));
+        int inked = 0, seaPx = 0;
+        foreach (var c in chartPx) { if (c.r < 0.4f && c.g < 0.35f) inked++; if (c.b > c.r) seaPx++; }
+        Check(inked > 100 && seaPx > chartPx.Length / 5 && seaPx < chartPx.Length * 9 / 10, "the chart inks the coasts (" + inked + " px) and has both sea and land");
+        var whole = map.Bounds;
+        var chartSheet = new Rect(0f, 0f, 800f, 600f);
+        var corner = SeaChart.ToScreen(whole, chartSheet, whole.xMin, whole.yMax);
+        var chartMid = SeaChart.ToScreen(whole, chartSheet, whole.center.x, whole.center.y);
+        Check(corner.magnitude < 1e-2f && Vector2.Distance(chartMid, new Vector2(400f, 300f)) < 1e-2f, "the chart puts the north-west corner top left and the middle in the middle");
+        var zoomed = SeaChart.View(whole, 4f, bergen.x, bergen.z);
+        Check(Mathf.Abs(zoomed.width - whole.width / 4f) < 1f && zoomed.Contains(new Vector2(bergen.x, bergen.z)) && zoomed.xMin >= whole.xMin && zoomed.yMin >= whole.yMin && zoomed.xMax <= whole.xMax + 1f && zoomed.yMax <= whole.yMax + 1f,
+            "zoomed in, the chart shows the ship's corner of the world and stays on the map");
+        Check(SeaChart.ScaleKm(2500f) == 500f && SeaChart.ScaleKm(40f) == 10f, "the scale bar picks a round length");
+
         // Bad files are refused rather than read as nonsense.
         bool refused = false;
         try { WorldMap.FromBytes(new byte[] { 1, 2, 3, 4, 5 }); } catch (System.IO.InvalidDataException) { refused = true; } catch (System.IO.EndOfStreamException) { refused = true; }
