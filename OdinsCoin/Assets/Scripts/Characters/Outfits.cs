@@ -37,14 +37,14 @@ namespace OdinsCoin
         {
             { OutfitId.Raider, new Outfit {
                 id = OutfitId.Raider, title = "The Raider",
-                palette = () => new Palette(),
+                palette = () => new Palette { metal = new Color(0.34f, 0.35f, 0.38f) },
                 defaultHair = HairStyle.SwungBraids, suggestedWeapon = WeaponId.TwoHandAxe,
                 abilities = new[] {
                     new Ability { id = "cleave", name = "Cleave", description = "A wide two-handed swing that hits everyone in front of you." },
                     new Ability { id = "plunder", name = "Plunderer", description = "Carry chests without slowing down as much." } },
                 dress = d =>
                 {
-                    Garments.FurBoots(d);
+                    Garments.FurBoots(d, 0.05f);
                     Garments.Gloves(d);
                     Garments.LongSkirt(d, 0.15f, 1.55f);
                     Garments.FurSkirt(d, 0.46f, 0.22f);

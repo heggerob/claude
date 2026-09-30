@@ -48,8 +48,8 @@ public static class HeroPreview
         // The haft runs from the fist behind the neck to the other side; the blade faces us.
         var haft = new Vector3(1f, 0.3f, -0.55f).normalized;
         carry.worldRot[Joints.OffHand] = Quaternion.LookRotation(haft, Vector3.Cross(haft, Vector3.forward));
-        carry.rot[Joints.LeftLeg] = Quaternion.Euler(0f, -18f, -9f);
-        carry.rot[Joints.RightLeg] = Quaternion.Euler(0f, 20f, 9f);
+        carry.rot[Joints.LeftLeg] = Quaternion.Euler(0f, -22f, -13f);
+        carry.rot[Joints.RightLeg] = Quaternion.Euler(0f, 24f, 12f);
         carry.rot[Joints.RightArm] = Quaternion.Euler(4f, 0f, 14f);
         carry.rot[Joints.RightForearm] = Quaternion.Euler(-12f, 0f, 0f);
         var walk = new Pose();
