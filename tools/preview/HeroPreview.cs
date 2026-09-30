@@ -432,8 +432,11 @@ public static class HeroPreview
     {
         const int cellW = 700, cellH = 620;
         var kinds = new[] { BuildingKind.GreatHall, BuildingKind.Longhouse, BuildingKind.Boathouse, BuildingKind.Storehouse, BuildingKind.Watchtower, BuildingKind.Palisade, BuildingKind.Jetty, BuildingKind.Church };
-        var names = new[] { "Great hall", "Longhouse", "Boathouse", "Storehouse", "Watchtower", "Palisade", "Jetty", "Church" };
-        int w = cellW * kinds.Length, h = cellH;
+        var names = new List<string> { "Great hall", "Longhouse", "Boathouse", "Storehouse", "Watchtower", "Palisade", "Jetty", "Church" };
+        // And the landmarks that mark each place from far out at sea.
+        var marks = new[] { LandmarkKind.BeaconTower, LandmarkKind.BellTower, LandmarkKind.GreatAsh, LandmarkKind.RuneStone };
+        names.AddRange(new[] { "Beacon tower (towns)", "Bell tower (monasteries)", "Great ash (halls)", "Runestone (landings)" });
+        int w = cellW * (kinds.Length + marks.Length), h = cellH;
         var img = new float[w * h * 3];
         for (int i = 0; i < w * h; i++) { img[i * 3] = Paper.r; img[i * 3 + 1] = Paper.g; img[i * 3 + 2] = Paper.b; }
         for (int k = 0; k < kinds.Length; k++)
@@ -445,6 +448,11 @@ public static class HeroPreview
             pose.pos[Buildings.Joint] = new Vector3(0f, kinds[k] == BuildingKind.Jetty ? 4f : 0f, 0f);
             Render(img, w, h, k * cellW, cellW, cellH, new Shot { model = Buildings.Build(kinds[k], new BuildingLook()), pose = pose, yaw = 215f, zoom = zoom });
         }
+        for (int k = 0; k < marks.Length; k++)
+        {
+            float size = Landmarks.Height(marks[k]) * 1.2f;
+            Render(img, w, h, (kinds.Length + k) * cellW, cellW, cellH, new Shot { model = Landmarks.Model(marks[k]), pose = new Pose(), yaw = 215f, zoom = 0.84f * 2.45f / size });
+        }
         using (var fs = new BinaryWriter(File.Create(rgbaPath)))
         {
             fs.Write(w); fs.Write(h);
@@ -453,7 +461,7 @@ public static class HeroPreview
                 fs.Write((byte)(Mathf.Clamp01(img[i * 3]) * 255)); fs.Write((byte)(Mathf.Clamp01(img[i * 3 + 1]) * 255)); fs.Write((byte)(Mathf.Clamp01(img[i * 3 + 2]) * 255)); fs.Write((byte)255);
             }
         }
-        File.WriteAllLines(labelPath, names);
+        File.WriteAllLines(labelPath, names.ToArray());
     }
 
     /// <summary>
@@ -504,7 +512,14 @@ public static class HeroPreview
             if (plot.kind != BuildingKind.Jetty) Scenery.Clearings.Add(new Vector3(plot.at.x, plot.at.z, Scenery.PlotClearing(plot.kind)));
         // The fields by the houses, as the game lays them out.
         System.Func<float, float, float> groundAt = (x, z) => TerrainDetail.Height(map, x, z);
-        foreach (var field in Fields.Layout(plots, groundAt, place.kind == PlaceKind.Town ? 3 : 2, place.name.GetHashCode()))
+        var sceneFields = Fields.Layout(plots, groundAt, place.kind == PlaceKind.Town ? 3 : 2, place.name.GetHashCode());
+        // The place's landmark on the highest ground near it.
+        var mark = Landmarks.Spot(plots, sceneFields, groundAt);
+        Scenery.Clearings.Add(new Vector3(mark.x, mark.z, 8f));
+        foreach (var piece in Landmarks.Model(Landmarks.KindFor(place)).Pieces)
+            m.Pieces.Add(new VikingModel.Piece { joint = J, color = piece.color, mesh = piece.mesh.Moved(new Vector3(mark.x - centre.x, mark.y - 0.3f, mark.z - centre.z)), surface = piece.surface, outline = piece.outline, ink = piece.ink });
+        Console.WriteLine("landmark " + Landmarks.KindFor(place) + " at " + mark);
+        foreach (var field in sceneFields)
         {
             Scenery.Clearings.Add(Fields.Clearing(field));
             var fat = new Vector3(field.centre.x - centre.x, groundAt(field.centre.x, field.centre.z), field.centre.z - centre.z);

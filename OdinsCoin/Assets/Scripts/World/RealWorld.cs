@@ -259,7 +259,12 @@ namespace OdinsCoin
                 if (plot.kind != BuildingKind.Jetty) Scenery.Clearings.Add(new Vector3(plot.at.x, plot.at.z, Scenery.PlotClearing(plot.kind)));
             // Fenced fields by the houses.
             System.Func<float, float, float> ground = (x, z) => TerrainDetail.Height(map, x, z);
-            foreach (var field in Fields.Layout(plots, ground, place.kind == PlaceKind.Town ? 3 : 2, place.name.GetHashCode()))
+            var fields = Fields.Layout(plots, ground, place.kind == PlaceKind.Town ? 3 : 2, place.name.GetHashCode());
+            // Something high or bright to head for, seen from far out at sea.
+            var mark = Landmarks.Spot(plots, fields, ground);
+            Landmarks.Build(root, place, mark);
+            Scenery.Clearings.Add(new Vector3(mark.x, mark.z, 8f));
+            foreach (var field in fields)
             {
                 Scenery.Clearings.Add(Fields.Clearing(field));
                 var f = new GameObject("Field").transform;

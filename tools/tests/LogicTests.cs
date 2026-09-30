@@ -288,6 +288,28 @@ public static class LogicTests
                 "taking the helm keeps her sailing as she was");
         }
 
+        // Landmarks: something high or bright at every place.
+        {
+            Check(Landmarks.KindFor(new Place { name = "M", kind = PlaceKind.Monastery }) == LandmarkKind.BellTower && Landmarks.KindFor(new Place { name = "T", kind = PlaceKind.Town }) == LandmarkKind.BeaconTower
+                && Landmarks.KindFor(new Place { name = "H", kind = PlaceKind.Hall }) == LandmarkKind.GreatAsh && Landmarks.KindFor(new Place { name = "L", kind = PlaceKind.Landing }) == LandmarkKind.RuneStone,
+                "each kind of place has its own landmark");
+            var lmPlots = new List<Plot> { new Plot { kind = BuildingKind.Jetty, at = new Vector3(0f, 1f, -40f), yaw = 0f }, new Plot { kind = BuildingKind.Longhouse, at = new Vector3(0f, 2f, 0f), yaw = 0f } };
+            // A hill to the north-east: the landmark goes up on it, clear of the house.
+            System.Func<float, float, float> hill = (x, z) => 3f + 30f * Mathf.Exp(-((x - 150f) * (x - 150f) + (z - 150f) * (z - 150f)) / 8000f);
+            var lm = Landmarks.Spot(lmPlots, new List<Field>(), hill);
+            bool clearOfHouse = true;
+            foreach (var plot in lmPlots) clearOfHouse &= !PlaceLife.InsideBuilding(plot, lm, 5f);
+            Check(lm.y > 20f && clearOfHouse, "a landmark stands on the highest ground nearby, clear of the buildings (" + lm.y.ToString("0") + " m up)");
+            var sea = Landmarks.Spot(lmPlots, null, (x, z) => x > 0f ? -5f : 2f);
+            Check(sea.x <= 0f, "never out in the sea");
+            foreach (LandmarkKind k in System.Enum.GetValues(typeof(LandmarkKind)))
+            {
+                float top = float.MinValue;
+                foreach (var piece in Landmarks.Model(k).Pieces) foreach (var v in piece.mesh.Vertices) top = Mathf.Max(top, v.y);
+                Check(Mathf.Abs(top - Landmarks.Height(k)) < 1.5f, k + " stands as tall as it says (" + top.ToString("0.0") + " m)");
+            }
+        }
+
         // Faster time on a quiet passage, never with danger about.
         string why;
         Check(TimeWarp.Allowed(true, 5000f, false, 0f, false, out why) && why == null, "a quiet passage can run fast");

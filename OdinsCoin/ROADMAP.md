@@ -29,7 +29,7 @@ Sea of Thieves med vikinger og Zelda-utforsking, enkelt og artig. Gamblingen er 
 - [x] **14. Enkel styring (`HelmOrders` i `Ship/Longship.cs`):** W og S for seil og A og D for ror ved roret. Anker og fortøyning skjer av seg selv ved
   brygga. Færre taster og menyer.
 - [ ] **15. Verdensskala** (du bestemmer): krympet verden, eller full størrelse som nå.
-- [ ] **16. Landemerker:** hvert sted får noe høyt eller lyst som synes langt unna.
+- [x] **16. Landemerker (`World/Landmarks.cs`, se [docs/buildings.png](docs/buildings.png)):** hvert sted får noe høyt eller lyst som synes langt unna. Byer og festninger har et 22 m vardetårn med bål på toppen, klostre et klokketårn, jarlens hall en kjempestor ask, og landingsplasser en runestein som lyser blått. Det står på det høyeste tørre stedet i nærheten, klar av hus og åkrer.
 - [ ] **17. Utsiktspunkter:** klatre opp og få området tegnet inn på sjøkartet.
 - [ ] **18. Runesteiner:** små gåter eller kamper som gir runer (helse, utholdenhet, bedre odds).
 - [ ] **19. Klatring og utholdenhet.**
