@@ -979,9 +979,13 @@ namespace OdinsCoin
                 // Open down the front below the shoulders, like a cloak, so the stole, belt and charms show.
                 float gap = t == 0 ? 0f : t == tops.Length - 1 ? 0.3f : 0.5f;
                 d.Add(Joints.Body, colour, CharacterKit.Flaps(tops[t], len, 14 + t * 2, 0.95f, depth, surface, 0.01f + t * 0.004f, d.seed + 62 + t, 0.01f * s, gap));
-                // A few faded, paler strips caught between the dark ones, like weathered feathers and old wool.
+                // A few faded strips caught between the dark ones, like weathered feathers and old wool: pale grey
+                // ones and warm brown ones, as in the concept art.
                 if (t > 0)
+                {
                     d.Add(Joints.Body, VikingModel.Shade(d.pal.cloth, 1.7f), CharacterKit.Flaps(tops[t] - 0.04f * s, len * 0.8f, 4 + t, 0.25f, depth, surface, 0.014f + t * 0.004f, d.seed + 72 + t, 0.008f * s), false);
+                    d.Add(Joints.Body, Color.Lerp(d.pal.cloth, d.pal.leather, 0.7f), CharacterKit.Flaps(tops[t] - 0.07f * s, len * 0.7f, 3 + t, 0.2f, depth, surface, 0.016f + t * 0.004f, d.seed + 82 + t, 0.008f * s), false);
+                }
             }
             // Feathers bristling round the shoulders.
             d.Add(Joints.Body, d.pal.clothDark, CharacterKit.FurRing(new Vector3(0f, f.shoulderY - 0.01f * s, 0f), f.shoulderX + 0.02f * s, 0.8f, 0.05f * s, 24, 0.1f * s, d.seed + 67, 1.4f));
