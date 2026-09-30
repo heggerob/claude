@@ -9,6 +9,12 @@ namespace OdinsCoin
         public string id, name, blurb;
         public OutfitId outfit;
         public int cost;
+        /// <summary>The set a skin belongs to ("winter", "draugr"...), or null for the outfit's own skins.</summary>
+        public string set;
+        /// <summary>Rare skins can't be bought: they turn up in plundered chests.</summary>
+        public bool rare;
+        /// <summary>The outfit's own classic colours: free, and what "no skin" means.</summary>
+        public bool IsClassic { get { return cost == 0 && !rare; } }
         /// <summary>Repaints the outfit's default palette (hair is left alone: that's the player's own).</summary>
         public System.Action<Palette> paint;
     }
@@ -19,7 +25,53 @@ namespace OdinsCoin
     /// </summary>
     public static class Skins
     {
-        public static readonly SkinDef[] All =
+        static SkinDef[] all;
+        /// <summary>Every skin: each outfit's own, then the sets for every outfit. Built on first use.</summary>
+        public static SkinDef[] All { get { return all ?? (all = Build()); } }
+
+        /// <summary>The sets that dress every outfit alike: two to buy, two only found in plunder.</summary>
+        public static readonly string[] Sets = { "winter", "seafolk", "draugr", "goldjarl" };
+
+        static SkinDef[] Build()
+        {
+            var list = new List<SkinDef>(Own);
+            foreach (OutfitId o in System.Enum.GetValues(typeof(OutfitId)))
+            {
+                list.Add(SetSkin(o, "winter", "Winterborn", 600, false, "Frost-grey wool, white fur and a cloak of ice.", p =>
+                {
+                    p.cloth = new Color(0.66f, 0.7f, 0.76f); p.clothDark = new Color(0.4f, 0.44f, 0.5f); p.cloth2 = new Color(0.82f, 0.84f, 0.86f);
+                    p.accent = new Color(0.45f, 0.62f, 0.8f); p.emblem = new Color(0.95f, 0.97f, 1f); p.brass = new Color(0.78f, 0.8f, 0.84f);
+                    p.fur = new Color(0.97f, 0.97f, 0.96f); p.furShadow = new Color(0.76f, 0.78f, 0.8f);
+                }));
+                list.Add(SetSkin(o, "seafolk", "Sea-Folk", 800, false, "Kelp-green and pearl, as if the sea gave you back.", p =>
+                {
+                    p.cloth = new Color(0.16f, 0.4f, 0.4f); p.clothDark = new Color(0.08f, 0.24f, 0.26f); p.cloth2 = new Color(0.55f, 0.62f, 0.5f);
+                    p.accent = new Color(0.85f, 0.42f, 0.36f); p.emblem = new Color(0.93f, 0.92f, 0.86f); p.brass = new Color(0.86f, 0.84f, 0.78f);
+                    p.fur = new Color(0.78f, 0.72f, 0.56f); p.furShadow = new Color(0.52f, 0.48f, 0.38f); p.leather = new Color(0.3f, 0.36f, 0.3f); p.leatherDark = new Color(0.16f, 0.2f, 0.17f);
+                }));
+                list.Add(SetSkin(o, "draugr", "Draugr", 0, true, "Grave-cold and green-glowing. Found only in plunder.", p =>
+                {
+                    p.skin = new Color(0.72f, 0.8f, 0.82f);
+                    p.cloth = new Color(0.24f, 0.28f, 0.24f); p.clothDark = new Color(0.1f, 0.12f, 0.1f); p.cloth2 = new Color(0.36f, 0.38f, 0.32f);
+                    p.accent = new Color(0.2f, 0.3f, 0.2f); p.emblem = new Color(0.5f, 1f, 0.6f); p.brass = new Color(0.4f, 0.44f, 0.38f);
+                    p.fur = new Color(0.48f, 0.5f, 0.46f); p.furShadow = new Color(0.3f, 0.32f, 0.29f); p.metal = new Color(0.36f, 0.4f, 0.38f);
+                }));
+                list.Add(SetSkin(o, "goldjarl", "Gold Jarl", 0, true, "Black and gold, fit for Valhalla's high table. Found only in plunder.", p =>
+                {
+                    p.cloth = new Color(0.1f, 0.09f, 0.08f); p.clothDark = new Color(0.05f, 0.05f, 0.04f); p.cloth2 = new Color(0.86f, 0.66f, 0.22f);
+                    p.accent = new Color(0.82f, 0.6f, 0.16f); p.emblem = new Color(1f, 0.86f, 0.4f); p.brass = new Color(1f, 0.8f, 0.3f);
+                    p.fur = new Color(0.9f, 0.78f, 0.5f); p.furShadow = new Color(0.62f, 0.5f, 0.28f); p.metal = new Color(0.86f, 0.7f, 0.3f);
+                }));
+            }
+            return list.ToArray();
+        }
+
+        static SkinDef SetSkin(OutfitId o, string set, string name, int cost, bool rare, string blurb, System.Action<Palette> paint)
+        {
+            return new SkinDef { id = o.ToString().ToLowerInvariant() + "." + set, outfit = o, name = name, cost = cost, set = set, rare = rare, blurb = blurb, paint = paint };
+        }
+
+        static readonly SkinDef[] Own =
         {
             Classic(OutfitId.Raider),
             new SkinDef { id = "raider.ash", outfit = OutfitId.Raider, name = "Ash and Iron", cost = 250, blurb = "Grey wool and snow-white fur, a black banner.",
@@ -57,6 +109,12 @@ namespace OdinsCoin
             new SkinDef { id = "scout.snowhare", outfit = OutfitId.Scout, name = "Snow Hare", cost = 450, blurb = "White on white: gone in the first snowfall.",
                 paint = p => { p.cloth = new Color(0.82f, 0.82f, 0.8f); p.clothDark = new Color(0.6f, 0.6f, 0.6f); p.accent = new Color(0.55f, 0.57f, 0.6f); p.fur = new Color(0.97f, 0.97f, 0.96f); p.furShadow = new Color(0.78f, 0.78f, 0.78f); } },
         };
+
+        /// <summary>
+        /// The chance that a plundered chest holds a rare skin, when it's sold at home. Printed in the hall, like
+        /// every other chance in the game.
+        /// </summary>
+        public const float RareChance = 0.1f;
 
         static SkinDef Classic(OutfitId o)
         {
@@ -105,10 +163,25 @@ namespace OdinsCoin
 
         public static SkinLocker Current { get { return current ?? (current = Parse(PlayerPrefs.GetString(Key, ""))); } }
 
-        public bool Owns(SkinDef s) { return s != null && (s.cost == 0 || owned.Contains(s.id)); }
+        public bool Owns(SkinDef s) { return s != null && (s.IsClassic || owned.Contains(s.id)); }
         public bool Owns(string id) { return Owns(Skins.Get(id)); }
 
-        public bool CanBuy(SkinDef s, Fortune f) { return s != null && !Owns(s) && f.Gold >= s.cost; }
+        public bool CanBuy(SkinDef s, Fortune f) { return s != null && !s.rare && !Owns(s) && f.Gold >= s.cost; }
+
+        /// <summary>
+        /// A chest was sold: with <see cref="Skins.RareChance"/> it held a rare skin you don't have yet (for any
+        /// outfit). Returns the skin found, or null. Once you own every rare skin, nothing more turns up.
+        /// </summary>
+        public SkinDef RollChest(System.Random rng)
+        {
+            if (rng.NextDouble() >= Skins.RareChance) return null;
+            var missing = new List<SkinDef>();
+            foreach (var s in Skins.All) if (s.rare && !owned.Contains(s.id)) missing.Add(s);
+            if (missing.Count == 0) return null;
+            var found = missing[rng.Next(missing.Count)];
+            owned.Add(found.id);
+            return found;
+        }
 
         /// <summary>Pay for a skin. Returns false (and takes nothing) if it's owned already or you can't afford it.</summary>
         public bool Buy(SkinDef s, Fortune f)
@@ -140,7 +213,7 @@ namespace OdinsCoin
             foreach (var id in text.Split(','))
             {
                 var s = Skins.Get(id.Trim());
-                if (s != null && s.cost > 0) l.owned.Add(s.id);
+                if (s != null && !s.IsClassic) l.owned.Add(s.id);
             }
             return l;
         }

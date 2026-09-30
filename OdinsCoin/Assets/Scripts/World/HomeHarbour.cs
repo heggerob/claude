@@ -181,6 +181,8 @@ namespace OdinsCoin
         }
 
         /// <summary>Buy one chest. Returns the gold paid.</summary>
+        readonly System.Random skinRng = new System.Random();
+
         public int Sell(TreasureChest chest)
         {
             if (chest == null || chest.Sold) return 0;
@@ -189,6 +191,13 @@ namespace OdinsCoin
             Fortune.Current.ChestsSold++;
             Face.On(GameBootstrap.Instance != null ? GameBootstrap.Instance.Player : null, Expression.Happy, 2f);
             Face.On(Trader, Expression.Happy, 2f);
+            // Now and then a chest holds something rarer than silver.
+            var rare = SkinLocker.Current.RollChest(skinRng);
+            if (rare != null)
+            {
+                SkinLocker.Current.Save();
+                CombatHud.Banner("RARE COLOURS: " + rare.name.ToUpper(), "Folded at the bottom of the chest: " + rare.name + " for the " + Outfits.Get(rare.outfit).title.Replace("The ", "") + ". Wear it from the hero screen or the mead hall.");
+            }
             Fortune.Current.GoldPlundered += gold;
             Fortune.Current.AddFavour(Ravens.FavourPerChest);
             chest.Sold = true;

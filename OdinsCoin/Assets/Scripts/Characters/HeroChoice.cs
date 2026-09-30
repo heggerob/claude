@@ -68,7 +68,7 @@ namespace OdinsCoin
                 else if ((v = Value(line, "hair")) != null) { HairStyle h; if (TryEnum(v, out h)) spec.hair = h; }
                 else if ((v = Value(line, "weapon")) != null) { WeaponId w; if (TryEnum(v, out w)) spec.weapon = w; }
                 else if ((v = Value(line, "offhand")) != null) { OffHandId oh; if (TryEnum(v, out oh)) spec.offHand = oh; }
-                else if ((v = Value(line, "skin")) != null) { var s = Skins.Get(v); if (s != null && s.outfit == spec.outfit && s.cost > 0) spec.skin = s.id; }
+                else if ((v = Value(line, "skin")) != null) { var s = Skins.Get(v); if (s != null && s.outfit == spec.outfit && !s.IsClassic) spec.skin = s.id; }
             }
             return spec;
         }

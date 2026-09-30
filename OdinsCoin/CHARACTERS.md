@@ -71,4 +71,6 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
   - [x] Kapper, bannere og fletter tar vinden (`ClothWind`): spranget regnes mot lufta, så vind bakfra blåser kappa fram. Et blafr med vindkast vokser med vindstyrken, er forskjellig for hver ting og holder seg innenfor fjærens grenser.
   - [x] Runer og mønstre på stoff: `CharacterKit.RuneBand` setter en rad med runer langs en kant. Den er brukt på Jarlens gullkant og mellom sikksakkene på Navigatørens kappe. Nagler og ringer fantes fra før (Jarlens remmer og belte, Spydvaktens vest og Raiderens hjelm).
   - [x] Ansiktsuttrykk (`Face`): strekøynene blunker hvert 2.–5. sekund. De blir til ^ ^ når du vinner på mynten eller selger en kiste (Gunnar smiler også), og til > < når noen blir truffet eller mynten viser slangen. Se de to siste figurene i `docs/heroes.png`.
-- [ ] **14. Flere skins:** nye sett (vinter, draugr, gull-jarl, havfolk) og sjeldne skins fra kister.
+- [x] **14. Flere skins:** nye sett (vinter, draugr, gull-jarl, havfolk) og sjeldne skins fra kister. (se [docs/skins.png](docs/skins.png))
+  - Fire sett kler alle seks antrekkene. Winterborn (600 gull) og Sea-Folk (800 gull) kjøpes i methallen. Draugr (med gråblek hud og grønne runer) og Gold Jarl er sjeldne og kan ikke kjøpes.
+  - Hver kiste du selger hjemme, har 10 % sjanse for et sjeldent skin du ikke har ennå. Sjansen står i methallen. Du får aldri samme skin to ganger, og når du har alle, kommer det ikke flere.

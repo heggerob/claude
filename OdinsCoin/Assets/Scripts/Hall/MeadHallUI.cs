@@ -202,6 +202,12 @@ namespace OdinsCoin
                     GUI.enabled = !worn;
                     if (GUILayout.Button(worn ? "Worn" : "Wear", GUILayout.Width(110f), GUILayout.Height(40))) deferred += () => Wear(hero, s);
                 }
+                else if (s.rare)
+                {
+                    // Rare skins aren't for sale: they're found in plundered chests (the chance is printed).
+                    GUI.enabled = false;
+                    GUILayout.Button("Found in plunder\n<size=12>" + Mathf.RoundToInt(Skins.RareChance * 100f) + "% per chest sold</size>", GUILayout.Width(110f), GUILayout.Height(40));
+                }
                 else
                 {
                     GUI.enabled = locker.CanBuy(s, fortune);
@@ -217,7 +223,7 @@ namespace OdinsCoin
         {
             var spec = HeroChoice.Parse(HeroChoice.Serialize(hero));
             spec.palette = null;
-            spec.skin = s.cost == 0 ? null : s.id;
+            spec.skin = s.IsClassic ? null : s.id;
             return spec;
         }
 

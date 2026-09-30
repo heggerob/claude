@@ -242,7 +242,7 @@ namespace OdinsCoin
             if (Stepper("Colours: " + owned[at].name, s =>
             {
                 var next = owned[((at + s) % owned.Count + owned.Count) % owned.Count];
-                editing.skin = next.cost == 0 ? null : next.id;
+                editing.skin = next.IsClassic ? null : next.id;
             })) RebuildPlayer();
             if (owned.Count < Skins.For(editing.outfit).Count)
                 GUILayout.Label("<color=#888888>More colours are sold in the mead hall.</color>", small);

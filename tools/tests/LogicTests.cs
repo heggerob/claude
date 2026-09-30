@@ -849,12 +849,12 @@ public static class LogicTests
         foreach (OutfitId o in Enum.GetValues(typeof(OutfitId)))
         {
             var list = Skins.For(o);
-            Check(list.Count >= 3 && list.Exists(s => s.cost == 0), o + " has classic colours and at least two skins to buy");
+            Check(list.Count >= 7 && list.FindAll(s => s.IsClassic).Count == 1, o + " has one classic and its own and set skins");
             var classic = Skins.Paint(o, Skins.ClassicId(o));
             Check(classic.cloth.Equals(Outfits.Get(o).palette().cloth), o + " classic colours are the outfit's own");
             foreach (var s in list)
             {
-                if (s.cost == 0) continue;
+                if (s.IsClassic) continue;
                 var p = Skins.Paint(o, s.id);
                 bool changed = !p.cloth.Equals(classic.cloth) || !p.accent.Equals(classic.accent) || !p.emblem.Equals(classic.emblem);
                 Check(changed, s.id + " really changes the colours");
@@ -876,6 +876,26 @@ public static class LogicTests
         var back = SkinLocker.Parse(locker.Serialize());
         Check(back.Owns(ash) && !back.Owns(blood), "owned skins survive saving");
         Check(!SkinLocker.Parse("nonsense,raider.bloodmoon,,").Owns("nonsense") && SkinLocker.Parse("raider.bloodmoon").Owns(blood), "unknown ids are dropped");
+
+        // Sets: every outfit gets every set; the rare ones can't be bought and turn up in chests.
+        foreach (var set in Skins.Sets)
+            foreach (OutfitId o in Enum.GetValues(typeof(OutfitId)))
+                Check(Skins.Get(o.ToString().ToLowerInvariant() + "." + set) != null, o + " has the " + set + " set");
+        var draugr = Skins.Get("raider.draugr");
+        Check(draugr.rare && !draugr.IsClassic && !SkinLocker.Parse("").Owns(draugr), "rare skins aren't owned for free");
+        Check(!SkinLocker.Parse("").CanBuy(draugr, new Fortune { Gold = 99999 }), "rare skins can't be bought");
+        Check(!Skins.Paint(OutfitId.Raider, "raider.draugr").skin.Equals(Skins.Paint(OutfitId.Raider, null).skin), "a draugr is grave-pale");
+        var roller = SkinLocker.Parse("");
+        var dice = new System.Random(42);
+        int found = 0, rolls = 0, rareTotal = 0;
+        foreach (var s in Skins.All) if (s.rare) rareTotal++;
+        for (int i = 0; i < 5000; i++) { rolls++; if (roller.RollChest(dice) != null) found++; }
+        Check(found == rareTotal, "every rare skin turns up in the end, and no duplicates (" + found + "/" + rareTotal + ")");
+        Check(roller.RollChest(dice) == null, "once they're all found, nothing more turns up");
+        var early = SkinLocker.Parse(""); var d2 = new System.Random(7); int hits = 0;
+        for (int i = 0; i < 1000; i++) if (early.RollChest(d2) != null) hits++;
+        Check(hits == rareTotal || hits < 1000 * Skins.RareChance * 1.6f, "the chance per chest is about as printed");
+        Check(SkinLocker.Parse(roller.Serialize()).Owns(draugr) || !roller.Owns(draugr), "found rare skins are saved");
 
         var hero = CharacterSpec.Default(OutfitId.Raider); hero.skin = "raider.ash";
         Check(HeroChoice.Parse(HeroChoice.Serialize(hero)).skin == "raider.ash", "the hero remembers its skin");

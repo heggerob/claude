@@ -266,9 +266,9 @@ public static class HeroPreview
                 var list = Skins.For(outfits[c]);
                 if (r >= list.Count) { labels.Add(""); continue; }
                 var spec = CharacterSpec.Default(outfits[c]);
-                spec.skin = list[r].cost == 0 ? null : list[r].id;
+                spec.skin = list[r].IsClassic ? null : list[r].id;
                 Render(row, w, cellH, c * cellW, cellW, cellH, new Shot { label = list[r].name, model = Full(spec), yaw = 195f });
-                labels.Add(Outfits.Get(outfits[c]).title.Replace("The ", "") + ": " + list[r].name + (list[r].cost > 0 ? " (" + list[r].cost + " gold)" : ""));
+                labels.Add(Outfits.Get(outfits[c]).title.Replace("The ", "") + ": " + list[r].name + (list[r].rare ? " (rare)" : list[r].cost > 0 ? " (" + list[r].cost + " gold)" : ""));
             }
             Array.Copy(row, 0, img, r * w * cellH * 3, row.Length);
         }
