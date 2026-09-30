@@ -508,7 +508,31 @@ public static class HeroPreview
         var pose = new Pose();
         pose.pos[J] = new Vector3(0f, 0f, 0f);
         Render(img, w, h, 0, w, h, new Shot { model = m, pose = pose, yaw = jetty.yaw + 150f, zoom = 0.018f, pitch = 34f });
-        using (var fs = new BinaryWriter(File.Create(rgbaPath)))
+        WriteRgba(rgbaPath, img, w, h);
+
+        // And as you'd see it in first person: standing at the shore end of the jetty, looking at the town.
+        var town = Vector3.zero;
+        for (int i = 1; i < plots.Count; i++) town += plots[i].at;
+        if (plots.Count > 1) town /= plots.Count - 1;
+        var eye = jetty.at - centre + new Vector3(0f, 2.3f, 0f);
+        var toTown = town - jetty.at;
+        float gaze = Mathf.Atan2(toTown.x, toTown.z) * Mathf.Rad2Deg - 25f;
+        var fp = new float[w * h * 3];
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+            {
+                // A pale northern sky, brighter towards the horizon.
+                float k = y / (float)h;
+                int i = (y * w + x) * 3;
+                fp[i] = Mathf.Lerp(0.62f, 0.9f, k); fp[i + 1] = Mathf.Lerp(0.74f, 0.9f, k); fp[i + 2] = Mathf.Lerp(0.86f, 0.88f, k);
+            }
+        Render(fp, w, h, 0, w, h, new Shot { model = m, pose = pose, perspective = true, eye = eye, yaw = gaze, pitch = 3f, fov = 70f });
+        WriteRgba(rgbaPath + ".fp", fp, w, h);
+    }
+
+    static void WriteRgba(string path, float[] img, int w, int h)
+    {
+        using (var fs = new BinaryWriter(File.Create(path)))
         {
             fs.Write(w); fs.Write(h);
             for (int i = 0; i < w * h; i++)
@@ -863,14 +887,14 @@ public static class HeroPreview
                 normal[a] += fn; normal[b] += fn; normal[c] += fn;
             }
             var screen = new Vector3[n];
+            var camSpace = shot.perspective ? new Vector3[n] : null;
             for (int i = 0; i < n; i++)
             {
                 normal[i] = normal[i].normalized;
                 if (shot.perspective)
                 {
-                    Vector3 pp = inv * (world[i] - shot.eye);
-                    float zz = Mathf.Max(pp.z, 1e-4f);
-                    screen[i] = new Vector3(cx + pp.x / zz * focal, cellH / 2f - pp.y / zz * focal, pp.z);
+                    camSpace[i] = inv * (world[i] - shot.eye);
+                    screen[i] = Project(camSpace[i], cx, cellH, focal);
                     continue;
                 }
                 Vector3 cp = inv * (world[i] - new Vector3(0f, 0.9f, 0f));
@@ -882,14 +906,50 @@ public static class HeroPreview
                 Vector3 fn = Vector3.Cross(world[b] - world[a], world[c] - world[a]);
                 if (shot.perspective)
                 {
-                    // Behind the near plane: not drawn. Facing away from the eye: culled.
-                    if (screen[a].z < 0.05f || screen[b].z < 0.05f || screen[c].z < 0.05f) continue;
+                    // Facing away from the eye: culled. Crossing the near plane: clipped to the part in front of it.
                     if (Vector3.Dot(fn, world[a] - shot.eye) >= 0f) continue;
+                    if (screen[a].z < Near || screen[b].z < Near || screen[c].z < Near)
+                    {
+                        var poly = ClipNear(new[] { a, b, c }, camSpace, normal, mesh.Uvs);
+                        for (int k = 1; k + 1 < poly.Count; k++)
+                            Tri(img, depth, w, x0, cellW, cellH, Project(poly[0].p, cx, cellH, focal), Project(poly[k].p, cx, cellH, focal), Project(poly[k + 1].p, cx, cellH, focal),
+                                poly[0].n, poly[k].n, poly[k + 1].n, poly[0].uv, poly[k].uv, poly[k + 1].uv, tex, InkStyle.HatchAmount(piece.surface), InkStyle.Flatness(piece.surface), piece.color, piece.ink, light, forward);
+                        continue;
+                    }
                 }
                 else if (Vector3.Dot(fn, forward) >= 0f) continue; // back face, culled like Unity
                 Tri(img, depth, w, x0, cellW, cellH, screen[a], screen[b], screen[c], normal[a], normal[b], normal[c], mesh.Uvs[a], mesh.Uvs[b], mesh.Uvs[c], tex, InkStyle.HatchAmount(piece.surface), InkStyle.Flatness(piece.surface), piece.color, piece.ink, light, forward);
             }
         }
+    }
+
+    /// <summary>The perspective camera's near plane (m in front of the eye).</summary>
+    const float Near = 0.05f;
+
+    static Vector3 Project(Vector3 p, float cx, int cellH, float focal)
+    {
+        float z = Mathf.Max(p.z, 1e-4f);
+        return new Vector3(cx + p.x / z * focal, cellH / 2f - p.y / z * focal, p.z);
+    }
+
+    struct ClipVert { public Vector3 p, n; public Vector2 uv; }
+
+    /// <summary>A triangle cut down to the part in front of the near plane (0 to 4 corners, in camera space).</summary>
+    static List<ClipVert> ClipNear(int[] tri, Vector3[] cam, Vector3[] normal, List<Vector2> uvs)
+    {
+        var outList = new List<ClipVert>();
+        for (int i = 0; i < 3; i++)
+        {
+            int a = tri[i], b = tri[(i + 1) % 3];
+            bool ina = cam[a].z >= Near, inb = cam[b].z >= Near;
+            if (ina) outList.Add(new ClipVert { p = cam[a], n = normal[a], uv = uvs[a] });
+            if (ina != inb)
+            {
+                float t = (Near - cam[a].z) / (cam[b].z - cam[a].z);
+                outList.Add(new ClipVert { p = Vector3.Lerp(cam[a], cam[b], t), n = Vector3.Lerp(normal[a], normal[b], t).normalized, uv = Vector2.Lerp(uvs[a], uvs[b], t) });
+            }
+        }
+        return outList;
     }
 
     static void Tri(float[] img, float[] depth, int w, int x0, int cellW, int cellH, Vector3 a, Vector3 b, Vector3 c,

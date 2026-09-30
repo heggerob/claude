@@ -186,6 +186,10 @@ med ror, seil i vinden og årer.
   (inne i en fjord eller bak en øy) ligger sjøen mye roligere. Stormen kommer på toppen. Bølgehøyden styrer også
   hvor mye vann som skylles inn over ripa.
 
+- [x] **20. Verden i øyehøyde (se [docs/scene-kaupang-fp.png](docs/scene-kaupang-fp.png)):** siden spillet nå spilles i førsteperson, viser forhåndsvisningen også havna slik du ser den når du står på brygga.
+  - Lavt land er gress. Sand er det bare nærmest vannkanten, der det før var sand opp til 2,5 m over havet.
+  - [ ] Mer liv på bakken rundt deg: trær, steiner, gresstuer, gjerder, åkrer og folk i byene, så verden ikke er tom når du går rundt i den.
+
 ## Merk
 
 - I full størrelse tar det lang tid å seile: Bergen til Trondheim er rundt 500 km, altså rundt 10 til 15
