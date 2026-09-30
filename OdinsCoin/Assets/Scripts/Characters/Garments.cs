@@ -1401,11 +1401,12 @@ namespace OdinsCoin
             var rng = new System.Random(d.seed + 82);
             // Mottled like the concept's pelt hat: pale patches and dark spots among the brown.
             var spot = VikingModel.Shade(d.pal.furShadow, 0.7f);
-            for (int i = 0; i < 18; i++)
+            for (int i = 0; i < 24; i++)
             {
-                float a = 0.9f + (float)rng.NextDouble() * Mathf.PI * 1.1f, e = 0.3f + (float)rng.NextDouble() * 0.9f;
-                var p = new Vector3(Mathf.Cos(a) * Mathf.Cos(e), Mathf.Sin(e), Mathf.Sin(a) * Mathf.Cos(e) * 0.6f) * r * 1.08f;
-                d.Add(Joints.Head, i % 3 == 0 ? d.pal.fur : i % 3 == 1 ? spot : capFur, MeshData.Ellipsoid(p, new Vector3(0.042f, 0.028f, 0.042f) * s, 7, 4).Transformed(new Vector3(0f, brim, -0.02f * r), tilt, Vector3.one));
+                // All round the crown (front included), so the hat reads as shaggy pelt from every side.
+                float a = (float)rng.NextDouble() * Mathf.PI * 2f, e = 0.25f + (float)rng.NextDouble() * 1.1f;
+                var p = new Vector3(Mathf.Cos(a) * Mathf.Cos(e), Mathf.Sin(e), Mathf.Sin(a) * Mathf.Cos(e)) * r * 1.1f;
+                d.Add(Joints.Head, i % 3 == 0 ? d.pal.fur : i % 3 == 1 ? spot : capFur, MeshData.Ellipsoid(p, new Vector3(0.058f, 0.034f, 0.058f) * s, 7, 4).Transformed(new Vector3(0f, brim, -0.02f * r), tilt, Vector3.one));
             }
         }
 
