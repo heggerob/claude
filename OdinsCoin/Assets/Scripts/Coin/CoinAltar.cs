@@ -36,6 +36,11 @@ namespace OdinsCoin
         int shownRunes = -1;
         FlipResult pending;
         Light glow;
+        // A stake of treasure in the air: how it will land, and what to do when it has.
+        bool stakeHeads;
+        System.Action<bool> stakeDone;
+        /// <summary>Seconds before the altar takes another stake.</summary>
+        public const float StakeCooldown = 1f;
 
         public static CoinAltar Create(Longship ship)
         {
@@ -105,6 +110,27 @@ namespace OdinsCoin
             return pending;
         }
 
+        /// <summary>
+        /// Throw the coin for a stake of treasure: Odin's eye with probability <paramref name="chance"/>. The
+        /// outcome is decided now; <paramref name="done"/> hears it when the coin lands.
+        /// </summary>
+        public bool FlipForStake(float chance, System.Action<bool> done)
+        {
+            if (Flipping || Time.time < stakeReadyAt) return false;
+            stakeHeads = Random.value < chance;
+            stakeDone = done;
+            pending = null;
+            flipStart = Time.time;
+            stakeReadyAt = Time.time + FlipTime + StakeCooldown;
+            Sfx.At(SfxId.CoinFlip, transform.position + Vector3.up);
+            return true;
+        }
+
+        float stakeReadyAt;
+
+        /// <summary>Whether the altar will take a stake now.</summary>
+        public bool ReadyForStake { get { return !Flipping && Time.time >= stakeReadyAt; } }
+
         void Update()
         {
             AnimateFlip();
@@ -122,21 +148,29 @@ namespace OdinsCoin
         {
             if (!Flipping) return;
             float t = (Time.time - flipStart) / FlipTime;
+            bool heads = pending != null ? pending.heads : stakeHeads;
             if (t >= 1f)
             {
                 coin.localPosition = rest;
-                coin.localRotation = pending.heads ? Quaternion.identity : Quaternion.Euler(180f, 0f, 0f);
+                coin.localRotation = heads ? Quaternion.identity : Quaternion.Euler(180f, 0f, 0f);
                 flipStart = -1f;
-                LastResult = pending;
                 Sfx.At(SfxId.CoinLand, transform.position + Vector3.up);
-                Sfx.Play(pending.heads ? SfxId.Blessing : SfxId.Curse, 0.7f);
+                Sfx.Play(heads ? SfxId.Blessing : SfxId.Curse, 0.7f);
+                if (pending == null)
+                {
+                    var done = stakeDone;
+                    stakeDone = null;
+                    if (done != null) done(heads);
+                    return;
+                }
+                LastResult = pending;
                 if (Landed != null) Landed(pending);
                 return;
             }
             // Up and down in a parabola, spinning end over end, settling on the right face.
             float height = 4f * 1.6f * t * (1f - t);
             int turns = 7;
-            float spin = t * (turns * 360f + (pending.heads ? 0f : 180f));
+            float spin = t * (turns * 360f + (heads ? 0f : 180f));
             coin.localPosition = rest + Vector3.up * height;
             coin.localRotation = Quaternion.Euler(spin, t * 90f, 0f);
         }

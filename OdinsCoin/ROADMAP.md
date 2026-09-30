@@ -22,7 +22,7 @@ Ett punkt om gangen. Hvert punkt kompileres mot den falske Unity-API-en (`tools/
 
 Sea of Thieves med vikinger og Zelda-utforsking, enkelt og artig. Gamblingen er å satse skatten om bord.
 
-- [ ] **12. Satse skatten ved alteret:** legg en kiste på alteret og kast. Kron gir neste trinn (vanlig, sølv, gull,
+- [x] **12. Satse skatten ved alteret (`Coin/Stake.cs`):** legg en kiste på alteret og kast. Kron gir neste trinn (vanlig, sølv, gull,
   Odins skatt, dobbel verdi), mynt betyr at Odin tar den. «Alt eller ingenting» satser hele dekket. Oddsen vises
   alltid. Velsignelser og forbannelser fjernes fra mynten.
 - [ ] **13. Skatten er i fare om bord:** synker skipet, synker kistene og kan dykkes opp igjen der det sank.

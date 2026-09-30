@@ -235,6 +235,30 @@ public static class LogicTests
             Check(station.x > 0.2f && station.x < shb - 0.3f && station.z < -design.length / 2f + 3f, design.title + ": the helm stands to starboard of the mast, inside the rail, by the stern");
         }
 
+        // Staking treasure at Odin's altar: double it or lose it.
+        {
+            var plainLuck = new Fortune();
+            Check(TreasureChest.Worth(100, 0, plainLuck) == 100 && TreasureChest.Worth(100, 1, plainLuck) == 200 && TreasureChest.Worth(100, 2, plainLuck) == 400 && TreasureChest.Worth(100, 3, plainLuck) == 800,
+                "each step Odin raises a chest doubles its worth: plain, silver, gold, Odin's hoard");
+            Check(TreasureChest.Worth(100, 9, plainLuck) == 800 && TreasureChest.Worth(100, plainLuck) == 100, "a chest can't be raised past Odin's hoard");
+            Check(Stake.CanRaise(0) && Stake.CanRaise(2) && !Stake.CanRaise(TreasureChest.MaxTier) && Stake.Raised(2) == 3 && Stake.Raised(3) == 3, "a hoard can't be staked again");
+            Check(Stake.WinValue(150, 1, plainLuck) == 600, "winning a stake on a silver chest makes it gold, worth twice as much");
+            Check(Mathf.Abs(Stake.Odds - 0.5f) < 1e-6f, "a stake is an even throw");
+            Check(TreasureChest.TierName(0) == "chest" && TreasureChest.TierName(3) == "Odin's hoard", "the tiers have names");
+            Check(TreasureChest.TrimColour(0).r != TreasureChest.TrimColour(1).r && TreasureChest.TrimColour(1).b != TreasureChest.TrimColour(2).b, "a chest's bands show its tier");
+            Check(Stake.Offer(200, 400).Contains("400") && Stake.Offer(200, 400).Contains("50%"), "the offer shows what you could win and the odds");
+            // Over many throws of a single chest staked again and again, the average stays what it was: a fair game.
+            var rng = new System.Random(11);
+            double total = 0; const int trials = 20000;
+            for (int i = 0; i < trials; i++)
+            {
+                int tier = 0; bool lost = false;
+                while (Stake.CanRaise(tier) && !lost) { if (rng.NextDouble() < Stake.Odds) tier = Stake.Raised(tier); else lost = true; }
+                total += lost ? 0 : TreasureChest.Worth(100, tier, plainLuck);
+            }
+            Check(Mathf.Abs((float)(total / trials) - 100f) < 8f, "staking a chest all the way to Odin's hoard is a fair bet on average (" + (total / trials).ToString("0") + " for 100)");
+        }
+
         // Faster time on a quiet passage, never with danger about.
         string why;
         Check(TimeWarp.Allowed(true, 5000f, false, 0f, false, out why) && why == null, "a quiet passage can run fast");

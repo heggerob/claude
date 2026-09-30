@@ -23,13 +23,13 @@ Et 3D vikingspill i Unity: seil langskipet, raid øyer og kast **Odins mynt** om
 | Venstre / høyre mus | øks / skjold |
 | E | bruke: ta roret, alteret, plukke opp og sette ned kister, selge, øse og tette hull, klatre om bord |
 | Ved roret | A/D styre, R heise seil, Q fire seil, W ro (med seilet nede) |
-| F | kaste mynten (ved alteret) |
+| E ved alteret om bord | sats kista du bærer (dobbelt eller ingenting), eller trykk to ganger for å satse alt på dekk |
 | Esc | meny (pause, innstillinger, lagre og avslutte) |
 
 ## Spillet i korte trekk
 
 - **Hjemmefjorden:** Den er trygg. Gunnar på brygga kjøper kister. Bjørn ved methallen selger oppgraderinger (seil, årer, skrog, brynje, øks) og spiller terning.
-- **Odins mynt** på alteret om bord: Satsen dobles eller tapes. Kron gir en velsignelse, og mynt gir en forbannelse.
+- **Odins alter** om bord: sats skatten. Kron løfter kista ett trinn (vanlig, sølv, gull, Odins skatt), og hvert trinn dobler verdien. Mynt betyr at Odin tar den. Du kan også satse alt på dekk i ett kast.
 - **Runer:** Du kan gravere inntil 3 runer i mynten. Skjermen viser alltid oddsen og hvor mye du i snitt får tilbake.
 - **Odins gunst og ravnene:** Når gunsten er full, sirkler Hugin over skatter, og Munin gjør neste kast til kron.
 - **Farer på havet:** stormer (øs vann), danske vikingskip (ram dem) og Jormungand (hugg den i hodet mens den er bedøvet).

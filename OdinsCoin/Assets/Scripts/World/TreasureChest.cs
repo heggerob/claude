@@ -17,6 +17,11 @@ namespace OdinsCoin
         static void ResetStatics() { All.Clear(); }
 
         public int BaseGold;
+        /// <summary>How far Odin has raised it: 0 a plain chest, 1 silver, 2 gold, 3 Odin's hoard. Each step doubles its worth.</summary>
+        public int Tier;
+        public const int MaxTier = 3;
+        readonly List<Transform> trim = new List<Transform>();
+        Light shine;
         /// <summary>Held in the Viking's arms right now.</summary>
         public bool Carried;
         public bool Sold;
@@ -34,8 +39,8 @@ namespace OdinsCoin
             var iron = new Color(0.3f, 0.3f, 0.32f);
             LongshipBuilder.Deco(PrimitiveType.Cube, go.transform, new Vector3(0f, 0.3f, 0f), new Vector3(1f, 0.6f, 0.65f), wood);
             LongshipBuilder.Deco(PrimitiveType.Cube, go.transform, new Vector3(0f, 0.68f, 0f), new Vector3(1.02f, 0.18f, 0.67f), wood * 0.85f);
-            LongshipBuilder.Deco(PrimitiveType.Cube, go.transform, new Vector3(-0.3f, 0.4f, 0f), new Vector3(0.08f, 0.82f, 0.69f), iron);
-            LongshipBuilder.Deco(PrimitiveType.Cube, go.transform, new Vector3(0.3f, 0.4f, 0f), new Vector3(0.08f, 0.82f, 0.69f), iron);
+            var bandL = LongshipBuilder.Deco(PrimitiveType.Cube, go.transform, new Vector3(-0.3f, 0.4f, 0f), new Vector3(0.08f, 0.82f, 0.69f), iron);
+            var bandR = LongshipBuilder.Deco(PrimitiveType.Cube, go.transform, new Vector3(0.3f, 0.4f, 0f), new Vector3(0.08f, 0.82f, 0.69f), iron);
             LongshipBuilder.Deco(PrimitiveType.Cube, go.transform, new Vector3(0f, 0.45f, 0.34f), new Vector3(0.14f, 0.16f, 0.04f), Materials.Gold);
             LongshipBuilder.Deco(PrimitiveType.Sphere, go.transform, new Vector3(0.15f, 0.8f, -0.05f), new Vector3(0.3f, 0.12f, 0.3f), Materials.Gold);
             var col = go.AddComponent<BoxCollider>();
@@ -43,13 +48,66 @@ namespace OdinsCoin
             col.size = new Vector3(1f, 0.76f, 0.65f);
             var chest = go.AddComponent<TreasureChest>();
             chest.BaseGold = gold;
+            chest.trim.Add(bandL);
+            chest.trim.Add(bandR);
             return chest;
         }
 
-        /// <summary>What this chest is worth right now, after blessings and curses.</summary>
-        public int Value { get { return Worth(BaseGold, Fortune.Current); } }
+        /// <summary>What this chest is worth right now: its gold, doubled for each step Odin raised it, after blessings and curses.</summary>
+        public int Value { get { return Worth(BaseGold, Tier, Fortune.Current); } }
 
-        public static int Worth(int baseGold, Fortune fortune) { return Mathf.RoundToInt(baseGold * fortune.LootMultiplier); }
+        public static int Worth(int baseGold, Fortune fortune) { return Worth(baseGold, 0, fortune); }
+
+        public static int Worth(int baseGold, int tier, Fortune fortune)
+        {
+            return Mathf.RoundToInt(baseGold * (1 << Mathf.Clamp(tier, 0, MaxTier)) * fortune.LootMultiplier);
+        }
+
+        /// <summary>What a chest of this tier is called in the game.</summary>
+        public static string TierName(int tier)
+        {
+            switch (Mathf.Clamp(tier, 0, MaxTier))
+            {
+                case 1: return "silver chest";
+                case 2: return "gold chest";
+                case 3: return "Odin's hoard";
+                default: return "chest";
+            }
+        }
+
+        public string Name { get { return TierName(Tier); } }
+
+        /// <summary>The colour of the bands for a tier: iron, silver, gold, and gold again for the hoard (which also shines).</summary>
+        public static Color TrimColour(int tier)
+        {
+            switch (Mathf.Clamp(tier, 0, MaxTier))
+            {
+                case 1: return new Color(0.8f, 0.82f, 0.86f);
+                case 2: case 3: return new Color(0.95f, 0.75f, 0.25f);
+                default: return new Color(0.3f, 0.3f, 0.32f);
+            }
+        }
+
+        /// <summary>Raise (or set) the chest's tier: its bands turn silver or gold, and Odin's hoard glows.</summary>
+        public void SetTier(int tier)
+        {
+            Tier = Mathf.Clamp(tier, 0, MaxTier);
+            foreach (var t in trim)
+            {
+                var r = t != null ? t.GetComponent<Renderer>() : null;
+                if (r != null) r.sharedMaterial = Materials.Get(TrimColour(Tier));
+            }
+            if (Tier == MaxTier && shine == null)
+            {
+                shine = new GameObject("Hoard Glow").AddComponent<Light>();
+                shine.transform.SetParent(transform, false);
+                shine.transform.localPosition = new Vector3(0f, 1f, 0f);
+                shine.type = LightType.Point;
+                shine.color = new Color(1f, 0.8f, 0.35f);
+                shine.range = 4f;
+                shine.intensity = 1.2f;
+            }
+        }
 
         /// <summary>The nearest chest that can be picked up within <paramref name="range"/>, or null.</summary>
         public static TreasureChest NearestFree(Vector3 p, float range)

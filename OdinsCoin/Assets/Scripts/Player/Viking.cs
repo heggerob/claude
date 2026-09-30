@@ -285,7 +285,7 @@ namespace OdinsCoin
             Prompt = null;
             if (AtHelm) { Prompt = "[E] Leave the steering oar"; return; }
             if (OnShip && Carrying == null && Vector3.Distance(transform.position, Ship.Parts.helm.position) < InteractRange) { Prompt = "[E] Take the steering oar"; return; }
-            if (OnShip && NearAltar() && Carrying == null) { Prompt = "[E] Flip Odin's Coin"; return; }
+            if (OnShip && NearAltar()) { Prompt = AltarPrompt(); if (Prompt != null) return; }
             var home = HomeHarbour.Instance;
             if (home != null && home.NearKeeper(transform.position))
             {
@@ -334,11 +334,7 @@ namespace OdinsCoin
                 SetHelm(true);
                 return;
             }
-            if (OnShip && NearAltar() && CoinUI.Instance != null && Carrying == null)
-            {
-                CoinUI.Instance.Open(CoinAltar.Instance);
-                return;
-            }
+            if (OnShip && NearAltar() && StakeAtAltar()) return;
             var home = HomeHarbour.Instance;
             if (home != null && home.NearKeeper(transform.position))
             {
@@ -444,6 +440,74 @@ namespace OdinsCoin
                 rig.Distance = on ? 22f : 7f;
                 rig.Height = on ? 3f : 1.6f;
             }
+        }
+
+        float stakeAllConfirm = -10f;
+
+        /// <summary>What E does at Odin's altar: stake the chest in your arms, or everything on deck (asked twice).</summary>
+        string AltarPrompt()
+        {
+            var fortune = Fortune.Current;
+            if (Carrying != null)
+            {
+                if (!Stake.CanRaise(Carrying.Tier)) return null;
+                return "[E] Stake the " + Carrying.Name + " on Odin's altar: " + Stake.Offer(Carrying.Value, Stake.WinValue(Carrying.BaseGold, Carrying.Tier, fortune));
+            }
+            var deck = Stake.OnDeck(Ship);
+            if (deck.Count == 0) return "Odin's altar: bring treasure here to stake it";
+            int now, ifWon;
+            Stake.AllOrNothing(deck, fortune, out now, out ifWon);
+            if (Time.time - stakeAllConfirm < Stake.ConfirmWindow) return "<color=#ffd060>[E] again to stake EVERYTHING on deck</color>: " + Stake.Offer(now, ifWon);
+            return "[E] Stake all " + deck.Count + " chest" + (deck.Count == 1 ? "" : "s") + " on deck, all or nothing: " + Stake.Offer(now, ifWon);
+        }
+
+        /// <summary>Lay the treasure on the altar and throw. True if E did something here.</summary>
+        bool StakeAtAltar()
+        {
+            var altar = CoinAltar.Instance;
+            if (altar == null || !altar.ReadyForStake) return false;
+            var world = GameBootstrap.Instance != null ? GameBootstrap.Instance.transform : null;
+            if (Carrying != null)
+            {
+                if (!Stake.CanRaise(Carrying.Tier)) return false;
+                // Set it down beside the altar, where everyone can watch.
+                var chest = Carrying;
+                Carrying = null;
+                chest.Drop(altar.transform.position + altar.transform.right * 1.1f, altar.transform.eulerAngles.y, world);
+                altar.FlipForStake(Stake.Odds, heads =>
+                {
+                    if (chest == null) return;
+                    if (heads)
+                    {
+                        chest.SetTier(Stake.Raised(chest.Tier));
+                        CombatHud.Banner("ODIN SMILES", "It's a " + chest.Name + " now, worth " + chest.Value + " gold. Get it home safe.");
+                    }
+                    else
+                    {
+                        CombatHud.Banner("ODIN TAKES IT", "The chest is gone. The serpent always wins sometimes.");
+                        Destroy(chest.gameObject);
+                    }
+                });
+                return true;
+            }
+            var deck = Stake.OnDeck(Ship);
+            if (deck.Count == 0) return false;
+            // Everything at once: only on a second press.
+            if (Time.time - stakeAllConfirm >= Stake.ConfirmWindow) { stakeAllConfirm = Time.time; return true; }
+            stakeAllConfirm = -10f;
+            altar.FlipForStake(Stake.Odds, heads =>
+            {
+                int total = 0;
+                foreach (var c in deck)
+                {
+                    if (c == null || !c.Stowed(Ship)) continue;
+                    if (heads) { c.SetTier(TreasureChest.MaxTier); total += c.Value; }
+                    else Destroy(c.gameObject);
+                }
+                if (heads) CombatHud.Banner("ODIN'S HOARD!", "Every chest on deck is Odin's hoard: " + total + " gold. Now get it home.");
+                else CombatHud.Banner("THE DECK IS BARE", "Odin took everything. Back to the plundering.");
+            });
+            return true;
         }
 
         bool NearAltar()
