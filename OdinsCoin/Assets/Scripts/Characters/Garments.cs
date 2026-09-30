@@ -994,7 +994,9 @@ namespace OdinsCoin
         {
             var f = d.fit;
             float s = d.S;
-            System.Func<float, float> surface = y => y > f.waist ? f.TorsoRadius(y) * 1.15f + 0.03f * s : d.SkirtRadius(y) * 1.02f;
+            // Below the waist the tiers flare out more and more towards the ground: the concept's wide, ragged hem.
+            System.Func<float, float> surface = y => y > f.waist ? f.TorsoRadius(y) * 1.15f + 0.03f * s
+                : d.SkirtRadius(y) * (1.02f + 0.45f * Mathf.Pow(Mathf.Clamp01(1f - y / f.waist), 1.6f));
             float depth = d.hasSkirt ? d.skirtDepth : f.depth;
             float[] tops = { f.shoulderY + 0.01f * s, f.chest - 0.02f * s, f.waist - 0.02f * s, f.waist - 0.3f * s, 0.45f * s };
             for (int t = 0; t < tops.Length; t++)
