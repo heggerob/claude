@@ -24,6 +24,16 @@ med ror, seil i vinden og årer.
   Jorvik, Dublin, Kirkwall, Reykjavík, Lundenwic, Novgorod med flere), med havn, brygger og hus.
 - [ ] **5. Hytter og hus:** langhus, naust, stabbur, gammer, vakttårn, palisader og brygger, tegnet i samme
   stil som figurene.
+  - Ferdig (`World/Buildings.cs`, se [docs/buildings.png](docs/buildings.png)), i ekte størrelser:
+    - **Langhus:** buede vegger og torvtak.
+    - **Jarlens storhall:** 48 m, med spontak, kryssede dragehoder på gavlene og forgylte dørstolper.
+    - **Naust:** steinvegger og åpen mot sjøen.
+    - **Stabbur:** på stolper med steinheller.
+    - **Vakttårn:** med vardekurv.
+    - **Palisade:** med spisse stokker.
+    - **Brygge:** på påler.
+    - **Kirke:** liten, i stein, med klokkegavl, til klostrene.
+  - Gjenstår: plassere dem ved de ekte stedene.
 - [ ] **6. Nye skip:** egne, oppdiktede skipsklasser som er større enn langskip, med flere master, høy
   akterkastell, dragehoder og tunge årerekker. Hvert skip er en design (lengde, bredde, dypgang, vekt, master,
   seil, årer, ror).

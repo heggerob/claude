@@ -233,6 +233,7 @@ public static class HeroPreview
         if (args.Length > 10) AttackSheet(args[9], args[10]);
         if (args.Length > 11) FootstepTrace(args[11]);
         if (args.Length > 13) ShipSheet(args[12], args[13]);
+        if (args.Length > 15) BuildingSheet(args[14], args[15]);
         Directory.CreateDirectory(args[2]);
         ExportObj(HeroModel.Build(raider), Path.Combine(args[2], "raider.obj"));
         ExportObj(HeroModel.BuildWeapon(raider), Path.Combine(args[2], "two-hand-axe.obj"));
@@ -398,6 +399,35 @@ public static class HeroPreview
             }
         }
         File.WriteAllLines(labelPath, labels.ToArray());
+    }
+
+    /// <summary>The buildings side by side (docs/buildings.png), each framed to fit.</summary>
+    static void BuildingSheet(string rgbaPath, string labelPath)
+    {
+        const int cellW = 700, cellH = 620;
+        var kinds = new[] { BuildingKind.GreatHall, BuildingKind.Longhouse, BuildingKind.Boathouse, BuildingKind.Storehouse, BuildingKind.Watchtower, BuildingKind.Palisade, BuildingKind.Jetty, BuildingKind.Church };
+        var names = new[] { "Great hall", "Longhouse", "Boathouse", "Storehouse", "Watchtower", "Palisade", "Jetty", "Church" };
+        int w = cellW * kinds.Length, h = cellH;
+        var img = new float[w * h * 3];
+        for (int i = 0; i < w * h; i++) { img[i * 3] = Paper.r; img[i * 3 + 1] = Paper.g; img[i * 3 + 2] = Paper.b; }
+        for (int k = 0; k < kinds.Length; k++)
+        {
+            var f = Buildings.Footprint(kinds[k]);
+            float size = Mathf.Max(f.y * 1.25f, Mathf.Max(f.x, f.z) * 1.6f);
+            float zoom = 0.84f * 2.45f / size;
+            var pose = new Pose();
+            pose.pos[Buildings.Joint] = new Vector3(0f, kinds[k] == BuildingKind.Jetty ? 4f : 0f, 0f);
+            Render(img, w, h, k * cellW, cellW, cellH, new Shot { model = Buildings.Build(kinds[k], new BuildingLook()), pose = pose, yaw = 215f, zoom = zoom });
+        }
+        using (var fs = new BinaryWriter(File.Create(rgbaPath)))
+        {
+            fs.Write(w); fs.Write(h);
+            for (int i = 0; i < w * h; i++)
+            {
+                fs.Write((byte)(Mathf.Clamp01(img[i * 3]) * 255)); fs.Write((byte)(Mathf.Clamp01(img[i * 3 + 1]) * 255)); fs.Write((byte)(Mathf.Clamp01(img[i * 3 + 2]) * 255)); fs.Write((byte)255);
+            }
+        }
+        File.WriteAllLines(labelPath, names);
     }
 
     static string F(float v) { return v.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture); }

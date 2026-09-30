@@ -95,12 +95,16 @@ namespace OdinsCoin
                     }
                     m.Add(Joint, level > 0.8f ? look.gold : look.strake, MeshData.Tube(path, radii, 5), false, SurfaceKind.Wood);
                 }
-            // The deck: planks a little below the rail.
-            var deck = new System.Collections.Generic.List<Vector2>();
-            for (int i = 0; i <= 20; i++) { float t = Mathf.Lerp(-0.92f, 0.92f, i / 20f); float k, g, hb; Section(d, t, out k, out g, out hb); deck.Add(new Vector2(hb * 0.92f, t * d.length / 2f)); }
-            for (int i = 20; i >= 0; i--) { float t = Mathf.Lerp(-0.92f, 0.92f, i / 20f); float k, g, hb; Section(d, t, out k, out g, out hb); deck.Add(new Vector2(-hb * 0.92f, t * d.length / 2f)); }
-            var deckMesh = MeshData.Extrude(deck.ToArray(), 0.15f).Transformed(new Vector3(0f, d.freeboard - 0.6f, 0f), Quaternion.Euler(90f, 0f, 0f), Vector3.one);
-            m.Add(Joint, look.deck, deckMesh, false, SurfaceKind.Wood);
+            // The deck: planks a little below the rail, following the hull's shape.
+            var deck = new Vector3[21, 2];
+            for (int i = 0; i <= 20; i++)
+            {
+                float t = Mathf.Lerp(-0.92f, 0.92f, i / 20f), k, g, hb;
+                Section(d, t, out k, out g, out hb);
+                deck[i, 0] = new Vector3(-hb * 0.92f, d.freeboard - 0.6f, t * d.length / 2f);
+                deck[i, 1] = new Vector3(hb * 0.92f, d.freeboard - 0.6f, t * d.length / 2f);
+            }
+            m.Add(Joint, look.deck, CharacterKit.Sheet(deck, Vector3.up, 0.15f), false, SurfaceKind.Wood);
         }
 
         static void Posts(VikingModel m, ShipDesign d, ShipLook look)
@@ -297,7 +301,7 @@ namespace OdinsCoin
             float y = d.freeboard - 0.5f, len = d.length * 0.16f, w = d.beam * 0.5f, z = -d.length * 0.2f;
             m.Add(Joint, look.hull, MeshData.Box(new Vector3(0f, y + 1.2f, z), new Vector3(w, 2.4f, len)), true, SurfaceKind.Wood);
             var roof = new[] { new Vector2(-w * 0.62f, 0f), new Vector2(w * 0.62f, 0f), new Vector2(0f, 2.2f) };
-            m.Add(Joint, look.sail, MeshData.Extrude(roof, len * 1.08f).Transformed(new Vector3(0f, y + 2.4f, z), Quaternion.identity, Vector3.one), true, SurfaceKind.Wood);
+            m.Add(Joint, look.sail, MeshData.Extrude(roof, len * 1.08f).Transformed(new Vector3(0f, y + 2.4f, z), Quaternion.Euler(0f, 90f, 0f), Vector3.one), true, SurfaceKind.Wood);
             foreach (float end in new[] { -1f, 1f })
                 foreach (float side in new[] { -1f, 1f })
                     m.Add(Joint, look.gold, MeshData.Tube(new[] { new Vector3(0f, y + 4.5f, z + end * len * 0.54f), new Vector3(side * 0.8f, y + 5.4f, z + end * len * 0.56f) }, new[] { 0.1f, 0.04f }, 5), false, SurfaceKind.Wood);
