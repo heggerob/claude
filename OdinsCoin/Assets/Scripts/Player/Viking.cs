@@ -584,11 +584,13 @@ namespace OdinsCoin
                     if (heads)
                     {
                         chest.SetTier(Stake.Raised(chest.Tier));
+                        Stake.GoldFlash(chest.transform);
                         CombatHud.Banner("ODIN SMILES", "It's a " + chest.Name + " now, worth " + chest.Value + " gold. Get it home safe.");
                     }
                     else
                     {
-                        CombatHud.Banner("ODIN TAKES IT", "The chest is gone. The serpent always wins sometimes.");
+                        CombatHud.Banner("ODIN TAKES IT", "The chest bursts into ravens and is gone.");
+                        Stake.RavenSwarm(world, chest.transform.position);
                         Destroy(chest.gameObject);
                     }
                 });
@@ -605,8 +607,8 @@ namespace OdinsCoin
                 foreach (var c in deck)
                 {
                     if (c == null || !c.Stowed(Ship)) continue;
-                    if (heads) { c.SetTier(TreasureChest.MaxTier); total += c.Value; }
-                    else Destroy(c.gameObject);
+                    if (heads) { c.SetTier(TreasureChest.MaxTier); Stake.GoldFlash(c.transform); total += c.Value; }
+                    else { Stake.RavenSwarm(world, c.transform.position); Destroy(c.gameObject); }
                 }
                 if (heads) CombatHud.Banner("ODIN'S HOARD!", "Every chest on deck is Odin's hoard: " + total + " gold. Now get it home.");
                 else CombatHud.Banner("THE DECK IS BARE", "Odin took everything. Back to the plundering.");

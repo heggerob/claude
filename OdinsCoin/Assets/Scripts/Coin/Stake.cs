@@ -48,6 +48,33 @@ namespace OdinsCoin
         /// <summary>The odds now: even, tilted a little your way by each Rune of Luck you've woken.</summary>
         public static float CurrentOdds { get { return RuneShrines.StakeOdds(Upgrades.Current.Luck); } }
 
+        /// <summary>How many ravens carry off a lost stake.</summary>
+        public const int Swarm = 7;
+
+        /// <summary>Odin takes it: the chest bursts into a swarm of ravens that scatter into the sky.</summary>
+        public static void RavenSwarm(Transform world, Vector3 at)
+        {
+            for (int i = 0; i < Swarm; i++)
+            {
+                var start = at + new Vector3(Random.Range(-0.5f, 0.5f), 0.4f + Random.Range(0f, 0.6f), Random.Range(-0.5f, 0.5f));
+                RavenBird.Create(world, start, null, false).FlyAway();
+            }
+            Sfx.At(SfxId.Curse, at, 1f, 0.1f);
+        }
+
+        /// <summary>Odin smiles: a flash of gold light where the chest sits, fading over a second.</summary>
+        public static void GoldFlash(Transform chest)
+        {
+            var light = new GameObject("Odin's Favour").AddComponent<Light>();
+            light.transform.SetParent(chest, false);
+            light.transform.localPosition = new Vector3(0f, 1.2f, 0f);
+            light.type = LightType.Point;
+            light.color = new Color(1f, 0.82f, 0.35f);
+            light.range = 8f;
+            light.intensity = 4f;
+            light.gameObject.AddComponent<FadeLight>();
+        }
+
         /// <summary>The line shown for a stake: what you have, what you could have, and the odds.</summary>
         public static string Offer(int now, int ifWon)
         {
