@@ -170,14 +170,15 @@ namespace OdinsCoin
 
         /// <summary>
         /// ...and <paramref name="frontOpen"/> (0–1) how far the front is lifted to show the chest,
-        /// <paramref name="frontWidth"/> how wide that opening is (1 = narrow, 2+ = a wide V from shoulder to shoulder).
+        /// <paramref name="frontWidth"/> how wide that opening is (1 = narrow, 2+ = a wide V from shoulder to shoulder)
+        /// and <paramref name="length"/> how far it hangs (1 = in proportion to its size, less = a wide, short collar).
         /// </summary>
-        public static void ShoulderPelt(Dresser d, float size, float side, float frontOpen, float frontWidth)
+        public static void ShoulderPelt(Dresser d, float size, float side, float frontOpen, float frontWidth, float length = 1f)
         {
             var f = d.fit;
             float s = d.S;
             float r = (f.shoulderX + 0.05f * s) * size;
-            float bottom = f.shoulderY - 0.17f * s * size;
+            float bottom = f.shoulderY - 0.17f * s * size * length;
             // The pelt itself: a thick shaggy cape-let draped from the neck over the shoulders, its edge torn into
             // big uneven points, with a darker under-layer whose tips show below it.
             // It sits on the shoulders below the chin, rounding over them and hanging down.
