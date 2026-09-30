@@ -135,7 +135,7 @@ namespace OdinsCoin
             switch (hair)
             {
                 case HairStyle.LongBraids: Garments.LongBraids(d, 0.34f); break;
-                case HairStyle.WrappedBraids: Garments.LongBraids(d, 0.4f, true); break;
+                case HairStyle.WrappedBraids: Garments.LongBraids(d, 0.3f, true); break;
                 case HairStyle.SideBraid: Garments.SideBraid(d, 0.36f); break;
                 case HairStyle.ShortLocks: Garments.ShortLocks(d); break;
                 case HairStyle.VeryLongBraids: Garments.LongBraids(d, 0.85f); break;

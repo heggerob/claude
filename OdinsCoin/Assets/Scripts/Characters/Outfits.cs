@@ -46,12 +46,12 @@ namespace OdinsCoin
                 {
                     Garments.FurBoots(d, 0.05f);
                     Garments.Gloves(d);
-                    Garments.LongSkirt(d, 0.17f, 2.1f);
-                    Garments.FurSkirt(d, 0.5f, 0.22f);
+                    Garments.LongSkirt(d, 0.3f, 1.75f);
+                    Garments.FurSkirt(d, 0.6f, 0.33f);
                     Garments.Tunic(d, true);
                     Garments.RaiderBelt(d, 3);
-                    Garments.Tabard(d, 0.5f, 0.1f);
-                    Garments.ShoulderPelt(d, 1.25f, 0f, 0.95f, 2.6f, 0.72f);
+                    Garments.Tabard(d, 0.44f, 0.1f);
+                    Garments.ShoulderPelt(d, 1.05f, 0f, 0.95f, 2.6f, 0.95f);
                     Garments.NasalHelmet(d);
                 } } },
             { OutfitId.Jarl, new Outfit {
@@ -75,7 +75,8 @@ namespace OdinsCoin
                     Garments.Bracers(d);
                     Garments.RingBelt(d);
                     Garments.BigCape(d, 0.95f, 2.6f);
-                    Garments.ShoulderPelt(d, 1.62f, 0f, 0.92f, 2.2f, 0.62f);
+                    Garments.ShoulderPelt(d, 1.5f, 0f, 0.92f, 2.2f, 0.62f);
+                    Garments.FurBoa(d);
                     Garments.Brooches(d);
                     Garments.JarlCrown(d);
                 } } },
