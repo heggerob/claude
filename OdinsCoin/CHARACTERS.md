@@ -141,7 +141,7 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
     - **Navigator:** de to haleendene på skautet henger ned bak øret og smalner til spisser, i stedet for å stikke ut til siden som en caps-skygge. Støvlene er slankere og litt høyere, som de smale leggstøvlene i bildet. Kappa henger lenger, ned forbi skjørtet mot leggen.
     - **Scout:** kragen og den nedslåtte hetta sitter lavere, så de ikke lenger ser ut som en høy turtleneck opp til haken. Støvlene er høyere, som leggstøvlene med pelskant i bildet.
     - **Alle:** pelsstøvlene er slankere, omtrent dobbelt så tykke som de tynne beina, som i bildet.
-    - **Jarl:** to lærremmer fra under brosjene krysser brystet ned mot beltet, med en gullring der de krysses.
+    - **Jarl:** to lærremmer fra under brosjene krysser brystet ned mot beltet, med en gullring der de krysses. Den røde kappa vifter bredt ut på begge sider og henger nesten ned til bakken, som i bildet.
     - **Raider:** øksa bæres som i bildet, med albuen ned langs siden og underarmen bøyd opp så hånda holder skaftet ved skulderen, i stedet for med armen rett ut til siden. Det gjelder både i spillet og i forhåndsvisningen. Pelsen er bredere og ligger over begge skuldrene, som i bildet.
     - **Scout:** den grønne kappa henger bratt ned fra halsen over skuldrene og er smalere, i stedet for å ligge flat som en hylle. Hun har fått to vesker på beltet. Kniven i sliren henger lavt og på skrå ved hofta, og ligger ikke lenger på tvers over spennen. Kappas spiss foran er kortere.
     - [x] Scout: spennen på beltet synes. Kniven henger nå med skaftet ut mot hofta, og kappa er kortet litt inn igjen, så den taggete kanten ikke dekker beltet.
