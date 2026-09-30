@@ -451,16 +451,24 @@ namespace OdinsCoin
         {
             var f = d.fit;
             float s = d.S;
-            float y = f.shoulderY - 0.1f * s, z = f.chestR * f.depth + 0.03f * s;
+            // Big domed discs pinning the cloak, standing out in front of the pelt and the braids as in the concept art.
+            float y = f.shoulderY - 0.09f * s, z = f.chestR * f.depth + 0.07f * s, br = 0.062f * s;
             foreach (float x in new[] { -1f, 1f })
             {
-                var at = new Vector3(x * f.chestR * 0.72f, y, z);
-                d.Add(Joints.Body, d.pal.brass, MeshData.Lathe(new[] { new Vector2(0.046f * s, -0.008f * s), new Vector2(0.048f * s, 0f), new Vector2(0.041f * s, 0.012f * s), new Vector2(0.001f, 0.015f * s) }, 18)
+                var at = new Vector3(x * f.chestR * 0.8f, y, z);
+                d.Add(Joints.Body, d.pal.brass, MeshData.Lathe(new[] { new Vector2(br * 0.96f, -0.01f * s), new Vector2(br, 0f), new Vector2(br * 0.86f, 0.014f * s), new Vector2(0.001f, 0.018f * s) }, 20)
                     .Transformed(at, Quaternion.Euler(90f, 0f, 0f), Vector3.one));
-                // Knotwork: an inner ring and a cross.
-                d.Add(Joints.Body, VikingModel.Shade(d.pal.brass, 0.6f), MeshData.Lathe(new[] { new Vector2(0.026f * s, 0f), new Vector2(0.026f * s, 0.004f * s) }, 16).Transformed(at + new Vector3(0f, 0f, 0.012f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one), false);
-                d.Add(Joints.Body, VikingModel.Shade(d.pal.brass, 0.6f), MeshData.Box(at + new Vector3(0f, 0f, 0.014f * s), new Vector3(0.048f, 0.007f, 0.004f) * s), false);
-                d.Add(Joints.Body, VikingModel.Shade(d.pal.brass, 0.6f), MeshData.Box(at + new Vector3(0f, 0f, 0.014f * s), new Vector3(0.007f, 0.048f, 0.004f) * s), false);
+                // Knotwork: an outer and an inner ring, a cross and four bosses.
+                var dark = VikingModel.Shade(d.pal.brass, 0.6f);
+                foreach (float rr in new[] { 0.78f, 0.42f })
+                    d.Add(Joints.Body, dark, MeshData.Lathe(new[] { new Vector2(br * rr, 0f), new Vector2(br * rr, 0.004f * s) }, 18).Transformed(at + new Vector3(0f, 0f, 0.013f * s * (1.4f - rr)), Quaternion.Euler(90f, 0f, 0f), Vector3.one), false);
+                d.Add(Joints.Body, dark, MeshData.Box(at + new Vector3(0f, 0f, 0.016f * s), new Vector3(br * 1.3f, 0.007f * s, 0.004f * s)), false);
+                d.Add(Joints.Body, dark, MeshData.Box(at + new Vector3(0f, 0f, 0.016f * s), new Vector3(0.007f * s, br * 1.3f, 0.004f * s)), false);
+                for (int k = 0; k < 4; k++)
+                {
+                    float a = (k + 0.5f) * Mathf.PI * 0.5f;
+                    d.Add(Joints.Body, d.pal.brass, MeshData.Ellipsoid(at + new Vector3(Mathf.Cos(a) * br * 0.6f, Mathf.Sin(a) * br * 0.6f, 0.013f * s), Vector3.one * 0.008f * s, 5, 3), false);
+                }
                 // Strap from the brooch across the chest to the opposite hip, with a ring halfway.
                 var end = new Vector3(-x * f.waistR * 0.8f, f.waist + 0.03f * s, f.waistR * f.depth + 0.03f);
                 var mid = Vector3.Lerp(at, end, 0.5f) + new Vector3(0f, 0f, 0.02f * s);
