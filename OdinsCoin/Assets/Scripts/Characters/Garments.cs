@@ -200,8 +200,8 @@ namespace OdinsCoin
             };
             float hug = Mathf.Clamp01(f.chestR * f.depth * 1.25f / (r * 0.8f));
             System.Func<float, float> hugFront = a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return Mathf.Lerp(1f, hug, c * c); };
-            d.Add(Joints.Body, d.pal.furShadow, CharacterKit.RaggedSkirt(top - 0.02f * s, f.chestR * 0.78f, bottom - 0.035f * s, r * 1.02f, 0.78f, 26, 0.07f * s * size, d.seed + 7, shortFront, hugFront));
-            d.Add(Joints.Body, d.pal.fur, CharacterKit.RaggedSkirt(top, f.chestR * 0.62f, bottom, r, 0.8f, 30, 0.085f * s * size, d.seed + 6, shortFront, hugFront));
+            d.Add(Joints.Body, d.pal.furShadow, CharacterKit.RaggedSkirt(top - 0.02f * s, f.chestR * 0.6f, bottom - 0.035f * s, r * 1.02f, 0.78f, 26, 0.07f * s * size, d.seed + 7, shortFront, hugFront));
+            d.Add(Joints.Body, d.pal.fur, CharacterKit.RaggedSkirt(top, f.chestR * 0.46f, bottom, r, 0.8f, 30, 0.085f * s * size, d.seed + 6, shortFront, hugFront));
             // Lumpy clumps over the top so it doesn't read as a smooth shell, in both shades.
             var rng = new System.Random(d.seed + 8);
             for (int i = 0; i < 16; i++)
