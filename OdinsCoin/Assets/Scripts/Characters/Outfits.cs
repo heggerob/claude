@@ -46,11 +46,11 @@ namespace OdinsCoin
                 {
                     Garments.FurBoots(d, 0.05f);
                     Garments.Gloves(d);
-                    Garments.LongSkirt(d, 0.26f, 2.0f);
-                    Garments.FurSkirt(d, 0.56f, 0.32f);
+                    Garments.LongSkirt(d, 0.17f, 2.1f);
+                    Garments.FurSkirt(d, 0.5f, 0.22f);
                     Garments.Tunic(d, true);
                     Garments.RaiderBelt(d, 3);
-                    Garments.Tabard(d, 0.42f, 0.1f);
+                    Garments.Tabard(d, 0.5f, 0.1f);
                     Garments.ShoulderPelt(d, 1.1f, 0f, 0.95f, 2.6f);
                     Garments.NasalHelmet(d);
                 } } },
