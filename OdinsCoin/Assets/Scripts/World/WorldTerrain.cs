@@ -59,12 +59,13 @@ namespace OdinsCoin
         }
 
         /// <summary>One triangle (patch-local x/z, heights in y), filed under its kind of ground.</summary>
-        void Add(Vector3 a, Vector3 b, Vector3 c, float step, float sink)
+        void Add(Vector3 a, Vector3 b, Vector3 c, float step, float sink, bool dug = false)
         {
             float s = WorldMap.Scale;
             float mean = (a.y + b.y + c.y) / 3f;
             float slope = (Mathf.Max(a.y, Mathf.Max(b.y, c.y)) - Mathf.Min(a.y, Mathf.Min(b.y, c.y))) / step;
-            var kind = TerrainDetail.Kind(mean / s, slope);
+            // Ground dug out for a cave is bare rock.
+            var kind = dug ? Ground.Rock : TerrainDetail.Kind(mean / s, slope);
             var list = Triangles[(int)kind];
             foreach (var v in new[] { a, b, c })
             {
@@ -88,6 +89,7 @@ namespace OdinsCoin
             int n = Mathf.Max(1, Mathf.CeilToInt(step / FineStep));
             float fine = step / n, blend = 4f;
             var g = new float[n + 1, n + 1];
+            var dug = new bool[n + 1, n + 1];
             for (int b = 0; b <= n; b++)
                 for (int a = 0; a <= n; a++)
                 {
@@ -97,6 +99,7 @@ namespace OdinsCoin
                     float edge = Mathf.Min(Mathf.Min(a, n - a), Mathf.Min(b, n - b)) * fine;
                     float y = Mathf.Lerp(coarse, TerrainDetail.HeightUncarved(map, x, z), Mathf.Clamp01(edge / blend));
                     g[a, b] = Caves.Hollow(x, z, y);
+                    dug[a, b] = g[a, b] < y - 0.01f;
                 }
             for (int b = 0; b < n; b++)
                 for (int a = 0; a < n; a++)
@@ -106,8 +109,8 @@ namespace OdinsCoin
                     var p01 = new Vector3(xa, g[a, b + 1], za + fine);
                     var p11 = new Vector3(xa + fine, g[a + 1, b + 1], za + fine);
                     var p10 = new Vector3(xa + fine, g[a + 1, b], za);
-                    Add(p00, p01, p11, fine, sink);
-                    Add(p00, p11, p10, fine, sink);
+                    Add(p00, p01, p11, fine, sink, dug[a, b] && dug[a, b + 1] && dug[a + 1, b + 1]);
+                    Add(p00, p11, p10, fine, sink, dug[a, b] && dug[a + 1, b + 1] && dug[a + 1, b]);
                 }
         }
 

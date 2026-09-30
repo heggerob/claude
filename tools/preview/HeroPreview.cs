@@ -604,6 +604,65 @@ public static class HeroPreview
             }
         Render(helm, w, h, 0, w, h, new Shot { model = m, pose = pose, perspective = true, eye = helmEye, yaw = jetty.yaw, pitch = 6f, fov = 75f });
         WriteRgba(rgbaPath + ".helm", helm, w, h);
+
+        // A cave (the first place, Bergen first, whose hills have one), with the land drawn as the game draws it
+        // (its 25 m squares, refined round the chamber), seen from a few steps in front of the mouth.
+        Vector3 caveAt = Vector3.zero; float caveYaw = 0f;
+        Place cavePlace = null;
+        var candidates = new List<Place>();
+        var bergenPlace = Places.Find("Bergen");
+        if (bergenPlace != null) candidates.Add(bergenPlace);
+        candidates.AddRange(Places.All);
+        foreach (var cand in candidates)
+        {
+            var cplots = Settlements.Layout(map, cand);
+            if (cplots.Count > 0 && Caves.Spot(cand, cplots, groundAt, out caveAt, out caveYaw)) { cavePlace = cand; break; }
+        }
+        if (cavePlace == null) { Console.WriteLine("no cave anywhere"); return; }
+        Console.WriteLine("cave at " + cavePlace.name);
+        Caves.Hollows.Clear();
+        Caves.Hollows.Add(new Vector4(caveAt.x, caveYaw, caveAt.z, caveAt.y));
+        var cm = new VikingModel();
+        cm.AddJoint(J, null, Vector3.zero);
+        float cstep = WorldTerrain.ChunkSize / WorldTerrain.ChunkQuads;
+        double gx0 = Math.Floor((caveAt.x - 150f) / cstep) * cstep, gz0 = Math.Floor((caveAt.z - 150f) / cstep) * cstep;
+        int cq = Mathf.CeilToInt(300f / cstep) + 1;
+        var cpatch = TerrainPatch.Build(map, gx0, gz0, cq * cstep, cq);
+        var corner = new Vector3((float)(gx0 - caveAt.x), 0f, (float)(gz0 - caveAt.z));
+        for (int k = 0; k < cpatch.Triangles.Length; k++)
+        {
+            if (k == (int)Ground.Seabed) continue;
+            var md = new MeshData();
+            foreach (int idx in cpatch.Triangles[k]) { md.Triangles.Add(md.Vertices.Count); md.Vertices.Add(cpatch.Vertices[idx] + corner); }
+            cm.Add(J, TerrainPatch.ColourOf((Ground)k), md, false, SurfaceKind.Plain);
+        }
+        var caveTurn = Quaternion.Euler(0f, caveYaw, 0f);
+        var mouth = new Vector3(0f, caveAt.y - 0.2f, 0f);
+        foreach (var piece in Caves.Model().Pieces)
+            cm.Pieces.Add(new VikingModel.Piece { joint = J, color = piece.color, mesh = piece.mesh.Transformed(mouth, caveTurn, Vector3.one), surface = piece.surface, outline = piece.outline, ink = piece.ink });
+        var draugr = Full(NpcHeroes.Draugr(cavePlace.name.GetHashCode()));
+        var guardAt = mouth + caveTurn * new Vector3(0.8f, 0.5f, -2f);
+        var guardStill = new Pose();
+        foreach (var piece in draugr.Pieces)
+        {
+            if (!Visible(new Shot { model = draugr, pose = guardStill }, piece.joint)) continue;
+            Vector3 jp; Quaternion jr;
+            World(draugr, guardStill, piece.joint, out jp, out jr);
+            cm.Pieces.Add(new VikingModel.Piece { joint = J, color = piece.color, mesh = piece.mesh.Transformed(jp, jr, Vector3.one).Transformed(guardAt, caveTurn, Vector3.one), surface = piece.surface, outline = piece.outline, ink = piece.ink });
+        }
+        var cave = new float[w * h * 3];
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+            {
+                float k = y / (float)h;
+                int i = (y * w + x) * 3;
+                cave[i] = Mathf.Lerp(0.62f, 0.9f, k); cave[i + 1] = Mathf.Lerp(0.74f, 0.9f, k); cave[i + 2] = Mathf.Lerp(0.86f, 0.88f, k);
+            }
+        var caveEye = mouth + caveTurn * new Vector3(1.5f, 1.8f, 11f);
+        Render(cave, w, h, 0, w, h, new Shot { model = cm, pose = pose, perspective = true, eye = caveEye, yaw = caveYaw + 186f, pitch = 8f, fov = 70f });
+        WriteRgba(rgbaPath + ".cave", cave, w, h);
+        Console.WriteLine("cave at " + caveAt + " facing " + caveYaw);
+        Caves.Hollows.Clear();
     }
 
     static void WriteRgba(string path, float[] img, int w, int h)
