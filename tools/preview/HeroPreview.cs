@@ -224,6 +224,7 @@ public static class HeroPreview
         if (args.Length > 6) SkinSheet(args[5], args[6]);
         if (args.Length > 8) TurnSheet(args[7], args[8]);
         if (args.Length > 10) AttackSheet(args[9], args[10]);
+        if (args.Length > 11) FootstepTrace(args[11]);
         Directory.CreateDirectory(args[2]);
         ExportObj(HeroModel.Build(raider), Path.Combine(args[2], "raider.obj"));
         ExportObj(HeroModel.BuildWeapon(raider), Path.Combine(args[2], "two-hand-axe.obj"));
@@ -312,6 +313,42 @@ public static class HeroPreview
         foreach (var f in frames) labels.Add(f.label);
         File.WriteAllLines(labelPath, labels.ToArray());
     }
+
+    /// <summary>
+    /// Footprints seen from above, from the game's own Locomotion, for docs/footsteps.png: a walking turn, a
+    /// sprinting turn, a U-turn at a sprint and a turn from standing. Lines: "scenario name", then "body x z" and
+    /// "foot x z heading L|R" rows.
+    /// </summary>
+    static void FootstepTrace(string path)
+    {
+        var lines = new List<string>();
+        var scenarios = new[] {
+            new { name = "Walking, then a right turn", speed = 4.2f, first = new Vector2(0f, 1f), then = new Vector2(1f, 0f), before = 1.4f, after = 1.8f },
+            new { name = "Sprinting, then a right turn", speed = 6.5f, first = new Vector2(0f, 1f), then = new Vector2(1f, 0f), before = 1.4f, after = 1.6f },
+            new { name = "U-turn at a sprint", speed = 6.5f, first = new Vector2(0f, 1f), then = new Vector2(0f, -1f), before = 1.4f, after = 1.8f },
+            new { name = "Turning round from standing", speed = 4.2f, first = Vector2.zero, then = new Vector2(0f, -1f), before = 0.3f, after = 1.5f } };
+        const float dt = 1f / 120f;
+        foreach (var sc in scenarios)
+        {
+            lines.Add("scenario " + sc.name);
+            var l = new Locomotion { sprintSpeed = 6.5f };
+            l.Reset(Vector2.zero, 0f);
+            int steps = l.stepsTaken, n = 0;
+            for (float t = 0f; t < sc.before + sc.after; t += dt)
+            {
+                l.Step(t < sc.before ? sc.first : sc.then, sc.speed, dt);
+                if (n++ % 6 == 0) lines.Add("body " + F(l.position.x) + " " + F(l.position.y));
+                if (l.stepsTaken != steps)
+                {
+                    steps = l.stepsTaken;
+                    lines.Add("foot " + F(l.planted.at.x) + " " + F(l.planted.at.y) + " " + F(l.planted.heading) + " " + (l.planted.left ? "L" : "R"));
+                }
+            }
+        }
+        File.WriteAllLines(path, lines.ToArray());
+    }
+
+    static string F(float v) { return v.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture); }
 
     /// <summary>
     /// Every weapon's attack (rows) through its key moments (columns): ready, wind-up, the swing, the blow, the

@@ -65,7 +65,7 @@ PY
 # The storybook heroes, laid out like the concept sheet, plus an .obj of each.
 mcs -nowarn:169,414,649,219,618 -define:ENABLE_LEGACY_INPUT_MANAGER -out:$TMP/heroes.exe \
   tools/unity-stub/UnityStub.cs tools/preview/HeroPreview.cs $(find OdinsCoin/Assets/Scripts -name '*.cs')
-mono $TMP/heroes.exe $TMP/heroes.rgba $TMP/heroes.txt OdinsCoin/docs/heroes $TMP/motion.rgba $TMP/motion.txt $TMP/skins.rgba $TMP/skins.txt $TMP/turn.rgba $TMP/turn.txt $TMP/attacks.rgba $TMP/attacks.txt
+mono $TMP/heroes.exe $TMP/heroes.rgba $TMP/heroes.txt OdinsCoin/docs/heroes $TMP/motion.rgba $TMP/motion.txt $TMP/skins.rgba $TMP/skins.txt $TMP/turn.rgba $TMP/turn.txt $TMP/attacks.rgba $TMP/attacks.txt $TMP/footsteps.txt
 python3 - "$TMP/heroes.rgba" "$TMP/heroes.txt" OdinsCoin/docs/heroes.png <<'PY'
 import struct, sys
 from PIL import Image, ImageDraw, ImageFont
@@ -160,6 +160,48 @@ for r in range(rows):
         d.text((c * cw + (cw - tw) / 2, r * (ch + pad) + ch + 6), t, font=font, fill=(74, 58, 46, 255))
 sheet.save(sys.argv[3])
 print('wrote', sys.argv[3])
+PY
+# Footprints from above: how the footstep locomotion turns (docs/footsteps.png).
+python3 - "$TMP/footsteps.txt" OdinsCoin/docs/footsteps.png <<'PY'
+import math, sys
+from PIL import Image, ImageDraw, ImageFont
+groups = []
+for line in open(sys.argv[1]):
+    p = line.split()
+    if not p: continue
+    if p[0] == 'scenario': groups.append({'name': line[9:].strip(), 'body': [], 'feet': []})
+    elif p[0] == 'body': groups[-1]['body'].append((float(p[1]), float(p[2])))
+    elif p[0] == 'foot': groups[-1]['feet'].append((float(p[1]), float(p[2]), float(p[3]), p[4]))
+cw, ch, pad = 520, 560, 40
+img = Image.new('RGB', (cw * len(groups), ch + pad), (246, 241, 230))
+d = ImageDraw.Draw(img)
+try:
+    font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf', 15)
+except Exception:
+    font = ImageFont.load_default()
+for gi, g in enumerate(groups):
+    pts = g['body'] + [(f[0], f[1]) for f in g['feet']]
+    xs = [p[0] for p in pts]; zs = [p[1] for p in pts]
+    span = max(max(xs) - min(xs), max(zs) - min(zs), 2.0)
+    sc = (min(cw, ch) - 80) / span
+    cx, cz = (max(xs) + min(xs)) / 2, (max(zs) + min(zs)) / 2
+    def P(x, z): return (gi * cw + cw / 2 + (x - cx) * sc, ch / 2 - (z - cz) * sc)
+    # A light grid, 1 m apart.
+    for k in range(-10, 11):
+        a = P(cx + k, cz - 10); b = P(cx + k, cz + 10); d.line([a, b], fill=(232, 226, 212))
+        a = P(cx - 10, cz + k); b = P(cx + 10, cz + k); d.line([a, b], fill=(232, 226, 212))
+    d.line([P(*p) for p in g['body']], fill=(160, 140, 120), width=2)
+    for i, (x, z, h, side) in enumerate(g['feet']):
+        a = math.radians(h)
+        fwd = (math.sin(a), math.cos(a)); right = (math.cos(a), -math.sin(a))
+        L, W = 0.13, 0.05
+        corners = [(x + fwd[0] * sx * L + right[0] * sy * W, z + fwd[1] * sx * L + right[1] * sy * W) for sx, sy in ((1, 0), (0.4, 1), (-1, 0.8), (-1, -0.8), (0.4, -1))]
+        col = (60, 45, 35) if side == 'L' else (150, 60, 40)
+        d.polygon([P(*c) for c in corners], fill=col)
+    t = g['name']
+    d.text((gi * cw + (cw - d.textlength(t, font=font)) / 2, ch + 10), t, font=font, fill=(74, 58, 46))
+img.save(sys.argv[2])
+print('wrote', sys.argv[2])
 PY
 python3 - "$TMP/attacks.rgba" "$TMP/attacks.txt" OdinsCoin/docs/attacks.png <<'PY'
 import struct, sys
