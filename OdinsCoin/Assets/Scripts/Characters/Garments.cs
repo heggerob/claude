@@ -541,8 +541,8 @@ namespace OdinsCoin
                 new Vector2(r * 1.12f, brim - 0.08f * r), new Vector2(r * 1.16f, brim + 0.2f * r), new Vector2(r * 1.14f, brim + 0.5f * r),
                 new Vector2(r * 0.98f, brim + 0.82f * r), new Vector2(r * 0.62f, brim + 1.04f * r), new Vector2(0.01f, brim + 1.12f * r) }, 24)
                 .Transformed(offset, Quaternion.identity, scale));
-            // A gold band round the brow, studded.
-            d.Add(Joints.Head, d.pal.brass, CharacterKit.Band(brim, 0.045f * s, r * 1.18f, 0.98f, 24).Transformed(offset, Quaternion.identity, scale));
+            // A thin gold trim round the brow, studded (the helm itself stays black, as in the concept art).
+            d.Add(Joints.Head, d.pal.brass, CharacterKit.Band(brim, 0.024f * s, r * 1.18f, 0.98f, 24).Transformed(offset, Quaternion.identity, scale));
             for (int i = -4; i <= 4; i++)
             {
                 float a = i * 0.34f;
@@ -569,11 +569,15 @@ namespace OdinsCoin
             foreach (var h in new[] { new Vector2(-1.25f, 1.2f), new Vector2(1.25f, 1.2f), new Vector2(-0.62f, 0.95f), new Vector2(0.62f, 0.95f) })
             {
                 float a = h.x, len = h.y;
+                bool side = Mathf.Abs(a) > 1f;
                 var dir = new Vector3(Mathf.Sin(a) * scale.x, 0f, Mathf.Cos(a) * scale.z);
-                var root = offset + new Vector3(0f, brim + 0.55f * r, 0f) + dir * r * 1.06f;
-                var path = new[] {
-                    root, root + dir * r * 0.32f * len + Vector3.up * r * 0.22f * len,
-                    root + dir * r * 0.46f * len + Vector3.up * r * 0.6f * len, root + dir * r * 0.36f * len + Vector3.up * r * 0.95f * len };
+                // The big side horns sweep out low from the brim and curl up like crescents; the front ones rise from the dome.
+                var root = offset + new Vector3(0f, brim + (side ? 0.28f : 0.55f) * r, 0f) + dir * r * 1.06f;
+                var path = side
+                    ? new[] { root, root + dir * r * 0.4f * len + Vector3.up * r * 0.08f * len,
+                        root + dir * r * 0.58f * len + Vector3.up * r * 0.5f * len, root + dir * r * 0.42f * len + Vector3.up * r * 0.98f * len }
+                    : new[] { root, root + dir * r * 0.32f * len + Vector3.up * r * 0.22f * len,
+                        root + dir * r * 0.46f * len + Vector3.up * r * 0.6f * len, root + dir * r * 0.36f * len + Vector3.up * r * 0.95f * len };
                 d.Add(Joints.Head, black, MeshData.Tube(path, new[] { 0.045f * s, 0.034f * s, 0.02f * s, 0.003f * s }, 7));
                 var edge = new Vector3[path.Length - 1];
                 for (int k = 1; k < path.Length; k++) edge[k - 1] = path[k] + dir * 0.016f * s * (1f - k * 0.25f) + Vector3.up * 0.004f * s;
@@ -585,8 +589,9 @@ namespace OdinsCoin
                 new Vector2(-0.06f, 0.0f), new Vector2(0.06f, 0.0f), new Vector2(0.065f, 0.13f), new Vector2(0.04f, 0.17f),
                 new Vector2(0.02f, 0.14f), new Vector2(0f, 0.21f), new Vector2(-0.02f, 0.14f), new Vector2(-0.04f, 0.17f), new Vector2(-0.065f, 0.13f) };
             // (A slimmer crest, so the black dome shows round it as in the concept art.)
-            const float cs = 1f;
-            d.Add(Joints.Head, d.pal.brass, MeshData.Extrude(plate, 0.018f).Transformed(new Vector3(0f, brim + 0.12f * r, pz), Quaternion.Euler(-18f, 90f, 0f), Vector3.one * s * cs));
+            const float cs = 1.2f;
+            // Tall and narrow, standing up above the dome as in the concept art.
+            d.Add(Joints.Head, d.pal.brass, MeshData.Extrude(plate, 0.018f).Transformed(new Vector3(0f, brim + 0.12f * r, pz), Quaternion.Euler(-18f, 90f, 0f), new Vector3(1f, 1f, 0.78f) * s * cs));
             var rz = pz + 0.014f * s;
             float ry = brim + 0.12f * r;
             d.Add(Joints.Head, black, MeshData.Box(new Vector3(0f, ry + 0.085f * s * cs, rz), new Vector3(0.009f, 0.09f, 0.004f) * s * cs), false);
