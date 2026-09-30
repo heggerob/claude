@@ -1242,13 +1242,13 @@ namespace OdinsCoin
             foreach (float x in new[] { -1f, 1f })
             {
                 var root = new Vector3(x * r * 0.5f, cy + r * 1.05f, -r * 0.35f);
-                // A thick beam sweeping out and then curving up and in.
+                // A thick beam spreading wide out to the side, as in the concept art, rising and curving up at its end.
                 var beam = new[] {
-                    root, root + new Vector3(x * 0.09f, 0.07f, -0.01f) * s, root + new Vector3(x * 0.2f, 0.16f, -0.02f) * s,
-                    root + new Vector3(x * 0.28f, 0.28f, -0.02f) * s, root + new Vector3(x * 0.27f, 0.4f, 0.0f) * s, root + new Vector3(x * 0.22f, 0.48f, 0.02f) * s };
+                    root, root + new Vector3(x * 0.1f, 0.06f, -0.01f) * s, root + new Vector3(x * 0.21f, 0.1f, -0.02f) * s,
+                    root + new Vector3(x * 0.31f, 0.14f, -0.02f) * s, root + new Vector3(x * 0.38f, 0.22f, 0.0f) * s, root + new Vector3(x * 0.4f, 0.33f, 0.02f) * s };
                 d.Add(Joints.Head, horn, MeshData.Tube(beam, new[] { 0.04f * s, 0.036f * s, 0.03f * s, 0.024f * s, 0.016f * s, 0.006f * s }, 8));
-                // Four tines, the lower ones reaching forward-up, the upper ones straight up.
-                foreach (var t in new[] { new[] { 1f, 0.15f, 0.05f, 0.06f }, new[] { 2f, 0.18f, -0.04f, 0.04f }, new[] { 3f, 0.16f, 0.06f, 0.02f }, new[] { 4f, 0.12f, -0.05f, 0f } })
+                // Four tines standing up off the beam, leaning a little out.
+                foreach (var t in new[] { new[] { 1f, 0.2f, 0.01f, 0.03f }, new[] { 2f, 0.18f, 0.03f, 0.02f }, new[] { 3f, 0.15f, 0.04f, 0.01f }, new[] { 4f, 0.1f, 0.03f, 0f } })
                 {
                     var at = beam[(int)t[0]];
                     var tip = at + new Vector3(x * t[2], t[1], t[3]) * s;
