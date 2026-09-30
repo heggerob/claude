@@ -115,6 +115,10 @@ public static class LogicTests
         float hours = (float)(6371000.0 * Math.Sqrt(dLat * dLat + dLon * dLon)) / (8f * 0.514f) / 3600f;
         Check(hours > 20f && hours / 16f < 2.5f, "Kaupang to Hedeby at 8 knots: " + hours.ToString("0") + " h, about " + (hours * 60f / 16f).ToString("0") + " min at 16x");
 
+        // The sea follows the wind, and lies calm in the lee of the land.
+        Check(Waves.SeaState(6f, 1f) < 0.5f && Waves.SeaState(28f, 1f) > 1.1f && Waves.SeaState(28f, 0.2f) < Waves.SeaState(28f, 1f) * 0.5f,
+            "a breeze barely ruffles the sea (" + Waves.SeaState(6f, 1f).ToString("0.00") + "), a stiff wind builds it (" + Waves.SeaState(28f, 1f).ToString("0.00") + "), and it lies calm in a fjord's lee");
+
         // A long passage: an hour of sea on the flat simulation, holding her course by herself.
         var voyage = new ShipPhysics.State { heading = 90f, u = 3f };
         var sailSet = new ShipPhysics.Controls { sail = 1f };

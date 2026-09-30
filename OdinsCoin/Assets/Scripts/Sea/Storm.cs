@@ -76,7 +76,9 @@ namespace OdinsCoin
         void Apply(GameBootstrap boot, float dt)
         {
             float i = Intensity;
-            Waves.Roughness = 1f + 1.3f * i;
+            // The sea the wind raises where the ship is, and the storm's on top.
+            var ship = boot.Ship;
+            Waves.Roughness = Waves.SeaState(Mathf.Min(Wind.Knots, 28f), ship != null ? ship.Lee : 1f) + 1.3f * i;
             if (i > 0.3f) Wind.Set(Wind.Angle + Mathf.Sin(Time.time * 0.3f) * 20f * dt, 0.8f + 0.8f * i, 2f); // up to a full gale in the eye
 
             // Fog and gloom. Heimdall's Eye sees through it.

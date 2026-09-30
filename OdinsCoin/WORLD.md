@@ -179,6 +179,9 @@ med ror, seil i vinden og årer.
   - Skroget arbeider gjennom vannet og seilene får vinden over grunnen, så en motstrøm kan holde deg igjen og en
     medstrøm kan bære deg. Strømmen tar også skipet med på lange overfarter.
   - HUD-en viser strømmen og retningen den setter når den er merkbar.
+- [x] **19. Sjøen følger vinden:** en svak bris krusser bare havet, frisk vind bygger opp sjø, og i le av landet
+  (inne i en fjord eller bak en øy) ligger sjøen mye roligere. Stormen kommer på toppen. Bølgehøyden styrer også
+  hvor mye vann som skylles inn over ripa.
 
 ## Merk
 

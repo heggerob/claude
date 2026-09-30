@@ -25,6 +25,16 @@ namespace OdinsCoin
         /// <summary>1 = normal sea, higher in storms.</summary>
         public static float Roughness = 1f;
 
+        /// <summary>
+        /// The sea the wind raises, before any storm: a light breeze barely ruffles it, a stiff wind builds a proper
+        /// sea, and in the lee of the land (a fjord, behind an island) it lies much calmer.
+        /// </summary>
+        public static float SeaState(float windKnots, float lee)
+        {
+            float wind = Mathf.Clamp01((windKnots - 4f) / 24f);
+            return Mathf.Lerp(0.35f, 1.25f, wind * wind * (3f - 2f * wind)) * Mathf.Lerp(0.3f, 1f, Mathf.Clamp01(lee));
+        }
+
         public static float Time { get { return UnityEngine.Time.time; } }
 
         public static float MaxHeight
