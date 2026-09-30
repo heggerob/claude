@@ -92,8 +92,10 @@ namespace OdinsCoin
                     new[] { r * 0.95f, r * 0.7f, r * 0.35f, 0.003f }, 10));
                 d.Add(joint, VikingModel.Shade(d.pal.leatherDark, 0.7f), MeshData.Box(new Vector3(0f, sole + 0.012f * s, -0.025f * s), new Vector3(r * 1.5f, 0.024f * s, r * 1.2f)), false);
                 // Straps wound criss-cross, lighter leather.
-                d.Add(joint, d.pal.leather, CharacterKit.Spiral(sole + 0.07f * s, top - 0.05f * s, r * 1.02f, 1.6f, 0f, 0.0075f * s), false);
-                d.Add(joint, d.pal.leather, CharacterKit.Spiral(sole + 0.07f * s, top - 0.05f * s, r * 1.02f, -1.6f, Mathf.PI, 0.0075f * s), false);
+                // Broad and pale enough to read as the concept art's criss-cross wraps.
+                var strap = VikingModel.Shade(d.pal.leather, 1.2f);
+                d.Add(joint, strap, CharacterKit.Spiral(sole + 0.07f * s, top - 0.05f * s, r * 1.03f, 2.2f, 0f, 0.01f * s), false);
+                d.Add(joint, strap, CharacterKit.Spiral(sole + 0.07f * s, top - 0.05f * s, r * 1.03f, -2.2f, Mathf.PI, 0.01f * s), false);
                 d.Add(joint, d.pal.fur, CharacterKit.FurRing(new Vector3(0f, top, 0f), r * 1.12f, 1f, 0.04f * s, 12, 0.055f * s, d.seed + joint.Length));
             }
         }
