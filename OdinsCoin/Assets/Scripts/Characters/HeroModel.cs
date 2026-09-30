@@ -483,17 +483,17 @@ namespace OdinsCoin
                                 float t = i / (float)(lobe.Length - 1) * 2f;
                                 float u = t <= 1f ? t : 2f - t, side = t <= 1f ? 1f : -1f;
                                 lobe[i] = at + new Vector3(0f, 0f, 0.017f * s) + dir * (0.08f + u * 0.78f) * rad + perp * side * Mathf.Sin(u * Mathf.PI) * 0.3f * rad;
-                                lr[i] = 0.015f * s;
+                                lr[i] = 0.026f * s;
                             }
                             // Broad painted bands with a dark edge, like the concept art's knot.
                             d.Add(Joints.OffHand, d.pal.emblem, MeshData.Tube(lobe, lr, 6), false);
-                            d.Add(Joints.OffHand, VikingModel.Shade(d.pal.accent, 0.45f), KnotEdge(lobe, 0.021f * s, 0.006f * s), false);
+                            d.Add(Joints.OffHand, VikingModel.Shade(d.pal.accent, 0.45f), KnotEdge(lobe, 0.033f * s, 0.013f * s), false);
                         }
                         var circle = new Vector3[25];
                         var cr = new float[25];
-                        for (int i = 0; i < circle.Length; i++) { float a = i / 24f * Mathf.PI * 2f; circle[i] = at + new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * rad * 0.52f + new Vector3(0f, 0f, 0.018f * s); cr[i] = 0.013f * s; }
+                        for (int i = 0; i < circle.Length; i++) { float a = i / 24f * Mathf.PI * 2f; circle[i] = at + new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * rad * 0.52f + new Vector3(0f, 0f, 0.018f * s); cr[i] = 0.022f * s; }
                         d.Add(Joints.OffHand, d.pal.emblem, MeshData.Tube(circle, cr, 6), false);
-                        d.Add(Joints.OffHand, VikingModel.Shade(d.pal.accent, 0.45f), KnotEdge(circle, 0.019f * s, 0.006f * s), false);
+                        d.Add(Joints.OffHand, VikingModel.Shade(d.pal.accent, 0.45f), KnotEdge(circle, 0.029f * s, 0.013f * s), false);
                     }
                     break;
                 case OffHandId.Map:
