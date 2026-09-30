@@ -80,7 +80,7 @@ namespace OdinsCoin
         public static Vector3 Position(WorldMap map, Place p) { return map.ToWorld(p.latitude, p.longitude); }
 
         /// <summary>The least depth a harbour needs for the big ships (m).</summary>
-        public const float HarbourDepth = 3f;
+        public const float HarbourDepth = 2.5f;
 
         /// <summary>
         /// The place's harbour: the nearest spot of sea at least <see cref="HarbourDepth"/> deep within its reach,

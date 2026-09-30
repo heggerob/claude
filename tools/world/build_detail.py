@@ -22,6 +22,8 @@ sys.path.insert(0, os.path.dirname(__file__))
 import build_map as bm
 
 BLOCK_CELLS = 25          # blocks are 25 cells of the 1 km map
+# Lake Mälaren was a bay of the Baltic in the Viking age (the land has risen ~5 m since): its low water is sea.
+MALAREN = (15.8, 18.3, 59.15, 59.75)
 CELL = 200.0              # fine grid spacing, metres
 OUT = os.path.join(bm.ROOT, "OdinsCoin", "Assets", "Resources", "World", "coast.bytes")
 
@@ -89,6 +91,19 @@ def main():
         ax, ay = lx - ix, ly - iy
         v = (mosaic[iy, ix] * (1 - ax) * (1 - ay) + mosaic[iy, ix + 1] * ax * (1 - ay)
              + mosaic[iy + 1, ix] * (1 - ax) * ay + mosaic[iy + 1, ix + 1] * ax * ay)
+        # Where the 1 km map (with real bathymetry) says open sea, trust it: some coasts' fine data has no water
+        # at all (the Faroes, for one).
+        X, Z = np.meshgrid(x0 + bi * block_m + t, z0 + bj * block_m + t)
+        cx = np.clip((X - x0) / cell, 0, coarse.shape[1] - 1.001)
+        cz = np.clip((Z - z0) / cell, 0, coarse.shape[0] - 1.001)
+        jx, jz = cx.astype(np.int64), cz.astype(np.int64)
+        bx, bz = cx - jx, cz - jz
+        c = (coarse[jz, jx] * (1 - bx) * (1 - bz) + coarse[jz, jx + 1] * bx * (1 - bz)
+             + coarse[jz + 1, jx] * (1 - bx) * bz + coarse[jz + 1, jx + 1] * bx * bz)
+        v = np.where(c < -20.0, np.minimum(v, c), v)
+        lon, lat = bm.unproject(X, Z)
+        mal = (lon > MALAREN[0]) & (lon < MALAREN[1]) & (lat > MALAREN[2]) & (lat < MALAREN[3]) & (v <= 5.0)
+        v = np.where(mal, -6.0, v)
         v = np.where(v < -30.0, np.round(v / 5.0) * 5.0, v)
         blob = gzip.compress(np.clip(np.round(v), -32000, 32000).astype("<i2").tobytes(), 9)
         index.append((bi, bj, offset, len(blob)))
