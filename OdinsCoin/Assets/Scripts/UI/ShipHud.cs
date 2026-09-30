@@ -39,7 +39,11 @@ namespace OdinsCoin
                 float dist, bearing;
                 var place = RealWorld.Nearest(Player.transform.position, out dist, out bearing);
                 if (place != null)
-                    GUI.Label(new Rect(20, 134, 380, 22), string.Format("Nearest port: <b>{0}</b> ({1}) {2}, bearing {3:000}°", place.name, place.modern, Distance(dist), bearing), style);
+                {
+                    string what = PlaceLife.Raided.Contains(place.name) ? "plundered" : PlaceLife.HasMarket(place) ? "market"
+                        : place.kind == PlaceKind.Monastery ? "monastery" : place.kind == PlaceKind.Fortress ? "fortress" : place.kind == PlaceKind.Hall ? "jarl's hall" : "landing";
+                    GUI.Label(new Rect(20, 134, 440, 22), string.Format("Nearest: <b>{0}</b> ({1}, {2}) {3}, bearing {4:000}°", place.name, place.modern, what, Distance(dist), bearing), style);
+                }
             }
             else if (Player != null)
             {

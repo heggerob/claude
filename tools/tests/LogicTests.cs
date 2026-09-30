@@ -327,6 +327,23 @@ public static class LogicTests
             }
         map.Detail = null;
 
+        // Life at the places: monasteries, halls and fortresses hold plunder under guard; towns trade instead.
+        foreach (var place in Places.All)
+        {
+            var plunder = PlaceLife.PlunderOf(place.kind);
+            bool ok = PlaceLife.HasMarket(place)
+                ? plunder.chests == 0 && PlaceLife.PriceFactor(place) >= 1.1f
+                : plunder.chests >= 1 && plunder.guards >= 1 && plunder.minGold <= plunder.maxGold;
+            Check(ok, place.name + (PlaceLife.HasMarket(place) ? " trades at " + PlaceLife.PriceFactor(place) + "x" : " holds " + plunder.chests + " chests under " + plunder.guards + " guards"));
+        }
+        Check(PlaceLife.PriceFactor(Places.Find("Hedeby")) > PlaceLife.PriceFactor(Places.Find("Ribe")), "Hedeby, the greatest market, pays best");
+        Check(PlaceLife.PlunderOf(PlaceKind.Monastery).chests > PlaceLife.PlunderOf(PlaceKind.Landing).chests && PlaceLife.PlunderOf(PlaceKind.Fortress).guards > PlaceLife.PlunderOf(PlaceKind.Monastery).guards,
+            "monasteries are rich and lightly guarded; fortresses bristle with guards");
+        var spots = PlaceLife.Spots(new Vector3(100f, 0f, 200f), 5, 10f, 7);
+        bool round = spots.Count == 5;
+        foreach (var sp in spots) { float r = Vector2.Distance(new Vector2(sp.x, sp.z), new Vector2(100f, 200f)); if (r < 5.9f || r > 10.01f) round = false; }
+        Check(round && PlaceLife.Spots(new Vector3(100f, 0f, 200f), 5, 10f, 7)[3] == spots[3], "chests and guards stand round the main building, the same every visit");
+
         // Bad files are refused rather than read as nonsense.
         bool refused = false;
         try { WorldMap.FromBytes(new byte[] { 1, 2, 3, 4, 5 }); } catch (System.IO.InvalidDataException) { refused = true; } catch (System.IO.EndOfStreamException) { refused = true; }

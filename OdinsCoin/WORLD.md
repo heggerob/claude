@@ -107,6 +107,14 @@ med ror, seil i vinden og årer.
   - Flåten og skipet du seiler lagres.
   - Hvert skip har sin egen plass ved brygga, flytende og klar av stranda.
   - Du kan klatre om bord fra brygga eller fra vannet når du står ved siden av skipet.
+- [x] **10. Liv ved de ekte stedene:**
+  - **Plyndring:** klostre (4 kister, 3 vakter), haller (2 kister, 4 vakter), festninger (3 kister, 7 vakter) og
+    landingsplasser har kister å ta og vakter rundt hovedbygningen. Vaktene stiller opp når skipet er innen 3 km.
+  - Når alle kistene er båret bort, er stedet plyndret resten av reisen, og Odins gunst stiger.
+  - **Markedsbyer:** har en handelsmann på brygga som kjøper kister, båret til ham eller rett fra skipet.
+    Hedeby betaler best (1,3x), så Birka, Jorvik, Dyflin og Visby.
+  - HUD-en viser hva det nærmeste stedet er: marked, kloster, jarlehall, festning, eller plyndret.
+  - Vakter, stormen, sjøormen og piler følger med når origo flyttes.
 
 ## Merk
 

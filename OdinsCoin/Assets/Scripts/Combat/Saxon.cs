@@ -57,6 +57,10 @@ namespace OdinsCoin
         }
 
         void OnDestroy() { All.Remove(this); }
+        void OnEnable() { WorldOrigin.Shifted += OnShift; }
+        void OnDisable() { WorldOrigin.Shifted -= OnShift; }
+        /// <summary>The floating origin moved the world back under us: so did the spot we guard.</summary>
+        void OnShift(Vector3 shift) { home -= shift; wanderTarget -= shift; }
 
         public void Stagger(Vector3 from)
         {

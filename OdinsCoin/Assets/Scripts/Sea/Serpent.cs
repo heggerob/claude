@@ -27,6 +27,9 @@ namespace OdinsCoin
         readonly List<Vector3> trail = new List<Vector3>();
         float angle, side = 1f, strikeZ;
         Vector3 headPos;
+        void OnEnable() { WorldOrigin.Shifted += OnShift; }
+        void OnDisable() { WorldOrigin.Shifted -= OnShift; }
+        void OnShift(Vector3 shift) { headPos -= shift; }
         bool warned;
 
         public static Serpent Spawn(Transform parent, Longship ship)

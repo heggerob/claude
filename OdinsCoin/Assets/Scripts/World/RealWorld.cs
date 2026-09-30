@@ -141,6 +141,8 @@ namespace OdinsCoin
         Transform world, focus;
         readonly Dictionary<Place, Transform> built = new Dictionary<Place, Transform>();
         readonly Dictionary<Place, Vector3> harbours = new Dictionary<Place, Vector3>();
+        readonly Dictionary<Place, List<Plot>> layouts = new Dictionary<Place, List<Plot>>();
+        readonly Dictionary<Place, List<TreasureChest>> loot = new Dictionary<Place, List<TreasureChest>>();
         float nextCheck;
 
         public void Setup(WorldMap map, Transform world, Transform focus)
@@ -166,8 +168,54 @@ namespace OdinsCoin
                 Transform site;
                 bool have = built.TryGetValue(place, out site);
                 if (!have && d < BuildWithin * WorldMap.Scale) { built[place] = Build(place, harbour); break; } // one a second, no stalls
-                if (have && d > DropBeyond * WorldMap.Scale) { if (site != null) Destroy(site.gameObject); built.Remove(place); }
+                if (have && d > DropBeyond * WorldMap.Scale) { if (site != null) Destroy(site.gameObject); built.Remove(place); loot.Remove(place); continue; }
+                // Close in, the guards turn out and the plunder is there for the taking.
+                if (have && site != null && !loot.ContainsKey(place) && d < PlaceLife.PopulateWithin * WorldMap.Scale) loot[place] = Populate(place, site);
             }
+            CheckRaids();
+        }
+
+        /// <summary>A place is plundered once every one of its chests has been carried off.</summary>
+        void CheckRaids()
+        {
+            foreach (var kv in loot)
+            {
+                if (kv.Value.Count == 0 || PlaceLife.Raided.Contains(kv.Key.name)) continue;
+                Transform site;
+                built.TryGetValue(kv.Key, out site);
+                bool left = false;
+                foreach (var chest in kv.Value)
+                    if (chest != null && !chest.Sold && !chest.Carried && site != null && chest.transform.IsChildOfOrSelf(site)) left = true;
+                if (left) continue;
+                PlaceLife.Raided.Add(kv.Key.name);
+                Fortune.Current.AddFavour(0.1f);
+                CombatHud.Banner(kv.Key.name.ToUpper() + " IS PLUNDERED", "The skalds will sing of it. Sell the chests at a market town, or at home.");
+            }
+        }
+
+        /// <summary>Put a place's chests round its main building and its guards round them (none if already plundered).</summary>
+        List<TreasureChest> Populate(Place place, Transform site)
+        {
+            var chests = new List<TreasureChest>();
+            if (PlaceLife.Raided.Contains(place.name)) return chests;
+            var plunder = PlaceLife.PlunderOf(place.kind);
+            if (plunder.chests == 0 && plunder.guards == 0) return chests;
+            List<Plot> plots;
+            if (!layouts.TryGetValue(place, out plots)) return chests;
+            // The main building: the church, the great hall, or failing those the first house.
+            Vector3 centre = plots.Count > 1 ? plots[1].at : plots[0].at;
+            foreach (var p in plots)
+                if (p.kind == BuildingKind.Church || p.kind == BuildingKind.GreatHall) { centre = p.at; break; }
+            int seed = place.name.GetHashCode() & 0x7fffffff;
+            var rng = new System.Random(seed);
+            foreach (var at in PlaceLife.Spots(centre, plunder.chests, 5f, seed))
+            {
+                var scene = WorldOrigin.ToScene(at.x, at.z, TerrainDetail.Height(map, at.x, at.z) + 0.05f);
+                chests.Add(TreasureChest.Create(site, scene, (float)rng.NextDouble() * 360f, plunder.minGold + rng.Next(plunder.maxGold - plunder.minGold + 1)));
+            }
+            foreach (var at in PlaceLife.Spots(centre, plunder.guards, 11f, seed + 1))
+                Saxon.Create(site, WorldOrigin.ToScene(at.x, at.z, TerrainDetail.Height(map, at.x, at.z) + 0.3f));
+            return chests;
         }
 
         Transform Build(Place place, Vector3 harbour)
@@ -177,7 +225,9 @@ namespace OdinsCoin
             root.position = WorldOrigin.ToScene(harbour.x, harbour.z, 0f);
             var look = new BuildingLook();
             int i = 0;
-            foreach (var plot in Settlements.Layout(map, place))
+            var plots = Settlements.Layout(map, place);
+            layouts[place] = plots;
+            foreach (var plot in plots)
             {
                 var b = new GameObject(plot.kind.ToString()).transform;
                 b.SetParent(root, false);
@@ -189,6 +239,8 @@ namespace OdinsCoin
                     foreach (float z in new[] { 18f, 34f })
                         foreach (float x in new[] { -2.2f, 2.2f })
                             Seamanship.AddBollard(b, new Vector3(x, 1.35f, z));
+                // A market town's trader waits on the jetty.
+                if (plot.kind == BuildingKind.Jetty && PlaceLife.HasMarket(place)) Market.Create(b, place, new Vector3(-1.1f, 1.35f, 12f));
             }
             return root;
         }

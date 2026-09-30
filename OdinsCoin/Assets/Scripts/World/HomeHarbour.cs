@@ -225,16 +225,19 @@ namespace OdinsCoin
         }
 
         /// <summary>Buy one chest. Returns the gold paid.</summary>
-        readonly System.Random skinRng = new System.Random();
+        static readonly System.Random skinRng = new System.Random();
 
-        public int Sell(TreasureChest chest)
+        public int Sell(TreasureChest chest) { return SellChest(chest, Trader, 1f); }
+
+        /// <summary>A trader buys one chest at <paramref name="price"/> times its worth. Returns the gold paid.</summary>
+        public static int SellChest(TreasureChest chest, Transform trader, float price)
         {
             if (chest == null || chest.Sold) return 0;
-            int gold = chest.Value;
+            int gold = Mathf.RoundToInt(chest.Value * price);
             Fortune.Current.Gold += gold;
             Fortune.Current.ChestsSold++;
             Face.On(GameBootstrap.Instance != null ? GameBootstrap.Instance.Player : null, Expression.Happy, 2f);
-            Face.On(Trader, Expression.Happy, 2f);
+            Face.On(trader, Expression.Happy, 2f);
             // Now and then a chest holds something rarer than silver.
             var rare = SkinLocker.Current.RollChest(skinRng);
             if (rare != null)
@@ -249,7 +252,7 @@ namespace OdinsCoin
             Sfx.Play(SfxId.Gold, 0.8f);
             SaveGame.Save();
             chest.gameObject.SetActive(false);
-            Destroy(chest.gameObject);
+            Object.Destroy(chest.gameObject);
             return gold;
         }
 

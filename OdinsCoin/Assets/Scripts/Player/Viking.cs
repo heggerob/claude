@@ -249,6 +249,14 @@ namespace OdinsCoin
                 int gold = HomeHarbour.CargoValue(Ship, out count);
                 if (count > 0 && home.ShipInRange(Ship)) { Prompt = string.Format("[E] Sell the cargo: {0} chest{1}, {2} gold", count, count == 1 ? "" : "s", gold); return; }
             }
+            var market = Market.Near(transform.position);
+            if (market != null)
+            {
+                if (Carrying != null) { Prompt = string.Format("[E] Sell the chest in {0} ({1} gold)", market.Place.name, Mathf.RoundToInt(Carrying.Value * market.Price)); return; }
+                int count;
+                int gold = market.CargoValue(Ship, out count);
+                if (count > 0 && market.ShipInRange(Ship)) { Prompt = string.Format("[E] Sell the cargo in {0}: {1} chest{2}, {3} gold", market.Place.name, count, count == 1 ? "" : "s", gold); return; }
+            }
             if (Carrying != null)
             {
                 Prompt = CanClimbAboard ? "[E] Climb aboard" : "[E] Put the chest down";
@@ -308,6 +316,25 @@ namespace OdinsCoin
                 if (count > 0)
                 {
                     CombatHud.Banner("+" + cargo + " GOLD", string.Format("Gunnar buys {0} chest{1} off your ship.", count, count == 1 ? "" : "s"));
+                    return;
+                }
+            }
+            var market = Market.Near(transform.position);
+            if (market != null)
+            {
+                if (Carrying != null)
+                {
+                    var sold = Carrying;
+                    Carrying = null;
+                    int gold = market.Sell(sold);
+                    CombatHud.Banner("+" + gold + " GOLD", "The " + market.Place.name + " trader weighs the silver and pays.");
+                    return;
+                }
+                int count;
+                int cargo = market.SellCargo(Ship, out count);
+                if (count > 0)
+                {
+                    CombatHud.Banner("+" + cargo + " GOLD", string.Format("The {0} trader buys {1} chest{2} off your ship.", market.Place.name, count, count == 1 ? "" : "s"));
                     return;
                 }
             }

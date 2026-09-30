@@ -27,6 +27,9 @@ namespace OdinsCoin
         Transform rainRoot;
 
         void Awake() { Instance = this; }
+        void OnEnable() { WorldOrigin.Shifted += OnShift; }
+        void OnDisable() { WorldOrigin.Shifted -= OnShift; }
+        void OnShift(Vector3 shift) { Centre -= new Vector2(shift.x, shift.z); }
 
         /// <summary>Start a storm this far upwind of a point, so the wind carries it over.</summary>
         public void Brew(Vector3 near, float distance)

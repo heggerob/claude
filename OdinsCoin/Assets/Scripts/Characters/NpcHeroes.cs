@@ -25,6 +25,23 @@ namespace OdinsCoin
             return spec;
         }
 
+        /// <summary>A market trader in a real town: the Navigator's coat in a merchant's colours, with a map of the routes.</summary>
+        public static CharacterSpec Merchant(int seed)
+        {
+            var spec = CharacterSpec.Default(OutfitId.Navigator);
+            spec.body = RandomBody(seed);
+            var p = Outfits.Get(OutfitId.Navigator).palette();
+            var rng = new System.Random(seed);
+            Color[] coats = { new Color(0.45f, 0.22f, 0.3f), new Color(0.25f, 0.35f, 0.5f), new Color(0.5f, 0.42f, 0.2f), new Color(0.3f, 0.42f, 0.3f) };
+            p.cloth = coats[rng.Next(coats.Length)];
+            p.clothDark = p.cloth * 0.65f;
+            p.hair = Hair(seed);
+            spec.palette = p;
+            spec.weapon = WeaponId.None;
+            spec.offHand = OffHandId.Map;
+            return spec;
+        }
+
         /// <summary>A Danish raider archer: the Raider's furs in soot and dark leather, with a bow.</summary>
         public static CharacterSpec DanishRaider(int seed)
         {

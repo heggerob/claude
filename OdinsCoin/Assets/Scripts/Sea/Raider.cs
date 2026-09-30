@@ -197,6 +197,9 @@ namespace OdinsCoin
         Longship ship;
         Vector3 shipLocalTo;
         bool landed;
+        void OnEnable() { WorldOrigin.Shifted += OnShift; }
+        void OnDisable() { WorldOrigin.Shifted -= OnShift; }
+        void OnShift(Vector3 shift) { from -= shift; if (ship == null) { to -= shift; shipLocalTo -= shift; } }
 
         public static Arrow Shoot(Transform parent, Vector3 from, Vector3 to, Longship targetShip)
         {
