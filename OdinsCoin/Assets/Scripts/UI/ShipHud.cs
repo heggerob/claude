@@ -51,6 +51,23 @@ namespace OdinsCoin
                 float set = Mathf.Repeat(Mathf.Atan2(Ship.Stream.x, Ship.Stream.z) * Mathf.Rad2Deg, 360f);
                 GUI.Label(new Rect(20f, Screen.height - 82f, 560f, 22f), string.Format("<color=#9fd0ff>Current:</color> {0:0.0} kn setting {1:000}°", Ship.Stream.magnitude * 1.9438f, set), style);
             }
+            // The nearest hoard you hold a map to: where it is from here.
+            if (Upgrades.Current.Maps.Count > 0 && Ship != null && WorldMap.Current != null)
+            {
+                var here = Ship.transform.position;
+                float gx = (float)WorldOrigin.GlobalX(here), gz = (float)WorldOrigin.GlobalZ(here), best = float.MaxValue, bx = 0f, bz = 0f;
+                string bestName = null;
+                foreach (var name in Upgrades.Current.Maps)
+                {
+                    var place = Places.Find(name);
+                    Vector3 spot;
+                    if (place == null || !Hoards.SpotOf(WorldMap.Current, place, out spot)) continue;
+                    float d = new Vector2(spot.x - gx, spot.z - gz).magnitude;
+                    if (d < best) { best = d; bestName = name; bx = spot.x - gx; bz = spot.z - gz; }
+                }
+                if (bestName != null)
+                    GUI.Label(new Rect(20f, Screen.height - 130f, 560f, 22f), string.Format("<color=#e8c070>Treasure map:</color> a hoard buried near <b>{0}</b>, {1}, bearing {2:000}°", bestName, Distance(best), Mathf.Repeat(Mathf.Atan2(bx, bz) * Mathf.Rad2Deg, 360f)), style);
+            }
             // The wreck with your lost treasure: where it is from here.
             Wreck.Tidy();
             if (Wreck.At.HasValue && Ship != null)

@@ -343,6 +343,17 @@ public static class LogicTests
             ChartReveal.Clear();
         }
 
+        // Dug hoards and maps survive a save.
+        {
+            var hoardSave = new Upgrades();
+            hoardSave.Dug.Add("Kaupang"); hoardSave.Maps.Add("Hedeby");
+            Fortune hf; Upgrades hu;
+            SaveGame.Deserialize(SaveGame.Serialize(new Fortune(), hoardSave), out hf, out hu);
+            Check(hu.Dug.Contains("Kaupang") && hu.Maps.Contains("Hedeby"), "dug hoards and treasure maps survive a save");
+            int cairnParts = Hoards.Model().Pieces.Count;
+            Check(cairnParts >= 2, "a hoard is marked by a cairn and a cross in the turf");
+        }
+
         // Rune rings: touch the stones in order of their notches.
         {
             var puzzle = new RunePuzzle(5, 1234);
@@ -647,6 +658,32 @@ public static class LogicTests
         var harboursPath = "OdinsCoin/Assets/Resources/World/harbours.txt";
         Check(System.IO.File.Exists(harboursPath), "the baked harbours are in the game's resources");
         Places.LoadHarbours(System.IO.File.Exists(harboursPath) ? System.IO.File.ReadAllText(harboursPath) : null);
+
+        // Buried hoards: one out beyond every place's houses, on dry land, the same spot every time.
+        {
+            int placed = 0, fine = 0;
+            foreach (var place in Places.All)
+            {
+                var hoardPlots = Settlements.Layout(map, place);
+                if (hoardPlots.Count == 0) continue;
+                Vector3 a, b;
+                Func<float, float, float> ground = (x, z) => TerrainDetail.Height(map, x, z);
+                if (!Hoards.Spot(place, hoardPlots, ground, out a)) continue;
+                placed++;
+                Hoards.Spot(place, hoardPlots, ground, out b);
+                float dist = Vector3.Distance(new Vector3(a.x, 0f, a.z), new Vector3(PlaceLife.MainBuilding(hoardPlots).at.x, 0f, PlaceLife.MainBuilding(hoardPlots).at.z));
+                bool clear = true;
+                foreach (var plot in hoardPlots) clear &= !PlaceLife.InsideBuilding(plot, a, 5f);
+                if (a == b && a.y >= 2f && dist >= Hoards.MinDistance - 1f && dist <= Hoards.MaxDistance + 1f && clear) fine++;
+            }
+            Check(placed >= Places.All.Length - 3 && fine == placed, placed + " places have a buried hoard, each out beyond the houses on dry land, the same spot every time");
+            var dug = new List<string> { "Kaupang" };
+            var mapped = new List<string> { "Birka" };
+            var kaupang = Places.Position(map, Places.Find("Kaupang"));
+            var to = Hoards.MapTo(map, kaupang, dug, mapped);
+            Check(to != null && to.name != "Kaupang" && to.name != "Birka", "a map leads to a hoard not yet dug or mapped (" + (to != null ? to.name : "none") + ")");
+            Check(Hoards.HasMap(0.1f) && !Hoards.HasMap(0.9f), "about one plundered chest in three holds a map");
+        }
         var names = new HashSet<string>();
         int halls = 0, monasteries = 0;
         foreach (var place in Places.All)

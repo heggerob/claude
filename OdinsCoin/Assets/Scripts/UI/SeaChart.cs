@@ -178,6 +178,15 @@ namespace OdinsCoin
                 if (place.name == Upgrades.Current.Commission) { mark = "⚑"; name = "<color=#9a1c10><b>" + place.name + " (Bjorn's commission)</b></color>"; }
                 GUI.Label(new Rect(p.x - 5f, p.y - 9f, 220f, 18f), mark + " " + name, label);
             }
+            // Hoards you hold maps to.
+            foreach (var name in Upgrades.Current.Maps)
+            {
+                var hp2 = Places.Find(name);
+                Vector3 spot;
+                if (hp2 == null || !Hoards.SpotOf(map, hp2, out spot)) continue;
+                var sp = ToScreen(view, screen, spot.x, spot.z);
+                if (screen.Contains(sp)) GUI.Label(new Rect(sp.x - 6f, sp.y - 9f, 200f, 18f), "<color=#9a1c10>✕</color> <i>hoard</i>", label);
+            }
             // The wreck with your lost treasure.
             if (Wreck.At.HasValue)
             {

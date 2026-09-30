@@ -40,6 +40,8 @@ namespace OdinsCoin
             if (u.Raided.Count > 0) Line(sb, "raided", string.Join(",", u.Raided.ToArray()));
             if (!string.IsNullOrEmpty(u.Seen)) Line(sb, "seen", u.Seen);
             if (u.Shrines.Count > 0) Line(sb, "shrines", string.Join(",", u.Shrines.ToArray()));
+            if (u.Dug.Count > 0) Line(sb, "dug", string.Join(",", u.Dug.ToArray()));
+            if (u.Maps.Count > 0) Line(sb, "maps", string.Join(",", u.Maps.ToArray()));
             if (u.Vitality + u.Endurance + u.Luck > 0)
                 Line(sb, "gifts", u.Vitality.ToString(CultureInfo.InvariantCulture) + "," + u.Endurance.ToString(CultureInfo.InvariantCulture) + "," + u.Luck.ToString(CultureInfo.InvariantCulture));
             if (!string.IsNullOrEmpty(u.Commission))
@@ -89,6 +91,14 @@ namespace OdinsCoin
                     case "shrines":
                         foreach (var name in value.Split(','))
                             if (Places.Find(name.Trim()) != null && !u.Shrines.Contains(name.Trim())) u.Shrines.Add(name.Trim());
+                        break;
+                    case "dug":
+                        foreach (var name in value.Split(','))
+                            if (Places.Find(name.Trim()) != null && !u.Dug.Contains(name.Trim())) u.Dug.Add(name.Trim());
+                        break;
+                    case "maps":
+                        foreach (var name in value.Split(','))
+                            if (Places.Find(name.Trim()) != null && !u.Maps.Contains(name.Trim())) u.Maps.Add(name.Trim());
                         break;
                     case "gifts":
                         if (nums.Length == 3) { u.Vitality = Mathf.Clamp(nums[0], 0, 50); u.Endurance = Mathf.Clamp(nums[1], 0, 50); u.Luck = Mathf.Clamp(nums[2], 0, 50); }

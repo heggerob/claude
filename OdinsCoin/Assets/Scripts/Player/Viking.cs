@@ -331,6 +331,8 @@ namespace OdinsCoin
             if (AtHelm) { Prompt = "[E] Leave the steering oar"; return; }
             if (OnShip && Carrying == null && Vector3.Distance(transform.position, Ship.Parts.helm.position) < InteractRange) { Prompt = "[E] Take the steering oar"; return; }
             if (OnShip && NearAltar()) { Prompt = AltarPrompt(); if (Prompt != null) return; }
+            Transform cairn; Place cairnPlace;
+            if (!OnShip && Carrying == null && Hoards.Near(transform.position, out cairn, out cairnPlace)) { Prompt = "[E] Dig at the cairn"; return; }
             ShrineRing ring; int stone;
             if (!OnShip && Carrying == null && RuneShrines.Near(transform.position, out ring, out stone))
             {
@@ -388,6 +390,15 @@ namespace OdinsCoin
                 return;
             }
             if (OnShip && NearAltar() && StakeAtAltar()) return;
+            Transform digAt; Place digPlace;
+            if (!OnShip && Carrying == null && Hoards.Near(transform.position, out digAt, out digPlace))
+            {
+                var world = GameBootstrap.Instance != null ? GameBootstrap.Instance.transform : null;
+                var dug = Hoards.Dig(digAt, digPlace, world);
+                Sfx.At(SfxId.Chest, dug.transform.position, 1f);
+                CombatHud.Banner("BURIED TREASURE", "Under the cairn: a " + dug.Name + " worth " + dug.Value + " gold.");
+                return;
+            }
             ShrineRing touched; int touchedStone;
             if (!OnShip && Carrying == null && RuneShrines.Near(transform.position, out touched, out touchedStone) && !touched.Puzzle.Solved)
             {

@@ -87,6 +87,7 @@ namespace OdinsCoin
             // You know your home waters: the chart shows them from the start.
             ChartReveal.Reveal(home.x, home.z, ChartReveal.SurveyRadius);
             SceneryField.Create(null, map, focus);
+            world.gameObject.AddComponent<HoardGuide>().Setup(map, world, focus);
             var sites = world.gameObject.AddComponent<PlaceSites>();
             sites.Setup(map, world, focus);
             world.gameObject.AddComponent<FloatingOrigin>().follow = focus;
@@ -235,7 +236,9 @@ namespace OdinsCoin
             foreach (var at in PlaceLife.Stations(map, plots, main, plunder.chests, 3f, seed))
             {
                 var scene = WorldOrigin.ToScene(at.x, at.z, TerrainDetail.Height(map, at.x, at.z) + 0.05f);
-                chests.Add(TreasureChest.Create(site, scene, (float)rng.NextDouble() * 360f, plunder.minGold + rng.Next(plunder.maxGold - plunder.minGold + 1)));
+                var loot = TreasureChest.Create(site, scene, (float)rng.NextDouble() * 360f, plunder.minGold + rng.Next(plunder.maxGold - plunder.minGold + 1));
+                loot.FromPlunder = true;
+                chests.Add(loot);
             }
             int n = 0;
             foreach (var at in PlaceLife.Stations(map, plots, main, plunder.guards, 8f, seed + 1))
@@ -265,6 +268,9 @@ namespace OdinsCoin
             // Something high or bright to head for, seen from far out at sea.
             var mark = Landmarks.Spot(plots, fields, ground);
             Landmarks.Build(root, place, mark);
+            // A buried hoard somewhere out beyond the houses.
+            Vector3 hoard;
+            if (Hoards.Spot(place, plots, ground, out hoard)) { Hoards.Build(root, place, hoard); Scenery.Clearings.Add(new Vector3(hoard.x, hoard.z, 4f)); }
             // A rune ring round it, with a gift for whoever works it out.
             ShrineRing.Build(root, place, WorldOrigin.ToScene(mark.x, mark.z, mark.y), p => TerrainDetail.Height(map, WorldOrigin.GlobalX(p), WorldOrigin.GlobalZ(p)));
             Scenery.Clearings.Add(new Vector3(mark.x, mark.z, 8f));

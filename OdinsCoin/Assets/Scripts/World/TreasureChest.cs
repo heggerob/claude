@@ -17,6 +17,8 @@ namespace OdinsCoin
         static void ResetStatics() { All.Clear(); }
 
         public int BaseGold;
+        /// <summary>Plundered from a place (it may hold a map to a buried hoard, found when first picked up).</summary>
+        public bool FromPlunder;
         /// <summary>How far Odin has raised it: 0 a plain chest, 1 silver, 2 gold, 3 Odin's hoard. Each step doubles its worth.</summary>
         public int Tier;
         public const int MaxTier = 3;
@@ -124,9 +126,13 @@ namespace OdinsCoin
         }
 
         /// <summary>Into the Viking's arms: no collider while carried, no bobbing.</summary>
+        /// <summary>Picked up for the first time: whatever was tucked inside is found.</summary>
+        public static event System.Action<TreasureChest> Opened;
+
         public void PickUp(Transform carrier)
         {
             Carried = true;
+            if (FromPlunder) { FromPlunder = false; if (Opened != null) Opened(this); }
             var floater = GetComponent<Floater>();
             if (floater != null) Destroy(floater);
             var col = GetComponent<Collider>();
