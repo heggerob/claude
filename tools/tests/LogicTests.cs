@@ -227,6 +227,26 @@ public static class LogicTests
             map.Detail = null;
         }
 
+        // The real places: every one has a harbour deep enough for the big ships, near where it really was
+        // (on the fine coast layer, which has the narrow fjords, rivers mouths and lakes).
+        bool haveCoast = System.IO.File.Exists("OdinsCoin/Assets/Resources/World/coast.bytes");
+        if (haveCoast) map.Detail = WorldDetail.FromBytes(System.IO.File.ReadAllBytes("OdinsCoin/Assets/Resources/World/coast.bytes"));
+        var names = new HashSet<string>();
+        int halls = 0, monasteries = 0;
+        foreach (var place in Places.All)
+        {
+            Check(names.Add(place.name), place.name + " is only listed once");
+            if (place.kind == PlaceKind.Hall) halls++;
+            if (place.kind == PlaceKind.Monastery) monasteries++;
+            if (!haveCoast) continue; // the harbours need the fine coast layer (tools/world/build_detail.py)
+            Vector3 harbour;
+            bool found = Places.Harbour(map, place, out harbour);
+            float away = Vector3.Distance(harbour, Places.Position(map, place)) / 1000f;
+            Check(found && Places.Depth(map, harbour) >= Places.HarbourDepth && away <= place.harbourReach, place.name + " has a harbour " + away.ToString("0.0") + " km off, " + Places.Depth(map, harbour).ToString("0") + " m deep");
+        }
+        Check(Places.All.Length >= 20 && halls >= 5 && monasteries >= 2, "there are halls to base at and monasteries to raid (" + halls + ", " + monasteries + ")");
+        map.Detail = null;
+
         // Bad files are refused rather than read as nonsense.
         bool refused = false;
         try { WorldMap.FromBytes(new byte[] { 1, 2, 3, 4, 5 }); } catch (System.IO.InvalidDataException) { refused = true; } catch (System.IO.EndOfStreamException) { refused = true; }
