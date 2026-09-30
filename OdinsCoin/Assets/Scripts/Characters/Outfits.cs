@@ -167,7 +167,7 @@ namespace OdinsCoin
                     new Ability { id = "volley", name = "Volley", description = "Loose three arrows at once." } },
                 dress = d =>
                 {
-                    Garments.FurBoots(d, 0.04f);
+                    Garments.FurBoots(d, -0.07f);
                     Garments.Gloves(d);
                     Garments.LongSkirt(d, 0.24f, 1.3f);
                     Garments.FurSkirt(d, 0.52f, 0.34f);
