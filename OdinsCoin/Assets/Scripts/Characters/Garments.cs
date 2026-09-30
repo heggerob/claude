@@ -1341,9 +1341,9 @@ namespace OdinsCoin
                 new Vector2(f.chestR * 0.5f, f.neckY - 0.03f * s), new Vector2(f.chestR * 0.85f, f.neckY + 0.01f * s), new Vector2(f.chestR * 0.6f, f.neckY + 0.04f * s) }, 16)
                 .Transformed(Vector3.zero, Quaternion.identity, new Vector3(1f, 1f, 0.95f)));
             // A wide capelet over both shoulders, down to the upper arms, falling to a ragged point at the front of the chest.
-            float capeBottom = f.shoulderY - 0.1f * s;
-            d.Add(Joints.Body, d.pal.accent, CharacterKit.RaggedSkirt(f.neckY + 0.01f * s, f.chestR * 0.7f, capeBottom, f.shoulderX + 0.065f * s, 0.85f, 22, 0.045f * s, d.seed + 83,
-                a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return -0.1f * s * c * c * c * c; }, a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return Mathf.Lerp(1f, 0.6f, c * c); }));
+            float capeBottom = f.shoulderY - 0.14f * s;
+            d.Add(Joints.Body, d.pal.accent, CharacterKit.RaggedSkirt(f.neckY + 0.01f * s, f.chestR * 0.7f, capeBottom, f.shoulderX + 0.11f * s, 0.85f, 24, 0.06f * s, d.seed + 83,
+                a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return -0.12f * s * c * c * c * c; }, a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return Mathf.Lerp(1f, 0.6f, c * c); }));
             // The hood, down, bunched behind the neck.
             d.Add(Joints.Body, VikingModel.Shade(d.pal.accent, 0.85f), MeshData.Ellipsoid(new Vector3(0f, f.neckY + 0.02f * s, -f.chestR * 0.7f), new Vector3(0.11f, 0.08f, 0.07f) * s, 12, 7));
         }
@@ -1377,9 +1377,9 @@ namespace OdinsCoin
                 var fan = Quaternion.Euler(0f, 0f, (i - 2.5f) * 9f);
                 var shaftTop = at + tilt * (off + fan * new Vector3(0f, (0.46f + 0.03f * (i % 3)) * s, 0f));
                 d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(new[] { at + tilt * (off + new Vector3(0f, 0.1f * s, 0f)), shaftTop }, new[] { 0.005f * s, 0.005f * s }, 4), false);
-                // Fletching: two red vanes.
+                // Fletching: two slim red feathers, swept back to a point.
                 foreach (float side in new[] { -1f, 1f })
-                    d.Add(Joints.Body, new Color(0.7f, 0.2f, 0.14f), MeshData.Extrude(new[] { new Vector2(0f, 0f), new Vector2(0.1f, 0f), new Vector2(0.11f, 0.04f), new Vector2(0.03f, 0.04f) }, 0.005f)
+                    d.Add(Joints.Body, new Color(0.7f, 0.2f, 0.14f), MeshData.Extrude(new[] { new Vector2(0f, 0f), new Vector2(0.085f, 0f), new Vector2(0.1f, 0.022f), new Vector2(0.035f, 0.024f) }, 0.005f)
                         .Transformed(shaftTop - tilt * new Vector3(0f, 0.1f * s, 0f), tilt * Quaternion.Euler(-90f, side * 90f, 0f), Vector3.one * s));
             }
             // Strap from the left shoulder across the chest to the right hip, worn over the cowl and pelt so it shows
