@@ -66,7 +66,7 @@ PY
 # The storybook heroes, laid out like the concept sheet, plus an .obj of each.
 mcs -nowarn:169,414,649,219,618 -define:ENABLE_LEGACY_INPUT_MANAGER -out:$TMP/heroes.exe \
   tools/unity-stub/UnityStub.cs tools/preview/HeroPreview.cs $(find OdinsCoin/Assets/Scripts -name '*.cs')
-mono $TMP/heroes.exe $TMP/heroes.rgba $TMP/heroes.txt OdinsCoin/docs/heroes $TMP/motion.rgba $TMP/motion.txt $TMP/skins.rgba $TMP/skins.txt $TMP/turn.rgba $TMP/turn.txt $TMP/attacks.rgba $TMP/attacks.txt $TMP/footsteps.txt $TMP/ships.rgba $TMP/ships.txt $TMP/buildings.rgba $TMP/buildings.txt
+mono $TMP/heroes.exe $TMP/heroes.rgba $TMP/heroes.txt OdinsCoin/docs/heroes $TMP/motion.rgba $TMP/motion.txt $TMP/skins.rgba $TMP/skins.txt $TMP/turn.rgba $TMP/turn.txt $TMP/attacks.rgba $TMP/attacks.txt $TMP/footsteps.txt $TMP/ships.rgba $TMP/ships.txt $TMP/buildings.rgba $TMP/buildings.txt $TMP/scene.rgba
 python3 - "$TMP/heroes.rgba" "$TMP/heroes.txt" OdinsCoin/docs/heroes.png <<'PY'
 import struct, sys
 from PIL import Image, ImageDraw, ImageFont
@@ -257,6 +257,18 @@ sheet.save(sys.argv[3])
 print('wrote', sys.argv[3])
 PY
 done
+
+# A real place as it might look in the game.
+if [ -f "$TMP/scene.rgba" ]; then
+python3 - "$TMP/scene.rgba" OdinsCoin/docs/scene-kaupang.png <<'PY'
+import struct, sys
+from PIL import Image
+data = open(sys.argv[1], 'rb').read()
+w, h = struct.unpack('<ii', data[:8])
+Image.frombytes('RGBA', (w, h), data[8:]).save(sys.argv[2])
+print('wrote', sys.argv[2])
+PY
+fi
 
 # Side-by-side against the concept sheet: reference on the left, our render on the right.
 HERO_LABELS=$TMP/heroes.txt python3 - <<'PY'

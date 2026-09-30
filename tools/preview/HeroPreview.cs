@@ -33,6 +33,8 @@ public static class HeroPreview
         public Expression face = Expression.Neutral;
         /// <summary>Less than 1 draws the hero smaller, leaving room for big swings.</summary>
         public float zoom = 1f;
+        /// <summary>How far the camera looks down (degrees).</summary>
+        public float pitch = 8f;
     }
 
     static readonly Color Paper = new Color(0.965f, 0.945f, 0.9f);
@@ -234,6 +236,7 @@ public static class HeroPreview
         if (args.Length > 11) FootstepTrace(args[11]);
         if (args.Length > 13) ShipSheet(args[12], args[13]);
         if (args.Length > 15) BuildingSheet(args[14], args[15]);
+        if (args.Length > 16) HarbourScene(args[16]);
         Directory.CreateDirectory(args[2]);
         ExportObj(HeroModel.Build(raider), Path.Combine(args[2], "raider.obj"));
         ExportObj(HeroModel.BuildWeapon(raider), Path.Combine(args[2], "two-hand-axe.obj"));
@@ -444,6 +447,70 @@ public static class HeroPreview
         File.WriteAllLines(labelPath, names);
     }
 
+    /// <summary>
+    /// A real place as it might look in the game (docs/scene-kaupang.png): the land from the real map, the
+    /// settlement's buildings where they're laid out, the jetty, and a Wavewolf lying alongside it.
+    /// </summary>
+    static void HarbourScene(string rgbaPath)
+    {
+        var mapPath = "OdinsCoin/Assets/Resources/World/north.bytes";
+        if (!File.Exists(mapPath)) return;
+        var map = WorldMap.FromBytes(File.ReadAllBytes(mapPath));
+        map.Detail = WorldDetail.FromBytes(File.ReadAllBytes("OdinsCoin/Assets/Resources/World/coast.bytes"));
+        Places.LoadHarbours(File.ReadAllText("OdinsCoin/Assets/Resources/World/harbours.txt"));
+        var place = Places.Find("Kaupang");
+        var plots = Settlements.Layout(map, place);
+        var jetty = plots[0];
+        var jettyTurn = Quaternion.Euler(0f, jetty.yaw, 0f);
+        var centre = jetty.at + jettyTurn * new Vector3(0f, 0f, 20f);
+        const string J = "Scene";
+        var m = new VikingModel();
+        m.AddJoint(J, null, Vector3.zero);
+        // The land: a patch of the real terrain round the jetty.
+        const float half = 230f;
+        var patch = TerrainPatch.Build(map, centre.x - half, centre.z - half, half * 2f, 80);
+        for (int k = 0; k < patch.Triangles.Length; k++)
+        {
+            if (k == (int)Ground.Seabed) continue;
+            var md = new MeshData();
+            foreach (int idx in patch.Triangles[k]) { md.Triangles.Add(md.Vertices.Count); md.Vertices.Add(patch.Vertices[idx] - new Vector3(half, 0f, half)); }
+            m.Add(J, TerrainPatch.ColourOf((Ground)k), md, false, k == (int)Ground.Rock ? SurfaceKind.Plain : SurfaceKind.Plain);
+        }
+        // The sea.
+        m.Add(J, new Color(0.36f, 0.52f, 0.6f), MeshData.Box(new Vector3(0f, -0.05f, 0f), new Vector3(half * 2f, 0.1f, half * 2f)), false);
+        // The settlement.
+        var look = new BuildingLook();
+        int n = 0;
+        foreach (var plot in plots)
+        {
+            var model = Buildings.Build(plot.kind, look, n++);
+            var turn = Quaternion.Euler(0f, plot.yaw, 0f);
+            var at = plot.at - centre;
+            foreach (var piece in model.Pieces)
+                m.Pieces.Add(new VikingModel.Piece { joint = J, color = piece.color, mesh = piece.mesh.Transformed(at, turn, Vector3.one), surface = piece.surface, outline = piece.outline, ink = piece.ink });
+        }
+        // A Wavewolf alongside the jetty, bow to seaward.
+        var wolf = ShipDesign.Wavewolf;
+        var berth = jetty.at + jettyTurn * new Vector3(2f + wolf.beam / 2f + 0.5f, 0.2f, 22f) - centre;
+        foreach (var piece in ShipModel.Build(wolf, new ShipLook()).Pieces)
+            m.Pieces.Add(new VikingModel.Piece { joint = J, color = piece.color, mesh = piece.mesh.Transformed(berth, jettyTurn, Vector3.one), surface = piece.surface, outline = piece.outline, ink = piece.ink });
+
+        const int w = 1800, h = 1000;
+        var img = new float[w * h * 3];
+        for (int i = 0; i < w * h; i++) { img[i * 3] = Paper.r; img[i * 3 + 1] = Paper.g; img[i * 3 + 2] = Paper.b; }
+        var pose = new Pose();
+        pose.pos[J] = new Vector3(0f, 0f, 0f);
+        Render(img, w, h, 0, w, h, new Shot { model = m, pose = pose, yaw = jetty.yaw + 150f, zoom = 0.018f, pitch = 34f });
+        using (var fs = new BinaryWriter(File.Create(rgbaPath)))
+        {
+            fs.Write(w); fs.Write(h);
+            for (int i = 0; i < w * h; i++)
+            {
+                fs.Write((byte)(Mathf.Clamp01(img[i * 3]) * 255)); fs.Write((byte)(Mathf.Clamp01(img[i * 3 + 1]) * 255)); fs.Write((byte)(Mathf.Clamp01(img[i * 3 + 2]) * 255)); fs.Write((byte)255);
+            }
+        }
+    }
+
     static string F(float v) { return v.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture); }
 
     /// <summary>
@@ -650,7 +717,7 @@ public static class HeroPreview
 
     static void Render(float[] img, int w, int h, int x0, int cellW, int cellH, Shot shot)
     {
-        var cam = Quaternion.Euler(8f, shot.yaw, 0f);
+        var cam = Quaternion.Euler(shot.pitch, shot.yaw, 0f);
         var inv = new Quaternion(-cam.x, -cam.y, -cam.z, cam.w);
         Vector3 forward = cam * Vector3.forward;
         Vector3 light = new Vector3(-0.5f, 0.75f, 0.45f).normalized;

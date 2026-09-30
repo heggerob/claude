@@ -394,7 +394,7 @@ public static class LogicTests
                 bool dry = true, apart = true;
                 for (int i = 1; i < plots.Count; i++)
                 {
-                    if (TerrainDetail.Height(map, plots[i].at.x, plots[i].at.z) < 1f) dry = false;
+                    if (TerrainDetail.Height(map, plots[i].at.x, plots[i].at.z) < 0.6f) dry = false;
                     for (int j = 1; j < i; j++)
                         if (Vector2.Distance(new Vector2(plots[i].at.x, plots[i].at.z), new Vector2(plots[j].at.x, plots[j].at.z)) < 6f) apart = false;
                 }

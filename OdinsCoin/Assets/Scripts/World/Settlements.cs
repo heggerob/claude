@@ -37,11 +37,12 @@ namespace OdinsCoin
         {
             float s = WorldMap.Scale;
             float h = TerrainDetail.Height(map, at.x, at.z) / s;
-            if (h < 1.5f || h > 400f) return false;
+            // Viking towns were built right down by the water: anything clear of the tide will do.
+            if (h < 0.8f || h > 400f) return false;
             float hx = TerrainDetail.Height(map, at.x + radius, at.z) / s, hz = TerrainDetail.Height(map, at.x, at.z + radius) / s;
             float hx2 = TerrainDetail.Height(map, at.x - radius, at.z) / s, hz2 = TerrainDetail.Height(map, at.x, at.z - radius) / s;
             float spread = Mathf.Max(Mathf.Max(hx, hx2), Mathf.Max(hz, hz2)) - Mathf.Min(Mathf.Min(hx, hx2), Mathf.Min(hz, hz2));
-            return Mathf.Min(Mathf.Min(hx, hx2), Mathf.Min(hz, hz2)) > 0.5f && spread < radius * 0.35f;
+            return Mathf.Min(Mathf.Min(hx, hx2), Mathf.Min(hz, hz2)) > 0.3f && spread < radius * 0.35f;
         }
 
         /// <summary>The settlement for a place: the jetty first, then its buildings. Empty if it has no harbour.</summary>
