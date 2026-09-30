@@ -94,11 +94,17 @@ namespace OdinsCoin
             float strideTarget = stepping ? Mathf.Clamp01(0.35f + g) : 0f;
             if (loco.Pivoting && grounded) strideTarget = Mathf.Max(strideTarget, 0.45f);
             float reach = stride.Step(strideTarget, dt, 0.1f);
-            float run = Mathf.Clamp01((g - 0.62f) / 0.3f);
+            // The game's walk (4.2 m/s) is really a brisk jog, so the running gait comes in early.
+            float run = Mathf.Clamp01((g - 0.35f) / 0.45f);
             float cycleL = Frac(loco.Stride + 0.5f), cycleR = Frac(loco.Stride);
             float hipL, kneeL, hipR, kneeR, ankL, ankR;
             Gait.Sample(cycleL, run, out hipL, out kneeL, out ankL);
             Gait.Sample(cycleR, run, out hipR, out kneeR, out ankR);
+            // Feet stay planted: the thigh sweeps as far as the body travels over the foot while it's down, so the
+            // stance foot doesn't skate (within what a leg can do).
+            float sweep = Gait.SweepFor(loco.speed, loco.Cadence, run);
+            float mean = Mathf.Lerp(Gait.WalkMeanHip, Gait.RunMeanHip, run);
+            hipL = mean + (hipL - mean) * sweep; hipR = mean + (hipR - mean) * sweep;
             hipL *= reach; kneeL *= reach; hipR *= reach; kneeR *= reach; ankL *= reach; ankR *= reach;
             // In the air: legs push off straight, tuck up at the top, and reach down for the ground as it falls.
             float falling = fall.Step(Mathf.Clamp01(-verticalSpeed / 6f), dt, 0.1f);
@@ -190,6 +196,20 @@ namespace OdinsCoin
     {
         /// <summary>Thigh and shin length on the reference body (m), for how high the hips ride.</summary>
         public const float Thigh = 0.454f, Shin = 0.47f;
+        /// <summary>The middle of each gait's hip swing, and how far the thigh sweeps while the foot is down (degrees).</summary>
+        public const float WalkMeanHip = 7.5f, RunMeanHip = 13f, WalkSweep = 33f, RunSweep = 48f;
+
+        /// <summary>
+        /// How much to scale the hip swing so the planted foot doesn't slide: the body moves speed/cadence metres
+        /// per step, and the leg must sweep that far under it.
+        /// </summary>
+        public static float SweepFor(float speed, float cadence, float run)
+        {
+            if (speed < 0.05f || cadence <= 0f) return 1f;
+            float travel = speed / cadence;
+            float needed = 2f * Mathf.Asin(Mathf.Clamp(travel * 0.5f / (Thigh + Shin), 0f, 0.9f)) * Mathf.Rad2Deg;
+            return Mathf.Clamp(needed / Mathf.Lerp(WalkSweep, RunSweep, run), 0.6f, 1.8f);
+        }
 
         // Percent of the gait cycle, and the angle there.
         static readonly float[] walkT = { 0f, 12f, 30f, 50f, 60f, 73f, 87f, 100f };

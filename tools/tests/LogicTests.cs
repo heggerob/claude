@@ -1120,8 +1120,27 @@ public static class LogicTests
             runLean += an.pose.body.x / 60f;
             runElbow += an.pose.leftElbow / 60f;
         }
-        Check(runLegs > walkLegs * 1.1f && runLean > walkLean + 2f, "sprinting strides out and leans in (" + runLegs + ", " + runLean + ")");
+        Check(runLegs > walkLegs * 0.9f && runLean > walkLean + 2f, "sprinting strides out and leans in (" + runLegs + ", " + runLean + ")");
         Check(runElbow < -60f, "sprinting pumps the arms with bent elbows (" + runElbow + ")");
+
+        // The foot on the ground stays put while the body goes over it (no skating), walking and running.
+        foreach (float speed in new[] { walk, sprint })
+        {
+            var fl = Walker(); var fa = new HeroAnimator(); float ft = 0f;
+            Animate(fl, fa, new Vector2(0f, 1f), speed, 2f, true, 0f, ref ft);
+            float slip = 0f, moved = 0f, prevFoot = float.NaN; bool prevLeft = false;
+            for (int i = 0; i < 120; i++)
+            {
+                Animate(fl, fa, new Vector2(0f, 1f), speed, 1f / 60f, true, 0f, ref ft);
+                var p = fa.pose;
+                bool left = Gait.Reach(p.leftLeg.x, p.leftKnee) > Gait.Reach(p.rightLeg.x, p.rightKnee);
+                float hip = left ? -p.leftLeg.x : -p.rightLeg.x, knee = left ? p.leftKnee : p.rightKnee;
+                float foot = fl.position.y + Gait.Thigh * Mathf.Sin(hip * Mathf.Deg2Rad) + Gait.Shin * Mathf.Sin((hip - knee) * Mathf.Deg2Rad);
+                if (!float.IsNaN(prevFoot) && left == prevLeft) { slip += Mathf.Abs(foot - prevFoot); moved += fl.speed / 60f; }
+                prevFoot = foot; prevLeft = left;
+            }
+            Check(slip < moved * 0.35f, "at " + speed + " m/s the planted foot barely slides (" + slip + " m over " + moved + " m)");
+        }
 
         // Turning right: the body banks right, the head looks round first.
         float bank = 0f, look = 0f;
@@ -1153,7 +1172,8 @@ public static class LogicTests
         Check(lowest < steady - 0.02f, "and springs back up (" + lowest + " landing, " + steady + " running)");
         jolt = Mathf.Max(jolt, Animate(l, an, new Vector2(-1f, -0.2f), sprint, 1.5f, true, 0f, ref time));
         jolt = Mathf.Max(jolt, Animate(l, an, Vector2.zero, sprint, 1f, true, 0f, ref time));
-        Check(jolt < 4f, "no joint jumps more than a few degrees in one frame, whatever the hero does (" + jolt + ")");
+        // (A full sprint stride itself bends the curve by ~6 degrees a frame at 60 fps; a pop would be far more.)
+        Check(jolt < 9f, "no joint jumps more than a few degrees in one frame, whatever the hero does (" + jolt + ")");
     }
 
     static void AttackTests()

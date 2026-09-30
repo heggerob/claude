@@ -301,7 +301,7 @@ public static class HeroPreview
                 next++;
             }
         }
-        const int cellW = 480, cellH = 1080;
+        const int cellW = 580, cellH = 1080;
         int w = cellW * frames.Count, h = cellH;
         var img = new float[w * h * 3];
         for (int i = 0; i < w * h; i++) { img[i * 3] = Paper.r; img[i * 3 + 1] = Paper.g; img[i * 3 + 2] = Paper.b; }
