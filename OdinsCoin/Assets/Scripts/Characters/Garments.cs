@@ -81,7 +81,7 @@ namespace OdinsCoin
             foreach (var joint in new[] { Joints.LeftLeg, Joints.RightLeg })
             {
                 float sole = -f.hip, top = f.bootTop + extra * d.S - f.hip, s = d.S;
-                float r = 0.046f * s * Mathf.Sqrt(f.width);
+                float r = 0.041f * s * Mathf.Sqrt(f.width);
                 // A slim shaft, narrowest at the ankle, flaring a little at the top.
                 d.Add(joint, d.pal.leatherDark, MeshData.Lathe(new[] {
                     new Vector2(r * 0.95f, sole), new Vector2(r * 1.08f, sole + 0.035f * s), new Vector2(r * 0.86f, sole + 0.1f * s),
