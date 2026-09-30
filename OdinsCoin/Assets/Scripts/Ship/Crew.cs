@@ -90,7 +90,12 @@ namespace OdinsCoin
                 h.loco.Step(Vector2.zero, 0f, dt);
                 h.animator.Step(dt, h.loco, true, 0f, false, Time.time + i * 1.7f);
                 h.animator.Apply(h.parts);
-                if (!reacting) continue;
+                if (!reacting)
+                {
+                    // Idle: looking out to sea, now one way, now the other.
+                    if (h.parts.head != null) h.parts.head.localRotation *= Quaternion.Euler(0f, Mathf.Sin(Time.time * 0.23f + i * 2.1f) * 55f, 0f);
+                    continue;
+                }
                 if (cheering)
                 {
                     // Both arms flung up, pumping.
