@@ -805,6 +805,8 @@ public static class LogicTests
                 }
                 if (ok) featherFine++;
             }
+            var hint = Rumours.FeatherHint(Vector3.zero, new Vector3(200f, 0f, 0f));
+            Check(hint.Contains("east") && hint.Contains("a little way") && Rumours.FeatherHint(Vector3.zero, new Vector3(0f, 0f, -50f)).Contains("just to the south"), "townsfolk tell which way a raven feather lies and roughly how far");
             Check(featherPlaces >= towns - 2 && featherFine == featherPlaces, featherPlaces + " places have three raven feathers out on the dry high ground");
         }
 

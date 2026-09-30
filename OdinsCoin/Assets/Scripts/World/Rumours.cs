@@ -72,6 +72,14 @@ namespace OdinsCoin
             return options[i];
         }
 
+        /// <summary>A hint at a raven feather near where you stand: which way it lies and roughly how far.</summary>
+        public static string FeatherHint(Vector3 from, Vector3 feather)
+        {
+            float dx = feather.x - from.x, dz = feather.z - from.z, d = Mathf.Sqrt(dx * dx + dz * dz);
+            string far = d < 120f ? "just" : d < 300f ? "a little way" : "a good walk";
+            return "One of Odin's ravens dropped a feather on the high ground " + far + " to the " + Compass(Mathf.Atan2(dx, dz) * Mathf.Rad2Deg) + ". Go and look, if your legs are young.";
+        }
+
         static string LandmarkWord(LandmarkKind k)
         {
             switch (k)

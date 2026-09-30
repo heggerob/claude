@@ -89,6 +89,28 @@ namespace OdinsCoin
     public class RavenFeather : MonoBehaviour
     {
         public string key;
+
+        public static readonly List<RavenFeather> All = new List<RavenFeather>();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() { All.Clear(); }
+
+        void OnEnable() { All.Add(this); }
+        void OnDisable() { All.Remove(this); }
+
+        /// <summary>The feather still lying nearest to a scene position within <paramref name="range"/> m, or null.</summary>
+        public static RavenFeather Nearest(Vector3 scenePos, float range)
+        {
+            RavenFeather best = null;
+            float bestD = range;
+            foreach (var f in All)
+            {
+                if (f == null) continue;
+                float d = Vector3.Distance(f.transform.position, scenePos);
+                if (d < bestD) { bestD = d; best = f; }
+            }
+            return best;
+        }
         Vector3 home;
         bool started;
 

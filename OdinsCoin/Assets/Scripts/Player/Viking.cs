@@ -15,6 +15,8 @@ namespace OdinsCoin
         public const float StrollSpeed = 1.7f;
         /// <summary>A chest full of gold is heavy: no running, no jumping, slow swimming.</summary>
         public const float CarrySpeed = 3f, CarrySwimSpeed = 1.5f;
+        /// <summary>How often a townsperson tells of a raven feather nearby rather than of somewhere far off.</summary>
+        public const float FeatherGossip = 0.35f;
         const float Gravity = 18f;
         const float InteractRange = 1.8f;
         const float ClimbRange = 3.2f;
@@ -397,6 +399,13 @@ namespace OdinsCoin
                 talker.Listen(transform.position);
                 var u = Upgrades.Current;
                 var here = new Vector3((float)WorldOrigin.GlobalX(transform.position), 0f, (float)WorldOrigin.GlobalZ(transform.position));
+                // Now and then, word of a raven feather close by instead.
+                var feather = Random.value < FeatherGossip ? RavenFeather.Nearest(transform.position, 600f) : null;
+                if (feather != null)
+                {
+                    CombatHud.Banner("THE NEWS", Rumours.FeatherHint(transform.position, feather.transform.position));
+                    return;
+                }
                 var rumour = Rumours.Tell(here, Places.All, p => Places.Position(WorldMap.Current, p), PlaceLife.Raided, u.Dug, u.Shrines, Random.value, u.Caves);
                 CombatHud.Banner("THE NEWS", rumour.HasValue ? rumour.Value.text : "Nothing much. You've seen it all, they say.");
                 return;
