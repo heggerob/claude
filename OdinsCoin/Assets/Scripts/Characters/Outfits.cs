@@ -73,7 +73,7 @@ namespace OdinsCoin
                     Garments.LongSleeves(d);
                     Garments.RingBelt(d);
                     Garments.BigCape(d, 1.12f, 2.1f);
-                    Garments.ShoulderPelt(d, 1.3f, 0f, 0.92f, 2.2f);
+                    Garments.ShoulderPelt(d, 1.42f, 0f, 0.92f, 2.2f);
                     Garments.Brooches(d);
                     Garments.JarlCrown(d);
                 } } },
