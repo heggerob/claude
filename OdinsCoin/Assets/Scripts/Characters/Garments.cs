@@ -745,7 +745,7 @@ namespace OdinsCoin
             // Broad pale woven borders, down the front edge and across the hem, patterned in the cloak's own dark
             // blue, like the concept art.
             var pattern = VikingModel.Shade(d.pal.accent, 0.55f);
-            float border = 0.05f * s;
+            float border = 0.09f * s;
             var hemBand = new Vector3[trim.Length, 2];
             var hemMid = new Vector3[trim.Length];
             for (int i = 0; i < trim.Length; i++)
@@ -755,7 +755,7 @@ namespace OdinsCoin
                 hemMid[i] = trim[i] + Vector3.up * border * 0.45f + new Vector3(trim[i].x, 0f, trim[i].z).normalized * 0.006f * s;
             }
             d.Add(Joints.Body, d.pal.emblem, CharacterKit.Sheet(hemBand, new Vector3(1f, 0f, 0.6f), 0.004f * s), false);
-            d.Add(Joints.Body, pattern, CharacterKit.ZigZag(hemMid, Vector3.up, 0.03f * s, 0.004f * s), false);
+            d.Add(Joints.Body, pattern, CharacterKit.ZigZag(hemMid, Vector3.up, 0.05f * s, 0.0055f * s), false);
             var frontBand = new Vector3[rows - 1, 2];
             var frontMid = new Vector3[rows - 1];
             for (int r = 0; r < rows - 1; r++)
@@ -768,7 +768,7 @@ namespace OdinsCoin
                 frontMid[r] = p + into * border * 0.5f + lift * 1.5f;
             }
             d.Add(Joints.Body, d.pal.emblem, CharacterKit.Sheet(frontBand, new Vector3(1f, 0f, 0.6f), 0.004f * s), false);
-            d.Add(Joints.Body, pattern, CharacterKit.ZigZag(frontMid, new Vector3(1f, 0f, 0.6f).normalized, 0.03f * s, 0.004f * s), false);
+            d.Add(Joints.Body, pattern, CharacterKit.ZigZag(frontMid, new Vector3(1f, 0f, 0.6f).normalized, 0.05f * s, 0.0055f * s), false);
             // A thin pale line down the far edge too.
             foreach (int c in new[] { cols - 1 })
             {

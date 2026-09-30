@@ -138,7 +138,7 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
     - **Jarl:** de innpakkede flettene slutter ved brystet, som i bildet.
   - Runde 21 (ferdig):
     - **Spear Guard:** pelskragen er lysere og kortere, en bred krage høyt oppe på skuldrene som i bildet. Skjerfhalen henger ned mot skjoldsiden og blir smalere nedover. Knuten på skjoldet er tynne malte linjer i stedet for tykke tau med mørk kant, og buklen er en mindre, rundere jernkule. Beltet er bredere og lysere brunt, ligger utenpå kjortelen i stedet for under den og har en stor jernring med torn foran.
-    - **Navigator:** de to haleendene på skautet henger ned bak øret og smalner til spisser, i stedet for å stikke ut til siden som en caps-skygge. Støvlene er slankere og litt høyere, som de smale leggstøvlene i bildet. Kappa henger lenger, ned forbi skjørtet mot leggen.
+    - **Navigator:** de to haleendene på skautet henger ned bak øret og smalner til spisser, i stedet for å stikke ut til siden som en caps-skygge. Støvlene er slankere og litt høyere, som de smale leggstøvlene i bildet. Kappa henger lenger, ned forbi skjørtet mot leggen. Den lyse vevde bården langs forkanten og nederst på kappa er nesten dobbelt så bred, med større mønster.
     - **Scout:** kragen og den nedslåtte hetta sitter lavere, så de ikke lenger ser ut som en høy turtleneck opp til haken. Støvlene er høyere, som leggstøvlene med pelskant i bildet.
     - **Alle:** pelsstøvlene er slankere, omtrent dobbelt så tykke som de tynne beina, som i bildet.
     - **Jarl:** to lærremmer fra under brosjene krysser brystet ned mot beltet, med en gullring der de krysses. Den røde kappa vifter bredt ut på begge sider og henger nesten ned til bakken, som i bildet.
