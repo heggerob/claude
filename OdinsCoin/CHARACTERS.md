@@ -96,6 +96,13 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
     - **Spydvakt:** lengre og bredere spydblad.
     - **Seer:** ansiktet er fritt, med én lang snor med store runeskiver på hver side. Flettene når ned til hofta, og kjortelen er bred nederst.
     - **Speider:** korte støvler, så beina synes.
+  - Runde 11 (ferdig):
+    - **Jarl:** pelskragen er bred og kort og ligger ute over skuldrene.
+    - **Raider:** skjørtet og det røde forkleet henger ned til støvlene, og pelskragen er bredere og kortere.
+    - **Navigatør:** kartet er mindre, så pelskragen og fletta synes.
+    - **Spydvakt:** knuten på skjoldet er malt med brede, lyse bånd med mørk kant, og pelskragen er bredere.
+    - **Seer:** slankere og høyere, kjortelen faller rett ned, og fargen er skifergrå.
+    - **Speider:** den grønne kappa er bredere over skuldrene, og pilene har smale, spisse fjær.
 - [x] **9. Bevegelse i plaggene:** (se [docs/motion.png](docs/motion.png)) kapper, skjørt, fletter, pels og vimpler svinger og henger etter når figuren går, snur og hugger (enkel fysikk med fjærer).
 - [x] **10. Tegneserie-look på alt:** tusj-kanter på skipet, øyene, trærne, husene og havet, skravur med blyant eller tusj i skyggene, og papirkorn over hele bildet.
   - [x] Skravur i skyggene: shaderen `OdinsCoin/InkToon` (i `Resources/Shaders`) gir myk tegnet belysning med kalde skygger, enkle blyantstreker på skyggesiden og kryss-skravur i de mørkeste delene. Ansiktene får ingen skravur, så de holder seg rene. Den brukes på alt som ikke er blankt (havet beholder Lit). `InkStyle.cs` har samme matte, og forhåndsvisningen bruker den.
