@@ -1178,14 +1178,16 @@ namespace OdinsCoin
             var tilt = Quaternion.Euler(0f, 0f, 28f);
             d.Add(Joints.Body, d.pal.leather, MeshData.Lathe(new[] { new Vector2(0.035f * s, -0.22f * s), new Vector2(0.045f * s, 0.14f * s) }, 10).Transformed(at, tilt, Vector3.one));
             d.Add(Joints.Body, d.pal.leatherDark, MeshData.Lathe(new[] { new Vector2(0.048f * s, 0.1f * s), new Vector2(0.048f * s, 0.14f * s) }, 10).Transformed(at, tilt, Vector3.one), false);
-            for (int i = 0; i < 4; i++)
+            // A fan of arrows standing well up out of the quiver, their red fletching above the shoulder.
+            for (int i = 0; i < 6; i++)
             {
-                var off = new Vector3((i - 1.5f) * 0.018f, 0f, (i % 2) * 0.015f) * s;
-                var shaftTop = at + tilt * (off + new Vector3(0f, 0.3f * s, 0f));
+                var off = new Vector3((i - 2.5f) * 0.016f, 0f, (i % 2) * 0.016f) * s;
+                var fan = Quaternion.Euler(0f, 0f, (i - 2.5f) * 4f);
+                var shaftTop = at + tilt * (off + fan * new Vector3(0f, (0.4f + 0.03f * (i % 3)) * s, 0f));
                 d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(new[] { at + tilt * (off + new Vector3(0f, 0.1f * s, 0f)), shaftTop }, new[] { 0.005f * s, 0.005f * s }, 4), false);
                 // Fletching: two red vanes.
                 foreach (float side in new[] { -1f, 1f })
-                    d.Add(Joints.Body, new Color(0.7f, 0.2f, 0.14f), MeshData.Extrude(new[] { new Vector2(0f, 0f), new Vector2(0.09f, 0f), new Vector2(0.1f, 0.03f), new Vector2(0.03f, 0.03f) }, 0.004f)
+                    d.Add(Joints.Body, new Color(0.7f, 0.2f, 0.14f), MeshData.Extrude(new[] { new Vector2(0f, 0f), new Vector2(0.1f, 0f), new Vector2(0.11f, 0.04f), new Vector2(0.03f, 0.04f) }, 0.005f)
                         .Transformed(shaftTop - tilt * new Vector3(0f, 0.1f * s, 0f), tilt * Quaternion.Euler(-90f, side * 90f, 0f), Vector3.one * s));
             }
             // Strap from the left shoulder across the chest to the right hip.
