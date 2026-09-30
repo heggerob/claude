@@ -298,23 +298,26 @@ namespace OdinsCoin
             var steel = d.pal.metal;
             // A deep bowl: wider than the face and coming down at the back and sides.
             d.Add(Joints.Head, steel, MeshData.Lathe(new[] {
-                new Vector2(r * 1.2f, brim - 0.12f * r), new Vector2(r * 1.24f, brim + 0.15f * r), new Vector2(r * 1.2f, brim + 0.5f * r),
-                new Vector2(r * 0.98f, brim + 0.88f * r), new Vector2(r * 0.55f, brim + 1.12f * r), new Vector2(0.01f, brim + 1.2f * r) }, 20)
+                new Vector2(r * 1.12f, brim - 0.12f * r), new Vector2(r * 1.15f, brim + 0.15f * r), new Vector2(r * 1.12f, brim + 0.5f * r),
+                new Vector2(r * 0.92f, brim + 0.86f * r), new Vector2(r * 0.52f, brim + 1.08f * r), new Vector2(0.01f, brim + 1.15f * r) }, 20)
                 .Transformed(new Vector3(0f, 0f, -0.02f * r), Quaternion.identity, Vector3.one));
-            d.Add(Joints.Head, VikingModel.Shade(steel, 0.72f), CharacterKit.Band(brim - 0.08f * r, 0.035f * d.S, r * 1.26f, 1f, 20)
+            d.Add(Joints.Head, VikingModel.Shade(steel, 0.72f), CharacterKit.Band(brim - 0.08f * r, 0.035f * d.S, r * 1.17f, 1f, 20)
                 .Transformed(new Vector3(0f, 0f, -0.02f * r), Quaternion.identity, Vector3.one));
             // A broad riveted ridge from brow to nape, a paler strip down the front (the concept's shine).
             var ridge = new Vector3[7];
             for (int i = 0; i < ridge.Length; i++)
             {
                 float a = Mathf.Lerp(-0.1f, Mathf.PI + 0.1f, i / (float)(ridge.Length - 1));
-                ridge[i] = new Vector3(0f, brim + Mathf.Sin(a) * r * 1.18f, Mathf.Cos(a) * r * 1.22f - 0.02f * r);
+                ridge[i] = new Vector3(0f, brim + Mathf.Sin(a) * r * 1.13f, Mathf.Cos(a) * r * 1.14f - 0.02f * r);
             }
             var rr = new float[ridge.Length];
-            for (int i = 0; i < rr.Length; i++) rr[i] = 0.02f * d.S;
-            d.Add(Joints.Head, VikingModel.Shade(steel, 1.12f), MeshData.Tube(ridge, rr, 6).Transformed(Vector3.zero, Quaternion.identity, new Vector3(1.6f, 1f, 1f)));
-            // Nose guard coming down between the eyes.
-            d.Add(Joints.Head, VikingModel.Shade(steel, 0.9f), MeshData.Box(new Vector3(0f, brim - 0.2f * r, r * 1.02f), new Vector3(0.024f, 0.4f * r, 0.018f)));
+            for (int i = 0; i < rr.Length; i++) rr[i] = 0.022f * d.S;
+            // Pale polished steel, so the ridge and nose guard read as in the concept art.
+            var shine = Color.Lerp(steel, new Color(0.82f, 0.82f, 0.8f), 0.55f);
+            d.Add(Joints.Head, shine, MeshData.Tube(ridge, rr, 6).Transformed(Vector3.zero, Quaternion.identity, new Vector3(1.8f, 1f, 1f)));
+            // Nose guard coming down between the eyes, a little wider at the top.
+            d.Add(Joints.Head, shine, MeshData.Extrude(new[] { new Vector2(-0.022f, 0.02f), new Vector2(0.022f, 0.02f), new Vector2(0.014f, -0.46f), new Vector2(-0.014f, -0.46f) }, 0.016f)
+                .Transformed(new Vector3(0f, brim - 0.02f * r, r * 1.02f), Quaternion.identity, new Vector3(d.S, r, 1f)));
             for (int i = 1; i < ridge.Length - 1; i++)
                 d.Add(Joints.Head, VikingModel.Shade(steel, 1.3f), MeshData.Ellipsoid(ridge[i] + (ridge[i] - new Vector3(0f, brim, 0f)).normalized * 0.02f * d.S, Vector3.one * 0.007f * d.S, 5, 3), false);
             for (int i = -5; i <= 5; i++)
