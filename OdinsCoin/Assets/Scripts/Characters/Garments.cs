@@ -1199,7 +1199,8 @@ namespace OdinsCoin
         public static void RuneDisc(Dresser d, string joint, Vector3 at, float radius, Quaternion facing)
         {
             float s = d.S;
-            d.Add(joint, d.pal.leather, MeshData.Lathe(new[] { new Vector2(radius, -0.006f * s), new Vector2(radius, 0.006f * s) }, 14).Transformed(at, facing, Vector3.one));
+            // Pale carved wood, so the dark rune stands out as in the concept art.
+            d.Add(joint, Color.Lerp(d.pal.leather, d.pal.parchment, 0.5f), MeshData.Lathe(new[] { new Vector2(radius, -0.006f * s), new Vector2(radius, 0.006f * s) }, 14).Transformed(at, facing, Vector3.one), true, SurfaceKind.Wood);
             var up = facing * Vector3.up;
             var a = facing * Vector3.forward;
             var b = facing * Vector3.right;
