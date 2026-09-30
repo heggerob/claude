@@ -153,6 +153,14 @@ namespace OdinsCoin
         /// The tile's props as one model, relative to (<paramref name="ox"/>, <paramref name="oz"/>): each colour's
         /// pieces merged into one mesh, so a whole tile is only a handful of drawn parts.
         /// </summary>
+        /// <summary>Foliage drawn at a leaf's scale: one tile of the leaf texture about every metre and a half.</summary>
+        static MeshData Leafy(MeshData mesh)
+        {
+            mesh.Uvs.Clear();
+            foreach (var v in mesh.Vertices) mesh.Uvs.Add(new Vector2(v.x + v.z * 0.7f, v.y + v.z * 0.3f) / 1.5f);
+            return mesh;
+        }
+
         public static VikingModel Model(List<Prop> props, double ox, double oz)
         {
             var merged = new Dictionary<Color, MeshData>();
@@ -177,8 +185,8 @@ namespace OdinsCoin
                         for (int t = 0; t < 4; t++)
                         {
                             float y = 1.3f + t * 1.25f, r = 2.1f - t * 0.45f;
-                            add(t % 2 == 0 ? PineGreen : PineDark, SurfaceKind.Cloth, MeshData.Lathe(new[] {
-                                new Vector2(r, y), new Vector2(r * 0.85f, y + 0.15f), new Vector2(0.05f, y + 1.9f) }, 9));
+                            add(t % 2 == 0 ? PineGreen : PineDark, SurfaceKind.Leaves, Leafy(MeshData.Lathe(new[] {
+                                new Vector2(r, y), new Vector2(r * 0.85f, y + 0.15f), new Vector2(0.05f, y + 1.9f) }, 9)));
                         }
                         break;
                     case PropKind.Birch:
@@ -186,13 +194,13 @@ namespace OdinsCoin
                         for (int m = 0; m < 4; m++)
                             add(BirchMark, SurfaceKind.Plain, MeshData.Box(new Vector3(0f, 0.5f + m * 0.75f, 0.15f - m * 0.01f), new Vector3(0.12f, 0.05f, 0.02f)).Transformed(Vector3.zero, Quaternion.Euler(0f, m * 70f, 0f), Vector3.one));
                         // A light, lumpy crown.
-                        add(BirchLeaf, SurfaceKind.Cloth, MeshData.Ellipsoid(new Vector3(0f, 4.2f, 0f), new Vector3(1.4f, 1.6f, 1.4f), 9, 6));
-                        add(BirchLeaf, SurfaceKind.Cloth, MeshData.Ellipsoid(new Vector3(0.7f, 3.4f, 0.3f), new Vector3(0.9f, 0.9f, 0.9f), 8, 5));
-                        add(BirchLeaf, SurfaceKind.Cloth, MeshData.Ellipsoid(new Vector3(-0.6f, 3.6f, -0.4f), new Vector3(0.9f, 1f, 0.9f), 8, 5));
+                        add(BirchLeaf, SurfaceKind.Leaves, Leafy(MeshData.Ellipsoid(new Vector3(0f, 4.2f, 0f), new Vector3(1.4f, 1.6f, 1.4f), 9, 6)));
+                        add(BirchLeaf, SurfaceKind.Leaves, Leafy(MeshData.Ellipsoid(new Vector3(0.7f, 3.4f, 0.3f), new Vector3(0.9f, 0.9f, 0.9f), 8, 5)));
+                        add(BirchLeaf, SurfaceKind.Leaves, Leafy(MeshData.Ellipsoid(new Vector3(-0.6f, 3.6f, -0.4f), new Vector3(0.9f, 1f, 0.9f), 8, 5)));
                         break;
                     case PropKind.Bush:
-                        add(BushGreen, SurfaceKind.Cloth, MeshData.Ellipsoid(new Vector3(0f, 0.35f, 0f), new Vector3(0.8f, 0.55f, 0.7f), 8, 5));
-                        add(BushGreen, SurfaceKind.Cloth, MeshData.Ellipsoid(new Vector3(0.45f, 0.3f, 0.2f), new Vector3(0.5f, 0.4f, 0.5f), 7, 4));
+                        add(BushGreen, SurfaceKind.Leaves, Leafy(MeshData.Ellipsoid(new Vector3(0f, 0.35f, 0f), new Vector3(0.8f, 0.55f, 0.7f), 8, 5)));
+                        add(BushGreen, SurfaceKind.Leaves, Leafy(MeshData.Ellipsoid(new Vector3(0.45f, 0.3f, 0.2f), new Vector3(0.5f, 0.4f, 0.5f), 7, 4)));
                         break;
                     case PropKind.Tuft:
                         // A clump of long grass: thin blades leaning out every way.
@@ -203,11 +211,11 @@ namespace OdinsCoin
                         }
                         break;
                     case PropKind.Rock:
-                        add(Stone, SurfaceKind.Plain, MeshData.Ellipsoid(new Vector3(0f, 0.12f, 0f), new Vector3(0.45f, 0.3f, 0.35f), 7, 4));
+                        add(Stone, SurfaceKind.Stone, MeshData.Ellipsoid(new Vector3(0f, 0.12f, 0f), new Vector3(0.45f, 0.3f, 0.35f), 7, 4));
                         break;
                     case PropKind.Boulder:
-                        add(StoneDark, SurfaceKind.Plain, MeshData.Ellipsoid(new Vector3(0f, 0.5f, 0f), new Vector3(1.5f, 1.1f, 1.2f), 8, 5));
-                        add(Stone, SurfaceKind.Plain, MeshData.Ellipsoid(new Vector3(0.9f, 0.25f, 0.5f), new Vector3(0.7f, 0.5f, 0.6f), 7, 4));
+                        add(StoneDark, SurfaceKind.Stone, MeshData.Ellipsoid(new Vector3(0f, 0.5f, 0f), new Vector3(1.5f, 1.1f, 1.2f), 8, 5));
+                        add(Stone, SurfaceKind.Stone, MeshData.Ellipsoid(new Vector3(0.9f, 0.25f, 0.5f), new Vector3(0.7f, 0.5f, 0.6f), 7, 4));
                         break;
                     case PropKind.Driftwood:
                         add(Drift, SurfaceKind.Wood, MeshData.Tube(new[] { new Vector3(-1.4f, 0.12f, 0f), new Vector3(0f, 0.15f, 0.15f), new Vector3(1.3f, 0.12f, -0.1f) }, new[] { 0.14f, 0.12f, 0.07f }, 6));

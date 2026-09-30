@@ -4,7 +4,7 @@ using UnityEngine;
 namespace OdinsCoin
 {
     /// <summary>What a surface is made of, which decides the hand-drawn texture laid over its colour.</summary>
-    public enum SurfaceKind { Plain, Cloth, Fur, Leather, Metal, Wood, Skin, Paper, Grass, Sand, Stone }
+    public enum SurfaceKind { Plain, Cloth, Fur, Leather, Metal, Wood, Skin, Paper, Grass, Sand, Stone, Leaves }
 
     /// <summary>
     /// Hand-drawn looking textures, made in code: pencil strokes, weave, fur strands, wood grain. Each is a tileable
@@ -129,6 +129,22 @@ namespace OdinsCoin
                     Mottle(t, rng, 16, 0.08f);
                     Hatch(t, rng, 12, 45f, 35f, 25f, 55f, 0.9f, 0.3f);
                     Hatch(t, rng, 40, 35f, 15f, 6f, 14f, 1.0f, 0.2f);
+                    break;
+                case SurfaceKind.Leaves:
+                    // Foliage: patchy light and shade, and scalloped pencil arcs, the storybook way of drawing leaves.
+                    Mottle(t, rng, 4, 0.12f);
+                    Mottle(t, rng, 16, 0.06f);
+                    for (int k = 0; k < 170; k++)
+                    {
+                        float cx = (float)rng.NextDouble() * Size, cy = (float)rng.NextDouble() * Size;
+                        float r = 2.5f + (float)rng.NextDouble() * 3f, start = Mathf.PI * (1.1f + (float)rng.NextDouble() * 0.3f);
+                        float dark = 0.22f + (float)rng.NextDouble() * 0.14f;
+                        for (int i = 0; i <= 10; i++)
+                        {
+                            float a = start + i / 10f * Mathf.PI * 0.8f;
+                            Dab(t, cx + Mathf.Cos(a) * r, cy + Mathf.Sin(a) * r, 0.75f, dark * (0.5f + 0.5f * Mathf.Sin(i / 10f * Mathf.PI)));
+                        }
+                    }
                     break;
                 case SurfaceKind.Paper:
                     Mottle(t, rng, 4, 0.12f);

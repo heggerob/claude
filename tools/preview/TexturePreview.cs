@@ -10,7 +10,7 @@ public static class TexturePreview
     {
         var kinds = (SurfaceKind[])Enum.GetValues(typeof(SurfaceKind));
         var pal = new Palette();
-        Color[] tint = { new Color(0.8f, 0.8f, 0.8f), pal.cloth2, pal.fur, pal.leather, pal.metal, new Color(0.45f, 0.29f, 0.16f), pal.skin, pal.parchment, Materials.Grass, Materials.Sand, Materials.Rock };
+        Color[] tint = { new Color(0.8f, 0.8f, 0.8f), pal.cloth2, pal.fur, pal.leather, pal.metal, new Color(0.45f, 0.29f, 0.16f), pal.skin, pal.parchment, Materials.Grass, Materials.Sand, Materials.Rock, new Color(0.3f, 0.45f, 0.24f) };
         int n = DrawnTextures.Size * 2, cells = kinds.Length;
         using (var w = new BinaryWriter(File.Create(args[0])))
         {
