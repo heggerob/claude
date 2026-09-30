@@ -227,7 +227,7 @@ namespace OdinsCoin
         /// <summary>Buy one chest. Returns the gold paid.</summary>
         static readonly System.Random skinRng = new System.Random();
 
-        public int Sell(TreasureChest chest) { return SellChest(chest, Trader, 1f); }
+        public int Sell(TreasureChest chest) { return SellChest(chest, Trader, Abilities.Has("tribute") ? Abilities.TributePrice : 1f); }
 
         /// <summary>A trader buys one chest at <paramref name="price"/> times its worth. Returns the gold paid.</summary>
         public static int SellChest(TreasureChest chest, Transform trader, float price)

@@ -268,6 +268,10 @@ namespace OdinsCoin
             float woe = up.LeakMultiplier(Fortune.Current) * Hull.SpeedMultiplier;
             sails = up.SailMultiplier * woe;
             oars = up.OarMultiplier * woe;
+            // The hero's gifts: a Navigator at the helm reads the currents; a Jarl's crew rows harder.
+            var player = GameBootstrap.Instance != null ? GameBootstrap.Instance.Player : null;
+            if (player != null && player.AtHelm && Abilities.Has("currents")) sails *= Abilities.CurrentsSail;
+            if (Abilities.Has("rally")) oars *= Abilities.RallyOars;
         }
 
         /// <summary>The bow and stern cleats the mooring lines are made fast to, and the bow where the anchor rode runs out (her own space).</summary>

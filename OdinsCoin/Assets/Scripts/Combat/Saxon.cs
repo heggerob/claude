@@ -113,7 +113,7 @@ namespace OdinsCoin
                     if (playerAlive && CombatMath.InArc(transform.position, transform.forward, player.transform.position, AttackRange + 0.4f, 100f))
                     {
                         bool front = CombatMath.FromFront(player.transform.position, player.transform.forward, transform.position);
-                        combat.Health.TakeDamage(CombatMath.Damage(BaseDamage, 1f, combat.Blocking, front), transform.position);
+                        combat.Health.TakeDamage(Abilities.Taken(BaseDamage, combat.Blocking, front), transform.position);
                         if (combat.Blocking && front) CombatHud.Number(player.transform.position + Vector3.up * 2.4f, "BLOCKED", Color.white);
                         if (combat.Blocking && front) Sfx.At(SfxId.ShieldBlock, player.transform.position + Vector3.up);
                     }

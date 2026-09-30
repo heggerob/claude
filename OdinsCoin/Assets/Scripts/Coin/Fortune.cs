@@ -236,11 +236,14 @@ namespace OdinsCoin
             return true;
         }
 
-        public void Tick(float dt)
+        public void Tick(float dt) { Tick(dt, 1f); }
+
+        /// <summary>Let time pass; curses wear off <paramref name="curseRate"/> times as fast (the Seer's Ward of Runes).</summary>
+        public void Tick(float dt, float curseRate)
         {
             for (int i = Active.Count - 1; i >= 0; i--)
             {
-                Active[i].remaining -= dt;
+                Active[i].remaining -= Active[i].card.kind == FateKind.Curse ? dt * curseRate : dt;
                 if (Active[i].remaining <= 0f) Active.RemoveAt(i);
             }
         }

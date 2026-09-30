@@ -45,6 +45,27 @@ namespace OdinsCoin
                 float bearing = Mathf.Repeat(Mathf.Atan2(dx, dz) * Mathf.Rad2Deg, 360f);
                 GUI.Label(new Rect(20f, Screen.height - 34f, 560f, 22f), string.Format("<color=#ffd060>Commission:</color> plunder <b>{0}</b>, {1}, bearing {2:000}°", commission, Distance(Mathf.Sqrt(dx * dx + dz * dz)), bearing), style);
             }
+            // The Navigator's Read the Stars: the way to the nearest place with plunder left.
+            if (Player != null && RealWorld.Active && WorldMap.Current != null && Abilities.Has("stars"))
+            {
+                var here = Player.transform.position;
+                double gx = WorldOrigin.GlobalX(here), gz = WorldOrigin.GlobalZ(here);
+                Place treasure = null;
+                float best = float.MaxValue;
+                foreach (var p in Places.All)
+                {
+                    if (PlaceLife.PlunderOf(p.kind).chests == 0 || PlaceLife.Raided.Contains(p.name)) continue;
+                    var at = Places.Position(WorldMap.Current, p);
+                    float d = Mathf.Sqrt((float)((at.x - gx) * (at.x - gx) + (at.z - gz) * (at.z - gz)));
+                    if (d < best) { best = d; treasure = p; }
+                }
+                if (treasure != null)
+                {
+                    var at = Places.Position(WorldMap.Current, treasure);
+                    float b = Mathf.Repeat(Mathf.Atan2(at.x - (float)gx, at.z - (float)gz) * Mathf.Rad2Deg, 360f);
+                    GUI.Label(new Rect(20f, Screen.height - 58f, 560f, 22f), string.Format("<color=#aaccff>The stars:</color> treasure at <b>{0}</b>, {1}, bearing {2:000}°", treasure.name, Distance(best), b), style);
+                }
+            }
             if (Player != null && RealWorld.Active)
             {
                 float dist, bearing;

@@ -80,12 +80,26 @@ namespace OdinsCoin
             glow.intensity = 0f;
         }
 
+        // The next throw's fall, decided before it's made (so the Seer's Foresight can see it).
+        float nextRoll = -1f, nextPick;
+
+        void RollAhead() { if (nextRoll < 0f) { nextRoll = Random.value; nextPick = Random.value; } }
+
+        /// <summary>How the next throw will land, as the Seer foresees it: true for Odin's eye (heads).</summary>
+        public bool ForeseeHeads()
+        {
+            RollAhead();
+            return nextRoll < (Fortune.Current.NextFlipBlessed ? 1f : Fortune.Current.HeadsChance);
+        }
+
         /// <summary>Start a flip. The outcome is decided up front; the animation just shows it.</summary>
         public FlipResult Flip(int wager)
         {
             if (Flipping || ReadyIn > 0f) return null;
             readyAt = Time.time + FlipTime + Cooldown;
-            pending = Fortune.Current.Flip(wager, Random.value, Random.value);
+            RollAhead();
+            pending = Fortune.Current.Flip(wager, nextRoll, nextPick);
+            nextRoll = -1f;
             flipStart = Time.time;
             Sfx.At(SfxId.CoinFlip, transform.position + Vector3.up);
             return pending;

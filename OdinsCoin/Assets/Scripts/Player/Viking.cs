@@ -164,7 +164,7 @@ namespace OdinsCoin
             Vector3 right = new Vector3(forward.z, 0f, -forward.x);
             Vector3 move = forward * input.y + right * input.x;
             float speed = Swimming ? SwimSpeed : GameInput.Held(Key.Sprint) ? RunSpeed : GameInput.Held(Key.Walk) ? StrollSpeed : WalkSpeed;
-            if (Carrying != null) speed = Swimming ? CarrySwimSpeed : CarrySpeed;
+            if (Carrying != null) speed = Swimming ? CarrySwimSpeed : Abilities.Has("plunder") ? Abilities.PlunderCarrySpeed : CarrySpeed;
             if (combat != null && combat.Blocking) speed *= 0.5f;
 
 

@@ -91,6 +91,9 @@ namespace OdinsCoin
                     GUILayout.Label("<color=#ffd060>Muninn sits on the altar: this flip is <b>Odin's eye</b> for sure.</color>", text);
                 else
                     GUILayout.Label(string.Format("Chance of Odin's eye: <b>{0:0}%</b>{1}", fortune.HeadsChance * 100f, fortune.HeadsChance != Fortune.BaseHeadsChance ? "  (runes and blessings)" : ""), text);
+                    // The Seer's Foresight: she sees how the coin will fall before the wager.
+                    if (Abilities.Has("foresight") && CoinAltar.Instance != null)
+                        GUILayout.Label(CoinAltar.Instance.ForeseeHeads() ? "<color=#ffd060><b>Foresight:</b> the coin will show Odin's eye.</color>" : "<color=#88cc88><b>Foresight:</b> the coin will show the serpent.</color>", text);
                 GUILayout.Label(string.Format("Odin's eye pays <b>{0:0.##}×</b> the wager · Gold: <b>{1}</b> · Runes: {2}", fortune.PayoutMultiplier, fortune.Gold, RuneLine(fortune)), text);
                 GUILayout.Space(4);
                 GUILayout.BeginHorizontal();

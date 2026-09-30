@@ -62,8 +62,8 @@ namespace OdinsCoin
                     brass = new Color(0.82f, 0.62f, 0.26f), hair = new Color(0.74f, 0.3f, 0.12f) },
                 defaultHair = HairStyle.WrappedBraids, suggestedWeapon = WeaponId.Sword, suggestedOffHand = OffHandId.RoundShield,
                 abilities = new[] {
-                    new Ability { id = "rally", name = "Rally the Crew", description = "Your crew rows and fights harder for a while." },
-                    new Ability { id = "tribute", name = "Tribute", description = "Chests sold at home are worth more." } },
+                    new Ability { id = "rally", name = "Rally the Crew", description = "Your crew rows a fifth harder." },
+                    new Ability { id = "tribute", name = "Tribute", description = "Chests sold at home fetch a quarter more." } },
                 dress = d =>
                 {
                     Garments.FurBoots(d);
@@ -90,8 +90,8 @@ namespace OdinsCoin
                     fur = new Color(0.9f, 0.84f, 0.72f), furShadow = new Color(0.7f, 0.64f, 0.55f) },
                 defaultHair = HairStyle.SideBraid, suggestedWeapon = WeaponId.None, suggestedOffHand = OffHandId.Map,
                 abilities = new[] {
-                    new Ability { id = "stars", name = "Read the Stars", description = "Shows the way to the nearest island and treasure." },
-                    new Ability { id = "currents", name = "Currents", description = "The ship sails faster with you at the helm." } },
+                    new Ability { id = "stars", name = "Read the Stars", description = "Shows the way to the nearest place with plunder left." },
+                    new Ability { id = "currents", name = "Currents", description = "The sails drive the ship harder with you at the helm." } },
                 dress = d =>
                 {
                     Garments.ShinBoots(d, 0.24f);
@@ -117,7 +117,7 @@ namespace OdinsCoin
                     hair = new Color(0.8f, 0.64f, 0.42f), metal = new Color(0.42f, 0.43f, 0.45f) },
                 defaultHair = HairStyle.ShortLocks, suggestedWeapon = WeaponId.Spear, suggestedOffHand = OffHandId.KnotShield,
                 abilities = new[] {
-                    new Ability { id = "wall", name = "Shield Wall", description = "Blocks arrows and blows from the front while braced." },
+                    new Ability { id = "wall", name = "Shield Wall", description = "A braced shield stops nearly every arrow and blow from the front." },
                     new Ability { id = "reach", name = "Long Reach", description = "Strike enemies from further away." } },
                 dress = d =>
                 {
@@ -167,7 +167,7 @@ namespace OdinsCoin
                 defaultHair = HairStyle.LowBraid, suggestedWeapon = WeaponId.Bow,
                 abilities = new[] {
                     new Ability { id = "keen", name = "Keen Eyes", description = "Spot treasure and enemies from much further away." },
-                    new Ability { id = "volley", name = "Volley", description = "Loose three arrows at once." } },
+                    new Ability { id = "volley", name = "Volley", description = "Loose three arrows at once: bow shots hit twice as hard and fly far." } },
                 dress = d =>
                 {
                     Garments.FurBoots(d, -0.07f);

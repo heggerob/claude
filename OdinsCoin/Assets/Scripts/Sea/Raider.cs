@@ -238,7 +238,7 @@ namespace OdinsCoin
                 if (combat != null)
                 {
                     bool front = CombatMath.FromFront(player.transform.position, player.transform.forward, from);
-                    float dmg = CombatMath.Damage(Damage, 1f, combat.Blocking, front);
+                    float dmg = Abilities.Taken(Damage, combat.Blocking, front);
                     if (dmg < Damage) { CombatHud.Number(player.transform.position + Vector3.up * 2.4f, "BLOCKED", Color.white); Sfx.At(SfxId.ShieldBlock, end); }
                     combat.Health.TakeDamage(dmg, from);
                 }

@@ -175,3 +175,10 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
   - [x] Ankler: foten under ankelen bøyer seg for seg selv. Den ruller fra hæl til tå etter målte ankelkurver, strekker tærne i avsparket og i lufta, og bøyer dem opp for å ta imot landingen.
   - [x] Flere slag per våpen (kombinasjoner): trykker du angrep igjen mens et slag pågår, går det rett over i neste. Øks: hogg ovenfra, skrått hugg og bredt feie-slag. Sverd: hugg, bakhåndshugg og utfall. Spyd: stikk, overhåndsstikk og feiing med skaftet. Stav: slag ovenfra, feiing og støt. Bue: full spenning og kjapt skudd. Uten våpen: jab, kryss og uppercut. Det siste slaget i rekken slår hardest.
   - [x] Buestrengen trekkes: når buen spennes, tar hånda tak i strengen, og midten av den følger hånda tilbake til kinnet, så strengen står i en V fra hver ende av buen. Ved skuddet slipper den og står rett igjen (`BowDraw`, `BowString`). Mens buen er spent, ligger en pil på strengen og peker gjennom grepet, og den er borte når den er skutt. Angrepsarket viser nå det mest opptrukne øyeblikket før hvert slag.
+- [x] **17. Evnene virker i spillet (`Characters/Abilities.cs`):** alle de 12 evnene i heltemenyen gjør nå noe.
+  - **Raider:** Cleave gir et bredere hugg, 170° i stedet for 110°. Plunderer gjør at du går raskere med en kiste i armene.
+  - **Jarl:** Rally the Crew gjør at mannskapet ror en femtedel hardere. Tribute gir 25 % mer for kister solgt hjemme.
+  - **Navigatør:** Read the Stars viser veien til nærmeste sted med plyndring igjen. Currents gir seilene mer kraft når du står ved roret.
+  - **Spydvakt:** Shield Wall gjør at skjoldet stopper nesten alt forfra, piler også. Long Reach gir 35 % lengre rekkevidde.
+  - **Seer:** Foresight viser hvordan mynten vil lande før du satser. Ward of Runes gjør at forbannelser går over raskere.
+  - **Speider:** Keen Eyes gjør at du ser 50 % lenger gjennom disen. Volley gir buen dobbel skade og lang rekkevidde.

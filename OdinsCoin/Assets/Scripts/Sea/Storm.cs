@@ -81,8 +81,10 @@ namespace OdinsCoin
 
             // Fog and gloom. Heimdall's Eye sees through it.
             bool heimdall = Fortune.Current.Has(FateEffect.SeeThroughFog, FateKind.Blessing);
-            RenderSettings.fogEndDistance = Mathf.Lerp(GameBootstrap.FogEnd, heimdall ? 170f : 55f, i);
-            RenderSettings.fogStartDistance = Mathf.Lerp(GameBootstrap.FogStart, heimdall ? 30f : 5f, i);
+            // The Scout's Keen Eyes see further through the haze.
+            float sight = Abilities.Has("keen") ? Abilities.KeenSight : 1f;
+            RenderSettings.fogEndDistance = Mathf.Lerp(GameBootstrap.FogEnd * sight, heimdall ? 170f : 55f * sight, i);
+            RenderSettings.fogStartDistance = Mathf.Lerp(GameBootstrap.FogStart * sight, heimdall ? 30f : 5f, i);
             Color gloom = Color.Lerp(SkyClock.Sky, Color.Lerp(new Color(0.22f, 0.25f, 0.28f), SkyClock.Sky * 0.5f, 1f - Mathf.Clamp01(SkyClock.Elevation / 10f + 0.6f)), i);
 
             // Lightning: a white flash now and then in the heart of the storm.

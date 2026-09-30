@@ -97,12 +97,17 @@ namespace OdinsCoin
                 CombatHud.Number(transform.position + transform.forward * 1.2f + Vector3.up * 1.8f, "MISS (Loki!)", new Color(0.6f, 1f, 0.6f));
                 return;
             }
+            // The hero's gifts: a Raider cleaves wide, a Spear Guard reaches far, a Scout looses a volley.
+            float reach = Reach * (Abilities.Has("reach") ? Abilities.LongReach : 1f);
+            float arc = Abilities.Has("cleave") ? Abilities.CleaveArc : Arc;
+            float volley = Abilities.Has("volley") && viking.Hero != null && viking.Hero.weapon == WeaponId.Bow ? Abilities.VolleyDamage : 1f;
+            if (volley > 1f) reach *= 4f; // arrows fly further than a blade reaches
             foreach (var saxon in Saxon.All)
             {
                 if (saxon.Health.Dead) continue;
-                if (!CombatMath.InArc(transform.position, transform.forward, saxon.transform.position, Reach, Arc)) continue;
+                if (!CombatMath.InArc(transform.position, transform.forward, saxon.transform.position, reach, arc)) continue;
                 bool front = CombatMath.FromFront(saxon.transform.position, saxon.transform.forward, transform.position);
-                float dmg = CombatMath.Damage(SwingDamage * Move.power, fortune.MeleeDamageMultiplier * Upgrades.Current.AxeMultiplier, saxon.Blocking, front);
+                float dmg = CombatMath.Damage(SwingDamage * Move.power * volley, fortune.MeleeDamageMultiplier * Upgrades.Current.AxeMultiplier, saxon.Blocking, front);
                 saxon.Health.TakeDamage(dmg, transform.position);
                 Sfx.At(saxon.Blocking && front ? SfxId.ShieldBlock : SfxId.AxeHit, saxon.transform.position + Vector3.up);
                 saxon.Stagger(transform.position);
@@ -110,7 +115,7 @@ namespace OdinsCoin
             float blow = SwingDamage * Move.power * fortune.MeleeDamageMultiplier * Upgrades.Current.AxeMultiplier;
             // Jörmungandr's head, while it lies stunned on the gunwale.
             var serpent = Serpent.Instance;
-            if (serpent != null && serpent.HeadInReach(transform.position, transform.forward, Reach, Arc) && serpent.TakeHit(blow))
+            if (serpent != null && serpent.HeadInReach(transform.position, transform.forward, reach, arc) && serpent.TakeHit(blow))
                 Sfx.At(SfxId.AxeHit, serpent.Head.position, 1f);
             // Hacking at a raider's strakes from alongside (or aboard).
             foreach (var raider in Raider.All.ToArray())
