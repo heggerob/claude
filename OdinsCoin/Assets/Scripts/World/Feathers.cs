@@ -81,6 +81,16 @@ namespace OdinsCoin
             }
         }
 
+        /// <summary>
+        /// Odin's thanks for a well-feathered cloak: extra gold when the feathers found reach 10, 25, 50 and all of
+        /// them (0 otherwise).
+        /// </summary>
+        public static int Milestone(int found, int total)
+        {
+            if (found == total) return 1500;
+            switch (found) { case 10: return 100; case 25: return 300; case 50: return 600; default: return 0; }
+        }
+
         /// <summary>How many feathers there are in the world (for "found 7 of 78").</summary>
         public static int Total { get { return Places.All.Length * PerPlace; } }
     }
@@ -128,7 +138,10 @@ namespace OdinsCoin
             Fortune.Current.Gold += Feathers.Gold;
             Fortune.Current.AddFavour(Feathers.Favour);
             Sfx.At(SfxId.Blessing, transform.position, 0.8f, 0.1f);
-            CombatHud.Banner("A RAVEN FEATHER", "Odin's raven passed this way. " + u.Feathers.Count + " of " + Feathers.Total + " found, and " + Feathers.Gold + " gold.");
+            int bonus = Feathers.Milestone(u.Feathers.Count, Feathers.Total);
+            Fortune.Current.Gold += bonus;
+            if (bonus > 0) CombatHud.Banner(u.Feathers.Count == Feathers.Total ? "EVERY FEATHER!" : u.Feathers.Count + " RAVEN FEATHERS", "Huginn and Muninn are pleased with you: " + (bonus + Feathers.Gold) + " gold.");
+            else CombatHud.Banner("A RAVEN FEATHER", "Odin's raven passed this way. " + u.Feathers.Count + " of " + Feathers.Total + " found, and " + Feathers.Gold + " gold.");
             Destroy(gameObject);
         }
     }

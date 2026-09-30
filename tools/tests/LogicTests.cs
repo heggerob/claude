@@ -805,6 +805,7 @@ public static class LogicTests
                 }
                 if (ok) featherFine++;
             }
+            Check(Feathers.Milestone(10, 78) == 100 && Feathers.Milestone(11, 78) == 0 && Feathers.Milestone(50, 78) == 600 && Feathers.Milestone(78, 78) == 1500, "feather milestones pay at 10, 25, 50 and all");
             var hint = Rumours.FeatherHint(Vector3.zero, new Vector3(200f, 0f, 0f));
             Check(hint.Contains("east") && hint.Contains("a little way") && Rumours.FeatherHint(Vector3.zero, new Vector3(0f, 0f, -50f)).Contains("just to the south"), "townsfolk tell which way a raven feather lies and roughly how far");
             Check(featherPlaces >= towns - 2 && featherFine == featherPlaces, featherPlaces + " places have three raven feathers out on the dry high ground");
