@@ -1237,9 +1237,7 @@ namespace OdinsCoin
             float r = f.headR, cy = HeroModel.HeadCentre(f), s = d.S;
             var horn = d.pal.leather;
             var rng = new System.Random(d.seed + 71);
-            // The crossbar, just above the hood behind the head.
-            float barY = cy + r * 1.05f, barZ = -r * 0.45f, half = 0.36f * s;
-            d.Add(Joints.Head, VikingModel.Shade(horn, 0.9f), MeshData.Tube(new[] { new Vector3(-half, barY - 0.02f * s, barZ), new Vector3(0f, barY + 0.01f * s, barZ), new Vector3(half, barY - 0.02f * s, barZ) }, new[] { 0.016f * s, 0.018f * s, 0.016f * s }, 7));
+            // No crossbar: the beams themselves spread out sideways, and the charms hang from them.
             foreach (float x in new[] { -1f, 1f })
             {
                 var root = new Vector3(x * r * 0.5f, cy + r * 1.05f, -r * 0.35f);
@@ -1256,19 +1254,16 @@ namespace OdinsCoin
                     var mid = Vector3.Lerp(at, tip, 0.5f) + new Vector3(x * 0.015f, 0f, 0.01f) * s;
                     d.Add(Joints.Head, horn, MeshData.Tube(new[] { at, mid, tip }, new[] { 0.022f * s, 0.015f * s, 0.004f * s }, 6));
                 }
-                // Charms on cords from the beam.
-                for (int k = 0; k < 3; k++)
+                // Charms on cords along the beam, out beyond the hood.
+                for (int k = 0; k < 4; k++)
                 {
-                    var hang = Vector3.Lerp(beam[1], beam[3], k / 2f);
-                    Charm(d, hang, (0.1f + 0.08f * (k % 2)) * s, k, rng);
+                    var hang = Vector3.Lerp(beam[2], beam[4], k / 3f) - new Vector3(0f, 0.02f * s, 0f);
+                    Charm(d, hang, (0.1f + 0.06f * (k % 3)) * s, k + 3 * (x > 0f ? 1 : 0), rng);
                 }
-            }
-            // One long string of charms each side, hanging from the bar clear of the hood down past the shoulder:
-            // a rune disc, a bead, another disc, a tooth. (Kept away from the face, which stays clear.)
-            foreach (float x in new[] { -1f, 1f })
-                foreach (float spread in new[] { 1.75f })
+                // One long string of charms hanging from the beam clear of the hood down past the shoulder:
+                // a rune disc, a bead, another disc, a tooth. (Kept away from the face, which stays clear.)
                 {
-                    var top = new Vector3(x * r * spread, barY - 0.02f * s, r * 0.2f);
+                    var top = Vector3.Lerp(beam[1], beam[2], 0.6f) + new Vector3(0f, -0.02f * s, 0.02f * s);
                     float len = 0.46f * s;
                     var bottom = top + new Vector3(0f, -len, 0.02f * s);
                     d.Add(Joints.Head, d.pal.leatherDark, MeshData.Tube(new[] { top, bottom }, new[] { 0.0025f * s, 0.0025f * s }, 4), false);
@@ -1280,12 +1275,6 @@ namespace OdinsCoin
                         else d.Add(Joints.Head, d.pal.parchment, MeshData.Tube(new[] { at + new Vector3(0f, 0.015f, 0f) * s, at - new Vector3(0f, 0.025f, 0f) * s }, new[] { 0.008f * s, 0.001f }, 5), false);
                     }
                 }
-            // Charms hanging along the crossbar.
-            for (int k = 0; k < 6; k++)
-            {
-                float x = Mathf.Lerp(-half * 0.95f, half * 0.95f, k / 5f);
-                if (Mathf.Abs(x) < r * 1.3f) continue; // not round the face
-                Charm(d, new Vector3(x, barY - 0.02f * s, barZ + 0.02f * s), (0.1f + 0.06f * (k % 3)) * s, k + 3, rng);
             }
         }
 
