@@ -6,6 +6,7 @@ cd "$(dirname "$0")/../.."
 OUT=${1:-OdinsCoin/docs/world.png}
 mkdir -p "$(dirname "$OUT")"
 TMP=$(mktemp -d)
+trap 'rm -rf "$TMP"' EXIT
 mcs -nowarn:169,414,649,219,618 -define:ENABLE_LEGACY_INPUT_MANAGER -out:$TMP/world.exe \
   tools/unity-stub/UnityStub.cs tools/preview/WorldPreview.cs $(find OdinsCoin/Assets/Scripts -name '*.cs')
 mono $TMP/world.exe $TMP/world.rgba
