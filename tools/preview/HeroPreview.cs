@@ -375,21 +375,35 @@ public static class HeroPreview
         const int cellW = 1000, cellH = 760;
         var designs = ShipDesign.All;
         int w = cellW * designs.Length, h = cellH;
-        var img = new float[w * h * 3];
-        for (int i = 0; i < w * h; i++) { img[i * 3] = Paper.r; img[i * 3 + 1] = Paper.g; img[i * 3 + 2] = Paper.b; }
+        // Two rows: each ship framed to fill its cell, and below, all four to the same scale (the Krakenhall's).
+        var rows = new[] { new float[w * h * 3], new float[w * h * 3] };
+        foreach (var img0 in rows) for (int i = 0; i < w * h; i++) { img0[i * 3] = Paper.r; img0[i * 3 + 1] = Paper.g; img0[i * 3 + 2] = Paper.b; }
         var labels = new List<string>();
+        var zooms = new float[designs.Length];
+        float common = float.MaxValue;
         for (int k = 0; k < designs.Length; k++)
         {
             var d = designs[k];
             float mast = 0f;
-            foreach (var s in d.sails) mast = Mathf.Max(mast, s.height * 1.75f * 1.05f);
+            foreach (var s in d.sails) mast = Mathf.Max(mast, s.height * 1.75f * 1.05f + (d.length >= 25f ? 0.12f * d.length : 0f));
             float top = mast + d.draught + d.freeboard;
-            float zoom = Mathf.Min(0.84f * 2.45f / (top * 1.12f), 0.8f * cellW * 2.45f / (cellH * d.length * 1.25f));
+            zooms[k] = Mathf.Min(0.84f * 2.45f / (top * 1.12f), 0.8f * cellW * 2.45f / (cellH * d.length * 1.25f));
+            common = Mathf.Min(common, zooms[k]);
+        }
+        for (int k = 0; k < designs.Length; k++)
+        {
+            var d = designs[k];
             var pose = new Pose();
             pose.pos[ShipModel.Joint] = new Vector3(0f, d.draught, 0f);
-            Render(img, w, h, k * cellW, cellW, cellH, new Shot { model = ShipModel.Build(d, new ShipLook()), pose = pose, yaw = 235f, zoom = zoom });
+            var model = ShipModel.Build(d, new ShipLook());
+            Render(rows[0], w, h, k * cellW, cellW, cellH, new Shot { model = model, pose = pose, yaw = 235f, zoom = zooms[k] });
+            Render(rows[1], w, h, k * cellW, cellW, cellH, new Shot { model = model, pose = pose, yaw = 235f, zoom = common });
             labels.Add(d.title + " (" + d.length.ToString("0") + " m, " + (d.Mass / 1000f).ToString("0") + " t)");
         }
+        h = cellH * 2;
+        var img = new float[w * h * 3];
+        System.Array.Copy(rows[0], 0, img, 0, rows[0].Length);
+        System.Array.Copy(rows[1], 0, img, rows[0].Length, rows[1].Length);
         using (var fs = new BinaryWriter(File.Create(rgbaPath)))
         {
             fs.Write(w); fs.Write(h);
