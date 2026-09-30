@@ -14,6 +14,8 @@ public static class PlacePreview
         var map = WorldMap.FromBytes(File.ReadAllBytes(args[0]));
         var coast = Path.Combine(Path.GetDirectoryName(args[0]), "coast.bytes");
         if (File.Exists(coast)) map.Detail = WorldDetail.FromBytes(File.ReadAllBytes(coast));
+        var baked = Path.Combine(Path.GetDirectoryName(args[0]), "harbours.txt");
+        Places.LoadHarbours(File.Exists(baked) ? File.ReadAllText(baked) : null);
         var place = Places.Find(args[1]);
         float km = float.Parse(args[2], CultureInfo.InvariantCulture);
         int n = int.Parse(args[3]);
