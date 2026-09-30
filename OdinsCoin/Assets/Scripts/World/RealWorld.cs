@@ -202,18 +202,15 @@ namespace OdinsCoin
             if (plunder.chests == 0 && plunder.guards == 0) return chests;
             List<Plot> plots;
             if (!layouts.TryGetValue(place, out plots)) return chests;
-            // The main building: the church, the great hall, or failing those the first house.
-            Vector3 centre = plots.Count > 1 ? plots[1].at : plots[0].at;
-            foreach (var p in plots)
-                if (p.kind == BuildingKind.Church || p.kind == BuildingKind.GreatHall) { centre = p.at; break; }
+            var main = PlaceLife.MainBuilding(plots);
             int seed = place.name.GetHashCode() & 0x7fffffff;
             var rng = new System.Random(seed);
-            foreach (var at in PlaceLife.Spots(centre, plunder.chests, 5f, seed))
+            foreach (var at in PlaceLife.Stations(map, plots, main, plunder.chests, 3f, seed))
             {
                 var scene = WorldOrigin.ToScene(at.x, at.z, TerrainDetail.Height(map, at.x, at.z) + 0.05f);
                 chests.Add(TreasureChest.Create(site, scene, (float)rng.NextDouble() * 360f, plunder.minGold + rng.Next(plunder.maxGold - plunder.minGold + 1)));
             }
-            foreach (var at in PlaceLife.Spots(centre, plunder.guards, 11f, seed + 1))
+            foreach (var at in PlaceLife.Stations(map, plots, main, plunder.guards, 8f, seed + 1))
                 Saxon.Create(site, WorldOrigin.ToScene(at.x, at.z, TerrainDetail.Height(map, at.x, at.z) + 0.3f));
             return chests;
         }
@@ -234,6 +231,7 @@ namespace OdinsCoin
                 b.position = WorldOrigin.ToScene(plot.at.x, plot.at.z, plot.at.y);
                 b.rotation = Quaternion.Euler(0f, plot.yaw, 0f);
                 ModelView.Show(Buildings.Build(plot.kind, look, i++), b);
+                Buildings.AddSolid(b.gameObject, plot.kind);
                 // Bollards along both sides of the jetty for visiting ships to make fast to.
                 if (plot.kind == BuildingKind.Jetty)
                     foreach (float z in new[] { 18f, 34f })

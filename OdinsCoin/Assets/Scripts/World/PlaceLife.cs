@@ -55,13 +55,62 @@ namespace OdinsCoin
         /// <summary>The spots (global) around a place's main building where its chests and guards go, from a seed.</summary>
         public static List<Vector3> Spots(Vector3 centre, int count, float radius, int seed)
         {
+            return Spots(centre, 0f, 0f, 0f, count, radius, seed);
+        }
+
+        /// <summary>A place's main building: the church, the great hall, or failing those the first house after the jetty.</summary>
+        public static Plot MainBuilding(List<Plot> plots)
+        {
+            var main = plots.Count > 1 ? plots[1] : plots[0];
+            foreach (var p in plots)
+                if (p.kind == BuildingKind.Church || p.kind == BuildingKind.GreatHall) return p;
+            return main;
+        }
+
+        /// <summary>Is a point (global, flat) inside a building's walls, give or take <paramref name="margin"/>?</summary>
+        public static bool InsideBuilding(Plot plot, Vector3 p, float margin)
+        {
+            var foot = Buildings.Footprint(plot.kind);
+            var local = Quaternion.Euler(0f, -plot.yaw, 0f) * new Vector3(p.x - plot.at.x, 0f, p.z - plot.at.z);
+            if (plot.kind == BuildingKind.Jetty) return Mathf.Abs(local.x) < 2f + margin && local.z > -margin && local.z < 40f + margin;
+            return Mathf.Abs(local.x) < foot.x + margin && Mathf.Abs(local.z) < foot.z + margin;
+        }
+
+        /// <summary>
+        /// Where a place's chests (or guards) stand: round its main building, on dry land, never inside any of its
+        /// buildings. Tries further out when the near ring is taken up by sea or houses.
+        /// </summary>
+        public static List<Vector3> Stations(WorldMap map, List<Plot> plots, Plot main, int count, float radius, int seed)
+        {
+            var found = new List<Vector3>();
+            var foot = Buildings.Footprint(main.kind);
+            for (int round = 0; round < 8 && found.Count < count; round++)
+                foreach (var p in Spots(main.at, main.yaw, foot.x, foot.z, count * 3, radius + round * 4f, seed + round * 101))
+                {
+                    if (found.Count >= count) break;
+                    if (TerrainDetail.Height(map, p.x, p.z) < 0.5f * WorldMap.Scale) continue;
+                    bool clear = true;
+                    foreach (var plot in plots) if (InsideBuilding(plot, p, 0.8f)) { clear = false; break; }
+                    foreach (var q in found) if (Vector3.Distance(p, q) < 1.5f) clear = false;
+                    if (clear) found.Add(p);
+                }
+            return found;
+        }
+
+        /// <summary>
+        /// Spots round a building of half-size (<paramref name="halfX"/>, <paramref name="halfZ"/>) turned to
+        /// <paramref name="yaw"/>: on a ring <paramref name="radius"/> out from its walls, never inside them.
+        /// </summary>
+        public static List<Vector3> Spots(Vector3 centre, float yaw, float halfX, float halfZ, int count, float radius, int seed)
+        {
             var list = new List<Vector3>();
             var rng = new System.Random(seed);
+            var turn = Quaternion.Euler(0f, yaw, 0f);
             for (int i = 0; i < count; i++)
             {
                 float a = (i + (float)rng.NextDouble() * 0.5f) / Mathf.Max(1, count) * Mathf.PI * 2f;
                 float r = radius * (0.6f + 0.4f * (float)rng.NextDouble());
-                list.Add(centre + new Vector3(Mathf.Cos(a) * r, 0f, Mathf.Sin(a) * r));
+                list.Add(centre + turn * new Vector3(Mathf.Cos(a) * (halfX + r), 0f, Mathf.Sin(a) * (halfZ + r)));
             }
             return list;
         }

@@ -115,6 +115,8 @@ med ror, seil i vinden og årer.
     Hedeby betaler best (1,3x), så Birka, Jorvik, Dyflin og Visby.
   - HUD-en viser hva det nærmeste stedet er: marked, kloster, jarlehall, festning, eller plyndret.
   - Vakter, stormen, sjøormen og piler følger med når origo flyttes.
+  - Husene er solide, og brygga har et dekk du kan gå ut på til skipet.
+  - Kister og vakter står alltid på tørt land og utenfor husene. Det er testet for alle stedene.
 
 ## Merk
 

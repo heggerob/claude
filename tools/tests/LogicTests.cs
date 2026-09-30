@@ -325,6 +325,25 @@ public static class LogicTests
                 Check(plots.Count >= wanted - 1 && plots[0].kind == BuildingKind.Jetty && dry && apart && far < 3000f,
                     place.name + "'s settlement: " + plots.Count + "/" + wanted + " built, on dry ground, spread " + (int)far + " m");
             }
+        // Each raidable place's chests and guards stand on dry land, outside every building.
+        if (haveCoast)
+            foreach (var place in Places.All)
+            {
+                var plunder = PlaceLife.PlunderOf(place.kind);
+                if (plunder.chests == 0) continue;
+                var plots = Settlements.Layout(map, place);
+                var main = PlaceLife.MainBuilding(plots);
+                var chests = PlaceLife.Stations(map, plots, main, plunder.chests, 3f, 11);
+                var guards = PlaceLife.Stations(map, plots, main, plunder.guards, 8f, 12);
+                bool fine = chests.Count == plunder.chests && guards.Count == plunder.guards;
+                foreach (var list in new[] { chests, guards })
+                    foreach (var p in list)
+                    {
+                        if (TerrainDetail.Height(map, p.x, p.z) < 0.5f) fine = false;
+                        foreach (var plot in plots) if (PlaceLife.InsideBuilding(plot, p, 0.5f)) fine = false;
+                    }
+                Check(fine, place.name + ": " + chests.Count + " chests and " + guards.Count + " guards on dry land, outside the buildings");
+            }
         map.Detail = null;
 
         // Life at the places: monasteries, halls and fortresses hold plunder under guard; towns trade instead.

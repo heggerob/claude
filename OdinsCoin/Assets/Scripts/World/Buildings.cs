@@ -49,6 +49,24 @@ namespace OdinsCoin
             return m;
         }
 
+        /// <summary>
+        /// Make a built building solid: a box round its walls (or, for a jetty, its deck, so you can walk out along
+        /// it to your ship). On the building's own transform.
+        /// </summary>
+        public static void AddSolid(GameObject building, BuildingKind kind)
+        {
+            var box = building.AddComponent<BoxCollider>();
+            if (kind == BuildingKind.Jetty)
+            {
+                box.center = new Vector3(0f, 1.2f, 20f);
+                box.size = new Vector3(4f, 0.3f, 40f);
+                return;
+            }
+            var f = Footprint(kind);
+            box.center = new Vector3(0f, f.y / 2f, 0f);
+            box.size = new Vector3(2f * f.x * 0.9f, f.y, 2f * f.z * 0.9f);
+        }
+
         /// <summary>How far a building reaches (half-size x, height, half-size z), for laying out a place.</summary>
         public static Vector3 Footprint(BuildingKind kind)
         {
