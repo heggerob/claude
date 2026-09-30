@@ -1,4 +1,4 @@
-# Odin's Coin – roadmap
+# Vikingferd – roadmap
 
 Ett punkt om gangen. Hvert punkt kompileres mot den falske Unity-API-en (`tools/check.sh`) før det pushes.
 
@@ -28,7 +28,7 @@ Sea of Thieves med vikinger og Zelda-utforsking, enkelt og artig. Gamblingen er 
 - [x] **13. Skatten er i fare om bord (`Sea/Wreck.cs`):** synker skipet, synker kistene og kan dykkes opp igjen der det sank. Kistene ligger i vannkanten rundt en brukket mast som flyter over stedet. Vraket vises på HUD-en (avstand og retning) og på sjøkartet til siste kiste er hentet.
 - [x] **14. Enkel styring (`HelmOrders` i `Ship/Longship.cs`):** W og S for seil og A og D for ror ved roret. Anker og fortøyning skjer av seg selv ved
   brygga. Færre taster og menyer.
-- [ ] **15. Verdensskala** (du bestemmer): krympet verden, eller full størrelse som nå.
+- [x] **15. Verdensskala (bestemt):** ekte kart i full størrelse, ikke krympet. Hjemme er Norden, men toktene vestover (England, Skottland, Irland) er med. På land kan du bare gå noen kilometer inn fra kysten (se punkt 26).
 - [x] **16. Landemerker (`World/Landmarks.cs`, se [docs/buildings.png](docs/buildings.png)):** hvert sted får noe høyt eller lyst som synes langt unna. Byer og festninger har et 22 m vardetårn med bål på toppen, klostre et klokketårn, jarlens hall en kjempestor ask, og landingsplasser en runestein som lyser blått. Det står på det høyeste tørre stedet i nærheten, klar av hus og åkrer.
 - [x] **17. Utsiktspunkter (`UI/ChartReveal.cs`):** sjøkartet starter som blankt pergament, bortsett fra hjemmefarvannet. Mens du seiler, tegnes kysten rundt skipet inn (6 km). Står du ved et landemerke og trykker E, klatrer du opp i vardetårnet, klokketårnet eller asken, eller leser runesteinens kart, og området i 25 km rundt tegnes inn. Det som er kartlagt, lagres.
 - [x] **18. Runeringer (`World/RuneShrines.cs`):** rundt hvert landemerke står en ring av fem små steiner hugget med 1 til 5 hakk. Rør dem i rekkefølge etter hakkene, så våkner ringen og gir sin gave. Rører du feil stein, blir alle mørke igjen. Gavene er Vitalitetens rune (+15 helse), Utholdenhetens rune (mer pust til klatring og svømming) og Hellets rune (+2 % bedre odds ved alteret, maks 60 %). Lagres.
@@ -40,3 +40,5 @@ Sea of Thieves med vikinger og Zelda-utforsking, enkelt og artig. Gamblingen er 
 - [x] **23. Ravnefjær (`World/Feathers.cs`):** tre fjær fra Odins ravner er gjemt rundt hvert sted, på det høyeste punktet i et lite område ute bak husene (en haug, en rygg, en klippetopp). De svever og snurrer sakte. Går du inn i en, tar du den: 15 gull og litt av Odins gunst, og banneret viser hvor mange av alle du har funnet. Ved 10, 25 og 50 fjær, og når du har alle, gir Hugin og Munin ekstra gull (100, 300, 600 og 1500). Innbyggerne forteller av og til om en fjær i nærheten. Lagres.
 - [x] **24. Mannskap på dekk (`Ship/Crew.cs`):** fire karer i hjemmevevde klær står langs dekket og følger med, og hvert nivå av Årer-oppgraderingen i methallen gir to til (opptil ti). Når du satser ved alteret, jubler de med armene i været hvis Odin smiler, og henger med hodet hvis han tar kista (som i DESIGN.md: «mannskapet heier eller stønner»). Når skipet går for årer, trekker de i takt med årene. Ellers ser de utover sjøen. De følger med når du bytter skip.
 - [x] **25. Hemmeligheter på kartet (`World/Secrets.cs`):** hvert sted har seks hemmeligheter: runeringen, den nedgravde skatten, grotta og tre ravnefjær. Når du har funnet minst én, står det for eksempel «4/6» ved navnet på sjøkartet, og en gull-stjerne når alle er funnet. Når du finner den siste hemmeligheten på et sted, får du et banner og 200 gull, og boasting board teller hvor mange steder du har fullført.
+- [ ] **26. Land bare nær kysten:** du kan gå noen kilometer inn fra kysten, ikke lenger. Innlandet vises, men er stengt.
+- [x] **27. Navn (bestemt):** spillet heter **Vikingferd**. Tittelen i spillet er endret. Mappa og koden heter fortsatt `OdinsCoin`.

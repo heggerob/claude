@@ -17,7 +17,7 @@ namespace OdinsCoin
         static void AutoBoot()
         {
             if (Instance != null) return;
-            new GameObject("Odin's Coin").AddComponent<GameBootstrap>();
+            new GameObject("Vikingferd").AddComponent<GameBootstrap>();
         }
 
         [Tooltip("Turn off to keep this scene free of the prototype.")]

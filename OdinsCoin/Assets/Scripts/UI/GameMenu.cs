@@ -195,7 +195,7 @@ namespace OdinsCoin
 
         void DrawTitle()
         {
-            GUILayout.Label("ODIN'S COIN", title);
+            GUILayout.Label("VIKINGFERD", title);
             GUILayout.Label("<color=#aaaaaa>Sail, raid, explore, and stake your treasure on the All-Father's coin.</color>", small);
             GUILayout.Space(12);
             if (SaveGame.Exists)

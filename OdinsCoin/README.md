@@ -1,4 +1,6 @@
-# Odin's Coin
+# Vikingferd
+
+(Mappa og koden heter fortsatt `OdinsCoin`.)
 
 Et 3D vikingspill i Unity: seil langskipet, raid øyer og kast **Odins mynt** om bord for flaks, eller ulykke.
 
