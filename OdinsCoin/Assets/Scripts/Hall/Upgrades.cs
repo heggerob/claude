@@ -58,6 +58,8 @@ namespace OdinsCoin
         /// <summary>The places whose buried hoards you've dug up, and those you hold a map to.</summary>
         public readonly List<string> Dug = new List<string>();
         public readonly List<string> Maps = new List<string>();
+        /// <summary>The places whose caves you've emptied.</summary>
+        public readonly List<string> Caves = new List<string>();
 
         /// <summary>The raid Bjorn has commissioned (a place's name, or null) and what it pays.</summary>
         public string Commission;

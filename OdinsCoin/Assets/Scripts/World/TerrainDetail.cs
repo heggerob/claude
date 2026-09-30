@@ -31,7 +31,7 @@ namespace OdinsCoin
             // Out at sea, the detail fades so the sea floor stays smooth.
             float sea = real < -25f ? Mathf.Clamp01(1f + (real + 25f) / 60f) : 1f;
             // The rivers and sounds too narrow for the map's grid, carved in.
-            return Channels.Carve(map, x, z, baseH + (hills * sea + skerries) * s);
+            return Caves.Hollow(x, z, Channels.Carve(map, x, z, baseH + (hills * sea + skerries) * s));
         }
 
         /// <summary>What the ground is: sand on the shore, grass on the lower slopes, rock on steep and high ground, snow on the peaks.</summary>

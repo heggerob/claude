@@ -397,7 +397,7 @@ namespace OdinsCoin
                 talker.Listen(transform.position);
                 var u = Upgrades.Current;
                 var here = new Vector3((float)WorldOrigin.GlobalX(transform.position), 0f, (float)WorldOrigin.GlobalZ(transform.position));
-                var rumour = Rumours.Tell(here, Places.All, p => Places.Position(WorldMap.Current, p), PlaceLife.Raided, u.Dug, u.Shrines, Random.value);
+                var rumour = Rumours.Tell(here, Places.All, p => Places.Position(WorldMap.Current, p), PlaceLife.Raided, u.Dug, u.Shrines, Random.value, u.Caves);
                 CombatHud.Banner("THE NEWS", rumour.HasValue ? rumour.Value.text : "Nothing much. You've seen it all, they say.");
                 return;
             }

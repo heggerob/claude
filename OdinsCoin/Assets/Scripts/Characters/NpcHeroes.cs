@@ -133,6 +133,24 @@ namespace OdinsCoin
             return spec;
         }
 
+        /// <summary>A draugr: a dead Viking guarding a cave, in the Raider's kit gone grey and rotten, with a sword.</summary>
+        public static CharacterSpec Draugr(int seed)
+        {
+            var spec = CharacterSpec.Default(OutfitId.Raider);
+            spec.body = RandomBody(seed);
+            var p = Outfits.Get(OutfitId.Raider).palette();
+            p.cloth = new Color(0.3f, 0.32f, 0.3f);
+            p.clothDark = new Color(0.18f, 0.2f, 0.19f);
+            p.accent = new Color(0.35f, 0.4f, 0.38f);
+            p.fur = new Color(0.55f, 0.56f, 0.52f);
+            p.furShadow = new Color(0.36f, 0.37f, 0.35f);
+            p.hair = new Color(0.72f, 0.74f, 0.7f);
+            spec.palette = p;
+            spec.weapon = WeaponId.Sword;
+            spec.offHand = OffHandId.None;
+            return spec;
+        }
+
         /// <summary>A believable body from a seed: 1.52–1.86 m, slim to broad, either gender.</summary>
         public static BodyShape RandomBody(int seed)
         {

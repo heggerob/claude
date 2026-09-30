@@ -19,6 +19,8 @@ namespace OdinsCoin
         public int BaseGold;
         /// <summary>Plundered from a place (it may hold a map to a buried hoard, found when first picked up).</summary>
         public bool FromPlunder;
+        /// <summary>The place whose cave this chest lay in (the cave stays empty once it's taken), or null.</summary>
+        public string Cave;
         /// <summary>How far Odin has raised it: 0 a plain chest, 1 silver, 2 gold, 3 Odin's hoard. Each step doubles its worth.</summary>
         public int Tier;
         public const int MaxTier = 3;
@@ -133,6 +135,7 @@ namespace OdinsCoin
         {
             Carried = true;
             if (FromPlunder) { FromPlunder = false; if (Opened != null) Opened(this); }
+            if (Cave != null) { if (!Upgrades.Current.Caves.Contains(Cave)) Upgrades.Current.Caves.Add(Cave); Cave = null; }
             var floater = GetComponent<Floater>();
             if (floater != null) Destroy(floater);
             var col = GetComponent<Collider>();

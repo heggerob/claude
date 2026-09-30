@@ -116,11 +116,27 @@ namespace OdinsCoin
         double farX, farZ;
         Material[] materials;
 
+        public static WorldTerrain Instance { get; private set; }
+
+        /// <summary>Throw away the near chunks round a global spot so they're built again (the ground there changed).</summary>
+        public void Rebuild(double x, double z, float radius)
+        {
+            float size = ChunkSize * WorldMap.Scale;
+            var drop = new List<Vector2Int>();
+            foreach (var kv in chunks)
+            {
+                double x0 = kv.Key.x * (double)size, z0 = kv.Key.y * (double)size;
+                if (x + radius >= x0 && x - radius <= x0 + size && z + radius >= z0 && z - radius <= z0 + size) drop.Add(kv.Key);
+            }
+            foreach (var c in drop) { if (chunks[c] != null) Destroy(chunks[c].gameObject); chunks.Remove(c); }
+        }
+
         public static WorldTerrain Create(Transform parent, WorldMap map, Transform follow)
         {
             var go = new GameObject("World Terrain");
             go.transform.SetParent(parent, false);
             var t = go.AddComponent<WorldTerrain>();
+            Instance = t;
             t.map = map;
             t.follow = follow;
             t.materials = new Material[5];

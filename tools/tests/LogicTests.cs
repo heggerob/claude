@@ -364,6 +364,32 @@ public static class LogicTests
             Check(noRaided, "no rumours of plunder at a place you've already emptied");
         }
 
+        // Caves: dug into the steepest hillside nearby, mouth facing downhill.
+        {
+            var cavePlots = new List<Plot> { new Plot { kind = BuildingKind.Longhouse, at = new Vector3(0f, 2f, 0f), yaw = 0f } };
+            // Land rising steeply to the north beyond 300 m.
+            System.Func<float, float, float> hillside = (x, z) => 3f + Mathf.Max(0f, z - 300f) * 0.6f;
+            Vector3 cave; float caveYaw;
+            bool found = Caves.Spot(new Place { name = "Cavetown", kind = PlaceKind.Hall }, cavePlots, hillside, out cave, out caveYaw);
+            Check(found && cave.z > 300f && Mathf.Abs(Mathf.DeltaAngle(caveYaw, 180f)) < 20f, "a cave is dug into the hillside with its mouth facing downhill (" + caveYaw.ToString("0") + "°)");
+            Check(!Caves.Spot(new Place { name = "Flatland", kind = PlaceKind.Hall }, cavePlots, (x, z) => 3f, out cave, out caveYaw), "no cave on flat ground");
+            Caves.Hollows.Clear();
+            Caves.Hollows.Add(new Vector4(0f, 0f, 0f, 5f));
+            Check(Caves.Hollow(0, -4, 12f) < 5f && Caves.Hollow(0, 5, 12f) == 12f && Caves.Hollow(10, -4, 12f) == 12f, "the hill is dug out inside the chamber and nowhere else");
+            Caves.Hollows.Clear();
+            Check(Caves.Inside(new Vector3(0f, 1f, -3f)) && !Caves.Inside(new Vector3(0f, 1f, 2f)) && !Caves.Inside(new Vector3(Caves.HalfWidth + 1f, 1f, -3f)), "the chamber is behind the mouth, between the walls");
+            bool wallsOut = true;
+            foreach (var w in Caves.Walls()) wallsOut &= !Caves.Inside(w.center);
+            Check(wallsOut, "the cave's walls don't stand in its chamber");
+            var draugr = NpcHeroes.Draugr(5);
+            Check(draugr.weapon == WeaponId.Sword && draugr.palette.cloth.g < 0.4f, "a draugr in grey, with a sword");
+            var caveSave = new Upgrades();
+            caveSave.Caves.Add("Kaupang");
+            Fortune kf; Upgrades ku;
+            SaveGame.Deserialize(SaveGame.Serialize(new Fortune(), caveSave), out kf, out ku);
+            Check(ku.Caves.Contains("Kaupang"), "an emptied cave stays empty after a save");
+        }
+
         // Dug hoards and maps survive a save.
         {
             var hoardSave = new Upgrades();

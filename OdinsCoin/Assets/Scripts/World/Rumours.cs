@@ -11,7 +11,7 @@ namespace OdinsCoin
     /// </summary>
     public static class Rumours
     {
-        public enum Kind { Plunder, Hoard, RuneRing }
+        public enum Kind { Plunder, Hoard, RuneRing, Cave }
 
         public struct Rumour
         {
@@ -46,7 +46,7 @@ namespace OdinsCoin
         /// place's global position. Null when there's nothing left to tell.
         /// </summary>
         public static Rumour? Tell(Vector3 from, IList<Place> places, System.Func<Place, Vector3> position,
-            ICollection<string> raided, ICollection<string> dug, ICollection<string> shrines, float pick)
+            ICollection<string> raided, ICollection<string> dug, ICollection<string> shrines, float pick, ICollection<string> caves = null)
         {
             var options = new List<Rumour>();
             foreach (var p in places)
@@ -60,6 +60,8 @@ namespace OdinsCoin
                     options.Add(new Rumour { kind = Kind.Plunder, place = p, text = "They say " + p.name + " is rich and " + (plunder.guards <= 2 ? "hardly guarded" : "well guarded") + ". " + Capital(where) + "." });
                 if (!dug.Contains(p.name))
                     options.Add(new Rumour { kind = Kind.Hoard, place = p, text = "My grandfather swore there's a hoard buried out beyond the houses at " + p.name + ", under a cairn. " + Capital(where) + "." });
+                if (caves != null && !caves.Contains(p.name))
+                    options.Add(new Rumour { kind = Kind.Cave, place = p, text = "There's a cave in the hills behind " + p.name + ". Something dead guards it, and it guards gold. " + Capital(where) + "." });
                 if (!shrines.Contains(p.name))
                     options.Add(new Rumour { kind = Kind.RuneRing, place = p, text = "The rune ring by the " + LandmarkWord(Landmarks.KindFor(p)) + " at " + p.name + " still sleeps. Count the notches. " + Capital(where) + "." });
             }
