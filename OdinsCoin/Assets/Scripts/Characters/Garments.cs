@@ -524,9 +524,25 @@ namespace OdinsCoin
                 float a = i * 0.34f;
                 d.Add(Joints.Head, black, MeshData.Ellipsoid(offset + Vector3.Scale(new Vector3(Mathf.Sin(a) * r * 1.21f, brim, Mathf.Cos(a) * r * 1.21f), scale), Vector3.one * 0.008f * s, 5, 3), false);
             }
+            // Riveted gold ribs running up over the dome from the band, as in the concept art.
+            var ribProfile = new[] { new Vector2(1.17f, 0.05f), new Vector2(1.17f, 0.2f), new Vector2(1.15f, 0.5f), new Vector2(0.99f, 0.82f), new Vector2(0.63f, 1.04f), new Vector2(0.12f, 1.125f) };
+            foreach (float a in new[] { -0.55f, 0.55f, -1.65f, 1.65f, 2.7f, -2.7f })
+            {
+                var rib = new Vector3[ribProfile.Length];
+                var ribR = new float[ribProfile.Length];
+                for (int k = 0; k < rib.Length; k++)
+                {
+                    var p = ribProfile[k];
+                    rib[k] = offset + Vector3.Scale(new Vector3(Mathf.Sin(a) * p.x * r, brim + p.y * r, Mathf.Cos(a) * p.x * r), scale);
+                    ribR[k] = 0.015f * s * (k == rib.Length - 1 ? 0.6f : 1f);
+                }
+                d.Add(Joints.Head, d.pal.brass, MeshData.Tube(rib, ribR, 5), false);
+                for (int k = 1; k < rib.Length - 1; k++)
+                    d.Add(Joints.Head, black, MeshData.Ellipsoid(rib[k] + (rib[k] - offset - new Vector3(0f, brim, 0f)).normalized * 0.014f * s, Vector3.one * 0.006f * s, 4, 3), false);
+            }
             // Four curved horns rising from the dome, black with gold edges: big ones at the sides curving out,
             // smaller ones at the front.
-            foreach (var h in new[] { new Vector2(-1.25f, 1.2f), new Vector2(1.25f, 1.2f), new Vector2(-0.5f, 0.75f), new Vector2(0.5f, 0.75f) })
+            foreach (var h in new[] { new Vector2(-1.25f, 1.2f), new Vector2(1.25f, 1.2f), new Vector2(-0.62f, 0.95f), new Vector2(0.62f, 0.95f) })
             {
                 float a = h.x, len = h.y;
                 var dir = new Vector3(Mathf.Sin(a) * scale.x, 0f, Mathf.Cos(a) * scale.z);
@@ -537,7 +553,7 @@ namespace OdinsCoin
                 d.Add(Joints.Head, black, MeshData.Tube(path, new[] { 0.045f * s, 0.034f * s, 0.02f * s, 0.003f * s }, 7));
                 var edge = new Vector3[path.Length - 1];
                 for (int k = 1; k < path.Length; k++) edge[k - 1] = path[k] + dir * 0.016f * s * (1f - k * 0.25f) + Vector3.up * 0.004f * s;
-                d.Add(Joints.Head, d.pal.brass, MeshData.Tube(edge, new[] { 0.01f * s, 0.007f * s, 0.002f * s }, 5), false);
+                d.Add(Joints.Head, d.pal.brass, MeshData.Tube(edge, new[] { 0.014f * s, 0.01f * s, 0.003f * s }, 5), false);
             }
             // A tall gold crest on the front, rising from the band, with a rune.
             float pz = r * 1.18f * scale.z + 0.012f * s;
