@@ -94,7 +94,7 @@ namespace OdinsCoin
                     new Ability { id = "currents", name = "Currents", description = "The sails drive the ship harder with you at the helm." } },
                 dress = d =>
                 {
-                    Garments.ShinBoots(d, 0.24f);
+                    Garments.ShinBoots(d, 0.27f);
                     Garments.Gloves(d);
                     Garments.LongSkirt(d, 0.25f, 1.6f);
                     Garments.Underskirt(d, 0.035f);
