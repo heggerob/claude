@@ -245,6 +245,24 @@ public static class LogicTests
             Check(found && Places.Depth(map, harbour) >= Places.HarbourDepth && away <= place.harbourReach, place.name + " has a harbour " + away.ToString("0.0") + " km off, " + Places.Depth(map, harbour).ToString("0") + " m deep");
         }
         Check(Places.All.Length >= 20 && halls >= 5 && monasteries >= 2, "there are halls to base at and monasteries to raid (" + halls + ", " + monasteries + ")");
+        // Each place's settlement stands on its real land: a jetty to the water, buildings on dry ground, none overlapping.
+        if (haveCoast)
+            foreach (var place in Places.All)
+            {
+                var plots = Settlements.Layout(map, place);
+                int wanted = Settlements.Plan(place.kind).Length + 1;
+                bool dry = true, apart = true;
+                for (int i = 1; i < plots.Count; i++)
+                {
+                    if (TerrainDetail.Height(map, plots[i].at.x, plots[i].at.z) < 1f) dry = false;
+                    for (int j = 1; j < i; j++)
+                        if (Vector2.Distance(new Vector2(plots[i].at.x, plots[i].at.z), new Vector2(plots[j].at.x, plots[j].at.z)) < 6f) apart = false;
+                }
+                float far = 0f;
+                foreach (var p in plots) far = Math.Max(far, Vector3.Distance(p.at, plots[0].at));
+                Check(plots.Count >= wanted - 1 && plots[0].kind == BuildingKind.Jetty && dry && apart && far < 3000f,
+                    place.name + "'s settlement: " + plots.Count + "/" + wanted + " built, on dry ground, spread " + (int)far + " m");
+            }
         map.Detail = null;
 
         // Bad files are refused rather than read as nonsense.
