@@ -960,11 +960,16 @@ namespace OdinsCoin
         {
             var f = d.fit;
             float s = d.S;
-            float y = f.waist, r = f.waistR * 1.06f, depth = f.depth + 0.05f;
-            d.Add(Joints.Body, d.pal.leatherDark, CharacterKit.Band(y, 0.05f * s, r, depth));
-            var at = new Vector3(0f, y, r * depth + 0.006f);
-            d.Add(Joints.Body, d.pal.metal, MeshData.Lathe(new[] { new Vector2(0.034f * s, -0.007f * s), new Vector2(0.036f * s, 0f), new Vector2(0.034f * s, 0.007f * s), new Vector2(0.02f * s, 0.007f * s), new Vector2(0.02f * s, -0.007f * s) }, 16)
-                .Transformed(at, Quaternion.Euler(90f, 0f, 0f), Vector3.one));
+            // Worn low and broad on the hips, as in the concept art, with a big iron ring at the front.
+            float y = f.waist - 0.035f * s, r = Mathf.Lerp(f.waistR, f.hipR, 0.4f) * 1.1f, depth = f.depth + 0.05f;
+            // Cinched over the skirt and jerkin, not hidden under them.
+            if (d.hasSkirt) { r = Mathf.Max(r, d.SkirtRadius(y) * 1.06f); depth = Mathf.Max(depth, d.skirtDepth + 0.04f); }
+            d.Add(Joints.Body, d.pal.leather, CharacterKit.Band(y, 0.065f * s, r, depth));
+            var at = new Vector3(0f, y, r * depth + 0.008f);
+            d.Add(Joints.Body, d.pal.metal, MeshData.Lathe(new[] { new Vector2(0.046f * s, -0.009f * s), new Vector2(0.049f * s, 0f), new Vector2(0.046f * s, 0.009f * s), new Vector2(0.035f * s, 0.009f * s), new Vector2(0.035f * s, -0.009f * s) }, 16)
+                .Transformed(at, Quaternion.Euler(90f, 0f, 0f), Vector3.one), true, SurfaceKind.Metal);
+            // The prong across the ring.
+            d.Add(Joints.Body, d.pal.metal, MeshData.Box(at + new Vector3(0f, 0f, 0.004f * s), new Vector3(0.008f, 0.075f, 0.008f) * s), false);
             // A big leather pouch hanging on the hip, out on the skirt's surface where it shows (as in the concept art).
             float py = y - 0.11f * s, pr = d.SkirtRadius(py), pa = 0.95f;
             float px = Mathf.Sin(pa) * pr;
