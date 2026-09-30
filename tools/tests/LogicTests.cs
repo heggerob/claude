@@ -169,6 +169,35 @@ public static class LogicTests
             Check(colours > 0 && colours <= 13, "a whole tile of scenery is drawn as a handful of merged meshes, one per colour");
         }
 
+        // Townsfolk walk between doorsteps, never through a house.
+        {
+            var townPlots = new List<Plot> {
+                new Plot { kind = BuildingKind.Longhouse, at = new Vector3(0f, 2f, 0f), yaw = 0f },
+                new Plot { kind = BuildingKind.Storehouse, at = new Vector3(20f, 2f, 0f), yaw = 30f } };
+            var stops = PlaceLife.Doorsteps(townPlots, (x, z) => 3f);
+            bool outside = stops.Count >= 6;
+            foreach (var s in stops) foreach (var p in townPlots) outside &= !PlaceLife.InsideBuilding(p, s, 0.5f);
+            Check(outside, "townsfolk stand before the doors, never inside a house");
+            Check(PlaceLife.Doorsteps(townPlots, (x, z) => 0.1f).Count == 0, "no doorstep stop in the sea");
+            Check(!PlaceLife.ClearPath(townPlots, new Vector3(0f, 0f, -20f), new Vector3(0f, 0f, 20f))
+                && PlaceLife.ClearPath(townPlots, new Vector3(-10f, 0f, -20f), new Vector3(-10f, 0f, 20f)), "a path straight through a longhouse isn't clear; one beside it is");
+            var walkRng = new System.Random(5);
+            bool allClear = true;
+            for (int i = 0; i < 30; i++)
+            {
+                int next = Townsperson.NextStop(townPlots, stops, stops[0], 0, walkRng, null);
+                if (next >= 0) allClear &= next != 0 && PlaceLife.ClearPath(townPlots, stops[0], stops[next]);
+            }
+            Check(allClear, "the next stop is always somewhere else, reached without walking through a house");
+            var fromHere = stops[0];
+            int fled = Townsperson.NextStop(townPlots, stops, fromHere, 0, new System.Random(9), fromHere);
+            Check(fled < 0 || Vector3.Distance(stops[fled], fromHere) > 3f, "given way to, they step off somewhere away from you");
+            Check(PlaceLife.FolkOf(new Place { name = "X", kind = PlaceKind.Town }, 14) > PlaceLife.FolkOf(new Place { name = "Y", kind = PlaceKind.Monastery }, 14),
+                "a town is busier than a monastery");
+            Check(NpcHeroes.Townsfolk(3).weapon == WeaponId.None && NpcHeroes.Townsfolk(3).offHand == OffHandId.None, "townsfolk go about unarmed");
+            Check(Scenery.PlotClearing(BuildingKind.GreatHall) > Buildings.Footprint(BuildingKind.GreatHall).z, "no tree grows through the end of a great hall");
+        }
+
         // Faster time on a quiet passage, never with danger about.
         string why;
         Check(TimeWarp.Allowed(true, 5000f, false, 0f, false, out why) && why == null, "a quiet passage can run fast");

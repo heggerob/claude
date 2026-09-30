@@ -101,6 +101,48 @@ namespace OdinsCoin
         }
 
         /// <summary>
+        /// Where townsfolk stop and stand about: before the door of each house (and at its gable ends), on dry
+        /// land and clear of every building. <paramref name="height"/> gives the ground height at a global spot.
+        /// </summary>
+        public static List<Vector3> Doorsteps(List<Plot> plots, System.Func<float, float, float> height)
+        {
+            var list = new List<Vector3>();
+            foreach (var plot in plots)
+            {
+                if (plot.kind == BuildingKind.Jetty || plot.kind == BuildingKind.Palisade) continue;
+                var foot = Buildings.Footprint(plot.kind);
+                var turn = Quaternion.Euler(0f, plot.yaw, 0f);
+                foreach (var off in new[] { new Vector3(foot.x + 2.5f, 0f, 0f), new Vector3(-foot.x - 2.5f, 0f, 0f), new Vector3(0f, 0f, foot.z + 2.5f), new Vector3(0f, 0f, -foot.z - 2.5f) })
+                {
+                    var p = plot.at + turn * off;
+                    if (height(p.x, p.z) < 0.5f * WorldMap.Scale) continue;
+                    bool clear = true;
+                    foreach (var other in plots) if (InsideBuilding(other, p, 0.8f)) { clear = false; break; }
+                    if (clear) list.Add(new Vector3(p.x, 0f, p.z));
+                }
+            }
+            return list;
+        }
+
+        /// <summary>Can someone walk straight from a to b (global, flat) without going through a building?</summary>
+        public static bool ClearPath(List<Plot> plots, Vector3 a, Vector3 b)
+        {
+            int steps = Mathf.Max(2, Mathf.CeilToInt(Vector3.Distance(a, b) / 1.5f));
+            for (int i = 1; i < steps; i++)
+            {
+                var p = Vector3.Lerp(a, b, i / (float)steps);
+                foreach (var plot in plots) if (InsideBuilding(plot, p, 0.5f)) return false;
+            }
+            return true;
+        }
+
+        /// <summary>How many people live about a place: a handful at a farm or monastery, more in a town.</summary>
+        public static int FolkOf(Place place, int plots)
+        {
+            return place.kind == PlaceKind.Town ? Mathf.Clamp(3 + plots / 2, 4, 12) : Mathf.Clamp(1 + plots / 3, 2, 5);
+        }
+
+        /// <summary>
         /// Spots round a building of half-size (<paramref name="halfX"/>, <paramref name="halfZ"/>) turned to
         /// <paramref name="yaw"/>: on a ring <paramref name="radius"/> out from its walls, never inside them.
         /// </summary>

@@ -512,6 +512,24 @@ public static class HeroPreview
                     m.Pieces.Add(new VikingModel.Piece { joint = J, color = piece.color, mesh = piece.mesh, surface = piece.surface, outline = piece.outline, ink = piece.ink });
             }
         Console.WriteLine("scenery props: " + propCount);
+        // The townsfolk, standing at their doorsteps.
+        var stops = PlaceLife.Doorsteps(plots, (x, z) => TerrainDetail.Height(map, x, z));
+        int folk = Mathf.Min(stops.Count, PlaceLife.FolkOf(place, plots.Count));
+        for (int f = 0; f < folk; f++)
+        {
+            var person = Full(NpcHeroes.Townsfolk(f * 17 + 3));
+            var stand = stops[(f * 7) % stops.Count];
+            var at = new Vector3(stand.x - centre.x, TerrainDetail.Height(map, stand.x, stand.z), stand.z - centre.z);
+            var turn = Quaternion.Euler(0f, f * 137f, 0f);
+            var still = new Pose();
+            foreach (var piece in person.Pieces)
+            {
+                if (!Visible(new Shot { model = person, pose = still }, piece.joint)) continue;
+                Vector3 jp; Quaternion jr;
+                World(person, still, piece.joint, out jp, out jr);
+                m.Pieces.Add(new VikingModel.Piece { joint = J, color = piece.color, mesh = piece.mesh.Transformed(jp, jr, Vector3.one).Transformed(at, turn, Vector3.one), surface = piece.surface, outline = piece.outline, ink = piece.ink });
+            }
+        }
         // A Wavewolf alongside the jetty, bow to seaward.
         var wolf = ShipDesign.Wavewolf;
         var berth = jetty.at + jettyTurn * new Vector3(2f + wolf.beam / 2f + 0.5f, 0.2f, 22f) - centre;

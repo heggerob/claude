@@ -109,6 +109,30 @@ namespace OdinsCoin
             return spec;
         }
 
+        /// <summary>
+        /// Someone who lives in the town: a farmer, a fisher or a trader's hand, in a scout's, raider's or
+        /// navigator's cut of clothes dyed in plain homespun colours, unarmed.
+        /// </summary>
+        public static CharacterSpec Townsfolk(int seed)
+        {
+            var rng = new System.Random(seed * 31 + 7);
+            OutfitId[] cuts = { OutfitId.Scout, OutfitId.Raider, OutfitId.Navigator };
+            var outfit = cuts[rng.Next(cuts.Length)];
+            var spec = CharacterSpec.Default(outfit);
+            spec.body = RandomBody(seed);
+            var p = Outfits.Get(outfit).palette();
+            Color[] homespun = { new Color(0.55f, 0.48f, 0.36f), new Color(0.42f, 0.36f, 0.3f), new Color(0.36f, 0.42f, 0.34f),
+                                 new Color(0.5f, 0.34f, 0.26f), new Color(0.34f, 0.38f, 0.46f), new Color(0.62f, 0.58f, 0.48f) };
+            p.cloth = homespun[rng.Next(homespun.Length)];
+            p.clothDark = p.cloth * 0.7f;
+            p.accent = homespun[rng.Next(homespun.Length)] * 0.9f;
+            p.hair = Hair(seed);
+            spec.palette = p;
+            spec.weapon = WeaponId.None;
+            spec.offHand = OffHandId.None;
+            return spec;
+        }
+
         /// <summary>A believable body from a seed: 1.52–1.86 m, slim to broad, either gender.</summary>
         public static BodyShape RandomBody(int seed)
         {

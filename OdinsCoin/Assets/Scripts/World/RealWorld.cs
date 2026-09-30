@@ -212,6 +212,16 @@ namespace OdinsCoin
         List<TreasureChest> Populate(Place place, Transform site)
         {
             var chests = new List<TreasureChest>();
+            // The people who live there, going about their day (they've fled a place you've plundered).
+            List<Plot> folkPlots;
+            Vector3 folkHarbour;
+            if (!PlaceLife.Raided.Contains(place.name) && layouts.TryGetValue(place, out folkPlots) && harbours.TryGetValue(place, out folkHarbour))
+            {
+                var stops = PlaceLife.Doorsteps(folkPlots, (x, z) => TerrainDetail.Height(map, x, z));
+                int folk = stops.Count > 1 ? PlaceLife.FolkOf(place, folkPlots.Count) : 0;
+                int folkSeed = place.name.GetHashCode() & 0x3fffffff;
+                for (int f = 0; f < folk; f++) Townsperson.Create(site, folkHarbour, map, folkPlots, stops, folkSeed + f * 17);
+            }
             if (PlaceLife.Raided.Contains(place.name)) return chests;
             var plunder = PlaceLife.PlunderOf(place.kind);
             if (plunder.chests == 0 && plunder.guards == 0) return chests;

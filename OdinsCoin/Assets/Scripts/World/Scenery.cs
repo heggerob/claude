@@ -32,16 +32,11 @@ namespace OdinsCoin
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics() { Clearings.Clear(); }
 
-        /// <summary>How far round a building nothing grows (m): the halls are long, the huts small.</summary>
+        /// <summary>How far round a building nothing grows (m): past its far corner, with a yard beyond.</summary>
         public static float PlotClearing(BuildingKind kind)
         {
-            switch (kind)
-            {
-                case BuildingKind.GreatHall: return 24f;
-                case BuildingKind.Longhouse: case BuildingKind.Boathouse: case BuildingKind.Palisade: return 18f;
-                case BuildingKind.Church: return 14f;
-                default: return 9f;
-            }
+            var foot = Buildings.Footprint(kind);
+            return Mathf.Sqrt(foot.x * foot.x + foot.z * foot.z) + 4f;
         }
 
         /// <summary>Whether a spot is inside one of the clearings.</summary>
