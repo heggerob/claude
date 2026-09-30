@@ -369,6 +369,23 @@ public static class LogicTests
             Check(Mathf.Abs(giftSave.HealthBonus - 2f * RuneShrines.VitalityHealth) < 1e-4f, "each Rune of Vitality adds to your health");
         }
 
+        // Breath: climbing drains it, rest brings it back, Runes of Endurance give more.
+        {
+            float st = StaminaRules.BaseStamina;
+            float climbed = 0f;
+            while (st > 0f && climbed < 60f) { st = StaminaRules.Step(st, StaminaRules.BaseStamina, 0.1f, true, false, false, false); climbed += 0.1f; }
+            Check(Mathf.Abs(climbed - StaminaRules.BaseStamina / StaminaRules.ClimbDrain) < 0.2f && climbed * StaminaRules.ClimbSpeed > 10f,
+                "you can climb about " + (climbed * StaminaRules.ClimbSpeed).ToString("0") + " m of cliff on a full breath");
+            float rest = st, restTime = 0f;
+            while (rest < StaminaRules.BaseStamina && restTime < 60f) { rest = StaminaRules.Step(rest, StaminaRules.BaseStamina, 0.1f, false, false, false, true); restTime += 0.1f; }
+            Check(restTime < 5f, "on your feet you get your breath back in a few seconds");
+            Check(StaminaRules.Step(3f, 8f, 1f, false, false, false, false) == 3f, "in the air or hanging on, it doesn't come back");
+            Check(StaminaRules.Step(8f, 8f, 1f, false, true, false, true) < 8f && StaminaRules.Step(8f, 8f, 1f, false, false, true, false) < 8f, "sprinting and swimming hard take breath too");
+            Check(StaminaRules.Max(2) == StaminaRules.BaseStamina + 2f * RuneShrines.EnduranceSeconds, "each Rune of Endurance gives more breath");
+            Check(StaminaRules.Climbable(new Vector3(1f, 0.2f, 0f).normalized) && !StaminaRules.Climbable(Vector3.up) && !StaminaRules.Climbable(new Vector3(0.5f, 0.8f, 0f).normalized) && !StaminaRules.Climbable(Vector3.down),
+                "a cliff is climbed, a hillside walked, and an overhang can't be climbed");
+        }
+
         // Faster time on a quiet passage, never with danger about.
         string why;
         Check(TimeWarp.Allowed(true, 5000f, false, 0f, false, out why) && why == null, "a quiet passage can run fast");

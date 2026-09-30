@@ -33,6 +33,12 @@ namespace OdinsCoin
 
         public VikingBuilder.Parts Parts { get { return parts; } }
         float verticalSpeed;
+        /// <summary>Breath for climbing, sprinting and swimming (seconds of effort).</summary>
+        public float Stamina = StaminaRules.BaseStamina;
+        public float MaxStamina { get { return StaminaRules.Max(Upgrades.Current.Endurance); } }
+        public bool Climbing { get; private set; }
+        /// <summary>Out of breath: no climbing or sprinting until it's mostly back.</summary>
+        public bool Tired { get; private set; }
         /// <summary>In first person you move in any direction while facing where you look: this is that motion.</summary>
         Vector3 strafe;
         /// <summary>How quickly you get up to speed and stop in first person (m/s²), and how little you can steer in the air.</summary>
@@ -169,15 +175,36 @@ namespace OdinsCoin
             Vector3 forward = rig != null ? rig.FlatForward : Vector3.forward;
             Vector3 right = new Vector3(forward.z, 0f, -forward.x);
             Vector3 move = forward * input.y + right * input.x;
-            float speed = Swimming ? SwimSpeed : GameInput.Held(Key.Sprint) ? RunSpeed : GameInput.Held(Key.Walk) ? StrollSpeed : WalkSpeed;
+            // Sprinting takes breath; out of it, you're down to a walk until you've got it back.
+            bool sprinting = GameInput.Held(Key.Sprint) && Stamina > 0f && !Tired;
+            float speed = Swimming ? (Tired ? SwimSpeed * 0.5f : SwimSpeed) : sprinting ? RunSpeed : GameInput.Held(Key.Walk) ? StrollSpeed : WalkSpeed;
             if (Carrying != null) speed = Swimming ? CarrySwimSpeed : Abilities.Has("plunder") ? Abilities.PlunderCarrySpeed : CarrySpeed;
             if (combat != null && combat.Blocking) speed *= 0.5f;
 
 
-            // 3. Gravity, jumping and swimming.
+            // 3. Gravity, jumping, climbing and swimming.
             float water = Waves.Height(transform.position.x, transform.position.z);
             Swimming = !OnShip && transform.position.y < water - 0.9f;
-            if (Swimming)
+            // Climbing: push forward against a steep rock face (not the ship's side) and you climb it, as long as
+            // your breath lasts; run out and you let go.
+            bool wasClimbing = Climbing;
+            Climbing = false;
+            RaycastHit wall;
+            if (!Swimming && !OnShip && Carrying == null && input.y > 0.3f && !Tired && Stamina > 0f
+                && Physics.Raycast(transform.position + Vector3.up * 1f, transform.forward, out wall, 0.9f) && wall.collider != null
+                && StaminaRules.Climbable(wall.normal) && (Ship == null || !wall.collider.transform.IsChildOfOrSelf(Ship.transform)))
+                Climbing = true;
+            if (Climbing)
+            {
+                verticalSpeed = StaminaRules.ClimbSpeed;
+                speed = 0.6f;
+            }
+            else if (wasClimbing && input.y > 0.3f)
+            {
+                // Over the top: a little hop up onto the ledge.
+                verticalSpeed = StaminaRules.ClimbSpeed * 1.6f;
+            }
+            else if (Swimming)
             {
                 // Bob at the surface, head above water.
                 verticalSpeed = Mathf.Lerp(verticalSpeed, (water - 1.25f - transform.position.y) * 4f, dt * 5f);
@@ -198,7 +225,12 @@ namespace OdinsCoin
                 verticalSpeed -= Gravity * dt;
             }
 
-            bool footing = Swimming || controller.isGrounded;
+            Stamina = StaminaRules.Step(Stamina, MaxStamina, dt, Climbing, sprinting && move.sqrMagnitude > 0.01f, Swimming && move.sqrMagnitude > 0.01f, controller.isGrounded || OnShip);
+            // Run dry and you must get your breath back before you can climb or sprint again.
+            if (Stamina <= 0f) Tired = true;
+            else if (Tired && Stamina >= MaxStamina * StaminaRules.RecoverAt) Tired = false;
+
+            bool footing = Swimming || controller.isGrounded || Climbing;
             if (rig != null && rig.FirstPerson)
             {
                 // First person: you face where you look and move any way at once, forwards, backwards or sideways.
@@ -279,6 +311,19 @@ namespace OdinsCoin
 
         /// <summary><see cref="ReachPoint()"/> for a body at <paramref name="at"/> looking along <paramref name="look"/> (zero in third person).</summary>
         public static Vector3 ReachPoint(Vector3 at, Vector3 look) { return at + Vector3.up * 0.5f + look * (InteractRange * 0.45f); }
+
+        /// <summary>The breath bar: a small bar under the middle of the screen, shown while you're using it.</summary>
+        void OnGUI()
+        {
+            if (Stamina >= MaxStamina - 0.01f || GameMenu.Blocking) return;
+            float w = 140f, x = Screen.width / 2f - w / 2f, y = Screen.height / 2f + 40f;
+            var old = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.4f);
+            GUI.DrawTexture(new Rect(x - 2f, y - 2f, w + 4f, 10f), Texture2D.whiteTexture);
+            GUI.color = Tired ? new Color(0.9f, 0.3f, 0.2f, 0.9f) : new Color(0.55f, 0.9f, 0.45f, 0.9f);
+            GUI.DrawTexture(new Rect(x, y, w * Mathf.Clamp01(Stamina / MaxStamina), 6f), Texture2D.whiteTexture);
+            GUI.color = old;
+        }
 
         void UpdatePrompt()
         {

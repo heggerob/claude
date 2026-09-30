@@ -17,7 +17,8 @@ Et 3D vikingspill i Unity: seil langskipet, raid øyer og kast **Odins mynt** om
 | Tast | Hva |
 |---|---|
 | WASD | gå (i førsteperson også sidelengs og baklengs) |
-| Shift / Space | løpe / hoppe |
+| Shift / Space | løpe / hoppe (løping tar pust) |
+| W mot en klippe | klatre så lenge pusten varer |
 | Mus | se rundt (du ser ut gjennom heltens øyne, med sikte midt på skjermen) |
 | V | bytte mellom førsteperson og tredjeperson (i tredjeperson zoomer scroll) |
 | Venstre / høyre mus | øks / skjold |
