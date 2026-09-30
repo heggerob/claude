@@ -192,13 +192,13 @@ namespace OdinsCoin
         void DrawTitle()
         {
             GUILayout.Label("ODIN'S COIN", title);
-            GUILayout.Label("<color=#aaaaaa>Sail, raid and flip the All-Father's coin.</color>", small);
+            GUILayout.Label("<color=#aaaaaa>Sail, raid, explore, and stake your treasure on the All-Father's coin.</color>", small);
             GUILayout.Space(12);
             if (SaveGame.Exists)
             {
                 Fortune f; Upgrades u;
                 SaveGame.Deserialize(PlayerPrefs.GetString(SaveGame.Key, ""), out f, out u);
-                if (GUILayout.Button("<b>Continue</b>\n<size=12>" + f.Gold + " gold · " + f.Carved.Count + " runes · " + f.ChestsSold + " chests brought home</size>", GUILayout.Height(52)))
+                if (GUILayout.Button("<b>Continue</b>\n<size=12>" + f.Gold + " gold · " + f.ChestsSold + " chests brought home · " + (u.Shrines.Count + u.Dug.Count + u.Caves.Count + u.Feathers.Count) + " secrets found</size>", GUILayout.Height(52)))
                     deferred += () => Begin(true);
             }
             string newLabel = confirmNew ? "<color=#ff9966>Really start over? Your save is lost.</color>" : "New voyage";
