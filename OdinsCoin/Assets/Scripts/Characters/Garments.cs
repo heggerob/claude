@@ -935,6 +935,12 @@ namespace OdinsCoin
             // A soft peak at the top of the hood.
             d.Add(Joints.Head, d.pal.clothDark, MeshData.Tube(new[] { new Vector3(0f, cy + r * 1.1f, -0.25f * r), new Vector3(0f, cy + r * 1.45f, -0.45f * r), new Vector3(0f, cy + r * 1.55f, -0.75f * r) },
                 new[] { r * 0.55f, r * 0.25f, 0.004f }, 8));
+            // Hair framing the face inside the hood, falling from under its rim down past the cheeks.
+            foreach (float x in new[] { -1f, 1f })
+            {
+                d.Add(Joints.Head, d.pal.hair, CharacterKit.Tuft(new Vector3(x * r * 0.55f, cy + r * 0.85f, r * 0.62f), new Vector3(x * r * 0.98f, cy - r * 0.2f, r * 0.62f), 0.032f * s));
+                d.Add(Joints.Head, d.pal.hair, CharacterKit.Tuft(new Vector3(x * r * 0.85f, cy + r * 0.4f, r * 0.58f), new Vector3(x * r * 1.02f, cy - r * 0.75f, r * 0.55f), 0.026f * s));
+            }
             // The hood falls onto the shoulders behind the neck.
             d.Add(Joints.Head, d.pal.clothDark, MeshData.Ellipsoid(new Vector3(0f, cy - r * 1.0f, -r * 0.55f), new Vector3(r * 1.35f, r * 0.7f, r * 0.9f), 14, 8));
         }
@@ -990,8 +996,8 @@ namespace OdinsCoin
             for (int i = 0; i < pend.Length; i++)
             {
                 var p = new Vector3(pend[i].x * s, f.shoulderY - 0.2f * s + pend[i].y * s, cz + 0.01f);
-                if (i == 1) RuneDisc(d, Joints.Body, p, 0.03f * s, Quaternion.Euler(90f, 0f, 0f));
-                else d.Add(Joints.Body, d.pal.parchment, MeshData.Ellipsoid(p, new Vector3(0.012f, 0.03f, 0.012f) * s, 6, 5));
+                if (i == 1) RuneDisc(d, Joints.Body, p, 0.042f * s, Quaternion.Euler(90f, 0f, 0f));
+                else d.Add(Joints.Body, d.pal.parchment, MeshData.Ellipsoid(p, new Vector3(0.016f, 0.04f, 0.016f) * s, 6, 5));
             }
             // Belt: a cord with a big wooden rune disc at the front.
             d.Add(Joints.Body, d.pal.leather, CharacterKit.Band(f.waist, 0.03f * s, d.SkirtRadius(f.waist) * 1.06f, d.skirtDepth + 0.02f));
