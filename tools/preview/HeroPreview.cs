@@ -605,12 +605,12 @@ public static class HeroPreview
         Render(helm, w, h, 0, w, h, new Shot { model = m, pose = pose, perspective = true, eye = helmEye, yaw = jetty.yaw, pitch = 6f, fov = 75f });
         WriteRgba(rgbaPath + ".helm", helm, w, h);
 
-        // A cave (the first place, Bergen first, whose hills have one), with the land drawn as the game draws it
+        // A cave (Bjørgvin's, in the hills over Bergen), with the land drawn as the game draws it
         // (its 25 m squares, refined round the chamber), seen from a few steps in front of the mouth.
         Vector3 caveAt = Vector3.zero; float caveYaw = 0f;
         Place cavePlace = null;
         var candidates = new List<Place>();
-        var bergenPlace = Places.Find("Bergen");
+        var bergenPlace = Places.Find("Bjørgvin");
         if (bergenPlace != null) candidates.Add(bergenPlace);
         candidates.AddRange(Places.All);
         foreach (var cand in candidates)

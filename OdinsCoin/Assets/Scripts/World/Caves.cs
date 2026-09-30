@@ -4,8 +4,8 @@ using UnityEngine;
 namespace OdinsCoin
 {
     /// <summary>
-    /// A cave in the hillside near every place: a rock chamber dug into the steepest slope nearby, its mouth
-    /// facing downhill. Inside lies a gold chest, and a draugr (a dead Viking who won't lie down) guards the way
+    /// A cave in a knoll near every place: a rock chamber dug into the steepest slope nearby, its mouth facing
+    /// downhill (on flat land it's a howe, a burial mound, facing the town: where draugar keep their gold). Inside lies a gold chest, and a draugr (a dead Viking who won't lie down) guards the way
     /// in. Once the chest is taken the cave stays empty.
     /// </summary>
     public static class Caves
@@ -15,6 +15,8 @@ namespace OdinsCoin
         /// <summary>The chamber's inside: half its width, its height and its depth (m).</summary>
         public const float HalfWidth = 3f, Height = 3.6f, Depth = 8f;
         public const int MinGold = 250, MaxGold = 450;
+        /// <summary>Under this rise over 8 m (m) the ground counts as flat.</summary>
+        public const float Flat = 0.5f;
 
         /// <summary>The chambers dug into the hills: global centre of the mouth, yaw, and floor height.</summary>
         public static readonly List<Vector4> Hollows = new List<Vector4>();
@@ -46,15 +48,16 @@ namespace OdinsCoin
         }
 
         /// <summary>
-        /// Where a place's cave is (global, ground height) and which way its mouth faces (yaw, downhill): the steepest
-        /// dry slope found between <see cref="MinDistance"/> and <see cref="MaxDistance"/>, clear of the buildings.
+        /// Where a place's cave is (global, ground height) and which way its mouth faces (yaw): the steepest dry
+        /// ground found between <see cref="MinDistance"/> and <see cref="MaxDistance"/>, clear of the buildings,
+        /// facing downhill, or facing the town where the land is flat. False only if there's no dry land at all.
         /// </summary>
         public static bool Spot(Place place, List<Plot> plots, System.Func<float, float, float> height, out Vector3 spot, out float yaw)
         {
             var main = PlaceLife.MainBuilding(plots);
             var rng = new System.Random(place.name.GetHashCode() ^ 0xca7e);
             spot = Vector3.zero; yaw = 0f;
-            float best = 2.5f; // at least a 2.5 m rise over 8 m to count as a hillside
+            float best = -1f;
             for (int tries = 0; tries < 80; tries++)
             {
                 float a = (float)rng.NextDouble() * Mathf.PI * 2f, r = Mathf.Lerp(MinDistance, MaxDistance, (float)rng.NextDouble());
@@ -70,9 +73,10 @@ namespace OdinsCoin
                 if (!clear) continue;
                 best = rise;
                 spot = new Vector3(p.x, h, p.z);
-                yaw = Mathf.Atan2(-gx, -gz) * Mathf.Rad2Deg; // facing downhill
+                // Facing downhill; on the flat, facing the town.
+                yaw = rise > Flat ? Mathf.Atan2(-gx, -gz) * Mathf.Rad2Deg : Mathf.Atan2(main.at.x - p.x, main.at.z - p.z) * Mathf.Rad2Deg;
             }
-            return best > 2.5f;
+            return best >= 0f;
         }
 
         static readonly Color RockA = new Color(0.44f, 0.42f, 0.4f), RockB = new Color(0.34f, 0.33f, 0.32f), Floor = new Color(0.3f, 0.27f, 0.23f);

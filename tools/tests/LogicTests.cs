@@ -372,7 +372,10 @@ public static class LogicTests
             Vector3 cave; float caveYaw;
             bool found = Caves.Spot(new Place { name = "Cavetown", kind = PlaceKind.Hall }, cavePlots, hillside, out cave, out caveYaw);
             Check(found && cave.z > 300f && Mathf.Abs(Mathf.DeltaAngle(caveYaw, 180f)) < 20f, "a cave is dug into the hillside with its mouth facing downhill (" + caveYaw.ToString("0") + "°)");
-            Check(!Caves.Spot(new Place { name = "Flatland", kind = PlaceKind.Hall }, cavePlots, (x, z) => 3f, out cave, out caveYaw), "no cave on flat ground");
+            bool howe = Caves.Spot(new Place { name = "Flatland", kind = PlaceKind.Hall }, cavePlots, (x, z) => 3f, out cave, out caveYaw);
+            float toTown = Mathf.Atan2(-cave.x, -cave.z) * Mathf.Rad2Deg;
+            Check(howe && Mathf.Abs(Mathf.DeltaAngle(caveYaw, toTown)) < 1f, "on flat ground the cave is a howe, its mouth facing the town");
+            Check(!Caves.Spot(new Place { name = "Sea", kind = PlaceKind.Hall }, cavePlots, (x, z) => -5f, out cave, out caveYaw), "no cave where there's no dry land");
             Caves.Hollows.Clear();
             Caves.Hollows.Add(new Vector4(0f, 0f, 0f, 5f));
             Check(Caves.Hollow(0, -4, 12f) < 5f && Caves.Hollow(0, 5, 12f) == 12f && Caves.Hollow(10, -4, 12f) == 12f, "the hill is dug out inside the chamber and nowhere else");

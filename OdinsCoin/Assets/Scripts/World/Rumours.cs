@@ -61,7 +61,7 @@ namespace OdinsCoin
                 if (!dug.Contains(p.name))
                     options.Add(new Rumour { kind = Kind.Hoard, place = p, text = "My grandfather swore there's a hoard buried out beyond the houses at " + p.name + ", under a cairn. " + Capital(where) + "." });
                 if (caves != null && !caves.Contains(p.name))
-                    options.Add(new Rumour { kind = Kind.Cave, place = p, text = "There's a cave in the hills behind " + p.name + ". Something dead guards it, and it guards gold. " + Capital(where) + "." });
+                    options.Add(new Rumour { kind = Kind.Cave, place = p, text = "There's a cave dug into a knoll out past " + p.name + ". Something dead guards it, and it guards gold. " + Capital(where) + "." });
                 if (!shrines.Contains(p.name))
                     options.Add(new Rumour { kind = Kind.RuneRing, place = p, text = "The rune ring by the " + LandmarkWord(Landmarks.KindFor(p)) + " at " + p.name + " still sleeps. Count the notches. " + Capital(where) + "." });
             }
