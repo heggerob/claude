@@ -192,6 +192,8 @@ med ror, seil i vinden og årer.
   - [x] Folk i byene (`World/Townsfolk.cs`): bønder, fiskere og handelsfolk i hjemmevevde klær, uten våpen. De rusler fra dørstokk til dørstokk og går aldri gjennom et hus. De blir stående en stund og ser seg rundt, og de går unna hvis du går rett bort til dem. En by har 4–12 innbyggere, en gård eller et kloster 2–5. Har du plyndret stedet, har folket flyktet.
   - [x] Fra roret (se [docs/scene-helm.png](docs/scene-helm.png)): rormannen står et steg til styrbord for midtlinja, så mesanmasten ikke står rett foran øynene når du styrer i førsteperson.
   - [x] Åkrer med gjerde (`World/Fields.cs`): bak eller ved siden av langhusene, hallene og stabburene ligger en inngjerdet åker med furer av vendt jord og korn i rader. Kornet er modent bygg (gull) eller grønne spirer. Den ligger bare på tørt, nokså flatt land, klar av alle hus og andre åkrer. Gjerdet har stolper og to rekker med rekkverk som følger bakken, og en grind mot huset. Du går inn i gjerdet, men kommer inn gjennom grinda. Ingen trær vokser i åkrene. En by har inntil tre åkrer, en gård eller et kloster inntil to.
+  - [x] Tegnet bakke: gresset har små blyanttuster, sanden prikker og lette streker, og fjellet sprekker. Teksturene er festet til verden (8 m per flis), så de ikke glir når du beveger deg. Steinene ved grotter og varder har fjellteksturen, og torvhaugen over grotta har gresset.
+  - [x] Seilene henger over hodehøyde: underkanten på både råseil og latinerseil er minst 2,6 m over dekk, så du ser forover under dem fra roret.
 
 ## Merk
 
