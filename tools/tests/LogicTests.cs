@@ -739,6 +739,20 @@ public static class LogicTests
         Check(System.IO.File.Exists(harboursPath), "the baked harbours are in the game's resources");
         Places.LoadHarbours(System.IO.File.Exists(harboursPath) ? System.IO.File.ReadAllText(harboursPath) : null);
 
+        // Every place has its cave (or howe) out beyond the houses.
+        {
+            int towns = 0, caves = 0;
+            foreach (var place in Places.All)
+            {
+                var cavePlots = Settlements.Layout(map, place);
+                if (cavePlots.Count == 0) continue;
+                towns++;
+                Vector3 at; float yaw;
+                if (Caves.Spot(place, cavePlots, (x, z) => TerrainDetail.Height(map, x, z), out at, out yaw)) caves++;
+            }
+            Check(towns > 20 && caves == towns, caves + " of " + towns + " places have a cave or howe");
+        }
+
         // Buried hoards: one out beyond every place's houses, on dry land, the same spot every time.
         {
             int placed = 0, fine = 0;
