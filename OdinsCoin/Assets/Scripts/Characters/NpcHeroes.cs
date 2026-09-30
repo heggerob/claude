@@ -244,8 +244,8 @@ namespace OdinsCoin
         public static Quaternion Leg(float swing) { return Quaternion.Euler(swing - Lean, 0f, 0f); }
 
         /// <summary>Local rotations for carrying a big axe over the right shoulder: arm out, elbow folded, haft back.</summary>
-        public static readonly Vector3 AxeCarryArm = new Vector3(-10f, 0f, 55f);
-        public static readonly Vector3 AxeCarryForearm = new Vector3(-150f, 0f, 0f);
+        public static readonly Vector3 AxeCarryArm = new Vector3(-14f, 0f, 30f);
+        public static readonly Vector3 AxeCarryForearm = new Vector3(-150f, 0f, 12f);
         /// <summary>
         /// The axe's local rotation in the fist for the carry: worked out from where the haft should lie in the body's
         /// space (up and back across the shoulders towards the left, the blade facing forward), whatever the arm does.

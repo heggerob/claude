@@ -57,8 +57,10 @@ public static class HeroPreview
         var carry = new Pose();
         // Aim the left arm: elbow down and out, fist up by the shoulder and behind the head.
         Vector3 shoulder = new Vector3(-fit.shoulderX, fit.shoulderY, 0f);
-        Vector3 elbow = shoulder + new Vector3(-0.2f, -0.12f, 0.05f).normalized * fit.upperArm;
-        Vector3 fist = elbow + new Vector3(0.03f, 0.3f, -0.08f).normalized * fit.foreArm;
+        // As in the concept art: the elbow down and a little out by the side, the forearm folded up so the fist
+        // holds the haft at the shoulder.
+        Vector3 elbow = shoulder + new Vector3(-0.38f, -0.9f, 0.12f).normalized * fit.upperArm;
+        Vector3 fist = elbow + new Vector3(0.12f, 1f, -0.05f).normalized * fit.foreArm;
         carry.worldRot[Joints.LeftArm] = Quaternion.FromToRotation(Vector3.down, elbow - shoulder);
         carry.worldRot[Joints.LeftForearm] = Quaternion.FromToRotation(Vector3.down, fist - elbow);
         // The haft runs from the fist behind the neck to the other side; the blade faces us.
