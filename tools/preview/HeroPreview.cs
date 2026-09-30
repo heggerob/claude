@@ -492,8 +492,8 @@ public static class HeroPreview
         {
             if (k == (int)Ground.Seabed) continue;
             var md = new MeshData();
-            foreach (int idx in patch.Triangles[k]) { md.Triangles.Add(md.Vertices.Count); md.Vertices.Add(patch.Vertices[idx] - new Vector3(half, 0f, half)); }
-            m.Add(J, TerrainPatch.ColourOf((Ground)k), md, false, k == (int)Ground.Rock ? SurfaceKind.Plain : SurfaceKind.Plain);
+            foreach (int idx in patch.Triangles[k]) { md.Triangles.Add(md.Vertices.Count); md.Vertices.Add(patch.Vertices[idx] - new Vector3(half, 0f, half)); md.Uvs.Add(patch.Uvs[idx]); }
+            m.Add(J, TerrainPatch.ColourOf((Ground)k), md, false, TerrainPatch.SurfaceOf((Ground)k));
         }
         // The sea.
         m.Add(J, new Color(0.36f, 0.52f, 0.6f), MeshData.Box(new Vector3(0f, -0.05f, 0f), new Vector3(half * 2f, 0.1f, half * 2f)), false);
@@ -633,8 +633,8 @@ public static class HeroPreview
         {
             if (k == (int)Ground.Seabed) continue;
             var md = new MeshData();
-            foreach (int idx in cpatch.Triangles[k]) { md.Triangles.Add(md.Vertices.Count); md.Vertices.Add(cpatch.Vertices[idx] + corner); }
-            cm.Add(J, TerrainPatch.ColourOf((Ground)k), md, false, SurfaceKind.Plain);
+            foreach (int idx in cpatch.Triangles[k]) { md.Triangles.Add(md.Vertices.Count); md.Vertices.Add(cpatch.Vertices[idx] + corner); md.Uvs.Add(cpatch.Uvs[idx]); }
+            cm.Add(J, TerrainPatch.ColourOf((Ground)k), md, false, TerrainPatch.SurfaceOf((Ground)k));
         }
         var caveTurn = Quaternion.Euler(0f, caveYaw, 0f);
         var mouth = new Vector3(0f, caveAt.y - 0.2f, 0f);

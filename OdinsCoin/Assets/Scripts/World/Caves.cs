@@ -92,10 +92,10 @@ namespace OdinsCoin
                 foreach (float side in new[] { -1f, 1f })
                     m.Put(i % 2 == 0 ? RockA : RockB, SurfaceKind.Plain, MeshData.Ellipsoid(new Vector3(side * (HalfWidth + 1.3f), Height * 0.5f, z), new Vector3(1.6f, Height * 0.75f, 1.5f), 8, 5));
             }
-            m.Put(RockB, SurfaceKind.Plain, MeshData.Ellipsoid(new Vector3(0f, Height * 0.5f, -Depth - 1f), new Vector3(HalfWidth + 1.5f, Height * 0.8f, 1.6f), 9, 5));
-            m.Put(RockA, SurfaceKind.Plain, MeshData.Ellipsoid(new Vector3(0f, Height + 1.2f, -Depth / 2f), new Vector3(HalfWidth + 2.6f, 1.6f, Depth / 2f + 1.6f), 10, 6));
+            m.Put(RockB, SurfaceKind.Stone, MeshData.Ellipsoid(new Vector3(0f, Height * 0.5f, -Depth - 1f), new Vector3(HalfWidth + 1.5f, Height * 0.8f, 1.6f), 9, 5));
+            m.Put(RockA, SurfaceKind.Stone, MeshData.Ellipsoid(new Vector3(0f, Height + 1.2f, -Depth / 2f), new Vector3(HalfWidth + 2.6f, 1.6f, Depth / 2f + 1.6f), 10, 6));
             // A lintel of stone over the mouth.
-            m.Put(RockB, SurfaceKind.Plain, MeshData.Ellipsoid(new Vector3(0f, Height + 0.3f, 0.3f), new Vector3(HalfWidth + 1.4f, 0.8f, 0.9f), 8, 5));
+            m.Put(RockB, SurfaceKind.Stone, MeshData.Ellipsoid(new Vector3(0f, Height + 0.3f, 0.3f), new Vector3(HalfWidth + 1.4f, 0.8f, 0.9f), 8, 5));
             // Turf heaped over and round it, so it's a mouth in a knoll, not a heap of stones on the grass: a cap over
             // the roof, a shoulder either side of the mouth and a hump behind, all clear of the way in.
             m.Put(Materials.Grass, SurfaceKind.Plain, MeshData.Ellipsoid(new Vector3(0f, Height + 1.9f, -Depth / 2f - 1.5f), new Vector3(HalfWidth + 4f, 2.2f, Depth / 2f + 3.5f), 12, 6));
@@ -103,8 +103,8 @@ namespace OdinsCoin
                 m.Put(Materials.Grass, SurfaceKind.Plain, MeshData.Ellipsoid(new Vector3(side * (HalfWidth + 4.5f), Height * 0.5f, -Depth / 2f), new Vector3(4f, Height * 1.0f, Depth / 2f + 3f), 10, 6));
             m.Put(Materials.Grass, SurfaceKind.Plain, MeshData.Ellipsoid(new Vector3(0f, Height * 0.5f, -Depth - 4.5f), new Vector3(HalfWidth + 6f, Height * 1.3f, 4f), 10, 6));
             // A few rocks breaking through the turf.
-            m.Put(RockA, SurfaceKind.Plain, MeshData.Ellipsoid(new Vector3(-HalfWidth - 2.5f, Height * 0.9f, 1.2f), new Vector3(1.1f, 0.8f, 0.9f), 7, 4));
-            m.Put(RockB, SurfaceKind.Plain, MeshData.Ellipsoid(new Vector3(HalfWidth + 3.2f, Height * 0.7f, 0.8f), new Vector3(0.9f, 0.7f, 0.8f), 7, 4));
+            m.Put(RockA, SurfaceKind.Stone, MeshData.Ellipsoid(new Vector3(-HalfWidth - 2.5f, Height * 0.9f, 1.2f), new Vector3(1.1f, 0.8f, 0.9f), 7, 4));
+            m.Put(RockB, SurfaceKind.Stone, MeshData.Ellipsoid(new Vector3(HalfWidth + 3.2f, Height * 0.7f, 0.8f), new Vector3(0.9f, 0.7f, 0.8f), 7, 4));
             return m.ToModel("Cave");
         }
 

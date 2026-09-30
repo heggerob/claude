@@ -16,6 +16,11 @@ namespace OdinsCoin
 
         public readonly List<Vector3> Vertices = new List<Vector3>();
         public readonly List<int>[] Triangles;
+        /// <summary>Texture coordinates for the ground's drawn texture: one tile every <see cref="TextureTile"/> metres, fixed to the world.</summary>
+        public readonly List<Vector2> Uvs = new List<Vector2>();
+
+        /// <summary>How many metres of ground one tile of its drawn texture covers.</summary>
+        public const float TextureTile = 8f;
         /// <summary>The patch's south-west corner (global).</summary>
         double x0, z0;
 
@@ -76,6 +81,22 @@ namespace OdinsCoin
                 float y = kind == Ground.Seabed ? SeaSheet * s : Mathf.Max(v.y, SeaSheet * s * 0.5f);
                 list.Add(Vertices.Count);
                 Vertices.Add(new Vector3(v.x, y - sink, v.z));
+                // Kept small, so the marks stay crisp far from the world's centre.
+                Uvs.Add(new Vector2((float)((Repeat(x0) + v.x) / TextureTile), (float)((Repeat(z0) + v.z) / TextureTile)));
+            }
+        }
+
+        static double Repeat(double v) { double p = TextureTile * 64.0; return v - System.Math.Floor(v / p) * p; }
+
+        /// <summary>The drawn texture on each kind of ground.</summary>
+        public static SurfaceKind SurfaceOf(Ground g)
+        {
+            switch (g)
+            {
+                case Ground.Sand: return SurfaceKind.Sand;
+                case Ground.Grass: return SurfaceKind.Grass;
+                case Ground.Rock: return SurfaceKind.Stone;
+                default: return SurfaceKind.Plain;
             }
         }
 
@@ -136,6 +157,7 @@ namespace OdinsCoin
             mesh.name = name;
             if (Vertices.Count > 65000) mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
             mesh.vertices = Vertices.ToArray();
+            mesh.uv = Uvs.ToArray();
             mesh.subMeshCount = Triangles.Length;
             for (int i = 0; i < Triangles.Length; i++) mesh.SetTriangles(Triangles[i].ToArray(), i);
             mesh.RecalculateNormals();
@@ -193,7 +215,7 @@ namespace OdinsCoin
             t.map = map;
             t.follow = follow;
             t.materials = new Material[5];
-            for (int i = 0; i < t.materials.Length; i++) t.materials[i] = Materials.Get(TerrainPatch.ColourOf((Ground)i));
+            for (int i = 0; i < t.materials.Length; i++) t.materials[i] = Materials.GetDrawn(TerrainPatch.ColourOf((Ground)i), TerrainPatch.SurfaceOf((Ground)i));
             return t;
         }
 

@@ -4,7 +4,7 @@ using UnityEngine;
 namespace OdinsCoin
 {
     /// <summary>What a surface is made of, which decides the hand-drawn texture laid over its colour.</summary>
-    public enum SurfaceKind { Plain, Cloth, Fur, Leather, Metal, Wood, Skin, Paper }
+    public enum SurfaceKind { Plain, Cloth, Fur, Leather, Metal, Wood, Skin, Paper, Grass, Sand, Stone }
 
     /// <summary>
     /// Hand-drawn looking textures, made in code: pencil strokes, weave, fur strands, wood grain. Each is a tileable
@@ -96,6 +96,39 @@ namespace OdinsCoin
                     break;
                 case SurfaceKind.Skin:
                     Mottle(t, rng, 8, 0.035f);
+                    break;
+                case SurfaceKind.Grass:
+                    // Meadow: patchy tone and scattered pencil tufts, little upright ticks in twos and threes.
+                    Mottle(t, rng, 4, 0.1f);
+                    Mottle(t, rng, 16, 0.06f);
+                    for (int k = 0; k < 150; k++)
+                    {
+                        float cx = (float)rng.NextDouble() * Size, cy = (float)rng.NextDouble() * Size;
+                        int blades = 2 + rng.Next(2);
+                        for (int b = 0; b < blades; b++)
+                        {
+                            float lean = (b - (blades - 1) * 0.5f) * 0.45f + ((float)rng.NextDouble() - 0.5f) * 0.3f;
+                            float len = 4f + (float)rng.NextDouble() * 4f;
+                            for (int i = 0; i <= 8; i++)
+                            {
+                                float f = i / 8f;
+                                Dab(t, cx + lean * len * f, cy + len * f, 0.9f, 0.4f * (1f - f * 0.6f));
+                            }
+                        }
+                    }
+                    break;
+                case SurfaceKind.Sand:
+                    // Beach: soft blotches and a stipple of pencil dots, a few wind ripples.
+                    Mottle(t, rng, 8, 0.08f);
+                    for (int k = 0; k < 420; k++) Dab(t, (float)rng.NextDouble() * Size, (float)rng.NextDouble() * Size, 0.7f + (float)rng.NextDouble() * 0.5f, 0.12f + (float)rng.NextDouble() * 0.12f);
+                    Hatch(t, rng, 10, 0f, 8f, 25f, 60f, 0.9f, 0.1f);
+                    break;
+                case SurfaceKind.Stone:
+                    // Bare rock: heavy blotches, crossing cracks and short chisel strokes.
+                    Mottle(t, rng, 4, 0.14f);
+                    Mottle(t, rng, 16, 0.08f);
+                    Hatch(t, rng, 12, 45f, 35f, 25f, 55f, 0.9f, 0.3f);
+                    Hatch(t, rng, 40, 35f, 15f, 6f, 14f, 1.0f, 0.2f);
                     break;
                 case SurfaceKind.Paper:
                     Mottle(t, rng, 4, 0.12f);

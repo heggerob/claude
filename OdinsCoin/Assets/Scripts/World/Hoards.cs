@@ -102,10 +102,10 @@ namespace OdinsCoin
         public static VikingModel Model()
         {
             var m = new MergedModel();
-            m.Put(StoneB, SurfaceKind.Plain, MeshData.Ellipsoid(new Vector3(0f, 0.2f, 0f), new Vector3(0.6f, 0.3f, 0.5f), 8, 5));
-            m.Put(StoneA, SurfaceKind.Plain, MeshData.Ellipsoid(new Vector3(0.05f, 0.55f, 0f), new Vector3(0.42f, 0.24f, 0.36f), 8, 5));
-            m.Put(StoneB, SurfaceKind.Plain, MeshData.Ellipsoid(new Vector3(-0.03f, 0.84f, 0.02f), new Vector3(0.28f, 0.18f, 0.24f), 7, 4));
-            m.Put(StoneA, SurfaceKind.Plain, MeshData.Ellipsoid(new Vector3(0f, 1.05f, 0f), new Vector3(0.15f, 0.12f, 0.14f), 6, 4));
+            m.Put(StoneB, SurfaceKind.Stone, MeshData.Ellipsoid(new Vector3(0f, 0.2f, 0f), new Vector3(0.6f, 0.3f, 0.5f), 8, 5));
+            m.Put(StoneA, SurfaceKind.Stone, MeshData.Ellipsoid(new Vector3(0.05f, 0.55f, 0f), new Vector3(0.42f, 0.24f, 0.36f), 8, 5));
+            m.Put(StoneB, SurfaceKind.Stone, MeshData.Ellipsoid(new Vector3(-0.03f, 0.84f, 0.02f), new Vector3(0.28f, 0.18f, 0.24f), 7, 4));
+            m.Put(StoneA, SurfaceKind.Stone, MeshData.Ellipsoid(new Vector3(0f, 1.05f, 0f), new Vector3(0.15f, 0.12f, 0.14f), 6, 4));
             foreach (float a in new[] { 45f, -45f })
                 m.Put(Turf, SurfaceKind.Plain, MeshData.Box(Vector3.zero, new Vector3(0.18f, 0.04f, 1.4f)).Transformed(new Vector3(1.4f, 0.02f, 0f), Quaternion.Euler(0f, a, 0f), Vector3.one));
             return m.ToModel("Cairn");
