@@ -81,10 +81,9 @@ namespace OdinsCoin
             return odinsEye ? "\n<color=#ffd060>Foresight: the coin will show Odin's eye.</color>" : "\n<color=#88cc88>Foresight: the coin will show the serpent.</color>";
         }
 
-        /// <summary>How the one who staked takes it: a bright chime and a grin when Odin smiles, a wince when he takes it.</summary>
+        /// <summary>How the one who staked takes it (the altar already chimes or hisses as the coin lands): a grin or a wince.</summary>
         public static void Cheer(Transform staker, Vector3 at, bool won)
         {
-            if (won) Sfx.At(SfxId.Blessing, at, 1f, 0.05f);
             Face.On(staker, won ? Expression.Happy : Expression.Hurt, won ? 3f : 1.5f);
         }
 

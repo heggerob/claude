@@ -57,7 +57,7 @@ namespace OdinsCoin
             deferred = null;
             if (action != null) action();
 
-            bool otherUi = (CoinUI.Instance != null && CoinUI.Instance.IsOpen) || MeadHallUI.IsOpenNow;
+            bool otherUi = MeadHallUI.IsOpenNow;
             if (GameInput.Pressed(Key.Pause))
             {
                 // Esc closes the coin or hall screen first; only a free Esc opens the pause menu.

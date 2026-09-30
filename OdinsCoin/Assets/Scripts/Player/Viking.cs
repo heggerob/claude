@@ -144,7 +144,7 @@ namespace OdinsCoin
 
             if (combat == null) combat = GetComponent<VikingCombat>();
             // At the altar the coin screen has the controls; when dead, nothing moves.
-            if ((CoinUI.Instance != null && CoinUI.Instance.IsOpen) || MeadHallUI.IsOpenNow || GameMenu.Blocking || (combat != null && combat.Busy))
+            if (MeadHallUI.IsOpenNow || GameMenu.Blocking || (combat != null && combat.Busy))
             {
                 Prompt = null;
                 controller.Move(Vector3.down * 2f * dt);

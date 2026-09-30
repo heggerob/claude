@@ -70,7 +70,7 @@ namespace OdinsCoin
                 if (Time.time >= DeadUntil) Respawn();
                 return;
             }
-            bool free = !viking.AtHelm && !viking.Swimming && viking.Carrying == null && !MeadHallUI.IsOpenNow && !GameMenu.Blocking && (CoinUI.Instance == null || !CoinUI.Instance.IsOpen);
+            bool free = !viking.AtHelm && !viking.Swimming && viking.Carrying == null && !MeadHallUI.IsOpenNow && !GameMenu.Blocking;
             Blocking = free && GameInput.BlockHeld();
             var move = Move;
             float elapsed = Time.time - swingStart;
