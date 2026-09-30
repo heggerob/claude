@@ -342,11 +342,17 @@ namespace OdinsCoin
             m.Add(Joint, look.iron, MeshData.Tube(new[] { tip, new Vector3(0f, 0.3f, d.length / 2f) }, new[] { 0.03f, 0.03f }, 4), false);
         }
 
+        /// <summary>How far above the deck a square sail's foot stays at least (m).</summary>
+        public const float SailFootClearance = 2.6f;
+
         /// <summary>A striped square sail hung from a yard across the mast, bellied forward, with a rune sewn on the middle.</summary>
         static void SquareSail(VikingModel yard, VikingModel m, SailPlan s, float deckY, float mastTop, ShipLook look)
         {
             float top = mastTop * 0.93f;
-            float h = Mathf.Sqrt(s.area * 0.85f), w = s.area / h;
+            float h = Mathf.Sqrt(s.area * 0.85f);
+            // The foot stays well above head height, so the steersman can see ahead under it: a shorter, wider sail.
+            h = Mathf.Min(h, top - (deckY + SailFootClearance));
+            float w = s.area / h;
             float bottom = top - h;
             yard.Add(Joint, look.strake, MeshData.Tube(new[] { new Vector3(-w * 0.58f, top, s.x + 0.2f), new Vector3(0f, top + 0.15f, s.x + 0.25f), new Vector3(w * 0.58f, top, s.x + 0.2f) }, new[] { 0.1f, 0.14f, 0.1f }, 6), true, SurfaceKind.Wood);
             const int stripes = 6, rows = 6;
@@ -378,10 +384,11 @@ namespace OdinsCoin
         static void LateenSail(VikingModel yard, VikingModel m, SailPlan s, float deckY, float mastTop, ShipLook look)
         {
             float span = Mathf.Sqrt(s.area * 2.6f);
-            var fore = new Vector3(0f, deckY + 1.5f, s.x + span * 0.45f);
+            // Its foot is kept above head height, like the square sails', so it doesn't blind the steersman.
+            var fore = new Vector3(0f, deckY + SailFootClearance + 0.3f, s.x + span * 0.45f);
             var aft = new Vector3(0f, mastTop * 1.05f, s.x - span * 0.55f);
             yard.Add(Joint, look.strake, MeshData.Tube(new[] { fore, aft }, new[] { 0.1f, 0.06f }, 6), true, SurfaceKind.Wood);
-            var clew = new Vector3(0f, deckY + 1.2f, s.x - span * 0.35f);
+            var clew = new Vector3(0f, deckY + SailFootClearance, s.x - span * 0.35f);
             const int rows = 6;
             var grid = new Vector3[rows, 2];
             for (int r = 0; r < rows; r++)
@@ -418,7 +425,7 @@ namespace OdinsCoin
                 LateenSail(yard, cloth, s, deckY, height, look);
                 float span = Mathf.Sqrt(s.area * 2.6f);
                 pivot = new Vector3(0f, height * 0.7f, s.x);
-                gather = (new Vector3(0f, deckY + 1.5f, s.x + span * 0.45f) + new Vector3(0f, height * 1.05f, s.x - span * 0.55f)) / 2f;
+                gather = (new Vector3(0f, deckY + SailFootClearance + 0.3f, s.x + span * 0.45f) + new Vector3(0f, height * 1.05f, s.x - span * 0.55f)) / 2f;
             }
             float ink = 0.06f * Mathf.Sqrt(d.length / 20f);
             yard.AddOutlines(ink, new Color(0.08f, 0.06f, 0.05f));
