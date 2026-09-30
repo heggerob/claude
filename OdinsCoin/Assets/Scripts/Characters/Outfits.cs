@@ -105,7 +105,7 @@ namespace OdinsCoin
                     Garments.ScrollCase(d);
                     Garments.SideCloak(d, 0.56f, 0.7f);
                     // Over the cloak's shoulders, so the fur shows on top as in the concept art.
-                    Garments.ShoulderPelt(d, 1.15f, 0f, 0.9f, 2f);
+                    Garments.ShoulderPelt(d, 1.3f, 0f, 0.65f, 2.2f, 1.1f);
                     Garments.Bandana(d);
                 } } },
             { OutfitId.SpearGuard, new Outfit {
@@ -113,7 +113,7 @@ namespace OdinsCoin
                 palette = () => new Palette {
                     cloth = new Color(0.4f, 0.28f, 0.18f), clothDark = new Color(0.22f, 0.16f, 0.12f),
                     accent = new Color(0.6f, 0.18f, 0.12f), emblem = new Color(0.9f, 0.82f, 0.68f),
-                    fur = new Color(0.74f, 0.64f, 0.5f), furShadow = new Color(0.5f, 0.42f, 0.32f),
+                    fur = new Color(0.68f, 0.56f, 0.4f), furShadow = new Color(0.42f, 0.32f, 0.22f),
                     hair = new Color(0.8f, 0.64f, 0.42f), metal = new Color(0.42f, 0.43f, 0.45f) },
                 defaultHair = HairStyle.ShortLocks, suggestedWeapon = WeaponId.Spear, suggestedOffHand = OffHandId.KnotShield,
                 abilities = new[] {
@@ -130,7 +130,7 @@ namespace OdinsCoin
                     Garments.StuddedTrim(d);
                     Garments.RingBuckleBelt(d);
                     Garments.BigCape(d, 0.9f, 1.4f, false);
-                    Garments.ShoulderPelt(d, 1.5f, 0f, 0.9f, 2.2f, 0.78f);
+                    Garments.ShoulderPelt(d, 1.5f, 0f, 0.9f, 2.2f, 0.55f);
                     Garments.Scarf(d);
                     Garments.NasalHelmet(d);
                 } } },
