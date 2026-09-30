@@ -229,14 +229,16 @@ namespace OdinsCoin
             d.Add(Joints.Body, d.pal.leather, CharacterKit.Band(0f, 0.03f * s, d.SkirtRadius(y - 0.075f * s) * 1.03f, (d.hasSkirt ? d.skirtDepth : f.depth) + 0.02f)
                 .Transformed(new Vector3(0f, y - 0.075f * s, 0f), Quaternion.Euler(0f, 0f, -7f), Vector3.one));
             // Where round the hips each pouch hangs, as a fraction of the way from the front to the side.
-            float[] xs = { -0.72f, 0.78f, -0.3f, 0.42f };
+            float[] xs = { -0.72f, 0.78f, -0.95f, 0.42f };
             for (int i = 0; i < Mathf.Min(pouches, xs.Length); i++)
             {
-                float py = y - (0.07f + (i & 1) * 0.02f) * s;
+                // Big, well-used pouches slung low off the belt on short straps, as in the concept art.
+                float py = y - (0.1f + (i & 1) * 0.03f) * s;
                 float pr = d.SkirtRadius(py) * 1.02f + 0.01f;
                 float x = xs[i] * pr;
-                float z = Mathf.Sqrt(Mathf.Max(0f, pr * pr - x * x)) * (d.hasSkirt ? d.skirtDepth : f.depth + 0.06f) + 0.018f;
-                var size = new Vector3(0.062f + 0.01f * (i % 2), 0.08f, 0.045f) * s;
+                float z = Mathf.Sqrt(Mathf.Max(0f, pr * pr - x * x)) * (d.hasSkirt ? d.skirtDepth : f.depth + 0.06f) + 0.022f;
+                var size = new Vector3(0.078f + 0.012f * (i % 2), 0.1f, 0.052f) * s;
+                d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(new[] { new Vector3(x, y, z - 0.012f * s), new Vector3(x, py + 0.03f * s, z) }, new[] { 0.007f * s, 0.007f * s }, 4), false);
                 d.Add(Joints.Body, d.pal.leather, MeshData.Ellipsoid(new Vector3(x, py - 0.01f * s, z), size * 0.62f, 9, 6));
                 d.Add(Joints.Body, d.pal.leather, MeshData.Box(new Vector3(x, py + 0.012f * s, z), new Vector3(size.x * 1.05f, size.y * 0.45f, size.z * 1.05f)));
                 d.Add(Joints.Body, d.pal.leatherDark, MeshData.Box(new Vector3(x, py + 0.028f * s, z + size.z * 0.5f), new Vector3(size.x * 1.08f, 0.022f * s, 0.008f * s)), false);
