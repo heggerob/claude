@@ -999,6 +999,32 @@ namespace OdinsCoin
                 if (i == 1) RuneDisc(d, Joints.Body, p, 0.042f * s, Quaternion.Euler(90f, 0f, 0f));
                 else d.Add(Joints.Body, d.pal.parchment, MeshData.Ellipsoid(p, new Vector3(0.016f, 0.04f, 0.016f) * s, 6, 5));
             }
+            // Two long strings of charms hanging from the shoulders down either side of the stole, nearly to the
+            // knee: wooden rune discs, bone beads and teeth, like the concept art's seer.
+            foreach (float side in new[] { -1f, 1f })
+            {
+                var cord = new Vector3[8];
+                for (int i = 0; i < cord.Length; i++)
+                {
+                    float v = i / (float)(cord.Length - 1);
+                    float y = Mathf.Lerp(f.shoulderY - 0.03f * s, f.waist - 0.32f * s, v);
+                    // Out in front of the feather tiers, just beside the stole.
+                    float rad = (y > f.waist ? f.TorsoRadius(y) * 1.15f + 0.03f * s : d.SkirtRadius(y) * 1.02f) + 0.02f * s;
+                    float x = side * (0.062f + 0.015f * v) * s;
+                    float z = Mathf.Sqrt(Mathf.Max(0f, rad * rad - x * x)) * (d.hasSkirt ? d.skirtDepth : f.depth) + 0.02f * s;
+                    cord[i] = new Vector3(x, y, z);
+                }
+                var radii = new float[cord.Length];
+                for (int i = 0; i < radii.Length; i++) radii[i] = 0.0025f * s;
+                d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(cord, radii, 4), false);
+                for (int i = 1; i < cord.Length; i++)
+                {
+                    var at = cord[i] + new Vector3(0f, 0f, 0.006f * s);
+                    if (i % 3 == 0) RuneDisc(d, Joints.Body, at, 0.036f * s, Quaternion.Euler(90f, 0f, 0f));
+                    else if (i % 3 == 1) d.Add(Joints.Body, d.pal.parchment, MeshData.Ellipsoid(at, new Vector3(0.011f, 0.02f, 0.011f) * s, 6, 4), false);
+                    else d.Add(Joints.Body, d.pal.leather, MeshData.Ellipsoid(at, Vector3.one * 0.012f * s, 6, 4), false);
+                }
+            }
             // Belt: a cord with a big wooden rune disc at the front.
             d.Add(Joints.Body, d.pal.leather, CharacterKit.Band(f.waist, 0.03f * s, d.SkirtRadius(f.waist) * 1.06f, d.skirtDepth + 0.02f));
             RuneDisc(d, Joints.Body, new Vector3(0f, f.waist, d.SkirtRadius(f.waist) * (d.skirtDepth + 0.02f) + 0.06f * s), 0.045f * s, Quaternion.Euler(90f, 0f, 0f));
