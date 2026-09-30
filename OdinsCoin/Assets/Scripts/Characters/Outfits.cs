@@ -4,7 +4,7 @@ using UnityEngine;
 namespace OdinsCoin
 {
     public enum OutfitId { Raider, Jarl, Navigator, SpearGuard, Seer, Scout }
-    public enum HairStyle { None, LongBraids, WrappedBraids, SideBraid, ShortLocks, VeryLongBraids, LowBraid }
+    public enum HairStyle { None, LongBraids, WrappedBraids, SideBraid, ShortLocks, VeryLongBraids, LowBraid, SwungBraids }
     public enum WeaponId { None, TwoHandAxe, Sword, Spear, Staff, Bow }
     public enum OffHandId { None, RoundShield, Map, KnotShield }
 
@@ -38,7 +38,7 @@ namespace OdinsCoin
             { OutfitId.Raider, new Outfit {
                 id = OutfitId.Raider, title = "The Raider",
                 palette = () => new Palette(),
-                defaultHair = HairStyle.LongBraids, suggestedWeapon = WeaponId.TwoHandAxe,
+                defaultHair = HairStyle.SwungBraids, suggestedWeapon = WeaponId.TwoHandAxe,
                 abilities = new[] {
                     new Ability { id = "cleave", name = "Cleave", description = "A wide two-handed swing that hits everyone in front of you." },
                     new Ability { id = "plunder", name = "Plunderer", description = "Carry chests without slowing down as much." } },

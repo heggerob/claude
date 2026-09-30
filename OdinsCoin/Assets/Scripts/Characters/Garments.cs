@@ -1204,6 +1204,42 @@ namespace OdinsCoin
         }
 
         /// <summary>Long braids; <paramref name="wrapped"/> binds the lower part in pale cloth, like the jarl's.</summary>
+        /// <summary>
+        /// Two braids worn like the raider in the concept art: the right one swung forward over the shoulder and
+        /// hanging outside the arm, the left one thrown back down the shoulder blade.
+        /// </summary>
+        public static void SwungBraids(Dresser d, float length)
+        {
+            var f = d.fit;
+            float r = f.headR, cy = HeroModel.HeadCentre(f), s = d.S;
+            float sy = f.shoulderY - f.neckY;
+            float back = -f.chestR * f.depth - 0.03f * s;
+            var paths = new[] {
+                // Right (+X): over the shoulder, out past the arm, hanging free.
+                new[] { new Vector3(r * 0.9f, cy - r * 0.15f, -r * 0.35f), new Vector3(r * 1.08f, cy - r * 0.7f, -r * 0.05f),
+                        new Vector3(f.shoulderX + 0.04f * s, sy + 0.05f * s, r * 0.15f), new Vector3(f.shoulderX + 0.11f * s, sy - 0.06f * s, r * 0.05f),
+                        new Vector3(f.shoulderX + 0.15f * s, sy - length * s, -r * 0.1f) },
+                // Left (-X): back behind the shoulder, down the shoulder blade.
+                new[] { new Vector3(-r * 0.9f, cy - r * 0.15f, -r * 0.35f), new Vector3(-r * 0.95f, cy - r * 0.7f, -r * 0.6f),
+                        new Vector3(-f.shoulderX * 0.6f, sy + 0.03f * s, back), new Vector3(-f.shoulderX * 0.55f, sy - length * 0.8f * s, back - 0.01f * s) } };
+            for (int b = 0; b < 2; b++)
+            {
+                var path = paths[b];
+                string bj = d.Swing(b == 0 ? Joints.RightBraid : Joints.LeftBraid, Joints.Head, path[0], SwingKind.Braid);
+                var p0 = path[0];
+                for (int i = 0; i < path.Length; i++) path[i] -= p0;
+                d.Add(bj, d.pal.hair, CharacterKit.Braid(path, 0.03f * s));
+                Vector3 tie = CharacterKit.Along(path, 0.88f);
+                d.Add(bj, d.pal.leatherDark, MeshData.Ellipsoid(tie, new Vector3(0.026f, 0.012f, 0.026f) * s, 8, 4), false);
+                Vector3 end = path[path.Length - 1];
+                d.Add(bj, d.pal.hair, CharacterKit.Tuft(end, end + new Vector3(0f, -0.06f * s, 0.01f), 0.02f * s));
+            }
+            d.Add(Joints.Head, d.pal.hair, MeshData.Ellipsoid(new Vector3(0f, cy - r * 0.1f, -r * 0.25f), new Vector3(r * 0.98f, r * 0.8f, r * 0.8f), 12, 8));
+            // Loose red locks falling by the cheeks, fuller on the swung side.
+            d.Add(Joints.Head, d.pal.hair, CharacterKit.Tuft(new Vector3(r * 0.92f, cy + r * 0.05f, r * 0.2f), new Vector3(r * 1.08f, cy - r * 0.7f, r * 0.3f), 0.026f * s));
+            d.Add(Joints.Head, d.pal.hair, CharacterKit.Tuft(new Vector3(-r * 0.92f, cy + r * 0.05f, r * 0.2f), new Vector3(-r * 1.0f, cy - r * 0.5f, r * 0.3f), 0.02f * s));
+        }
+
         public static void LongBraids(Dresser d, float length, bool wrapped)
         {
             var f = d.fit;
