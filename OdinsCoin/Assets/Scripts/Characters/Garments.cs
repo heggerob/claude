@@ -1383,13 +1383,16 @@ namespace OdinsCoin
         /// <summary>A dark cloth cap pulled low, its crown and brim covered in shaggy fur, worn a little askew.</summary>
         public static void FurCap(Dresser d)
         {
+            // A darker, mottled brown fur than the pelt, wrapped with a dark blue cloth band, as in the concept art.
+            var capFur = Color.Lerp(d.pal.fur, d.pal.furShadow, 0.65f);
+            var capBand = Color.Lerp(d.pal.clothDark, new Color(0.14f, 0.19f, 0.3f), 0.75f);
             var f = d.fit;
             float r = f.headR, cy = HeroModel.HeadCentre(f), s = d.S;
             float brim = cy + 0.2f * r;
             var tilt = Quaternion.Euler(-6f, 0f, 12f);
             // A fur hat (pelt side out) with a dark cloth band wound slantwise across it, as in the concept art.
-            d.Add(Joints.Head, d.pal.fur, MeshData.Dome(Vector3.zero, new Vector3(r * 1.1f, r * 1.05f, r * 1.1f), 16, 6).Transformed(new Vector3(0f, brim, -0.02f * r), tilt, Vector3.one));
-            d.Add(Joints.Head, d.pal.clothDark, CharacterKit.Band(0.38f * r, 0.42f * r, r * 1.09f, 1f, 20)
+            d.Add(Joints.Head, capFur, MeshData.Dome(Vector3.zero, new Vector3(r * 1.1f, r * 1.05f, r * 1.1f), 16, 6).Transformed(new Vector3(0f, brim, -0.02f * r), tilt, Vector3.one));
+            d.Add(Joints.Head, capBand, CharacterKit.Band(0.38f * r, 0.42f * r, r * 1.09f, 1f, 20)
                 .Transformed(new Vector3(0f, brim, -0.02f * r), tilt * Quaternion.Euler(8f, 0f, -24f), Vector3.one));
             d.Add(Joints.Head, d.pal.fur, CharacterKit.FurRing(Vector3.zero, r * 1.12f, 1f, 0.045f * s, 16, 0.03f * s, d.seed + 81, 0.3f).Transformed(new Vector3(0f, brim + 0.025f * s, -0.02f * r), tilt, Vector3.one));
             // Shaggy tufts over the crown in both shades.
@@ -1398,7 +1401,7 @@ namespace OdinsCoin
             {
                 float a = 0.9f + (float)rng.NextDouble() * Mathf.PI * 1.1f, e = 0.3f + (float)rng.NextDouble() * 0.9f;
                 var p = new Vector3(Mathf.Cos(a) * Mathf.Cos(e), Mathf.Sin(e), Mathf.Sin(a) * Mathf.Cos(e) * 0.6f) * r * 1.08f;
-                d.Add(Joints.Head, i % 3 == 0 ? d.pal.furShadow : d.pal.fur, MeshData.Ellipsoid(p, new Vector3(0.045f, 0.03f, 0.045f) * s, 7, 4).Transformed(new Vector3(0f, brim, -0.02f * r), tilt, Vector3.one));
+                d.Add(Joints.Head, i % 3 == 0 ? d.pal.fur : capFur, MeshData.Ellipsoid(p, new Vector3(0.045f, 0.03f, 0.045f) * s, 7, 4).Transformed(new Vector3(0f, brim, -0.02f * r), tilt, Vector3.one));
             }
         }
 
