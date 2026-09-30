@@ -343,6 +343,27 @@ public static class LogicTests
             ChartReveal.Clear();
         }
 
+        // Rumours: the rough way and distance, never a marker.
+        {
+            Check(Rumours.Compass(0f) == "north" && Rumours.Compass(95f) == "east" && Rumours.Compass(225f) == "south-west" && Rumours.Compass(350f) == "north" && Rumours.Compass(-45f) == "north-west",
+                "a bearing is told as a point of the compass");
+            Check(Rumours.HowFar(1000f) == "close by" && Rumours.HowFar(100000f) == "a day's sail" && Rumours.HowFar(1000000f) == "far across the sea", "distances are told as a sailor would");
+            var rp = new[] { new Place { name = "Monk", kind = PlaceKind.Monastery }, new Place { name = "Farm", kind = PlaceKind.Hall }, new Place { name = "Here", kind = PlaceKind.Town } };
+            Func<Place, Vector3> rpos = p => p.name == "Monk" ? new Vector3(0f, 0f, 50000f) : p.name == "Farm" ? new Vector3(-80000f, 0f, 0f) : Vector3.zero;
+            var none = new List<string>();
+            var r = Rumours.Tell(Vector3.zero, rp, rpos, none, none, none, 0f);
+            Check(r.HasValue && r.Value.place.name == "Monk" && r.Value.text.Contains("north"), "the first rumour is about the nearest place, with the way to it (" + (r.HasValue ? r.Value.text : "none") + ")");
+            bool neverHere = true;
+            for (float pick = 0f; pick < 1f; pick += 0.05f) { var t = Rumours.Tell(Vector3.zero, rp, rpos, none, none, none, pick); neverHere &= t.HasValue && t.Value.place.name != "Here"; }
+            Check(neverHere, "no rumours about the place you're standing in");
+            var all = new List<string> { "Monk", "Farm", "Here" };
+            Check(!Rumours.Tell(Vector3.zero, rp, rpos, all, all, all, 0.5f).HasValue, "once everything's plundered, dug and woken, there's no news");
+            bool noRaided = true;
+            var raidedMonk = new List<string> { "Monk" };
+            for (float pick = 0f; pick < 1f; pick += 0.05f) { var t = Rumours.Tell(Vector3.zero, rp, rpos, raidedMonk, all, all, pick); noRaided &= !t.HasValue || !(t.Value.kind == Rumours.Kind.Plunder && t.Value.place.name == "Monk"); }
+            Check(noRaided, "no rumours of plunder at a place you've already emptied");
+        }
+
         // Dug hoards and maps survive a save.
         {
             var hoardSave = new Upgrades();

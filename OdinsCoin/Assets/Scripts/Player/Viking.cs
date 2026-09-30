@@ -331,6 +331,7 @@ namespace OdinsCoin
             if (AtHelm) { Prompt = "[E] Leave the steering oar"; return; }
             if (OnShip && Carrying == null && Vector3.Distance(transform.position, Ship.Parts.helm.position) < InteractRange) { Prompt = "[E] Take the steering oar"; return; }
             if (OnShip && NearAltar()) { Prompt = AltarPrompt(); if (Prompt != null) return; }
+            if (!OnShip && Carrying == null && Townsperson.Near(transform.position) != null) { Prompt = "[E] Ask what's the news"; return; }
             Transform cairn; Place cairnPlace;
             if (!OnShip && Carrying == null && Hoards.Near(transform.position, out cairn, out cairnPlace)) { Prompt = "[E] Dig at the cairn"; return; }
             ShrineRing ring; int stone;
@@ -390,6 +391,16 @@ namespace OdinsCoin
                 return;
             }
             if (OnShip && NearAltar() && StakeAtAltar()) return;
+            var talker = !OnShip && Carrying == null ? Townsperson.Near(transform.position) : null;
+            if (talker != null && WorldMap.Current != null)
+            {
+                talker.Listen(transform.position);
+                var u = Upgrades.Current;
+                var here = new Vector3((float)WorldOrigin.GlobalX(transform.position), 0f, (float)WorldOrigin.GlobalZ(transform.position));
+                var rumour = Rumours.Tell(here, Places.All, p => Places.Position(WorldMap.Current, p), PlaceLife.Raided, u.Dug, u.Shrines, Random.value);
+                CombatHud.Banner("THE NEWS", rumour.HasValue ? rumour.Value.text : "Nothing much. You've seen it all, they say.");
+                return;
+            }
             Transform digAt; Place digPlace;
             if (!OnShip && Carrying == null && Hoards.Near(transform.position, out digAt, out digPlace))
             {

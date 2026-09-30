@@ -10,7 +10,39 @@ namespace OdinsCoin
     /// </summary>
     public class Townsperson : MonoBehaviour
     {
-        public const float StrollSpeed = 1.2f, Arrived = 0.6f, GiveWay = 2.2f;
+        public const float StrollSpeed = 1.2f, Arrived = 0.6f, GiveWay = 2.2f, TalkRange = 2.6f;
+
+        public static readonly List<Townsperson> All = new List<Townsperson>();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() { All.Clear(); }
+
+        void OnEnable() { All.Add(this); }
+        void OnDisable() { All.Remove(this); }
+
+        /// <summary>The townsperson within talking distance, if any.</summary>
+        public static Townsperson Near(Vector3 scenePos)
+        {
+            foreach (var t in All)
+            {
+                if (t == null) continue;
+                var d = t.transform.position - scenePos;
+                d.y = 0f;
+                if (d.magnitude < TalkRange) return t;
+            }
+            return null;
+        }
+
+        float listenUntil;
+
+        /// <summary>Stop and turn to talk for a few seconds.</summary>
+        public void Listen(Vector3 towards)
+        {
+            listenUntil = Time.time + 5f;
+            var d = towards - transform.position;
+            d.y = 0f;
+            if (d.sqrMagnitude > 0.01f) loco.Face(Mathf.Atan2(d.x, d.z) * Mathf.Rad2Deg - (transform.parent != null ? transform.parent.eulerAngles.y : 0f));
+        }
 
         VikingBuilder.Parts parts;
         readonly Locomotion loco = new Locomotion();
@@ -84,7 +116,8 @@ namespace OdinsCoin
             }
 
             Vector2 wish = Vector2.zero;
-            if (Time.time >= waitUntil)
+            if (Time.time < listenUntil) crowded = false;
+            if (Time.time >= waitUntil && Time.time >= listenUntil)
             {
                 if (target < 0) target = NextStop(plots, stops, global, -1, rng, null);
                 if (target >= 0)

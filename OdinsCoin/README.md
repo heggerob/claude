@@ -25,6 +25,7 @@ Et 3D vikingspill i Unity: seil langskipet, raid øyer og kast **Odins mynt** om
 | E | bruke: ta roret, alteret, plukke opp og sette ned kister, selge, øse og tette hull, klatre om bord |
 | Ved roret | A/D styre, W mer fart og S mindre: stopp, ro, halvt seil, fullt seil. Stoppet fortøyer eller ankrer hun selv. Ligger vinden rett imot, ror mannskapet. |
 | E ved en runering | rør steinene i rekkefølge etter hakkene for å vekke ringen og få gaven |
+| E ved en innbygger | hør et rykte om hvor det er noe å finne |
 | E ved en varde | grave opp en nedgravd skatt (skattekart i plyndrede kister viser hvor) |
 | E ved et landemerke | klatre opp og se utover: området rundt tegnes inn på sjøkartet |
 | E ved alteret om bord | sats kista du bærer (dobbelt eller ingenting), eller trykk to ganger for å satse alt på dekk |
