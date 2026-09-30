@@ -35,6 +35,9 @@ namespace OdinsCoin
 
         public bool Busy { get { return Health.Dead; } }
 
+        /// <summary>The attack for the weapon in hand (an axe chop, a sword slash, a spear thrust...).</summary>
+        public AttackMove Move { get { return HeroAttacks.For(viking != null && viking.Hero != null ? viking.Hero.weapon : WeaponId.TwoHandAxe); } }
+
         void Update()
         {
             if (Health.Dead)
@@ -44,11 +47,12 @@ namespace OdinsCoin
             }
             bool free = !viking.AtHelm && !viking.Swimming && viking.Carrying == null && !MeadHallUI.IsOpenNow && !GameMenu.Blocking && (CoinUI.Instance == null || !CoinUI.Instance.IsOpen);
             Blocking = free && GameInput.BlockHeld();
-            if (free && !Blocking && GameInput.AttackPressed() && Time.time - swingStart > SwingTime) { swingStart = Time.time; swingHit = false; Sfx.At(SfxId.AxeSwing, transform.position + Vector3.up, 0.6f, 0.12f); }
+            var move = Move;
+            if (free && !Blocking && GameInput.AttackPressed() && Time.time - swingStart > move.duration) { swingStart = Time.time; swingHit = false; Sfx.At(SfxId.AxeSwing, transform.position + Vector3.up, 0.6f, 0.12f); }
 
-            // The blow lands halfway through the swing.
-            float t = (Time.time - swingStart) / SwingTime;
-            if (!swingHit && t >= 0.45f && t < 1f)
+            // The blow lands when the weapon comes down (or the arrow flies) in the move.
+            float t = (Time.time - swingStart) / move.duration;
+            if (!swingHit && t >= move.hitAt && t < 1f)
             {
                 swingHit = true;
                 Strike();
@@ -93,17 +97,10 @@ namespace OdinsCoin
         {
             var parts = viking.Parts;
             if (parts == null) return;
-            // Swing: wind up over the shoulder, then chop down and across.
-            float t = (Time.time - swingStart) / SwingTime;
-            if (t >= 0f && t < 1f)
-            {
-                float angle = t < 0.35f ? Mathf.Lerp(0f, -150f, t / 0.35f) : Mathf.Lerp(-150f, 50f, (t - 0.35f) / 0.65f);
-                parts.rightArm.localRotation = Quaternion.Euler(angle, 0f, -10f);
-                if (parts.rightForearm != null) parts.rightForearm.localRotation = Quaternion.Euler(HeroPose.ChopElbow(t), 0f, 0f);
-                // Mid-swing the weapon points along the arm, off the shoulder.
-                if (parts.axe != null) parts.axe.localRotation = Quaternion.identity;
-                HeroPose.RestGrip(parts);
-            }
+            // The attack: wind-up, blow, follow-through, eased in and out of whatever the hero was doing.
+            var move = Move;
+            float t = (Time.time - swingStart) / move.duration;
+            if (t >= 0f && t < 1f) HeroAttacks.Apply(parts, move, t);
             // Shield: slides from the back to the front arm while blocking.
             block = Mathf.MoveTowards(block, Blocking ? 1f : 0f, Time.deltaTime * 6f);
             HeroPose.Block(parts, block);

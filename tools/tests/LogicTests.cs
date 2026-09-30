@@ -36,6 +36,7 @@ public static class LogicTests
         StickAnimTests();
         LocomotionTests();
         AnimatorTests();
+        AttackTests();
         ClothWindTests();
         FaceTests();
         RestTests();
@@ -1135,7 +1136,7 @@ public static class LogicTests
         l = Walker(); an = new HeroAnimator(); lastDelta = null;
         float jolt = Animate(l, an, new Vector2(0f, 1f), sprint, 1.5f, true, 0f, ref time);
         jolt = Mathf.Max(jolt, Animate(l, an, new Vector2(0f, 1f), sprint, 0.35f, false, 3f, ref time));
-        Check(an.pose.leftLeg.x < -15f && an.pose.leftArm.z > 15f, "in the air the knees come up and the arms go out (" + an.pose.leftLeg.x + ")");
+        Check(an.pose.leftLeg.x < -15f && an.pose.leftArm.z < -15f && an.pose.rightArm.z > 15f, "in the air the knees come up and the arms go out (" + an.pose.leftLeg.x + ")");
         jolt = Mathf.Max(jolt, Animate(l, an, new Vector2(0f, 1f), sprint, 0.3f, false, -7f, ref time));
         float lowest = 0f, deepest = 0f;
         for (int i = 0; i < 20; i++)
@@ -1150,6 +1151,50 @@ public static class LogicTests
         jolt = Mathf.Max(jolt, Animate(l, an, new Vector2(-1f, -0.2f), sprint, 1.5f, true, 0f, ref time));
         jolt = Mathf.Max(jolt, Animate(l, an, Vector2.zero, sprint, 1f, true, 0f, ref time));
         Check(jolt < 4f, "no joint jumps more than a few degrees in one frame, whatever the hero does (" + jolt + ")");
+    }
+
+    static void AttackTests()
+    {
+        foreach (WeaponId w in Enum.GetValues(typeof(WeaponId)))
+        {
+            var m = HeroAttacks.For(w);
+            var first = m.keys[0].v; var last = m.keys[m.keys.Length - 1].v;
+            bool loops = m.keys[0].t == 0f && m.keys[m.keys.Length - 1].t == 1f;
+            for (int c = 0; c < first.Length; c++) if (Mathf.Abs(first[c] - last[c]) > 0.001f) loops = false;
+            Check(loops, w + ": the " + m.name + " starts and ends in the same ready pose");
+            bool ordered = true;
+            for (int i = 1; i < m.keys.Length; i++) if (m.keys[i].t <= m.keys[i - 1].t) ordered = false;
+            Check(ordered && m.hitAt > m.keys[1].t && m.hitAt < 0.9f, w + ": keys in order, the blow lands after the wind-up");
+            Check(m.Weight(0f) == 0f && m.Weight(1f) < 0.001f && m.Weight(m.hitAt) > 0.99f, w + ": it eases in and out, and owns the body at the blow");
+            // Smooth: sampled finely, no channel changes speed abruptly.
+            float worst = 0f;
+            float[] a = m.Sample(0f), b = m.Sample(0.005f);
+            for (float t = 0.01f; t <= 1f; t += 0.005f)
+            {
+                var c = m.Sample(t);
+                for (int k = 0; k < c.Length; k++)
+                {
+                    float scale = k == (int)AttackMove.Ch.Lunge || (k >= (int)AttackMove.Ch.HaftX && k <= (int)AttackMove.Ch.HaftZ) ? 100f : 1f;
+                    worst = Mathf.Max(worst, Mathf.Abs((c[k] - b[k]) - (b[k] - a[k])) * scale);
+                }
+                a = b; b = c;
+            }
+            Check(worst < 6f, w + ": the " + m.name + " moves smoothly (" + worst + ")");
+            // The weapon really points where each key says.
+            var hit = m.Sample(m.hitAt);
+            var arm = Quaternion.Euler(hit[(int)AttackMove.Ch.ArmRX], 0f, hit[(int)AttackMove.Ch.ArmRZ]);
+            var fore = Quaternion.Euler(hit[(int)AttackMove.Ch.ElbowR], 0f, 0f);
+            var want = new Vector3(hit[(int)AttackMove.Ch.HaftX], hit[(int)AttackMove.Ch.HaftY], hit[(int)AttackMove.Ch.HaftZ]).normalized;
+            var got = arm * fore * HeroAttacks.WeaponRotation(arm, fore, want, hit[(int)AttackMove.Ch.Roll]) * Vector3.forward;
+            Check(Vector3.Angle(want, got) < 1f, w + ": at the blow the weapon points where the move says (" + Vector3.Angle(want, got) + " degrees off)");
+            if (w != WeaponId.Bow) Check(want.z > 0.5f && hit[(int)AttackMove.Ch.Lunge] > 0.1f, w + ": the blow goes forward, with a step in");
+        }
+        var axe = HeroAttacks.For(WeaponId.TwoHandAxe);
+        var up = axe.Sample(0.3f);
+        Check(up[(int)AttackMove.Ch.ArmRX] < -150f && up[(int)AttackMove.Ch.HaftZ] < -0.5f, "the axe is raised high behind the head before the chop");
+        Check(axe.Sample(axe.hitAt)[(int)AttackMove.Ch.Pitch] > 15f, "and the whole body comes down with it");
+        var bow = HeroAttacks.For(WeaponId.Bow);
+        Check(bow.Sample(0.62f)[(int)AttackMove.Ch.ElbowL] < -120f && bow.Sample(0.75f)[(int)AttackMove.Ch.ElbowL] > -100f, "the bow is drawn to the cheek, then loosed");
     }
 
     static void StickAnimTests()

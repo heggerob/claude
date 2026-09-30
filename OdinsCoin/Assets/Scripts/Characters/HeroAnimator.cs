@@ -31,7 +31,8 @@ namespace OdinsCoin
     /// Every joint goes through a damped spring, so moving between walking, sprinting, turning and jumping is
     /// always smooth. Pure maths: the game (and the preview) put the angles on the joints.
     /// <para>Angles are local Euler degrees on top of the standing posture (see <see cref="HeroPose.Lean"/>):
-    /// legs and arms +X swing back, -X forward; body +X leans forward, +Z leans left.</para>
+    /// legs and arms +X swing back, -X forward, +Z swings towards +X (the right arm out, the left arm in);
+    /// body +X leans forward, +Z leans left.</para>
     /// </summary>
     public class HeroAnimator
     {
@@ -107,7 +108,8 @@ namespace OdinsCoin
             pose.leftArm = new Vector3(armL.Step(al, dt, 0.06f), 0f, 0f);
             pose.rightArm = new Vector3(armR.Step(ar, dt, 0.06f), 0f, 0f);
             float outward = armOut.Step(Mathf.Lerp(4f + 4f * g, 28f, air.value) + squash * 12f, dt, 0.08f);
-            pose.leftArm.z = outward; pose.rightArm.z = -outward;
+            // (+Z swings a hand towards +X: out for the right arm, in for the left.)
+            pose.leftArm.z = -outward; pose.rightArm.z = outward;
             float el = Mathf.Lerp(HeroPose.WalkElbow(pose.leftArm.x), -80f - 10f * Mathf.Sin(a), sprint);
             float er = Mathf.Lerp(HeroPose.WalkElbow(pose.rightArm.x), -80f + 10f * Mathf.Sin(a), sprint);
             pose.leftElbow = elbowL.Step(Mathf.Lerp(el, -45f, air.value), dt, 0.06f);

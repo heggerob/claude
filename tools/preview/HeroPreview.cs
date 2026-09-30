@@ -25,6 +25,8 @@ public static class HeroPreview
         public Pose pose = new Pose();
         public float yaw = 200f;
         public Expression face = Expression.Neutral;
+        /// <summary>Less than 1 draws the hero smaller, leaving room for big swings.</summary>
+        public float zoom = 1f;
     }
 
     static readonly Color Paper = new Color(0.965f, 0.945f, 0.9f);
@@ -221,6 +223,7 @@ public static class HeroPreview
         if (args.Length > 4) MotionStrip(args[3], args[4], jarlModel);
         if (args.Length > 6) SkinSheet(args[5], args[6]);
         if (args.Length > 8) TurnSheet(args[7], args[8]);
+        if (args.Length > 10) AttackSheet(args[9], args[10]);
         Directory.CreateDirectory(args[2]);
         ExportObj(HeroModel.Build(raider), Path.Combine(args[2], "raider.obj"));
         ExportObj(HeroModel.BuildWeapon(raider), Path.Combine(args[2], "two-hand-axe.obj"));
@@ -307,6 +310,70 @@ public static class HeroPreview
         }
         var labels = new List<string>();
         foreach (var f in frames) labels.Add(f.label);
+        File.WriteAllLines(labelPath, labels.ToArray());
+    }
+
+    /// <summary>
+    /// Every weapon's attack (rows) through its key moments (columns): ready, wind-up, the swing, the blow, the
+    /// follow-through and back, as the game's HeroAttacks poses them, for docs/attacks.png.
+    /// </summary>
+    static void AttackSheet(string rgbaPath, string labelPath)
+    {
+        var rows = new[] { OutfitId.Raider, OutfitId.Jarl, OutfitId.SpearGuard, OutfitId.Scout, OutfitId.Seer };
+        const int cols = 6, cellW = 760, cellH = 900;
+        int w = cellW * cols, h = cellH * rows.Length;
+        var img = new float[w * h * 3];
+        var labels = new List<string> { "cols=" + cols };
+        for (int r = 0; r < rows.Length; r++)
+        {
+            var spec = CharacterSpec.Default(rows[r]);
+            var restGrip = Full(spec).Find(Joints.Weapon).localPosition;
+            var model = Full(spec);
+            var move = HeroAttacks.For(spec.weapon);
+            var carry = HeroPose.CarryFor(spec.weapon);
+            float windup = move.keys[1].t, follow = move.keys[move.keys.Length - 2].t;
+            var times = new[] { 0.02f, windup, (windup + move.hitAt) * 0.5f, move.hitAt, follow, 0.95f };
+            var names = new[] { "ready", "wind-up", "swing", "blow", "follow-through", "back" };
+            var row = new float[w * cellH * 3];
+            for (int i = 0; i < w * cellH; i++) { row[i * 3] = Paper.r; row[i * 3 + 1] = Paper.g; row[i * 3 + 2] = Paper.b; }
+            for (int c = 0; c < cols; c++)
+            {
+                float t = times[c], wgt = move.Weight(t);
+                var v = move.Sample(t);
+                var pose = new Pose();
+                // Under the move: the weapon carried as when walking (or plain rest).
+                Quaternion baseArmR = carry.set ? Quaternion.Euler(carry.arm) : Quaternion.identity;
+                Quaternion baseForeR = carry.set ? Quaternion.Euler(carry.forearm) : Quaternion.identity;
+                var armR = Quaternion.Slerp(baseArmR, Quaternion.Euler(v[(int)AttackMove.Ch.ArmRX], 0f, v[(int)AttackMove.Ch.ArmRZ]), wgt);
+                var foreR = Quaternion.Slerp(baseForeR, Quaternion.Euler(v[(int)AttackMove.Ch.ElbowR], 0f, 0f), wgt);
+                float lw = move.twoHanded ? wgt : wgt * 0.5f;
+                pose.rot[Joints.RightArm] = armR;
+                pose.rot[Joints.RightForearm] = foreR;
+                pose.rot[Joints.LeftArm] = Quaternion.Slerp(Quaternion.identity, Quaternion.Euler(v[(int)AttackMove.Ch.ArmLX], 0f, v[(int)AttackMove.Ch.ArmLZ]), lw);
+                pose.rot[Joints.LeftForearm] = Quaternion.Slerp(Quaternion.identity, Quaternion.Euler(v[(int)AttackMove.Ch.ElbowL], 0f, 0f), lw);
+                var baseWeapon = carry.set ? HeroPose.WeaponInFist(carry) : Quaternion.Euler(Weapons.RestEuler(spec.weapon));
+                var haft = new Vector3(v[(int)AttackMove.Ch.HaftX], v[(int)AttackMove.Ch.HaftY], v[(int)AttackMove.Ch.HaftZ]);
+                var inFist = HeroAttacks.WeaponRotation(armR, foreR, haft, v[(int)AttackMove.Ch.Roll]);
+                pose.rot[Joints.Weapon] = Quaternion.Slerp(baseWeapon, inFist, wgt);
+                var baseGrip = restGrip + (carry.set ? HeroPose.GripSlide(carry, Fit.Of(spec.body).s) : Vector3.zero);
+                pose.pos[Joints.Weapon] = Vector3.Lerp(baseGrip, restGrip + inFist * Vector3.forward * (move.slide * Fit.Of(spec.body).s), wgt);
+                pose.rot[Joints.Body] = Quaternion.Euler(v[(int)AttackMove.Ch.Pitch] * wgt, v[(int)AttackMove.Ch.Yaw] * wgt, 0f);
+                pose.pos[Joints.Body] = new Vector3(0f, 0f, v[(int)AttackMove.Ch.Lunge] * wgt);
+                pose.rot[Joints.LeftLeg] = Quaternion.Euler(-12f * wgt, 0f, -6f);
+                pose.rot[Joints.RightLeg] = Quaternion.Euler(10f * wgt, 0f, 6f);
+                Render(row, w, cellH, c * cellW, cellW, cellH, new Shot { model = model, pose = pose, yaw = 235f, zoom = 0.66f });
+                labels.Add(move.name + ": " + names[c]);
+            }
+            Array.Copy(row, 0, img, r * w * cellH * 3, row.Length);
+        }
+        using (var f = new BinaryWriter(File.Create(rgbaPath)))
+        {
+            f.Write(w); f.Write(h);
+            for (int i = 0; i < w * h; i++)
+            {
+                f.Write((byte)(Mathf.Clamp01(img[i * 3]) * 255)); f.Write((byte)(Mathf.Clamp01(img[i * 3 + 1]) * 255)); f.Write((byte)(Mathf.Clamp01(img[i * 3 + 2]) * 255)); f.Write((byte)255);
+            }
+        }
         File.WriteAllLines(labelPath, labels.ToArray());
     }
 
@@ -426,7 +493,7 @@ public static class HeroPreview
         var inv = new Quaternion(-cam.x, -cam.y, -cam.z, cam.w);
         Vector3 forward = cam * Vector3.forward;
         Vector3 light = new Vector3(-0.5f, 0.75f, 0.45f).normalized;
-        float scale = cellH / 2.45f, cx = x0 + cellW / 2f, groundY = cellH * 0.92f;
+        float scale = cellH / 2.45f * shot.zoom, cx = x0 + cellW / 2f, groundY = cellH * (shot.zoom < 1f ? 0.84f : 0.92f);
         var depth = new float[cellW * cellH];
         for (int i = 0; i < depth.Length; i++) depth[i] = float.MaxValue;
 
