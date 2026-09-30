@@ -119,14 +119,24 @@ namespace OdinsCoin
             // The stem sweeps up from the keel into a dragon's neck.
             Section(d, 1f, out k, out g, out hb);
             float bowZ = d.length / 2f;
+            // The bigger the ship, the prouder the neck: the great ships rear a dragon high over the waves.
+            float rear = 1f + Mathf.Max(0f, d.length - 25f) / 45f;
             var neck = new[] {
                 new Vector3(0f, -d.draught * 0.55f, bowZ - 0.5f), new Vector3(0f, g * 0.6f, bowZ + 0.4f),
-                new Vector3(0f, g + d.freeboard * 0.8f, bowZ + 1.2f), new Vector3(0f, g + d.freeboard * 1.8f, bowZ + 1.1f),
-                new Vector3(0f, g + d.freeboard * 2.3f, bowZ + 1.8f) };
+                new Vector3(0f, g + d.freeboard * 0.8f * rear, bowZ + 1.2f * rear), new Vector3(0f, g + d.freeboard * 1.8f * rear, bowZ + 1.1f * rear),
+                new Vector3(0f, g + d.freeboard * 2.3f * rear, bowZ + 1.8f * rear) };
             m.Add(Joint, look.dragon, MeshData.Tube(neck, new[] { r * 1.2f, r * 1.2f, r, r * 0.9f, r * 0.9f }, 8), true, SurfaceKind.Wood);
             // The dragon's head: long snout, open jaw, horns swept back, gold eyes.
             var head = neck[neck.Length - 1];
-            float hs = 0.35f + 0.02f * d.length;
+            float hs = 0.35f + 0.02f * d.length * Mathf.Sqrt(rear);
+            // A gilded mane of spines down the back of the neck on the great ships.
+            if (d.length >= 40f)
+                for (int i = 1; i < 9; i++)
+                {
+                    float u = i / 9f;
+                    var p = Vector3.Lerp(neck[2], neck[4], u);
+                    m.Add(Joint, look.gold, MeshData.Tube(new[] { p + new Vector3(0f, 0f, -r * 0.6f), p + new Vector3(0f, hs * 0.35f, -hs * 0.55f) }, new[] { r * 0.35f, 0.01f }, 5), false, SurfaceKind.Metal);
+                }
             m.Add(Joint, look.dragon, MeshData.Ellipsoid(head + new Vector3(0f, 0f, hs * 0.6f), new Vector3(hs * 0.55f, hs * 0.5f, hs * 1.2f), 12, 8), true, SurfaceKind.Wood);
             m.Add(Joint, look.dragon, MeshData.Ellipsoid(head + new Vector3(0f, -hs * 0.45f, hs * 0.9f), new Vector3(hs * 0.4f, hs * 0.18f, hs * 0.9f), 10, 6), true, SurfaceKind.Wood);
             foreach (float side in new[] { -1f, 1f })
@@ -314,7 +324,7 @@ namespace OdinsCoin
         /// <summary>The lookout's nest: a round wooden tub high on the main mast, with an iron band.</summary>
         static void CrowsNest(VikingModel m, SailPlan s, float height, float mastR, ShipLook look)
         {
-            float y = height * 0.94f, rr = 0.55f + mastR;
+            float y = height * 0.94f, rr = 0.9f + 2f * mastR;
             m.Add(Joint, look.strake, MeshData.Lathe(new[] { new Vector2(mastR * 0.9f, y - 0.35f), new Vector2(rr * 0.85f, y - 0.3f), new Vector2(rr, y + 0.5f), new Vector2(rr * 0.92f, y + 0.55f), new Vector2(mastR * 1.1f, y + 0.2f) }, 14).Transformed(new Vector3(0f, 0f, s.x), Quaternion.identity, Vector3.one), true, SurfaceKind.Wood);
             m.Add(Joint, look.iron, MeshData.Lathe(new[] { new Vector2(rr * 1.02f, y + 0.3f), new Vector2(rr * 1.02f, y + 0.42f) }, 14).Transformed(new Vector3(0f, 0f, s.x), Quaternion.identity, Vector3.one), false, SurfaceKind.Metal);
         }
