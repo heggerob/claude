@@ -29,6 +29,7 @@ namespace OdinsCoin
             public Vector3[] floatPoints;
             public Transform[] rigs;    // the new ship classes: each sail's turning rig and its cloth
             public Transform[] cloths;
+            public Light lantern;       // lit at dusk
         }
 
         /// <summary>Half-width, keel depth and gunwale height at a station s in -1 (stern) .. 1 (bow).</summary>

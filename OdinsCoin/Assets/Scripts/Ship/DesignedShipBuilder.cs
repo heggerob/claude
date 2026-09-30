@@ -97,6 +97,21 @@ namespace OdinsCoin
             LongshipBuilder.Deco(PrimitiveType.Cube, altar, new Vector3(0f, 0.45f, 0f), new Vector3(0.9f, 0.9f, 0.9f), Materials.Rock);
             LongshipBuilder.Deco(PrimitiveType.Cylinder, altar, new Vector3(0f, 0.95f, 0f), new Vector3(0.55f, 0.04f, 0.55f), Materials.Gold);
             parts.altar = altar;
+            // A lantern on a post at the stern, lit when the sun goes down.
+            float k2, g2, hb2;
+            ShipModel.Section(d, -0.9f, out k2, out g2, out hb2);
+            var post = new GameObject("Stern Lantern").transform;
+            post.SetParent(root, false);
+            post.localPosition = new Vector3(0f, g2 + 1.6f, -d.length / 2f * 0.9f);
+            LongshipBuilder.Deco(PrimitiveType.Cube, post, Vector3.zero, new Vector3(0.35f, 0.5f, 0.35f), new Color(0.2f, 0.18f, 0.16f));
+            LongshipBuilder.Deco(PrimitiveType.Cube, post, Vector3.zero, new Vector3(0.26f, 0.36f, 0.4f), new Color(1f, 0.82f, 0.45f));
+            var lamp = post.gameObject.AddComponent<Light>();
+            lamp.type = LightType.Point;
+            lamp.color = new Color(1f, 0.72f, 0.4f);
+            lamp.range = 10f + d.length * 0.3f;
+            lamp.intensity = 0f;
+            lamp.shadows = LightShadows.None;
+            parts.lantern = lamp;
             parts.floatPoints = new Vector3[0];
             return parts;
         }

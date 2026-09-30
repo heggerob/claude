@@ -498,6 +498,13 @@ namespace OdinsCoin
                 Parts.yard.localRotation = Quaternion.Slerp(Parts.yard.localRotation, Quaternion.Euler(0f, brace, 0f), Time.deltaTime * 2f);
             }
             if (Parts.rudder != null) Parts.rudder.localRotation = Quaternion.Euler(0f, -rudderAngle * 30f, 0f);
+            // The stern lantern glows from dusk to dawn, flickering a little.
+            if (Parts.lantern != null)
+            {
+                float dark = Mathf.Clamp01((6f - SkyClock.Elevation) / 12f);
+                Parts.lantern.intensity = dark * (1.5f + 0.15f * Mathf.Sin(Time.time * 9f) * Mathf.Sin(Time.time * 5.3f));
+                Parts.lantern.enabled = dark > 0.01f;
+            }
             if (Parts.rigs != null)
             {
                 // The new classes: each yard braces round to the wind as far as its rig allows, the cloth gathers up when furled.
