@@ -543,7 +543,7 @@ namespace OdinsCoin
                 d.Add(Joints.Head, black, MeshData.Ellipsoid(offset + Vector3.Scale(new Vector3(Mathf.Sin(a) * r * 1.21f, brim, Mathf.Cos(a) * r * 1.21f), scale), Vector3.one * 0.008f * s, 5, 3), false);
             }
             // Riveted gold ribs running up over the dome from the band, as in the concept art.
-            var ribProfile = new[] { new Vector2(1.17f, 0.05f), new Vector2(1.17f, 0.2f), new Vector2(1.15f, 0.5f), new Vector2(0.99f, 0.82f), new Vector2(0.63f, 1.04f), new Vector2(0.12f, 1.125f) };
+            var ribProfile = new[] { new Vector2(1.17f, 0.05f), new Vector2(1.17f, 0.2f), new Vector2(1.15f, 0.5f), new Vector2(1.02f, 0.78f), new Vector2(0.84f, 0.95f) };
             foreach (float a in new[] { -0.55f, 0.55f, -1.65f, 1.65f, 2.7f, -2.7f })
             {
                 var rib = new Vector3[ribProfile.Length];
