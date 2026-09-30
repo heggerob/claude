@@ -93,6 +93,8 @@ namespace OdinsCoin
         public const string LeftFoot = "Left Foot", RightFoot = "Right Foot";
         /// <summary>A bow's string, on its own joint on the bow so it can be drawn back to the hand.</summary>
         public const string BowString = "Bow String";
+        /// <summary>The arrow on the string while a bow is drawn (hidden otherwise).</summary>
+        public const string NockedArrow = "Nocked Arrow";
 
         public static void Build(VikingModel m, Fit f)
         {

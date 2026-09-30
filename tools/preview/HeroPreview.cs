@@ -20,6 +20,8 @@ public static class HeroPreview
         public Dictionary<string, Vector2> bend = new Dictionary<string, Vector2>();
         /// <summary>A bow's string drawn back: the pull on its middle, in the string joint's space (as BowString does).</summary>
         public Dictionary<string, Vector3> pull = new Dictionary<string, Vector3>();
+        /// <summary>Joints hidden at rest but shown in this pose (a nocked arrow).</summary>
+        public HashSet<string> show = new HashSet<string>();
     }
 
     public class Shot
@@ -426,7 +428,16 @@ public static class HeroPreview
                     World(model, pose, Joints.LeftForearm, out fp, out fr);
                     World(model, pose, Joints.BowString, out bp, out br);
                     var hand = fp + fr * new Vector3(0f, -Fit.Of(spec.body).foreArm, 0f);
-                    pose.pull[Joints.BowString] = BowDraw.Pull(Quaternion.Inverse(br) * (hand - bp), sc, BowDraw.Held(move, t));
+                    var drawPull = BowDraw.Pull(Quaternion.Inverse(br) * (hand - bp), sc, BowDraw.Held(move, t));
+                    pose.pull[Joints.BowString] = drawPull;
+                    if (drawPull.sqrMagnitude > 1e-8f)
+                    {
+                        Vector3 nock; Quaternion arrowRot;
+                        BowDraw.Arrow(drawPull, sc, out nock, out arrowRot);
+                        pose.show.Add(Joints.NockedArrow);
+                        pose.pos[Joints.NockedArrow] = nock;
+                        pose.rot[Joints.NockedArrow] = arrowRot;
+                    }
                 }
                 Render(row, w, cellH, c * cellW, cellW, cellH, new Shot { model = model, pose = pose, yaw = 235f, zoom = 0.66f });
                 labels.Add((c / 2 + 1) + ". " + move.name + (c % 2 == 0 ? ": wind-up" : ": blow"));
@@ -520,6 +531,7 @@ public static class HeroPreview
         if (joint == Joints.Eyes) return shot.face == Expression.Neutral;
         if (joint == Joints.EyesHappy) return shot.face == Expression.Happy;
         if (joint == Joints.EyesHurt) return shot.face == Expression.Hurt;
+        if (shot.pose.show.Contains(joint)) return true;
         return !shot.model.Hidden(joint);
     }
 
@@ -539,7 +551,7 @@ public static class HeroPreview
         string root = weapon.Joints.Count > 0 ? weapon.Joints[0].name : hand;
         foreach (var j in weapon.Joints)
             if (j.name != root && character.Find(j.name) == null)
-                character.Joints.Add(new VikingModel.Joint { name = j.name, parent = j.parent == root ? hand : j.parent, localPosition = j.localPosition, restEuler = j.restEuler });
+                character.Joints.Add(new VikingModel.Joint { name = j.name, parent = j.parent == root ? hand : j.parent, localPosition = j.localPosition, restEuler = j.restEuler, hidden = j.hidden });
         foreach (var p in weapon.Pieces)
             character.Pieces.Add(new VikingModel.Piece { joint = p.joint == root ? hand : p.joint, color = p.color, mesh = p.mesh, outline = p.outline, ink = p.ink, surface = p.surface });
         return character;

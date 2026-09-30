@@ -72,7 +72,9 @@ namespace OdinsCoin
         {
             Transform t;
             if (!joints.TryGetValue(Joints.BowString, out t)) return null;
-            t.gameObject.AddComponent<BowString>().Init(BowDraw.HalfLength(s));
+            Transform arrow;
+            joints.TryGetValue(Joints.NockedArrow, out arrow);
+            t.gameObject.AddComponent<BowString>().Init(s, arrow);
             return t;
         }
 
@@ -88,6 +90,7 @@ namespace OdinsCoin
                 t.localPosition = j.localPosition;
                 t.localRotation = Quaternion.Euler(j.restEuler);
                 joints[j.name] = t;
+                if (j.hidden) t.gameObject.SetActive(false);
             }
             foreach (var piece in model.Pieces)
             {

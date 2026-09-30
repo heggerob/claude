@@ -368,6 +368,15 @@ namespace OdinsCoin
                         var cord = new Vector3[9];
                         for (int i = 0; i < cord.Length; i++) cord[i] = Vector3.Lerp(limb[0], limb[12], i / (float)(cord.Length - 1));
                         d.Add(Joints.BowString, d.pal.parchment, MeshData.Tube(cord, Radii(cord.Length, 0.0025f * s), 4), false);
+                        // The arrow laid on the string while drawing: nock at the joint, pointing along +Y through the grip.
+                        d.model.AddJoint(Joints.NockedArrow, Joints.Weapon, BowDraw.Mid(s));
+                        d.model.Find(Joints.NockedArrow).hidden = true;
+                        float shaft = BowDraw.ArrowLength(s);
+                        d.Add(Joints.NockedArrow, d.pal.leather, MeshData.Tube(new[] { Vector3.zero, new Vector3(0f, shaft, 0f) }, new[] { 0.005f * s, 0.005f * s }, 5), false);
+                        d.Add(Joints.NockedArrow, d.pal.metal, MeshData.Tube(new[] { new Vector3(0f, shaft - 0.005f * s, 0f), new Vector3(0f, shaft + 0.05f * s, 0f) }, new[] { 0.014f * s, 0.001f * s }, 5), false);
+                        foreach (float side in new[] { -1f, 1f })
+                            d.Add(Joints.NockedArrow, new Color(0.7f, 0.2f, 0.14f), MeshData.Extrude(new[] { new Vector2(0f, 0f), new Vector2(0.085f, 0f), new Vector2(0.1f, 0.022f), new Vector2(0.035f, 0.024f) }, 0.005f)
+                                .Transformed(new Vector3(0f, 0.012f * s, 0f), Quaternion.Euler(0f, side * 90f, 90f), Vector3.one * s), false);
                     }
                     break;
                 case WeaponId.Sword:

@@ -301,6 +301,11 @@ public static class LogicTests
         foreach (var p in bowModel.Pieces) if (p.joint == Joints.BowString) foreach (var v in p.mesh.Vertices) reach = Math.Max(reach, Math.Abs(v.z));
         float s0 = Fit.Of(bowSpec.body).s;
         Check(stringOnJoint && Math.Abs(reach - BowDraw.HalfLength(s0)) < 0.01f * s0, "the bow's string is its own joint, reaching nock to nock (" + reach + ")");
+        Vector3 arrowNock; Quaternion arrowRot;
+        BowDraw.Arrow(pullBack, 1f, out arrowNock, out arrowRot);
+        Vector3 arrowDir = arrowRot * Vector3.up, toGrip = (BowDraw.Grip(1f) - arrowNock).normalized;
+        Check(Vector3.Distance(arrowNock, BowDraw.Mid(1f) + pullBack) < 1e-5f && Vector3.Dot(arrowDir, toGrip) > 0.999f, "the nocked arrow sits on the drawn string and points through the grip");
+        Check(bowModel.Hidden(Joints.NockedArrow), "the arrow only shows while the bow is drawn");
 
         // Heroes get swinging joints where they have capes, banners and braids.
         var jarl = HeroModel.Build(CharacterSpec.Default(OutfitId.Jarl));

@@ -408,6 +408,20 @@ namespace OdinsCoin
         /// <summary>The longest draw.</summary>
         public static float MaxDraw(float s) { return 0.75f * s; }
 
+        /// <summary>How long an arrow is, nock to head.</summary>
+        public static float ArrowLength(float s) { return 0.72f * s; }
+
+        /// <summary>Where the belly of the bow's grip is, which the arrow rests on.</summary>
+        public static Vector3 Grip(float s) { return new Vector3(0f, 0.12f * s, 0f); }
+
+        /// <summary>The nocked arrow for a pull: its nock sits on the drawn string, and it points through the grip.</summary>
+        public static void Arrow(Vector3 pull, float s, out Vector3 nock, out Quaternion rotation)
+        {
+            nock = Mid(s) + pull;
+            Vector3 dir = Grip(s) - nock;
+            rotation = dir.sqrMagnitude > 1e-8f ? Quaternion.FromToRotation(Vector3.up, dir.normalized) : Quaternion.identity;
+        }
+
         /// <summary>A point of the string at rest, with its middle pulled by <paramref name="pull"/>: the nocks stay put.</summary>
         public static Vector3 Apply(Vector3 rest, float halfLength, Vector3 pull)
         {
@@ -435,13 +449,16 @@ namespace OdinsCoin
     {
         Mesh mesh;
         Vector3[] rest, verts;
-        float half;
+        float half, scale;
         int pulledFrame = -1;
         bool drawn;
+        Transform arrow;
 
-        public void Init(float halfLength)
+        public void Init(float s, Transform nockedArrow)
         {
-            half = halfLength;
+            half = BowDraw.HalfLength(s);
+            scale = s;
+            arrow = nockedArrow;
             var mf = GetComponentInChildren<MeshFilter>();
             if (mf == null || mf.sharedMesh == null) return;
             mesh = mf.sharedMesh;
@@ -462,6 +479,18 @@ namespace OdinsCoin
             mesh.vertices = verts;
             mesh.RecalculateBounds();
             drawn = pull.sqrMagnitude > 1e-8f;
+            // An arrow lies on the string while it's drawn, and is gone once loosed.
+            if (arrow != null)
+            {
+                arrow.gameObject.SetActive(drawn);
+                if (drawn)
+                {
+                    Vector3 nock; Quaternion rot;
+                    BowDraw.Arrow(pull, scale, out nock, out rot);
+                    arrow.localPosition = nock;
+                    arrow.localRotation = rot;
+                }
+            }
         }
 
         // No attack held it this frame: it snaps back straight.
