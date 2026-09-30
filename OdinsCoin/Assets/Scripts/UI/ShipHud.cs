@@ -35,6 +35,16 @@ namespace OdinsCoin
             DrawDangers();
 
             // Nearest land.
+            // The lead line: the depth under her keel, called out when the bottom comes up.
+            if (Ship != null && Ship.Design != null && RealWorld.Active)
+            {
+                float depth = Longship.DepthAt(Ship.transform.position) - Ship.Design.draught;
+                if (depth < 25f)
+                {
+                    string colour = depth < 1.5f ? "#ff7a5a" : depth < 5f ? "#ffd060" : "#cfe3ff";
+                    GUI.Label(new Rect(20f, Screen.height - 106f, 560f, 22f), string.Format("<color={0}>Lead line: {1:0.0} m under the keel{2}</color>", colour, Mathf.Max(0f, depth), depth < 1.5f ? " — shoal water!" : ""), style);
+                }
+            }
             // A current setting the ship.
             if (Ship != null && Ship.Stream.magnitude > 0.25f)
             {
