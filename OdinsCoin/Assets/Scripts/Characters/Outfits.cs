@@ -171,7 +171,7 @@ namespace OdinsCoin
                     new Ability { id = "volley", name = "Volley", description = "Loose three arrows at once: bow shots hit twice as hard and fly far." } },
                 dress = d =>
                 {
-                    Garments.FurBoots(d, 0f);
+                    Garments.FurBoots(d, -0.04f);
                     Garments.Gloves(d);
                     Garments.LongSkirt(d, 0.24f, 1.3f);
                     Garments.FurSkirt(d, 0.52f, 0.34f);
@@ -183,7 +183,7 @@ namespace OdinsCoin
                     Garments.Quiver(d);
                     Garments.Cowl(d);
                     // The pelt lies over the cowl on one shoulder.
-                    Garments.ShoulderPelt(d, 1.45f, 1f, 0.7f, 1f, 0.75f);
+                    Garments.ShoulderPelt(d, 1.25f, 1f, 0.7f, 1f, 0.75f);
                     Garments.FurCap(d);
                 } } },
         };
