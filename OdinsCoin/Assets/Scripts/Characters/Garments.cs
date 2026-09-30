@@ -582,8 +582,8 @@ namespace OdinsCoin
                 new Vector2(r * 1.12f, brim - 0.08f * r), new Vector2(r * 1.16f, brim + 0.2f * r), new Vector2(r * 1.14f, brim + 0.5f * r),
                 new Vector2(r * 0.98f, brim + 0.82f * r), new Vector2(r * 0.62f, brim + 1.04f * r), new Vector2(0.01f, brim + 1.12f * r) }, 24)
                 .Transformed(offset, Quaternion.identity, scale));
-            // A thin gold trim round the brow, studded (the helm itself stays black, as in the concept art).
-            d.Add(Joints.Head, d.pal.brass, CharacterKit.Band(brim, 0.024f * s, r * 1.18f, 0.98f, 24).Transformed(offset, Quaternion.identity, scale));
+            // A broad gold band round the brow, studded (the helm itself stays black, as in the concept art).
+            d.Add(Joints.Head, d.pal.brass, CharacterKit.Band(brim + 0.03f * r, 0.05f * s, r * 1.18f, 0.98f, 24).Transformed(offset, Quaternion.identity, scale));
             for (int i = -4; i <= 4; i++)
             {
                 float a = i * 0.34f;
