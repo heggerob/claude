@@ -869,6 +869,9 @@ namespace OdinsCoin
             }
             // Feathers bristling round the shoulders.
             d.Add(Joints.Body, d.pal.clothDark, CharacterKit.FurRing(new Vector3(0f, f.shoulderY - 0.01f * s, 0f), f.shoulderX + 0.02f * s, 0.8f, 0.05f * s, 24, 0.1f * s, d.seed + 67, 1.4f));
+            // Long ragged feathers spreading off the shoulders, points out and down: the seer's spiky outline.
+            d.Add(Joints.Body, d.pal.cloth, CharacterKit.FurRing(new Vector3(0f, f.shoulderY - 0.05f * s, -0.01f * s), f.shoulderX + 0.07f * s, 0.75f, 0.035f * s, 20, 0.22f * s, d.seed + 68, 0.45f));
+            d.Add(Joints.Body, d.pal.clothDark, CharacterKit.FurRing(new Vector3(0f, f.chest - 0.06f * s, -0.01f * s), f.shoulderX + 0.09f * s, 0.75f, 0.035f * s, 18, 0.24f * s, d.seed + 69, 0.6f));
             // Ragged sleeves hanging from the arms.
             foreach (var arm in new[] { Joints.LeftArm, Joints.RightArm })
             {
