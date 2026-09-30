@@ -331,16 +331,16 @@ namespace OdinsCoin
             d.skirtTop = f.waist; d.skirtTopR = f.waistR * 0.98f; d.skirtBottom = hem; d.skirtBottomR = f.hipR * 1.35f; d.skirtDepth = f.depth + 0.05f;
             d.Add(Joints.Body, d.pal.cloth, CharacterKit.RaggedSkirt(d.skirtTop, d.skirtTopR, d.skirtBottom, d.skirtBottomR, d.skirtDepth, 22, 0.012f * s, d.seed + 31));
             // Gold border along the hem.
-            d.Add(Joints.Body, d.pal.brass, CharacterKit.Band(hem + 0.03f * s, 0.032f * s, d.SkirtRadius(hem + 0.03f * s) + 0.004f, d.skirtDepth, 22), false);
+            d.Add(Joints.Body, d.pal.brass, CharacterKit.Band(hem + 0.04f * s, 0.05f * s, d.SkirtRadius(hem + 0.04f * s) + 0.004f, d.skirtDepth, 22), false);
             // Runes worked into the gold border, round the front and sides.
-            var runeRow = new Vector3[16];
+            var runeRow = new Vector3[11];
             for (int i = 0; i < runeRow.Length; i++)
             {
                 float a = Mathf.Lerp(-1.9f, 1.9f, i / (float)(runeRow.Length - 1));
-                float ry = hem + 0.03f * s, rr = d.SkirtRadius(ry) + 0.012f;
+                float ry = hem + 0.04f * s, rr = d.SkirtRadius(ry) + 0.012f;
                 runeRow[i] = new Vector3(Mathf.Sin(a) * rr, ry, Mathf.Cos(a) * rr * d.skirtDepth);
             }
-            d.Add(Joints.Body, d.pal.clothDark, CharacterKit.RuneBand(runeRow, p => new Vector3(p.x, 0f, p.z).normalized, 0.024f * s, 0.0028f * s, d.seed + 33), false);
+            d.Add(Joints.Body, d.pal.clothDark, CharacterKit.RuneBand(runeRow, p => new Vector3(p.x, 0f, p.z).normalized, 0.04f * s, 0.0045f * s, d.seed + 33), false);
             // Front panel: darker cloth edged in gold, over the coat.
             const int rows = 7;
             var grid = new Vector3[rows, 3];
@@ -365,8 +365,11 @@ namespace OdinsCoin
             var foot = new Vector3[3];
             for (int c = 0; c < 3; c++) foot[c] = grid[rows - 1, c] + new Vector3(0f, 0.03f * s, 0.009f * s);
             d.Add(Joints.Body, d.pal.brass, MeshData.Tube(foot, new[] { 0.016f * s, 0.016f * s, 0.016f * s }, 5), false);
-            for (int k = -2; k <= 2; k++)
-                d.Add(Joints.Body, d.pal.brass, MeshData.Ellipsoid(Vector3.Lerp(grid[rows - 2, 0], grid[rows - 2, 2], (k + 2) / 4f) + new Vector3(0f, 0f, 0.012f * s), Vector3.one * 0.007f * s, 5, 3), false);
+            // A row of gold runes across the panel, just above the border.
+            var panelRow = new Vector3[5];
+            for (int k = 0; k < panelRow.Length; k++)
+                panelRow[k] = Vector3.Lerp(grid[rows - 2, 0], grid[rows - 2, 2], Mathf.Lerp(-0.1f, 1.1f, k / 4f)) + new Vector3(0f, 0.01f * s, 0.008f * s);
+            d.Add(Joints.Body, d.pal.brass, CharacterKit.RuneBand(panelRow, p => Vector3.forward, 0.045f * s, 0.005f * s, d.seed + 34), false);
         }
 
         /// <summary>Long sleeves down to the wrists, ending in fur cuffs, with gold-strapped bracers.</summary>
