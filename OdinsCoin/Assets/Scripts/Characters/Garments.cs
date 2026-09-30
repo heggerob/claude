@@ -834,9 +834,6 @@ namespace OdinsCoin
             // The split itself: the dark under-tunic showing between the jerkin's edges, which are bound in lighter leather.
             const int rows = 6;
             var gap = new Vector3[rows, 2];
-            var edgeL = new Vector3[rows];
-            var edgeR = new Vector3[rows];
-            var er = new float[rows];
             for (int r = 0; r < rows; r++)
             {
                 float y = Mathf.Lerp(f.waist - 0.03f * s, d.skirtBottom - 0.005f * s, r / (float)(rows - 1));
@@ -844,13 +841,25 @@ namespace OdinsCoin
                 float w = split(y) - 0.012f * s;
                 gap[r, 0] = new Vector3(-w, y, z);
                 gap[r, 1] = new Vector3(w, y, z);
-                edgeL[r] = new Vector3(-split(y) + 0.004f * s, y, z + 0.004f * s);
-                edgeR[r] = new Vector3(split(y) - 0.004f * s, y, z + 0.004f * s);
-                er[r] = 0.006f * s;
             }
             d.Add(Joints.Body, d.pal.clothDark, CharacterKit.Sheet(gap, Vector3.forward, 0.006f * s), false);
-            d.Add(Joints.Body, d.pal.leather, MeshData.Tube(edgeL, er, 5), false);
-            d.Add(Joints.Body, d.pal.leather, MeshData.Tube(edgeR, er, 5), false);
+            // Broad bands of pale leather binding the jerkin's front edges from the chest down, and its hem, with the
+            // studs sitting on them, as in the concept art.
+            var binding = VikingModel.Shade(d.pal.leather, 1.45f);
+            const int brows = 10;
+            foreach (float x in new[] { -1f, 1f })
+            {
+                var band = new Vector3[brows, 2];
+                for (int r = 0; r < brows; r++)
+                {
+                    float y = Mathf.Lerp(f.chest - 0.05f * s, d.skirtBottom - 0.005f * s, r / (float)(brows - 1));
+                    float z = (y > f.waist ? f.TorsoRadius(y) * f.depth : d.SkirtRadius(y) * d.skirtDepth) + 0.005f * s;
+                    band[r, 0] = new Vector3(x * (split(y) - 0.012f * s), y, z);
+                    band[r, 1] = new Vector3(x * (split(y) + 0.014f * s), y, z - 0.002f * s);
+                }
+                d.Add(Joints.Body, binding, CharacterKit.Sheet(band, Vector3.forward, 0.006f * s), false, SurfaceKind.Leather);
+            }
+            d.Add(Joints.Body, binding, CharacterKit.Band(d.skirtBottom + 0.035f * s, 0.035f * s, d.SkirtRadius(d.skirtBottom + 0.035f * s) + 0.003f, d.skirtDepth, 24), false, SurfaceKind.Leather);
             for (int i = 0; i < 18; i++)
             {
                 float a = i / 18f * Mathf.PI * 2f;
