@@ -899,7 +899,9 @@ namespace OdinsCoin
             {
                 var colour = (t & 1) == 0 ? d.pal.cloth : d.pal.clothDark;
                 float len = t == 0 ? 0.22f * s : 0.34f * s;
-                d.Add(Joints.Body, colour, CharacterKit.Flaps(tops[t], len, 14 + t * 2, 0.95f, depth, surface, 0.01f + t * 0.004f, d.seed + 62 + t, 0.01f * s));
+                // Open down the front below the shoulders, like a cloak, so the stole, belt and charms show.
+                float gap = t == 0 ? 0f : t == tops.Length - 1 ? 0.3f : 0.5f;
+                d.Add(Joints.Body, colour, CharacterKit.Flaps(tops[t], len, 14 + t * 2, 0.95f, depth, surface, 0.01f + t * 0.004f, d.seed + 62 + t, 0.01f * s, gap));
                 // A few faded, paler strips caught between the dark ones, like weathered feathers and old wool.
                 if (t > 0)
                     d.Add(Joints.Body, VikingModel.Shade(d.pal.cloth, 1.7f), CharacterKit.Flaps(tops[t] - 0.04f * s, len * 0.8f, 4 + t, 0.25f, depth, surface, 0.014f + t * 0.004f, d.seed + 72 + t, 0.008f * s), false);
@@ -908,7 +910,7 @@ namespace OdinsCoin
             d.Add(Joints.Body, d.pal.clothDark, CharacterKit.FurRing(new Vector3(0f, f.shoulderY - 0.01f * s, 0f), f.shoulderX + 0.02f * s, 0.8f, 0.05f * s, 24, 0.1f * s, d.seed + 67, 1.4f));
             // Long ragged feathers spreading off the shoulders, points out and down: the seer's spiky outline.
             d.Add(Joints.Body, d.pal.cloth, CharacterKit.FurRing(new Vector3(0f, f.shoulderY - 0.05f * s, -0.01f * s), f.shoulderX + 0.07f * s, 0.75f, 0.035f * s, 20, 0.22f * s, d.seed + 68, 0.45f));
-            d.Add(Joints.Body, d.pal.clothDark, CharacterKit.FurRing(new Vector3(0f, f.chest - 0.06f * s, -0.01f * s), f.shoulderX + 0.09f * s, 0.75f, 0.035f * s, 18, 0.24f * s, d.seed + 69, 0.6f));
+            d.Add(Joints.Body, d.pal.clothDark, CharacterKit.FurRing(new Vector3(0f, f.chest - 0.06f * s, -0.01f * s), f.shoulderX + 0.09f * s, 0.75f, 0.035f * s, 18, 0.24f * s, d.seed + 69, 0.6f, 0.55f));
             // Ragged sleeves hanging from the arms.
             foreach (var arm in new[] { Joints.LeftArm, Joints.RightArm })
             {
@@ -1058,6 +1060,69 @@ namespace OdinsCoin
         }
 
         /// <summary>A round wooden disc with a rune burnt into it (Algiz-like), facing along the rotation's up axis.</summary>
+        /// <summary>
+        /// The seer's belt: a cord belt with a big carved rune medallion at the front, and at the right hip a bundle
+        /// of charms hanging on thongs: a small animal skull, a long rune pendant, a bone and two dark feathers.
+        /// </summary>
+        public static void SeerBelt(Dresser d)
+        {
+            var f = d.fit;
+            float s = d.S;
+            // Worn over the feather tiers and the stole, so it has to sit outside both.
+            float y = f.waist + 0.01f * s, depth = 1f;
+            float r = f.TorsoRadius(y) * 1.15f + 0.05f * s;
+            d.Add(Joints.Body, d.pal.leatherDark, CharacterKit.Band(y, 0.035f * s, r, depth));
+            // The medallion: a wooden disc with a ring of dots round a rune.
+            var front = new Vector3(0f, y, r * depth + 0.012f * s);
+            d.Add(Joints.Body, d.pal.leather, MeshData.Lathe(new[] { new Vector2(0.05f * s, -0.008f * s), new Vector2(0.052f * s, 0f), new Vector2(0.046f * s, 0.01f * s), new Vector2(0.001f, 0.012f * s) }, 18)
+                .Transformed(front, Quaternion.Euler(90f, 0f, 0f), Vector3.one));
+            RuneDisc(d, Joints.Body, front + new Vector3(0f, 0f, 0.012f * s), 0.028f * s, Quaternion.Euler(90f, 0f, 0f));
+            for (int i = 0; i < 10; i++)
+            {
+                float a = i / 10f * Mathf.PI * 2f;
+                d.Add(Joints.Body, d.pal.ink, MeshData.Ellipsoid(front + new Vector3(Mathf.Cos(a) * 0.04f * s, Mathf.Sin(a) * 0.04f * s, 0.011f * s), Vector3.one * 0.0045f * s, 4, 3), false);
+            }
+            // The bundle at the right hip, hanging out in front of the robe.
+            // Just inside the edge of the open cloak, so it isn't lost among the feathers.
+            float ang = 0.45f;
+            var hip = new Vector3(Mathf.Sin(ang) * r, y - 0.01f * s, Mathf.Cos(ang) * r * depth + 0.03f * s);
+            var bone = d.pal.parchment;
+            // Thongs down to each charm: (x offset, drop, z offset).
+            var hangs = new[] { new Vector3(-0.02f, 0.13f, 0.03f), new Vector3(0.015f, 0.26f, 0.02f), new Vector3(0.04f, 0.19f, 0.01f) };
+            foreach (var h in hangs)
+            {
+                var end = hip + new Vector3(h.x, -h.y, h.z) * s;
+                d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(new[] { hip, end }, new[] { 0.003f * s, 0.003f * s }, 4), false);
+            }
+            // The skull: a rounded cranium, a snout, dark eye holes, looking out.
+            var skull = hip + new Vector3(-0.02f, -0.15f, 0.045f) * s;
+            d.Add(Joints.Body, bone, MeshData.Ellipsoid(skull, new Vector3(0.045f, 0.04f, 0.042f) * s, 9, 6));
+            d.Add(Joints.Body, bone, MeshData.Ellipsoid(skull + new Vector3(0f, -0.036f, 0.022f) * s, new Vector3(0.028f, 0.03f, 0.024f) * s, 7, 5));
+            foreach (float ex in new[] { -1f, 1f })
+                d.Add(Joints.Body, d.pal.ink, MeshData.Ellipsoid(skull + new Vector3(ex * 0.018f, -0.005f, 0.036f) * s, new Vector3(0.011f, 0.01f, 0.006f) * s, 5, 3), false);
+            // The rune pendant: a long wooden drop with a rune cut in it.
+            var pend = hip + new Vector3(0.015f, -0.3f, 0.03f) * s;
+            d.Add(Joints.Body, d.pal.leather, MeshData.Ellipsoid(pend, new Vector3(0.028f, 0.045f, 0.008f) * s, 10, 6));
+            d.Add(Joints.Body, d.pal.ink, MeshData.Tube(new[] { pend + new Vector3(0f, 0.025f, 0.009f) * s, pend + new Vector3(0f, -0.025f, 0.009f) * s }, new[] { 0.003f * s, 0.003f * s }, 4), false);
+            d.Add(Joints.Body, d.pal.ink, MeshData.Tube(new[] { pend + new Vector3(0f, 0.01f, 0.009f) * s, pend + new Vector3(0.014f, -0.008f, 0.009f) * s }, new[] { 0.003f * s, 0.003f * s }, 4), false);
+            // A bone and two dark feathers.
+            d.Add(Joints.Body, bone, MeshData.Ellipsoid(hip + new Vector3(0.04f, -0.21f, 0.015f) * s, new Vector3(0.011f, 0.03f, 0.011f) * s, 6, 5));
+            for (int k = 0; k < 2; k++)
+            {
+                var root = hip + new Vector3(0.05f + k * 0.015f, -0.02f, 0.0f) * s;
+                var tip = root + new Vector3(0.03f + k * 0.02f, -0.2f + k * 0.03f, 0.01f) * s;
+                var grid = new Vector3[5, 2];
+                for (int i = 0; i < 5; i++)
+                {
+                    float v = i / 4f, w = Mathf.Sin(v * Mathf.PI) * 0.018f * s + 0.002f * s;
+                    var p = Vector3.Lerp(root, tip, v);
+                    grid[i, 0] = p + new Vector3(-w, 0f, 0f);
+                    grid[i, 1] = p + new Vector3(w, 0f, 0f);
+                }
+                d.Add(Joints.Body, d.pal.clothDark, CharacterKit.Sheet(grid, Vector3.forward, 0.004f * s));
+            }
+        }
+
         public static void RuneDisc(Dresser d, string joint, Vector3 at, float radius, Quaternion facing)
         {
             float s = d.S;

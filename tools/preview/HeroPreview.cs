@@ -123,7 +123,7 @@ public static class HeroPreview
         Vector3 slElbow = sl + new Vector3(-0.1f, -0.2f, 0.02f).normalized * sFit.upperArm;
         Vector3 slFist = new Vector3(-sFit.shoulderX - 0.16f, sFit.chest - 0.02f, 0.06f);
         Vector3 srElbow = sr + new Vector3(0.06f, -0.2f, 0.06f).normalized * sFit.upperArm;
-        Vector3 srFist = new Vector3(0.08f, sFit.waist + 0.04f, 0.16f);
+        Vector3 srFist = new Vector3(sFit.shoulderX + 0.02f, sFit.waist - 0.04f, 0.12f);
         augur.worldRot[Joints.LeftArm] = Quaternion.FromToRotation(Vector3.down, slElbow - sl);
         augur.worldRot[Joints.LeftForearm] = Quaternion.FromToRotation(Vector3.down, slFist - slElbow);
         augur.worldRot[Joints.RightArm] = Quaternion.FromToRotation(Vector3.down, srElbow - sr);

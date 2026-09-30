@@ -150,6 +150,7 @@ namespace OdinsCoin
                     Garments.Tunic(d, false);
                     Garments.FeatherCloak(d);
                     Garments.Stole(d);
+                    Garments.SeerBelt(d);
                     Garments.Charms(d);
                     Garments.Hood(d);
                     Garments.Antlers(d);

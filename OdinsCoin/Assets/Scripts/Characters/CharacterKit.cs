@@ -27,16 +27,22 @@ namespace OdinsCoin
         /// </summary>
         public static MeshData FurRing(Vector3 centre, float radius, float depth, float thickness, int tufts, float tuftLength, int seed, float droop = 0.6f)
         {
+            return FurRing(centre, radius, depth, thickness, tufts, tuftLength, seed, droop, 0f);
+        }
+
+        /// <summary>The ring, with no roll and no tufts within <paramref name="frontGap"/> radians of the front (+Z).</summary>
+        public static MeshData FurRing(Vector3 centre, float radius, float depth, float thickness, int tufts, float tuftLength, int seed, float droop, float frontGap)
+        {
             var rng = new System.Random(seed);
             var m = new MeshData();
-            // The roll.
-            m.Append(MeshData.Lathe(new[] { new Vector2(radius * 0.92f, -thickness * 0.7f), new Vector2(radius * 1.05f, -thickness * 0.2f), new Vector2(radius * 1.05f, thickness * 0.3f), new Vector2(radius * 0.9f, thickness * 0.7f) }, 20)
+            // The roll (left out when the front is open: the clumps alone carry it round the back).
+            if (frontGap <= 0f) m.Append(MeshData.Lathe(new[] { new Vector2(radius * 0.92f, -thickness * 0.7f), new Vector2(radius * 1.05f, -thickness * 0.2f), new Vector2(radius * 1.05f, thickness * 0.3f), new Vector2(radius * 0.9f, thickness * 0.7f) }, 20)
                 .Transformed(centre, Quaternion.identity, new Vector3(1f, 1f, depth)));
             // Soft clumps along the roll, and tufts of varied length hanging out of it, so it reads as fluffy
             // pelt rather than a row of teeth.
             for (int i = 0; i < tufts; i++)
             {
-                float a = (i + (float)rng.NextDouble() * 0.6f) / tufts * Mathf.PI * 2f;
+                float a = frontGap + (i + (float)rng.NextDouble() * 0.6f) / tufts * (Mathf.PI * 2f - 2f * frontGap);
                 Vector3 dir = new Vector3(Mathf.Sin(a), 0f, Mathf.Cos(a) * depth);
                 float y = ((float)rng.NextDouble() - 0.6f) * thickness * 0.8f;
                 Vector3 root = centre + dir * radius * 0.95f + Vector3.up * y;
@@ -262,12 +268,22 @@ namespace OdinsCoin
         /// </summary>
         public static MeshData Flaps(float topY, float length, int count, float coverage, float depth, System.Func<float, float> radiusAt, float lift, int seed, float thickness)
         {
+            return Flaps(topY, length, count, coverage, depth, radiusAt, lift, seed, thickness, 0f);
+        }
+
+        /// <summary>The flaps, leaving an opening <paramref name="frontGap"/> radians either side of the front (+Z).</summary>
+        public static MeshData Flaps(float topY, float length, int count, float coverage, float depth, System.Func<float, float> radiusAt, float lift, int seed, float thickness, float frontGap)
+        {
             var rng = new System.Random(seed);
             var m = new MeshData();
+            float span = Mathf.PI * 2f - 2f * frontGap;
             for (int i = 0; i < count; i++)
             {
-                float centre = (i + (float)rng.NextDouble() * 0.6f) / count * Mathf.PI * 2f;
-                float half = coverage * Mathf.PI / count * (0.7f + (float)rng.NextDouble() * 0.6f);
+                float centre = frontGap + (i + (float)rng.NextDouble() * 0.6f) / count * span;
+                // Keep the pieces next to the opening from reaching into it.
+                float room = Mathf.Min(centre - frontGap, Mathf.PI * 2f - frontGap - centre);
+                float half = coverage * span * 0.5f / count * (0.7f + (float)rng.NextDouble() * 0.6f);
+                if (frontGap > 0f) half = Mathf.Min(half, Mathf.Max(0.05f, room + 0.08f));
                 float len = length * (0.6f + (float)rng.NextDouble() * 0.7f);
                 float top = topY + ((float)rng.NextDouble() - 0.5f) * length * 0.3f;
                 const int rows = 4, cols = 7;
