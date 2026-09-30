@@ -151,7 +151,23 @@ namespace OdinsCoin
         /// <summary>The axe's cutting edge, t = 0 at the top horn to 1 at the tip of the beard, pushed out by <paramref name="off"/>.</summary>
         static Vector2 Edge(float t, float off)
         {
-            return new Vector2(0.99f + 0.035f * Mathf.Sin(t * Mathf.PI) - 0.02f * t + off, Mathf.Lerp(0.13f, -0.2f, t));
+            return new Vector2(Mathf.Lerp(0.965f, 0.945f, t) + 0.065f * Mathf.Sin(t * Mathf.PI) + off, Mathf.Lerp(0.16f, -0.23f, t));
+        }
+
+        /// <summary>
+        /// The back of the axe head for the same t as <see cref="Edge"/>: from just inside the top horn, dipping down to
+        /// the neck on the haft, then the beard hooking out and down to its tip.
+        /// </summary>
+        static Vector2 AxeBack(float t)
+        {
+            if (t < 0.35f)
+            {
+                float u = t / 0.35f;
+                return new Vector2(Mathf.Lerp(0.95f, 0.8f, u), 0.035f + 0.115f * (1f - u) * (1f - u));
+            }
+            if (t < 0.45f) return new Vector2(0.8f, Mathf.Lerp(0.035f, -0.035f, (t - 0.35f) / 0.1f));
+            float v = (t - 0.45f) / 0.55f;
+            return new Vector2(0.8f + 0.13f * v * v, -0.035f - 0.185f * v);
         }
 
         static Vector3[] ToPath(System.Collections.Generic.List<Vector2> pts, float x, float s, int count)
@@ -184,22 +200,22 @@ namespace OdinsCoin
                     d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 0.8f), MeshData.Lathe(new[] { new Vector2(0.036f * s, 0f), new Vector2(0.036f * s, 0.1f * s) }, 10)
                         .Transformed(new Vector3(0f, 0f, 0.78f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one));
                     // A bearded head about the size of the face: a short top horn, a long beard sweeping down.
-                    var blade = new System.Collections.Generic.List<Vector2>();
-                    blade.Add(new Vector2(0.8f, -0.035f));
-                    blade.Add(new Vector2(0.8f, 0.035f));
-                    blade.Add(new Vector2(0.9f, 0.07f));
-                    blade.Add(new Vector2(0.96f, 0.12f));
-                    for (int i = 0; i <= 8; i++)
+                    // Built as a strip from the back of the head (horn, neck, hooked beard) out to the curved edge, so the
+                    // top and the beard can sweep inwards the way they do in the concept art.
+                    const int bladeRows = 17;
+                    var bladeGrid = new Vector3[bladeRows, 3];
+                    for (int i = 0; i < bladeRows; i++)
                     {
-                        // The cutting edge: a gentle outward curve from the top horn down to the tip of the beard.
-                        float t = i / 8f;
-                        blade.Add(Edge(t, 0f));
+                        float t = i / (float)(bladeRows - 1);
+                        Vector2 inner = AxeBack(t), outer = Edge(t, 0f);
+                        for (int c = 0; c < 3; c++)
+                        {
+                            var p = Vector2.Lerp(inner, outer, c / 2f);
+                            bladeGrid[i, c] = new Vector3(0f, p.y, p.x) * s;
+                        }
                     }
-                    blade.Add(new Vector2(0.93f, -0.16f));
-                    blade.Add(new Vector2(0.87f, -0.11f));
-                    // Convex-ish from the first point for the fan: keep the neck as the first vertex.
                     // Worn grey steel, lighter than the helm iron, as in the concept art.
-                    d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 1.45f), MeshData.Extrude(blade.ToArray(), 0.022f).Transformed(Vector3.zero, Quaternion.identity, Vector3.one * s), true, SurfaceKind.Metal);
+                    d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 1.45f), CharacterKit.Sheet(bladeGrid, Vector3.right, 0.022f * s), true, SurfaceKind.Metal);
                     var edge = new System.Collections.Generic.List<Vector2>();
                     for (int i = 0; i <= 8; i++) edge.Add(Edge(i / 8f, 0.008f));
                     for (int i = 8; i >= 0; i--) edge.Add(Edge(i / 8f, -0.025f));
