@@ -186,6 +186,7 @@ public static class HeroPreview
         File.WriteAllLines(args[1], labels.ToArray());
         if (args.Length > 4) MotionStrip(args[3], args[4], jarlModel);
         if (args.Length > 6) SkinSheet(args[5], args[6]);
+        if (args.Length > 8) TurnSheet(args[7], args[8]);
         Directory.CreateDirectory(args[2]);
         ExportObj(HeroModel.Build(raider), Path.Combine(args[2], "raider.obj"));
         ExportObj(HeroModel.BuildWeapon(raider), Path.Combine(args[2], "two-hand-axe.obj"));
@@ -243,6 +244,39 @@ public static class HeroPreview
         }
         var labels = new List<string>();
         foreach (var f in frames) labels.Add(f.label);
+        File.WriteAllLines(labelPath, labels.ToArray());
+    }
+
+    /// <summary>Every outfit (rows) from the front, three-quarter, side and back (columns), for docs/turnaround.png.</summary>
+    static void TurnSheet(string rgbaPath, string labelPath)
+    {
+        var outfits = (OutfitId[])Enum.GetValues(typeof(OutfitId));
+        float[] yaws = { 180f, 215f, 270f, 0f };
+        string[] names = { "front", "three-quarter", "side", "back" };
+        const int cellW = 520, cellH = 900;
+        int cols = yaws.Length, rows = outfits.Length, w = cellW * cols, h = cellH * rows;
+        var img = new float[w * h * 3];
+        var labels = new List<string> { "cols=" + cols };
+        for (int r = 0; r < rows; r++)
+        {
+            var row = new float[w * cellH * 3];
+            for (int i = 0; i < w * cellH; i++) { row[i * 3] = Paper.r; row[i * 3 + 1] = Paper.g; row[i * 3 + 2] = Paper.b; }
+            var model = Full(CharacterSpec.Default(outfits[r]));
+            for (int c = 0; c < cols; c++)
+            {
+                Render(row, w, cellH, c * cellW, cellW, cellH, new Shot { model = model, yaw = yaws[c] });
+                labels.Add(Outfits.Get(outfits[r]).title.Replace("The ", "") + ", " + names[c]);
+            }
+            Array.Copy(row, 0, img, r * w * cellH * 3, row.Length);
+        }
+        using (var f = new BinaryWriter(File.Create(rgbaPath)))
+        {
+            f.Write(w); f.Write(h);
+            for (int i = 0; i < w * h; i++)
+            {
+                f.Write((byte)(Mathf.Clamp01(img[i * 3]) * 255)); f.Write((byte)(Mathf.Clamp01(img[i * 3 + 1]) * 255)); f.Write((byte)(Mathf.Clamp01(img[i * 3 + 2]) * 255)); f.Write((byte)255);
+            }
+        }
         File.WriteAllLines(labelPath, labels.ToArray());
     }
 
@@ -313,7 +347,7 @@ public static class HeroPreview
     {
         var j = m.Find(joint);
         Vector3 local = pose.pos.ContainsKey(joint) ? pose.pos[joint] : j.localPosition;
-        Quaternion own = pose.rot.ContainsKey(joint) ? pose.rot[joint] : Quaternion.identity;
+        Quaternion own = pose.rot.ContainsKey(joint) ? pose.rot[joint] : Quaternion.Euler(j.restEuler);
         if (j.parent == null) { pos = local; rot = own; return; }
         Vector3 pp; Quaternion pr;
         World(m, pose, j.parent, out pp, out pr);

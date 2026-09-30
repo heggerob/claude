@@ -21,6 +21,8 @@ namespace OdinsCoin
             var outfit = Outfits.Get(spec.outfit);
             var d = new Dresser { model = new VikingModel(), fit = fit, pal = spec.Paint(), seed = 17 + (int)spec.outfit * 31 };
             Joints.Build(d.model, fit);
+            // How the hand holds its weapon at rest (weapons are built pointing forward from the fist).
+            d.model.Find(Joints.Weapon).restEuler = Weapons.RestEuler(spec.weapon);
             BaseBody(d);
             Hair(d, spec.hair);
             outfit.dress(d);
@@ -128,6 +130,23 @@ namespace OdinsCoin
     /// <summary>Weapons are add-ons, not part of the character: built on their own and held in the weapon hand.</summary>
     public static class Weapons
     {
+        /// <summary>
+        /// How each weapon is carried when the arm hangs at rest: long hafts and staves upright, the sword point
+        /// down, the axe tipped back so it leans against the shoulder. (Every weapon is modelled pointing +Z.)
+        /// </summary>
+        public static Vector3 RestEuler(WeaponId id)
+        {
+            switch (id)
+            {
+                case WeaponId.Spear:
+                case WeaponId.Staff:
+                case WeaponId.Bow: return new Vector3(-90f, 0f, 0f);
+                case WeaponId.TwoHandAxe: return new Vector3(-115f, 0f, 0f);
+                case WeaponId.Sword: return new Vector3(80f, 0f, 0f);
+                default: return Vector3.zero;
+            }
+        }
+
         /// <summary>The first <paramref name="count"/> outline points as a 3D polyline in the blade's plane (x offset for the bevel).</summary>
         /// <summary>The axe's cutting edge, t = 0 at the top horn to 1 at the tip of the beard, pushed out by <paramref name="off"/>.</summary>
         static Vector2 Edge(float t, float off)

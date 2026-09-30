@@ -22,6 +22,7 @@ namespace OdinsCoin
                 var t = new GameObject(j.name).transform;
                 t.SetParent(j.parent == null ? root : joints[j.parent], false);
                 t.localPosition = j.localPosition;
+                t.localRotation = Quaternion.Euler(j.restEuler);
                 joints[j.name] = t;
             }
             AddPieces(model, joints);

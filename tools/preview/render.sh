@@ -65,7 +65,7 @@ PY
 # The storybook heroes, laid out like the concept sheet, plus an .obj of each.
 mcs -nowarn:169,414,649,219,618 -define:ENABLE_LEGACY_INPUT_MANAGER -out:$TMP/heroes.exe \
   tools/unity-stub/UnityStub.cs tools/preview/HeroPreview.cs $(find OdinsCoin/Assets/Scripts -name '*.cs')
-mono $TMP/heroes.exe $TMP/heroes.rgba $TMP/heroes.txt OdinsCoin/docs/heroes $TMP/motion.rgba $TMP/motion.txt $TMP/skins.rgba $TMP/skins.txt
+mono $TMP/heroes.exe $TMP/heroes.rgba $TMP/heroes.txt OdinsCoin/docs/heroes $TMP/motion.rgba $TMP/motion.txt $TMP/skins.rgba $TMP/skins.txt $TMP/turn.rgba $TMP/turn.txt
 python3 - "$TMP/heroes.rgba" "$TMP/heroes.txt" OdinsCoin/docs/heroes.png <<'PY'
 import struct, sys
 from PIL import Image, ImageDraw, ImageFont
@@ -102,6 +102,36 @@ sheet.save(sys.argv[3])
 print('wrote', sys.argv[3])
 PY
 python3 - "$TMP/skins.rgba" "$TMP/skins.txt" OdinsCoin/docs/skins.png <<'PY'
+import struct, sys
+from PIL import Image, ImageDraw, ImageFont
+data = open(sys.argv[1], 'rb').read()
+w, h = struct.unpack('<ii', data[:8])
+img = Image.frombytes('RGBA', (w, h), data[8:]).resize((w // 2, h // 2), Image.LANCZOS)
+lines = [l.rstrip('\n') for l in open(sys.argv[2])]
+cols = int(lines[0].split('=')[1])
+labels = lines[1:]
+rows = (len(labels) + cols - 1) // cols
+cw, ch = img.width // cols, img.height // rows
+pad = 34
+sheet = Image.new('RGBA', (img.width, img.height + rows * pad), (246, 241, 230, 255))
+d = ImageDraw.Draw(sheet)
+try:
+    font = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf', 13)
+except Exception:
+    font = ImageFont.load_default()
+for r in range(rows):
+    sheet.paste(img.crop((0, r * ch, img.width, (r + 1) * ch)), (0, r * (ch + pad)))
+    for c in range(cols):
+        i = r * cols + c
+        if i >= len(labels) or not labels[i]:
+            continue
+        t = labels[i]
+        tw = d.textlength(t, font=font)
+        d.text((c * cw + (cw - tw) / 2, r * (ch + pad) + ch + 6), t, font=font, fill=(74, 58, 46, 255))
+sheet.save(sys.argv[3])
+print('wrote', sys.argv[3])
+PY
+python3 - "$TMP/turn.rgba" "$TMP/turn.txt" OdinsCoin/docs/turnaround.png <<'PY'
 import struct, sys
 from PIL import Image, ImageDraw, ImageFont
 data = open(sys.argv[1], 'rb').read()

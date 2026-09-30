@@ -338,6 +338,8 @@ namespace OdinsCoin
             public Vector3 localPosition;
             /// <summary>Built but switched off at the start (alternative faces, for example).</summary>
             public bool hidden;
+            /// <summary>How the joint is turned at rest, in degrees (a spear held upright, a sword pointing down).</summary>
+            public Vector3 restEuler;
         }
 
         /// <summary>Whether a joint, or any joint it hangs from, starts switched off.</summary>

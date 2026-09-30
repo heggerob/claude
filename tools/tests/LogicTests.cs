@@ -36,6 +36,7 @@ public static class LogicTests
         StickAnimTests();
         ClothWindTests();
         FaceTests();
+        RestTests();
         SkinTests();
         CombatTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
@@ -816,6 +817,20 @@ public static class LogicTests
         var cape = SwingSpring.For(SwingKind.Cape);
         for (int i = 0; i < 2000; i++) cape.Step(0.016f, new Vector3(3f, 0f, -6f), Vector3.zero, ClothWind.Flutter(10f, i * 0.016f, 0f), ClothWind.Flutter(10f, i * 0.016f, 1.7f));
         Check(cape.pitch >= cape.minPitch - 0.01f && cape.pitch <= cape.maxPitch + 0.01f && Math.Abs(cape.roll) <= cape.maxRoll + 0.01f, "flutter stays within the cape's limits");
+    }
+
+    static void RestTests()
+    {
+        foreach (WeaponId w in Enum.GetValues(typeof(WeaponId)))
+        {
+            var spec = CharacterSpec.Default(OutfitId.Raider); spec.weapon = w;
+            var m = HeroModel.Build(spec);
+            Vector3 tip = Quaternion.Euler(m.Find(Joints.Weapon).restEuler) * Vector3.forward;
+            // Nothing sticks straight out in front of the hero at rest.
+            Check(w == WeaponId.None || Math.Abs(tip.z) < 0.6f, w + " isn't held out like a lance at rest (" + tip + ")");
+        }
+        Check((Quaternion.Euler(Weapons.RestEuler(WeaponId.Spear)) * Vector3.forward).y > 0.95f, "a spear rests upright");
+        Check((Quaternion.Euler(Weapons.RestEuler(WeaponId.Sword)) * Vector3.forward).y < -0.9f, "a sword rests point-down");
     }
 
     static void FaceTests()
