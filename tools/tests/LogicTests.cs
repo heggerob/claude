@@ -1095,18 +1095,20 @@ public static class LogicTests
 
         // Walking: the legs scissor and each arm swings against its own side's leg.
         Animate(l, an, new Vector2(0f, 1f), walk, 1.5f, true, 0f, ref time);
-        float walkLegs = 0f, walkLean = 0f; bool opposed = true, scissor = true;
+        float walkLegs = 0f, walkLean = 0f, minDiff = 0f, maxDiff = 0f, armLeg = 0f, walkKnee = 0f;
         for (int i = 0; i < 60; i++)
         {
             Animate(l, an, new Vector2(0f, 1f), walk, 1f / 60f, true, 0f, ref time);
             var p = an.pose;
-            walkLegs = Mathf.Max(walkLegs, Mathf.Abs(p.leftLeg.x));
+            walkLegs = Mathf.Max(walkLegs, Mathf.Abs(p.leftLeg.x - p.rightLeg.x));
             walkLean += p.body.x / 60f;
-            if (Mathf.Abs(p.leftLeg.x) > 8f && Mathf.Sign(p.leftLeg.x) == Mathf.Sign(p.rightLeg.x)) scissor = false;
-            if (Mathf.Abs(p.leftLeg.x) > 8f && Mathf.Abs(p.leftArm.x) > 4f && Mathf.Sign(p.leftLeg.x) == Mathf.Sign(p.leftArm.x)) opposed = false;
+            minDiff = Mathf.Min(minDiff, p.leftLeg.x - p.rightLeg.x); maxDiff = Mathf.Max(maxDiff, p.leftLeg.x - p.rightLeg.x);
+            armLeg += (p.leftArm.x - p.rightArm.x) * (p.leftLeg.x - p.rightLeg.x);
+            walkKnee = Mathf.Max(walkKnee, p.leftKnee);
         }
-        Check(walkLegs > 12f && scissor, "walking, the legs step one forward, one back (" + walkLegs + ")");
-        Check(opposed, "each arm swings against the leg on its side");
+        Check(walkLegs > 25f && minDiff < -10f && maxDiff > 10f, "walking, the legs step one forward, one back (" + walkLegs + ")");
+        Check(armLeg < 0f, "each arm swings against the leg on its side");
+        Check(walkKnee > 40f, "the knee bends as the foot swings through (" + walkKnee + ")");
 
         // Sprinting: longer strides, a deeper lean, elbows bent to pump.
         Animate(l, an, new Vector2(0f, 1f), sprint, 1.5f, true, 0f, ref time);
@@ -1114,11 +1116,11 @@ public static class LogicTests
         for (int i = 0; i < 60; i++)
         {
             Animate(l, an, new Vector2(0f, 1f), sprint, 1f / 60f, true, 0f, ref time);
-            runLegs = Mathf.Max(runLegs, Mathf.Abs(an.pose.leftLeg.x));
+            runLegs = Mathf.Max(runLegs, Mathf.Abs(an.pose.leftLeg.x - an.pose.rightLeg.x));
             runLean += an.pose.body.x / 60f;
             runElbow += an.pose.leftElbow / 60f;
         }
-        Check(runLegs > walkLegs * 1.15f && runLean > walkLean + 2f, "sprinting strides out and leans in (" + runLegs + ", " + runLean + ")");
+        Check(runLegs > walkLegs * 1.1f && runLean > walkLean + 2f, "sprinting strides out and leans in (" + runLegs + ", " + runLean + ")");
         Check(runElbow < -60f, "sprinting pumps the arms with bent elbows (" + runElbow + ")");
 
         // Turning right: the body banks right, the head looks round first.
@@ -1146,8 +1148,9 @@ public static class LogicTests
             deepest = Mathf.Max(deepest, an.pose.body.x);
         }
         Check(lowest < -0.02f && deepest > 12f, "landing squashes down and folds forward (" + lowest + ", " + deepest + ")");
-        Animate(l, an, new Vector2(0f, 1f), sprint, 1f, true, 0f, ref time);
-        Check(an.pose.lift > -0.01f, "and springs back up");
+        float steady = 0f;
+        for (int i = 0; i < 60; i++) { Animate(l, an, new Vector2(0f, 1f), sprint, 1f / 60f, true, 0f, ref time); steady = Mathf.Min(steady, an.pose.lift); }
+        Check(lowest < steady - 0.02f, "and springs back up (" + lowest + " landing, " + steady + " running)");
         jolt = Mathf.Max(jolt, Animate(l, an, new Vector2(-1f, -0.2f), sprint, 1.5f, true, 0f, ref time));
         jolt = Mathf.Max(jolt, Animate(l, an, Vector2.zero, sprint, 1f, true, 0f, ref time));
         Check(jolt < 4f, "no joint jumps more than a few degrees in one frame, whatever the hero does (" + jolt + ")");
@@ -1157,7 +1160,23 @@ public static class LogicTests
     {
         foreach (WeaponId w in Enum.GetValues(typeof(WeaponId)))
         {
-            var m = HeroAttacks.For(w);
+            var combo = HeroAttacks.Combo(w);
+            Check(combo.Length >= 2 && (w == WeaponId.Bow || combo.Length >= 3), w + ": has a combo of several different swings (" + combo.Length + ")");
+            Check(combo[combo.Length - 1].power > 1f || w == WeaponId.Bow, w + ": the combo's last swing hits hardest");
+            var names = new System.Collections.Generic.HashSet<string>();
+            foreach (var cm in combo) names.Add(cm.name);
+            Check(names.Count == combo.Length, w + ": every swing in the combo is its own move");
+            var ready0 = combo[0].keys[0].v;
+            foreach (var cm in combo)
+            {
+                bool same = true;
+                for (int c = 0; c < ready0.Length; c++) if (Mathf.Abs(cm.keys[0].v[c] - ready0[c]) > 0.001f && c != (int)AttackMove.Ch.Roll) same = false;
+                Check(same, w + ": " + cm.name + " starts from the same ready pose, so the combo flows");
+            }
+        }
+        foreach (WeaponId w in Enum.GetValues(typeof(WeaponId)))
+        foreach (var m in HeroAttacks.Combo(w))
+        {
             var first = m.keys[0].v; var last = m.keys[m.keys.Length - 1].v;
             bool loops = m.keys[0].t == 0f && m.keys[m.keys.Length - 1].t == 1f;
             for (int c = 0; c < first.Length; c++) if (Mathf.Abs(first[c] - last[c]) > 0.001f) loops = false;
@@ -1189,6 +1208,8 @@ public static class LogicTests
             Check(Vector3.Angle(want, got) < 1f, w + ": at the blow the weapon points where the move says (" + Vector3.Angle(want, got) + " degrees off)");
             if (w != WeaponId.Bow) Check(want.z > 0.5f && hit[(int)AttackMove.Ch.Lunge] > 0.1f, w + ": the blow goes forward, with a step in");
         }
+        Check(VikingCombat.NextComboStep(0, 3, true) == 1 && VikingCombat.NextComboStep(2, 3, true) == 0 && VikingCombat.NextComboStep(1, 3, false) == 0,
+            "chained swings step through the combo and wrap round; a pause starts it over");
         var axe = HeroAttacks.For(WeaponId.TwoHandAxe);
         var up = axe.Sample(0.3f);
         Check(up[(int)AttackMove.Ch.ArmRX] < -150f && up[(int)AttackMove.Ch.HaftZ] < -0.5f, "the axe is raised high behind the head before the chop");

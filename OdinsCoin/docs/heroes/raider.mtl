@@ -135,7 +135,7 @@ d 1
 illum 2
 
 newmtl m17
-Kd 0.161 0.105 0.07
+Kd 0.46 0.3 0.17
 Ka 0 0 0
 Ks 0.03 0.03 0.03
 Ns 8
@@ -143,7 +143,7 @@ d 1
 illum 2
 
 newmtl m18
-Kd 0.46 0.3 0.17
+Kd 0.23 0.15 0.1
 Ka 0 0 0
 Ks 0.03 0.03 0.03
 Ns 8
@@ -151,7 +151,7 @@ d 1
 illum 2
 
 newmtl m19
-Kd 0.86 0.77 0.6
+Kd 0.23 0.15 0.1
 Ka 0 0 0
 Ks 0.03 0.03 0.03
 Ns 8
@@ -159,7 +159,7 @@ d 1
 illum 2
 
 newmtl m20
-Kd 0.23 0.15 0.1
+Kd 0.46 0.3 0.17
 Ka 0 0 0
 Ks 0.03 0.03 0.03
 Ns 8
@@ -167,7 +167,7 @@ d 1
 illum 2
 
 newmtl m21
-Kd 0.161 0.105 0.07
+Kd 0.23 0.15 0.1
 Ka 0 0 0
 Ks 0.03 0.03 0.03
 Ns 8
@@ -175,7 +175,7 @@ d 1
 illum 2
 
 newmtl m22
-Kd 0.46 0.3 0.17
+Kd 0.27 0.26 0.26
 Ka 0 0 0
 Ks 0.03 0.03 0.03
 Ns 8
@@ -183,70 +183,6 @@ d 1
 illum 2
 
 newmtl m23
-Kd 0.86 0.77 0.6
-Ka 0 0 0
-Ks 0.03 0.03 0.03
-Ns 8
-d 1
-illum 2
-
-newmtl m24
-Kd 0.23 0.15 0.1
-Ka 0 0 0
-Ks 0.03 0.03 0.03
-Ns 8
-d 1
-illum 2
-
-newmtl m25
-Kd 0.46 0.3 0.17
-Ka 0 0 0
-Ks 0.03 0.03 0.03
-Ns 8
-d 1
-illum 2
-
-newmtl m26
-Kd 0.23 0.15 0.1
-Ka 0 0 0
-Ks 0.03 0.03 0.03
-Ns 8
-d 1
-illum 2
-
-newmtl m27
-Kd 0.23 0.15 0.1
-Ka 0 0 0
-Ks 0.03 0.03 0.03
-Ns 8
-d 1
-illum 2
-
-newmtl m28
-Kd 0.46 0.3 0.17
-Ka 0 0 0
-Ks 0.03 0.03 0.03
-Ns 8
-d 1
-illum 2
-
-newmtl m29
-Kd 0.23 0.15 0.1
-Ka 0 0 0
-Ks 0.03 0.03 0.03
-Ns 8
-d 1
-illum 2
-
-newmtl m30
-Kd 0.27 0.26 0.26
-Ka 0 0 0
-Ks 0.03 0.03 0.03
-Ns 8
-d 1
-illum 2
-
-newmtl m31
 Kd 0.17 0.16 0.16
 Ka 0 0 0
 Ks 0.03 0.03 0.03
@@ -254,7 +190,7 @@ Ns 8
 d 1
 illum 2
 
-newmtl m32
+newmtl m24
 Kd 0.86 0.77 0.6
 Ka 0 0 0
 Ks 0.03 0.03 0.03
@@ -262,7 +198,7 @@ Ns 8
 d 1
 illum 2
 
-newmtl m33
+newmtl m25
 Kd 0.56 0.43 0.3
 Ka 0 0 0
 Ks 0.03 0.03 0.03
@@ -270,7 +206,7 @@ Ns 8
 d 1
 illum 2
 
-newmtl m34
+newmtl m26
 Kd 0.27 0.26 0.26
 Ka 0 0 0
 Ks 0.03 0.03 0.03
@@ -278,7 +214,7 @@ Ns 8
 d 1
 illum 2
 
-newmtl m35
+newmtl m27
 Kd 0.86 0.77 0.6
 Ka 0 0 0
 Ks 0.03 0.03 0.03
@@ -286,7 +222,7 @@ Ns 8
 d 1
 illum 2
 
-newmtl m36
+newmtl m28
 Kd 0.27 0.26 0.26
 Ka 0 0 0
 Ks 0.03 0.03 0.03
@@ -294,7 +230,7 @@ Ns 8
 d 1
 illum 2
 
-newmtl m37
+newmtl m29
 Kd 0.86 0.77 0.6
 Ka 0 0 0
 Ks 0.03 0.03 0.03
@@ -302,7 +238,7 @@ Ns 8
 d 1
 illum 2
 
-newmtl m38
+newmtl m30
 Kd 0.23 0.15 0.1
 Ka 0 0 0
 Ks 0.03 0.03 0.03
@@ -310,7 +246,7 @@ Ns 8
 d 1
 illum 2
 
-newmtl m39
+newmtl m31
 Kd 0.76 0.57 0.25
 Ka 0 0 0
 Ks 0.03 0.03 0.03
@@ -318,7 +254,7 @@ Ns 8
 d 1
 illum 2
 
-newmtl m40
+newmtl m32
 Kd 0.23 0.15 0.1
 Ka 0 0 0
 Ks 0.03 0.03 0.03
@@ -326,7 +262,7 @@ Ns 8
 d 1
 illum 2
 
-newmtl m41
+newmtl m33
 Kd 0.46 0.3 0.17
 Ka 0 0 0
 Ks 0.03 0.03 0.03
@@ -334,7 +270,7 @@ Ns 8
 d 1
 illum 2
 
-newmtl m42
+newmtl m34
 Kd 0.76 0.57 0.25
 Ka 0 0 0
 Ks 0.03 0.03 0.03
@@ -342,7 +278,7 @@ Ns 8
 d 1
 illum 2
 
-newmtl m43
+newmtl m35
 Kd 0.62 0.17 0.12
 Ka 0 0 0
 Ks 0.03 0.03 0.03
@@ -350,7 +286,7 @@ Ns 8
 d 1
 illum 2
 
-newmtl m44
+newmtl m36
 Kd 0.9 0.84 0.7
 Ka 0 0 0
 Ks 0.03 0.03 0.03
@@ -358,7 +294,7 @@ Ns 8
 d 1
 illum 2
 
-newmtl m45
+newmtl m37
 Kd 0.34 0.35 0.38
 Ka 0 0 0
 Ks 0.03 0.03 0.03
@@ -366,7 +302,7 @@ Ns 8
 d 1
 illum 2
 
-newmtl m46
+newmtl m38
 Kd 0.245 0.252 0.274
 Ka 0 0 0
 Ks 0.03 0.03 0.03
@@ -374,7 +310,7 @@ Ns 8
 d 1
 illum 2
 
-newmtl m47
+newmtl m39
 Kd 0.604 0.609 0.611
 Ka 0 0 0
 Ks 0.03 0.03 0.03
@@ -382,8 +318,88 @@ Ns 8
 d 1
 illum 2
 
-newmtl m48
+newmtl m40
 Kd 0.442 0.455 0.494
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m41
+Kd 0.08 0.065 0.055
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m42
+Kd 0.23 0.15 0.1
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m43
+Kd 0.161 0.105 0.07
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m44
+Kd 0.46 0.3 0.17
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m45
+Kd 0.86 0.77 0.6
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m46
+Kd 0.08 0.065 0.055
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m47
+Kd 0.23 0.15 0.1
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m48
+Kd 0.161 0.105 0.07
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m49
+Kd 0.46 0.3 0.17
+Ka 0 0 0
+Ks 0.03 0.03 0.03
+Ns 8
+d 1
+illum 2
+
+newmtl m50
+Kd 0.86 0.77 0.6
 Ka 0 0 0
 Ks 0.03 0.03 0.03
 Ns 8

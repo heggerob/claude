@@ -83,6 +83,8 @@ namespace OdinsCoin
         public const string Cape = "Cape", Tabard = "Tabard", LeftBraid = "Left Braid", RightBraid = "Right Braid";
         /// <summary>The eyes, one joint per expression (only one is shown at a time).</summary>
         public const string Eyes = "Eyes", EyesHappy = "Eyes Happy", EyesHurt = "Eyes Hurt";
+        /// <summary>The lower legs, from the knee down (boots and all), so the knees bend.</summary>
+        public const string LeftShin = "Left Shin", RightShin = "Right Shin";
 
         public static void Build(VikingModel m, Fit f)
         {
@@ -93,6 +95,8 @@ namespace OdinsCoin
             m.AddJoint(RightArm, Body, new Vector3(f.shoulderX, f.shoulderY, 0f));
             m.AddJoint(LeftForearm, LeftArm, new Vector3(0f, -f.upperArm, 0f));
             m.AddJoint(RightForearm, RightArm, new Vector3(0f, -f.upperArm, 0f));
+            m.AddJoint(LeftShin, LeftLeg, new Vector3(0f, f.knee - f.hip, 0f));
+            m.AddJoint(RightShin, RightLeg, new Vector3(0f, f.knee - f.hip, 0f));
             m.AddJoint(Head, Body, new Vector3(0f, f.neckY, 0f));
             m.AddJoint(Weapon, RightForearm, new Vector3(0f, -f.foreArm - 0.035f * f.s, 0.01f));
             m.AddJoint(OffHand, LeftForearm, new Vector3(0f, -f.foreArm - 0.035f * f.s, 0.01f));

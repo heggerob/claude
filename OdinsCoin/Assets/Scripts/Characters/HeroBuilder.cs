@@ -58,6 +58,8 @@ namespace OdinsCoin
                 shield = joints[Joints.OffHand],
                 leftForearm = joints[Joints.LeftForearm],
                 rightForearm = joints[Joints.RightForearm],
+                leftShin = joints[Joints.LeftShin],
+                rightShin = joints[Joints.RightShin],
                 axeRest = joints[Joints.Weapon].localPosition,
                 scale = Fit.Of(spec.body).s,
             };

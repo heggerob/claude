@@ -26,6 +26,8 @@ namespace OdinsCoin
         public bool twoHanded;
         /// <summary>How far down the haft the fist slides for this move (m on the reference body): a staff swung from the butt, a spear thrust from low on the shaft.</summary>
         public float slide;
+        /// <summary>How hard it hits, against the weapon's basic blow (a combo's last swing hits hardest).</summary>
+        public float power = 1f;
         public Key[] keys;
 
         /// <summary>The move's pose at <paramref name="t"/> (0..1).</summary>
@@ -71,19 +73,189 @@ namespace OdinsCoin
             return new AttackMove.Key { t = t, v = new[] { armRX, armRZ, elbowR, armLX, armLZ, elbowL, haft.x, haft.y, haft.z, roll, yaw, pitch, lunge } };
         }
 
-        static AttackMove axe, sword, spear, bow, staff, fist;
+        static readonly System.Collections.Generic.Dictionary<WeaponId, AttackMove[]> combos = new System.Collections.Generic.Dictionary<WeaponId, AttackMove[]>();
 
-        public static AttackMove For(WeaponId w)
+        /// <summary>The weapon's opening attack.</summary>
+        public static AttackMove For(WeaponId w) { return Combo(w)[0]; }
+
+        /// <summary>
+        /// The weapon's combo: the swings it chains when the attack is pressed again before one finishes (a chop,
+        /// a cleave and a sweep; a slash, a backhand and a thrust...). Each starts and ends in the same ready pose,
+        /// so they flow into each other.
+        /// </summary>
+        public static AttackMove[] Combo(WeaponId w)
         {
+            AttackMove[] c;
+            if (combos.TryGetValue(w, out c)) return c;
             switch (w)
             {
-                case WeaponId.TwoHandAxe: return axe ?? (axe = Axe());
-                case WeaponId.Sword: return sword ?? (sword = Sword());
-                case WeaponId.Spear: return spear ?? (spear = Spear());
-                case WeaponId.Bow: return bow ?? (bow = Bow());
-                case WeaponId.Staff: return staff ?? (staff = Staff());
-                default: return fist ?? (fist = Fist());
+                case WeaponId.TwoHandAxe: c = new[] { Axe(), AxeCleave(), AxeSweep() }; break;
+                case WeaponId.Sword: c = new[] { Sword(), SwordBackhand(), SwordThrust() }; break;
+                case WeaponId.Spear: c = new[] { Spear(), SpearHigh(), SpearSweep() }; break;
+                case WeaponId.Bow: c = new[] { Bow(), BowQuick() }; break;
+                case WeaponId.Staff: c = new[] { Staff(), StaffSweep(), StaffJab() }; break;
+                default: c = new[] { Fist(), FistCross(), FistUppercut() }; break;
             }
+            combos[w] = c;
+            return c;
+        }
+
+        /// <summary>A copy of the ready key at <paramref name="t"/> (to close a move where it began).</summary>
+        static AttackMove.Key Back(AttackMove.Key ready, float t)
+        {
+            return new AttackMove.Key { t = t, v = (float[])ready.v.Clone() };
+        }
+
+        /// <summary>A diagonal cleave: axe swung up over the right shoulder and down across to the left hip.</summary>
+        static AttackMove AxeCleave()
+        {
+            var ready = Axe().keys[0];
+            return new AttackMove {
+                name = "Cleave", weapon = WeaponId.TwoHandAxe, duration = 0.6f, hitAt = 0.52f, twoHanded = true,
+                keys = new[] {
+                    ready,
+                    K(0.3f, -150f, 40f, -70f, -140f, 20f, -70f, new Vector3(0.7f, 0.5f, -0.5f), 0f, 30f, -6f, -0.02f),
+                    K(0.52f, -70f, -10f, -10f, -65f, 5f, -10f, new Vector3(-0.6f, -0.05f, 1f), 0f, -25f, 14f, 0.22f),
+                    K(0.72f, -30f, -30f, -25f, -25f, -10f, -25f, new Vector3(-0.9f, -0.4f, 0.2f), 0f, -35f, 12f, 0.18f),
+                    Back(ready, 1f) } };
+        }
+
+        /// <summary>A great flat sweep: the whole body winds back to the right and swings round to the left.</summary>
+        static AttackMove AxeSweep()
+        {
+            var ready = Axe().keys[0];
+            return new AttackMove {
+                name = "Sweep", weapon = WeaponId.TwoHandAxe, duration = 0.72f, hitAt = 0.55f, twoHanded = true, power = 1.4f,
+                keys = new[] {
+                    ready,
+                    K(0.32f, -90f, 70f, -40f, -85f, 45f, -40f, new Vector3(1f, 0.1f, -0.4f), 0f, 55f, 4f, -0.04f),
+                    K(0.55f, -90f, 0f, -5f, -90f, 0f, -5f, new Vector3(0f, 0.05f, 1f), 0f, -10f, 8f, 0.2f),
+                    K(0.74f, -85f, -60f, -20f, -85f, -50f, -20f, new Vector3(-1f, 0f, 0.1f), 0f, -60f, 6f, 0.12f),
+                    Back(ready, 1f) } };
+        }
+
+        /// <summary>A rising backhand: from low on the left, up and across to the right.</summary>
+        static AttackMove SwordBackhand()
+        {
+            var ready = Sword().keys[0];
+            return new AttackMove {
+                name = "Backhand", weapon = WeaponId.Sword, duration = 0.48f, hitAt = 0.48f,
+                keys = new[] {
+                    ready,
+                    K(0.28f, -40f, -40f, -90f, -55f, -12f, -75f, new Vector3(-0.8f, -0.3f, 0.4f), 90f, -25f, 4f, 0f),
+                    K(0.48f, -95f, 10f, -15f, -55f, -12f, -75f, new Vector3(0.45f, 0.25f, 1f), 90f, 18f, 6f, 0.16f),
+                    K(0.68f, -130f, 35f, -30f, -50f, -12f, -70f, new Vector3(0.8f, 0.7f, 0.2f), 90f, 28f, 0f, 0.1f),
+                    Back(ready, 1f) } };
+        }
+
+        /// <summary>A lunging thrust with the point, a long step in.</summary>
+        static AttackMove SwordThrust()
+        {
+            var ready = Sword().keys[0];
+            return new AttackMove {
+                name = "Lunge", weapon = WeaponId.Sword, duration = 0.55f, hitAt = 0.5f, power = 1.4f,
+                keys = new[] {
+                    ready,
+                    K(0.3f, -20f, 15f, -110f, -60f, -12f, -80f, new Vector3(0.05f, 0.05f, 1f), 0f, 20f, -4f, -0.06f),
+                    K(0.5f, -88f, 0f, 0f, -55f, -12f, -70f, new Vector3(0f, 0f, 1f), 0f, -15f, 14f, 0.42f),
+                    K(0.7f, -82f, 2f, -10f, -55f, -12f, -70f, new Vector3(0f, 0.02f, 1f), 0f, -12f, 12f, 0.34f),
+                    Back(ready, 1f) } };
+        }
+
+        /// <summary>An overhand thrust, spear raised by the ear and driven down and forward.</summary>
+        static AttackMove SpearHigh()
+        {
+            var ready = Spear().keys[0];
+            return new AttackMove {
+                name = "Overhand thrust", weapon = WeaponId.Spear, duration = 0.58f, hitAt = 0.52f, slide = 0.45f,
+                keys = new[] {
+                    ready,
+                    K(0.32f, -160f, 10f, -60f, -60f, -12f, -65f, new Vector3(0f, 0.3f, 1f), 0f, 15f, -6f, -0.04f),
+                    K(0.52f, -120f, 0f, -5f, -55f, -12f, -60f, new Vector3(0f, -0.3f, 1f), 0f, -12f, 12f, 0.32f),
+                    K(0.72f, -110f, 0f, -15f, -55f, -12f, -60f, new Vector3(0f, -0.25f, 1f), 0f, -10f, 10f, 0.26f),
+                    Back(ready, 1f) } };
+        }
+
+        /// <summary>A low sweep with the shaft, to knock the legs from under them.</summary>
+        static AttackMove SpearSweep()
+        {
+            var ready = Spear().keys[0];
+            return new AttackMove {
+                name = "Shaft sweep", weapon = WeaponId.Spear, duration = 0.65f, hitAt = 0.55f, slide = 0.2f, power = 1.3f,
+                keys = new[] {
+                    ready,
+                    K(0.32f, -60f, 55f, -40f, -50f, 20f, -60f, new Vector3(1f, -0.1f, -0.2f), 0f, 45f, 6f, -0.02f),
+                    K(0.55f, -75f, 0f, -10f, -60f, 0f, -40f, new Vector3(0f, -0.35f, 1f), 0f, -10f, 16f, 0.16f),
+                    K(0.75f, -65f, -50f, -25f, -55f, -30f, -50f, new Vector3(-1f, -0.3f, 0.2f), 0f, -45f, 12f, 0.1f),
+                    Back(ready, 1f) } };
+        }
+
+        /// <summary>A quick snap shot: half a draw, loosed from the hip.</summary>
+        static AttackMove BowQuick()
+        {
+            var ready = Bow().keys[0];
+            return new AttackMove {
+                name = "Snap shot", weapon = WeaponId.Bow, duration = 0.55f, hitAt = 0.5f, twoHanded = true, power = 0.8f,
+                keys = new[] {
+                    ready,
+                    K(0.25f, -70f, 0f, -10f, -65f, 10f, -60f, new Vector3(0f, 1f, 0.2f), 0f, -15f, 2f, 0f),
+                    K(0.45f, -72f, 0f, -5f, -72f, 22f, -115f, new Vector3(0f, 1f, 0.18f), 0f, -22f, 2f, 0f),
+                    K(0.52f, -72f, 0f, -5f, -62f, 5f, -55f, new Vector3(0f, 1f, 0.2f), 0f, -20f, 0f, -0.01f),
+                    Back(ready, 1f) } };
+        }
+
+        /// <summary>A sweep of the staff from right to left at chest height.</summary>
+        static AttackMove StaffSweep()
+        {
+            var ready = Staff().keys[0];
+            return new AttackMove {
+                name = "Staff sweep", weapon = WeaponId.Staff, duration = 0.65f, hitAt = 0.55f, slide = 0.95f,
+                keys = new[] {
+                    ready,
+                    K(0.32f, -80f, 65f, -30f, -30f, -8f, -40f, new Vector3(1f, 0.2f, -0.3f), 0f, 40f, 0f, -0.02f),
+                    K(0.55f, -85f, 0f, -5f, -30f, -8f, -40f, new Vector3(0f, 0.1f, 1f), 0f, -10f, 8f, 0.16f),
+                    K(0.75f, -80f, -55f, -20f, -30f, -8f, -40f, new Vector3(-1f, 0.1f, 0.2f), 0f, -40f, 6f, 0.1f),
+                    Back(ready, 1f) } };
+        }
+
+        /// <summary>A two-handed jab with the staff's head, driving it straight out.</summary>
+        static AttackMove StaffJab()
+        {
+            var ready = Staff().keys[0];
+            return new AttackMove {
+                name = "Staff jab", weapon = WeaponId.Staff, duration = 0.55f, hitAt = 0.5f, slide = 0.6f, twoHanded = true, power = 1.3f,
+                keys = new[] {
+                    ready,
+                    K(0.3f, -30f, 10f, -100f, -40f, -10f, -90f, new Vector3(0f, 0.1f, 1f), 0f, 15f, -4f, -0.05f),
+                    K(0.5f, -85f, 0f, 0f, -80f, -5f, -10f, new Vector3(0f, 0f, 1f), 0f, -10f, 12f, 0.3f),
+                    K(0.7f, -80f, 0f, -10f, -75f, -5f, -15f, new Vector3(0f, 0.02f, 1f), 0f, -8f, 10f, 0.24f),
+                    Back(ready, 1f) } };
+        }
+
+        /// <summary>A straight punch with the other hand.</summary>
+        static AttackMove FistCross()
+        {
+            var ready = Fist().keys[0];
+            return new AttackMove {
+                name = "Cross", weapon = WeaponId.None, duration = 0.42f, hitAt = 0.5f, twoHanded = true,
+                keys = new[] {
+                    ready,
+                    K(0.3f, -35f, 10f, -95f, -15f, -12f, -120f, new Vector3(0f, 0f, 1f), 0f, -15f, -3f, -0.03f),
+                    K(0.5f, -35f, 10f, -95f, -88f, 0f, 0f, new Vector3(0f, 0f, 1f), 0f, 18f, 8f, 0.2f),
+                    Back(ready, 1f) } };
+        }
+
+        /// <summary>A rising uppercut to finish.</summary>
+        static AttackMove FistUppercut()
+        {
+            var ready = Fist().keys[0];
+            return new AttackMove {
+                name = "Uppercut", weapon = WeaponId.None, duration = 0.5f, hitAt = 0.52f, power = 1.5f,
+                keys = new[] {
+                    ready,
+                    K(0.32f, 10f, 10f, -110f, -35f, -10f, -95f, new Vector3(0f, 0f, 1f), 0f, 25f, 8f, -0.05f),
+                    K(0.52f, -110f, 5f, -60f, -35f, -10f, -95f, new Vector3(0f, 0f, 1f), 0f, -15f, -6f, 0.14f),
+                    Back(ready, 1f) } };
         }
 
         /// <summary>A great two-handed overhead chop: axe raised high behind the head, brought down with the whole body.</summary>

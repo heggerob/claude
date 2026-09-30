@@ -244,6 +244,8 @@ public static class HeroPreview
         pose.rot[Joints.RightArm] = Quaternion.Euler(f.rightArm);
         pose.rot[Joints.LeftForearm] = Quaternion.Euler(f.leftElbow, 0f, 0f);
         pose.rot[Joints.RightForearm] = Quaternion.Euler(f.rightElbow, 0f, 0f);
+        pose.rot[Joints.LeftShin] = Quaternion.Euler(f.leftKnee, 0f, 0f);
+        pose.rot[Joints.RightShin] = Quaternion.Euler(f.rightKnee, 0f, 0f);
         return pose;
     }
 
@@ -257,8 +259,9 @@ public static class HeroPreview
         var springs = new Dictionary<string, SwingSpring>();
         foreach (var sw in model.Swings) springs[sw.joint] = SwingSpring.For(sw.kind);
         var frames = new List<Shot>();
-        var captures = new[] { 0.2f, 0.55f, 1.4f, 2.5f, 2.9f, 3.28f, 3.55f, 3.72f, 4.9f };
-        var names = new[] { "Standing", "Setting off", "Walking", "Sprinting", "Banking into a turn", "Jump: rising", "Falling", "Landing", "Stopping" };
+        var captures = new[] { 0.2f, 1.30f, 1.39f, 1.48f, 1.57f, 2.40f, 2.47f, 2.54f, 2.61f, 2.9f, 3.2f, 3.38f, 3.56f, 3.66f, 3.76f, 4.9f };
+        var names = new[] { "Standing", "Walk 1", "Walk 2", "Walk 3", "Walk 4", "Run 1", "Run 2", "Run 3", "Run 4", "Banking into a turn",
+            "Jump: push-off", "Tucked at the top", "Reaching down", "Landing", "Soaking it up", "Stopping" };
         var loco = new Locomotion { sprintSpeed = 6.5f };
         loco.Reset(Vector2.zero, 0f);
         var anim = new HeroAnimator();
@@ -292,11 +295,11 @@ public static class HeroPreview
                 // (The jump is drawn at half height so the whole hero stays in the frame.)
                 pose.pos[Joints.Body] += new Vector3(0f, y * 0.5f, 0f);
                 // Side-on, except the turn, which is seen from the front to show the bank and the head looking round.
-                frames.Add(new Shot { label = names[next], model = model, pose = pose, yaw = next == 4 ? 180f : 265f });
+                frames.Add(new Shot { label = names[next], model = model, pose = pose, yaw = next == 9 ? 180f : 265f });
                 next++;
             }
         }
-        const int cellW = 600, cellH = 1080;
+        const int cellW = 480, cellH = 1080;
         int w = cellW * frames.Count, h = cellH;
         var img = new float[w * h * 3];
         for (int i = 0; i < w * h; i++) { img[i * 3] = Paper.r; img[i * 3 + 1] = Paper.g; img[i * 3 + 2] = Paper.b; }
@@ -366,16 +369,16 @@ public static class HeroPreview
             var spec = CharacterSpec.Default(rows[r]);
             var restGrip = Full(spec).Find(Joints.Weapon).localPosition;
             var model = Full(spec);
-            var move = HeroAttacks.For(spec.weapon);
+            var combo = HeroAttacks.Combo(spec.weapon);
             var carry = HeroPose.CarryFor(spec.weapon);
-            float windup = move.keys[1].t, follow = move.keys[move.keys.Length - 2].t;
-            var times = new[] { 0.02f, windup, (windup + move.hitAt) * 0.5f, move.hitAt, follow, 0.95f };
-            var names = new[] { "ready", "wind-up", "swing", "blow", "follow-through", "back" };
             var row = new float[w * cellH * 3];
             for (int i = 0; i < w * cellH; i++) { row[i * 3] = Paper.r; row[i * 3 + 1] = Paper.g; row[i * 3 + 2] = Paper.b; }
             for (int c = 0; c < cols; c++)
             {
-                float t = times[c], wgt = move.Weight(t);
+                // Each swing of the combo: its wind-up, then its blow.
+                if (c / 2 >= combo.Length) { labels.Add(""); continue; }
+                var move = combo[c / 2];
+                float t = c % 2 == 0 ? move.keys[1].t : move.hitAt, wgt = move.Weight(t);
                 var v = move.Sample(t);
                 var pose = new Pose();
                 // Under the move: the weapon carried as when walking (or plain rest).
@@ -399,7 +402,7 @@ public static class HeroPreview
                 pose.rot[Joints.LeftLeg] = Quaternion.Euler(-12f * wgt, 0f, -6f);
                 pose.rot[Joints.RightLeg] = Quaternion.Euler(10f * wgt, 0f, 6f);
                 Render(row, w, cellH, c * cellW, cellW, cellH, new Shot { model = model, pose = pose, yaw = 235f, zoom = 0.66f });
-                labels.Add(move.name + ": " + names[c]);
+                labels.Add((c / 2 + 1) + ". " + move.name + (c % 2 == 0 ? ": wind-up" : ": blow"));
             }
             Array.Copy(row, 0, img, r * w * cellH * 3, row.Length);
         }

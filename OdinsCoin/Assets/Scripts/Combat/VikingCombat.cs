@@ -19,6 +19,9 @@ namespace OdinsCoin
         Viking viking;
         float swingStart = -10f;
         bool swingHit;
+        // Where in the weapon's combo we are, and whether the next swing has been asked for.
+        int comboStep;
+        bool comboQueued;
         float block;
 
         void Awake()
@@ -35,8 +38,16 @@ namespace OdinsCoin
 
         public bool Busy { get { return Health.Dead; } }
 
-        /// <summary>The attack for the weapon in hand (an axe chop, a sword slash, a spear thrust...).</summary>
-        public AttackMove Move { get { return HeroAttacks.For(viking != null && viking.Hero != null ? viking.Hero.weapon : WeaponId.TwoHandAxe); } }
+        WeaponId Weapon { get { return viking != null && viking.Hero != null ? viking.Hero.weapon : WeaponId.TwoHandAxe; } }
+
+        /// <summary>The swing in progress (or the next one): a step of the weapon's combo.</summary>
+        public AttackMove Move { get { var c = HeroAttacks.Combo(Weapon); return c[Mathf.Clamp(comboStep, 0, c.Length - 1)]; } }
+
+        /// <summary>
+        /// Pressing attack again during a swing (from its blow on) queues the combo's next swing, which follows
+        /// straight on; after the last, or a pause, the combo starts over.
+        /// </summary>
+        public static int NextComboStep(int step, int length, bool chained) { return chained ? (step + 1) % length : 0; }
 
         void Update()
         {
@@ -48,7 +59,17 @@ namespace OdinsCoin
             bool free = !viking.AtHelm && !viking.Swimming && viking.Carrying == null && !MeadHallUI.IsOpenNow && !GameMenu.Blocking && (CoinUI.Instance == null || !CoinUI.Instance.IsOpen);
             Blocking = free && GameInput.BlockHeld();
             var move = Move;
-            if (free && !Blocking && GameInput.AttackPressed() && Time.time - swingStart > move.duration) { swingStart = Time.time; swingHit = false; Sfx.At(SfxId.AxeSwing, transform.position + Vector3.up, 0.6f, 0.12f); }
+            float elapsed = Time.time - swingStart;
+            bool swinging = elapsed < move.duration;
+            if (free && !Blocking && GameInput.AttackPressed())
+            {
+                if (swinging) { if (elapsed > move.duration * move.hitAt * 0.8f) comboQueued = true; }
+                // Just after a swing there's still a moment to carry the combo on; later it starts over.
+                else StartSwing(NextComboStep(comboStep, HeroAttacks.Combo(Weapon).Length, swingStart > 0f && elapsed < move.duration + 0.35f));
+            }
+            // The queued swing starts as this one finishes its follow-through.
+            if (swinging && comboQueued && elapsed >= move.duration * 0.86f) StartSwing(NextComboStep(comboStep, HeroAttacks.Combo(Weapon).Length, true));
+            move = Move;
 
             // The blow lands when the weapon comes down (or the arrow flies) in the move.
             float t = (Time.time - swingStart) / move.duration;
@@ -57,6 +78,15 @@ namespace OdinsCoin
                 swingHit = true;
                 Strike();
             }
+        }
+
+        void StartSwing(int step)
+        {
+            comboStep = step;
+            comboQueued = false;
+            swingStart = Time.time;
+            swingHit = false;
+            Sfx.At(SfxId.AxeSwing, transform.position + Vector3.up, 0.6f, 0.12f);
         }
 
         void Strike()
@@ -72,12 +102,12 @@ namespace OdinsCoin
                 if (saxon.Health.Dead) continue;
                 if (!CombatMath.InArc(transform.position, transform.forward, saxon.transform.position, Reach, Arc)) continue;
                 bool front = CombatMath.FromFront(saxon.transform.position, saxon.transform.forward, transform.position);
-                float dmg = CombatMath.Damage(SwingDamage, fortune.MeleeDamageMultiplier * Upgrades.Current.AxeMultiplier, saxon.Blocking, front);
+                float dmg = CombatMath.Damage(SwingDamage * Move.power, fortune.MeleeDamageMultiplier * Upgrades.Current.AxeMultiplier, saxon.Blocking, front);
                 saxon.Health.TakeDamage(dmg, transform.position);
                 Sfx.At(saxon.Blocking && front ? SfxId.ShieldBlock : SfxId.AxeHit, saxon.transform.position + Vector3.up);
                 saxon.Stagger(transform.position);
             }
-            float blow = SwingDamage * fortune.MeleeDamageMultiplier * Upgrades.Current.AxeMultiplier;
+            float blow = SwingDamage * Move.power * fortune.MeleeDamageMultiplier * Upgrades.Current.AxeMultiplier;
             // Jörmungandr's head, while it lies stunned on the gunwale.
             var serpent = Serpent.Instance;
             if (serpent != null && serpent.HeadInReach(transform.position, transform.forward, Reach, Arc) && serpent.TakeHit(blow))

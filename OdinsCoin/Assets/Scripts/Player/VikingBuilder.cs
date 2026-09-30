@@ -14,6 +14,8 @@ namespace OdinsCoin
             public Transform root, body, head, leftLeg, rightLeg, leftArm, rightArm, axe, shield;
             /// <summary>Only the storybook heroes have elbows; null on the old smooth Vikings.</summary>
             public Transform leftForearm, rightForearm;
+            /// <summary>The lower legs (heroes only): the knees bend.</summary>
+            public Transform leftShin, rightShin;
             /// <summary>Where the weapon sits in the fist at rest, and the body's size (heroes only).</summary>
             public Vector3 axeRest;
             public float scale = 1f;

@@ -411,6 +411,48 @@ namespace OdinsCoin
         }
 
         /// <summary>
+        /// Split a limb at a joint (a knee): every triangle of <paramref name="from"/>'s pieces lying below
+        /// <paramref name="belowY"/> (in <paramref name="from"/>'s space, judged by its centre) moves to
+        /// <paramref name="to"/>, re-based on <paramref name="to"/>'s position, so it bends with that joint.
+        /// </summary>
+        public void SplitJoint(string from, string to, float belowY)
+        {
+            var offset = Find(to).localPosition;
+            var moved = new List<Piece>();
+            foreach (var p in Pieces)
+            {
+                if (p.joint != from || p.ink) continue;
+                p.mesh.FillUvs();
+                MeshData upper = new MeshData(), lower = new MeshData();
+                var map = new Dictionary<int, int>[] { new Dictionary<int, int>(), new Dictionary<int, int>() };
+                var tris = p.mesh.Triangles;
+                var verts = p.mesh.Vertices;
+                for (int t = 0; t < tris.Count; t += 3)
+                {
+                    float cy = (verts[tris[t]].y + verts[tris[t + 1]].y + verts[tris[t + 2]].y) / 3f;
+                    int side = cy < belowY ? 1 : 0;
+                    var m = side == 1 ? lower : upper;
+                    for (int k = 0; k < 3; k++)
+                    {
+                        int src = tris[t + k], dst;
+                        if (!map[side].TryGetValue(src, out dst))
+                        {
+                            dst = m.Vertices.Count;
+                            m.Vertices.Add(side == 1 ? verts[src] - offset : verts[src]);
+                            m.Uvs.Add(p.mesh.Uvs[src]);
+                            map[side][src] = dst;
+                        }
+                        m.Triangles.Add(dst);
+                    }
+                }
+                p.mesh = upper;
+                if (lower.Triangles.Count > 0) moved.Add(new Piece { joint = to, color = p.color, mesh = lower, outline = p.outline, surface = p.surface });
+            }
+            Pieces.RemoveAll(p => p.joint == from && !p.ink && p.mesh.Triangles.Count == 0);
+            Pieces.AddRange(moved);
+        }
+
+        /// <summary>
         /// The ink line around everything: for each piece a slightly inflated copy turned inside out, so only its
         /// far side draws, peeking out around the edges (the "inverted hull" trick; needs no special shader).
         /// </summary>
