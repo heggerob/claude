@@ -4,7 +4,7 @@ using UnityEngine;
 namespace OdinsCoin
 {
     /// <summary>
-    /// A Danish raider: a longship with a black-and-red sail and a crew of archers. It comes alongside and
+    /// A Danish raider: a Skerrycutter (small, quick, sailing by the real physics) with a black-and-red sail and a crew of archers. It comes alongside and
     /// shoots, then turns to ram. Sink it by ramming it bow-first at speed or hacking at its strakes with your
     /// axe; it goes down leaving a chest of plunder floating on the waves.
     /// </summary>
@@ -31,7 +31,12 @@ namespace OdinsCoin
 
         public static Raider Spawn(Transform parent, Vector3 position, float heading, Longship target)
         {
-            var ship = Longship.Create(parent, position, heading, new Color(0.12f, 0.1f, 0.1f), new Color(0.6f, 0.12f, 0.1f));
+            var look = new ShipLook();
+            look.sail = new Color(0.12f, 0.1f, 0.1f);
+            look.stripe = new Color(0.6f, 0.12f, 0.1f);
+            look.shieldA = new Color(0.6f, 0.12f, 0.1f);
+            look.dragon = new Color(0.1f, 0.09f, 0.09f);
+            var ship = Longship.Create(parent, position, heading, ShipDesign.Skerrycutter, look);
             ship.gameObject.name = "Raider";
             var r = ship.gameObject.AddComponent<Raider>();
             r.Ship = ship;
@@ -43,7 +48,7 @@ namespace OdinsCoin
             {
                 var a = new GameObject("Archer").transform;
                 a.SetParent(ship.transform, false);
-                a.localPosition = new Vector3(i % 2 == 0 ? -1f : 1f, LongshipBuilder.DeckHeight + 0.05f, -4.5f + i * 2.6f);
+                a.localPosition = new Vector3(i % 2 == 0 ? -1f : 1f, ship.DeckY + 0.05f, -4.5f + i * 2.6f);
                 var dane = NpcHeroes.DanishRaider(i + 31 * (All.Count + 1));
                 r.crew[a] = HeroIdle.Add(a, HeroBuilder.Build(a, dane), dane.weapon);
                 r.archers.Add(a);

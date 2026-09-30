@@ -65,7 +65,7 @@ med ror, seil i vinden og årer.
     ripe og gullstriper, dragehode med horn og tenner i baugen, halekrøll akter, rød-svart stripete råseil med stor
     rune, svarte latinseil, akterkastell med lykter på de store, skjoldrader langs ripa, årerekker og et hengslet ror.
     Flaggskipet har en hall på dekket. Målene kommer fra designet, så utseende og fysikk stemmer overens.
-- [ ] **7. Ekte skipsfysikk:** oppdrift fra skrogets form, motstand i vannet, sideveis grep fra kjølen,
+- [x] **7. Ekte skipsfysikk:** oppdrift fra skrogets form, motstand i vannet, sideveis grep fra kjølen,
   seil som gir kraft etter vinkelen mot den tilsynelatende vinden, ror som bare virker når skipet har fart,
   og årer som tar tak i vannet i takt.
   - Ferdig (`Ship/ShipPhysics.cs`), testet med tall:
@@ -83,7 +83,8 @@ med ror, seil i vinden og årer.
     - Rår brasses rundt mot vinden, så langt riggen tillater, og seilduken samles opp mot råa når seilene tas ned.
     - Hun har dekk du kan gå på, rekker, ror, alteret til Odins mynt, og kan gå på grunn på den ekte havbunnen.
     - Ror du mens du legger roret over, drar yttersiden hardere.
-  - Gjenstår: raiderne seiler fortsatt med den gamle, enklere fysikken.
+  - De danske raiderne seiler nå Skerrycutters (17 m, 21 tonn) med svart-rødt seil og den samme ekte fysikken.
+    Wavewolf er fire ganger så tung, så en ramming fra deg rister dem mye mer enn deres rister deg.
 - [ ] **8. Seiling i praksis:** kryssing mot vinden, rev av seil i storm, ankring, fortøying ved brygga.
 
 ## Merk
