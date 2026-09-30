@@ -638,9 +638,25 @@ namespace OdinsCoin
                 trim[i] += new Vector3(trim[i].x, 0f, trim[i].z).normalized * 0.014f * s;
             }
             d.Add(Joints.Body, d.pal.emblem, CharacterKit.ZigZag(trim, Vector3.up, 0.02f * s, 0.004f * s), false);
+            // A pale border running down both long edges of the drape, like the woven trim in the concept art.
+            foreach (int c in new[] { 0, cols - 1 })
+            {
+                var edge = new Vector3[rows - 2];
+                for (int r = 1; r < rows - 1; r++)
+                {
+                    var p = grid[r, c];
+                    int inner = c == 0 ? 1 : cols - 2;
+                    // Just inside the edge, lifted off the cloth towards the outside.
+                    edge[r - 1] = Vector3.Lerp(p, grid[r, inner], 0.25f) + new Vector3(p.x, 0f, p.z).normalized * 0.012f * s;
+                }
+                d.Add(Joints.Body, d.pal.emblem, MeshData.Tube(edge, Fill(edge.Length, 0.009f * s), 5), false);
+                d.Add(Joints.Body, d.pal.emblem, CharacterKit.ZigZag(edge, new Vector3(1f, 0f, 0.6f).normalized, 0.022f * s, 0.0055f * s), false);
+            }
             // Fur along the shoulder where the drape is thrown over.
             d.Add(Joints.Body, d.pal.fur, CharacterKit.FurRing(new Vector3(f.shoulderX * 0.55f, f.shoulderY + 0.02f * s, 0f), f.shoulderX * 0.55f, 0.9f, 0.05f * s, 12, 0.08f * s, d.seed + 53, 0.9f));
         }
+
+        static float[] Fill(int n, float v) { var a = new float[n]; for (int i = 0; i < n; i++) a[i] = v; return a; }
 
         /// <summary>A fur collar round the neck and shoulders, smaller than a full pelt.</summary>
         public static void FurCollar(Dresser d)
