@@ -4,9 +4,9 @@ using UnityEngine;
 namespace OdinsCoin
 {
     /// <summary>
-    /// Odin's ravens. When the favour meter is full you can send one from the altar:
+    /// Odin's ravens. When the favour meter is full, F sends one:
     /// <b>Huginn</b> (thought) flies out and circles over the nearest hidden treasure;
-    /// <b>Muninn</b> (memory) perches on the altar and the next flip is Odin's eye for sure.
+    /// <b>Muninn</b> (memory, sent for at the altar) perches on it and the next stake wins for sure.
     /// </summary>
     public class Ravens : MonoBehaviour
     {

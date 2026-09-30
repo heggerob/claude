@@ -45,8 +45,8 @@ namespace OdinsCoin
             return list;
         }
 
-        /// <summary>The odds now: even, tilted a little your way by each Rune of Luck you've woken.</summary>
-        public static float CurrentOdds { get { return RuneShrines.StakeOdds(Upgrades.Current.Luck); } }
+        /// <summary>The odds now: even, tilted a little your way by each Rune of Luck you've woken, or sure while Muninn sits on the altar.</summary>
+        public static float CurrentOdds { get { return Fortune.Current.NextFlipBlessed ? 1f : RuneShrines.StakeOdds(Upgrades.Current.Luck); } }
 
         /// <summary>How many ravens carry off a lost stake.</summary>
         public const int Swarm = 7;
@@ -86,6 +86,8 @@ namespace OdinsCoin
         {
             f.Flips++;
             if (won) f.HeadsCount++;
+            // Muninn's blessing is spent on this stake.
+            f.NextFlipBlessed = false;
         }
 
         /// <summary>How the one who staked takes it (the altar already chimes or hisses as the coin lands): a grin or a wince.</summary>

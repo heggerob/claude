@@ -155,7 +155,7 @@ namespace OdinsCoin
             int cargo;
             int cargoGold = HomeHarbour.CargoValue(Ship, out cargo);
             GUI.Label(new Rect(x + 10f, y + 6f, 280f, 22f), "<b>" + f.Gold + " gold</b>" + (cargo > 0 ? string.Format("   <size=12>cargo: {0} chest{1} ≈ {2}</size>", cargo, cargo == 1 ? "" : "s", cargoGold) : ""), style);
-            GUI.Label(new Rect(x + 10f, y + 28f, 100f, 22f), f.CanCallRavens ? "<size=12><color=#ffd060>Ravens ready!</color></size>" : "<size=12>Odin's favour</size>", style);
+            GUI.Label(new Rect(x + 10f, y + 28f, 100f, 22f), f.CanCallRavens ? "<size=12><color=#ffd060>Ravens ready [F]</color></size>" : "<size=12>Odin's favour</size>", style);
             GUI.Box(new Rect(x + 110f, y + 34f, 170f, 10f), GUIContent.none);
             var old = GUI.color;
             GUI.color = new Color(1f, 0.8f, 0.3f);

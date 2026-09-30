@@ -264,6 +264,13 @@ public static class LogicTests
             var tallied = new Fortune();
             Stake.Tally(tallied, true); Stake.Tally(tallied, false);
             Check(tallied.Flips == 2 && tallied.HeadsCount == 1, "stakes are counted for the boasting board");
+            var before = Fortune.Current;
+            var blessedFortune = new Fortune { NextFlipBlessed = true };
+            Fortune.SetCurrent(blessedFortune);
+            Check(Stake.CurrentOdds == 1f && Stake.Offer(100, 200).Contains("100%"), "with Muninn on the altar the stake can't lose, and the offer says so");
+            Stake.Tally(blessedFortune, true);
+            Check(!blessedFortune.NextFlipBlessed && Stake.CurrentOdds < 1f, "Muninn's blessing is spent on one stake");
+            Fortune.SetCurrent(before);
             Check(Stake.Foresight(true).Contains("Odin's eye") && Stake.Foresight(false).Contains("serpent"), "the Seer's Foresight tells how the coin will fall");
 
             // The first voyage's hints, one at a time.

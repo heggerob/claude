@@ -157,6 +157,7 @@ namespace OdinsCoin
 
             UpdatePrompt();
             if (GameInput.Pressed(Key.Interact)) Interact();
+            if (GameInput.Pressed(Key.Coin)) CallRavens();
 
             if (AtHelm)
             {
@@ -637,6 +638,24 @@ namespace OdinsCoin
                 else CombatHud.Banner("THE DECK IS BARE", "Odin took everything. Back to the plundering.");
             });
             return true;
+        }
+
+        /// <summary>
+        /// F with a full favour meter: at the altar, send for Muninn (the next stake wins); anywhere else, send
+        /// Huginn to circle over the nearest treasure.
+        /// </summary>
+        void CallRavens()
+        {
+            var ravens = Ravens.Instance;
+            if (ravens == null) return;
+            if (!Fortune.Current.CanCallRavens) { CombatHud.Banner("THE RAVENS WAIT", "Win Odin's favour first: plunder, fight and bring treasure home."); return; }
+            if (OnShip && NearAltar())
+            {
+                if (ravens.SendMuninn(CoinAltar.Instance)) CombatHud.Banner("MUNINN COMES", "Odin's raven sits on the altar: your next stake can't lose.");
+                return;
+            }
+            if (ravens.SendHuginn(transform.position)) CombatHud.Banner("HUGINN FLIES", "Odin's raven circles over the nearest treasure. Follow him.");
+            else CombatHud.Banner("HUGINN FINDS NOTHING", "No treasure left near enough to find.");
         }
 
         bool NearAltar()

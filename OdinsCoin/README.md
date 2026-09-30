@@ -29,14 +29,16 @@ Et 3D vikingspill i Unity: seil langskipet, raid øyer og kast **Odins mynt** om
 | E ved en varde | grave opp en nedgravd skatt (skattekart i plyndrede kister viser hvor) |
 | E ved et landemerke | klatre opp og se utover: området rundt tegnes inn på sjøkartet |
 | E ved alteret om bord | sats kista du bærer (dobbelt eller ingenting), eller trykk to ganger for å satse alt på dekk |
+| F | når Odins gunst er full: ved alteret kommer Munin (neste satsing vinner), ellers viser Hugin vei til de nærmeste skattene |
 | Esc | meny (pause, innstillinger, lagre og avslutte) |
 
 ## Spillet i korte trekk
 
 - **Hjemmefjorden:** Den er trygg. Gunnar på brygga kjøper kister. Bjørn ved methallen selger oppgraderinger (seil, årer, skrog, brynje, øks) og spiller terning.
 - **Odins alter** om bord: sats skatten. Kron løfter kista ett trinn (vanlig, sølv, gull, Odins skatt), og hvert trinn dobler verdien. Mynt betyr at Odin tar den. Du kan også satse alt på dekk i ett kast.
-- **Runer:** Du kan gravere inntil 3 runer i mynten. Skjermen viser alltid oddsen og hvor mye du i snitt får tilbake.
-- **Odins gunst og ravnene:** Når gunsten er full, sirkler Hugin over skatter, og Munin gjør neste kast til kron.
+- **Oddsen:** Den står alltid på skjermen: 50 % som standard, litt bedre for hver Lykkens rune du vekker i en runering (høyst 60 %).
+- **Odins gunst og ravnene:** Når gunsten er full, trykker du F. Ved alteret kommer Munin, og da vinner neste satsing. Ellers flyr Hugin ut og sirkler over de nærmeste skattene.
+- **Å utforske:** landemerker, utsiktspunkter, runeringer, nedgravde skatter med kart, grotter med draugar og tre ravnefjær gjemt rundt hvert sted. Spør folk i byene hva som er nytt.
 - **Farer på havet:** stormer (øs vann), danske vikingskip (ram dem) og Jormungand (hugg den i hodet mens den er bedøvet).
 - Kun spillgull. Aldri ekte penger.
 
