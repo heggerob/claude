@@ -954,7 +954,7 @@ namespace OdinsCoin
             var f = d.fit;
             float s = d.S;
             d.hasSkirt = true;
-            d.skirtTop = f.waist; d.skirtTopR = f.waistR * 0.98f; d.skirtBottom = 0.06f * s; d.skirtBottomR = f.hipR * 2.4f; d.skirtDepth = f.depth + 0.08f;
+            d.skirtTop = f.waist; d.skirtTopR = f.waistR * 0.98f; d.skirtBottom = 0.06f * s; d.skirtBottomR = f.hipR * 1.8f; d.skirtDepth = f.depth + 0.08f;
             d.Add(Joints.Body, d.pal.cloth, CharacterKit.RaggedSkirt(d.skirtTop, d.skirtTopR, d.skirtBottom, d.skirtBottomR, d.skirtDepth, 26, 0.09f * s, d.seed + 61));
         }
 

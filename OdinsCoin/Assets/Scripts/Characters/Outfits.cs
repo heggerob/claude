@@ -134,7 +134,7 @@ namespace OdinsCoin
             { OutfitId.Seer, new Outfit {
                 id = OutfitId.Seer, title = "The Old Seer",
                 palette = () => new Palette {
-                    cloth = new Color(0.2f, 0.22f, 0.27f), clothDark = new Color(0.12f, 0.13f, 0.16f),
+                    cloth = new Color(0.26f, 0.29f, 0.33f), clothDark = new Color(0.14f, 0.15f, 0.18f),
                     cloth2 = new Color(0.7f, 0.6f, 0.44f), hair = new Color(0.9f, 0.88f, 0.82f),
                     leather = new Color(0.46f, 0.34f, 0.22f), leatherDark = new Color(0.25f, 0.18f, 0.12f),
                     parchment = new Color(0.88f, 0.84f, 0.74f), emblem = new Color(0.55f, 0.82f, 1f) },

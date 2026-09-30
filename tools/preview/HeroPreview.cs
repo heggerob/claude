@@ -118,7 +118,7 @@ public static class HeroPreview
         shots.Add(new Shot { label = "The Spear Guard", model = guardModel, pose = guarding, yaw = 202f });
         // The Old Seer: the rune staff upright in her left hand, the right hand at her charms.
         var seer = CharacterSpec.Default(OutfitId.Seer);
-        seer.body = new BodyShape { height = 1.6f, width = 0.95f, gender = Gender.Female };
+        seer.body = new BodyShape { height = 1.7f, width = 0.9f, gender = Gender.Female };
         var sFit = Fit.Of(seer.body);
         var seerModel = WithWeapon(HeroModel.Build(seer), HeroModel.BuildWeapon(seer), Joints.OffHand);
         var augur = new Pose();
