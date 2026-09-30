@@ -1376,8 +1376,9 @@ namespace OdinsCoin
         {
             var f = d.fit;
             float s = d.S;
-            // Over the left shoulder, so the arrows are drawn with the right hand.
-            var at = new Vector3(-0.06f * s, f.chest - 0.02f * s, -f.chestR * f.depth - 0.05f * s);
+            // Over the left shoulder, so the arrows are drawn with the right hand; standing clear of the capelet and
+            // pelt so it shows on the back.
+            var at = new Vector3(-0.06f * s, f.chest - 0.02f * s, -f.chestR * f.depth - 0.13f * s);
             var tilt = Quaternion.Euler(0f, 0f, 28f);
             d.Add(Joints.Body, d.pal.leather, MeshData.Lathe(new[] { new Vector2(0.035f * s, -0.22f * s), new Vector2(0.045f * s, 0.14f * s) }, 10).Transformed(at, tilt, Vector3.one));
             d.Add(Joints.Body, d.pal.leatherDark, MeshData.Lathe(new[] { new Vector2(0.048f * s, 0.1f * s), new Vector2(0.048f * s, 0.14f * s) }, 10).Transformed(at, tilt, Vector3.one), false);
