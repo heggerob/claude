@@ -26,7 +26,7 @@ namespace OdinsCoin
                     ? "At the helm: A/D steer · R raise sail · Q lower / reef sail · W row (sail down) · G anchor / make fast · T faster time · M chart · E let go"
                     : Player != null && Player.Carrying != null
                         ? "Carrying a chest: put it down on deck (E) to stow it, sell it to Gunnar in the Home Fjord"
-                        : "WASD move · Shift run · Ctrl walk · Space jump · LMB attack (again for a combo) · RMB shield · E use / pick up / bail · scroll zoom · Esc menu",
+                        : "WASD move · mouse look · Shift run · Ctrl walk · Space jump · LMB attack (again for a combo) · RMB shield · E use / pick up / bail · V first / third person · Esc menu",
                 SkyClock.Day + 1, ClockText(SkyClock.Hours));
             GUI.Box(new Rect(10, 10, 380, 120), GUIContent.none);
             GUI.Label(new Rect(20, 16, 370, 110), text, style);

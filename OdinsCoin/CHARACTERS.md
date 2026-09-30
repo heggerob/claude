@@ -188,3 +188,9 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
   - **Spydvakt:** Shield Wall gjør at skjoldet stopper nesten alt forfra, piler også. Long Reach gir 35 % lengre rekkevidde.
   - **Seer:** Foresight viser hvordan mynten vil lande før du satser. Ward of Runes gjør at forbannelser går over raskere.
   - **Speider:** Keen Eyes gjør at du ser 50 % lenger gjennom disen. Volley gir buen dobbel skade og lang rekkevidde.
+- [x] **18. Førsteperson (`Core/CameraRig.cs`, se [docs/firstperson.png](docs/firstperson.png)):** spillet spilles nå i førsteperson. Du ser ut gjennom heltens øyne, med sikte midt på skjermen.
+  - **Kamera:** musa snur hodet og kroppen, og du kan se nesten rett opp og ned. Ditt eget hode (ansikt, hår, hatt) tegnes ikke, men kaster fortsatt skygge. Står du på et skip som svinger, svinger blikket med.
+  - **Bevegelse:** du går rett dit du trykker, også sidelengs og baklengs. Du kommer raskt opp i fart og stopper enda raskere. Et hopp beholder farten, og du kan bare styre litt i lufta.
+  - **Kamp:** slagene treffer dit du ser. Våpenarmen er løftet fram i synsfeltet, så øks, sverd, spyd og bue krysser bildet når du slår. Skjoldarmen er løftet mindre, så skjoldet ikke skjuler det som er foran deg.
+  - **Tredjeperson:** V bytter til kameraet bak helten og tilbake, og valget huskes.
+  - [ ] Egne førstepersonsslag, slik at overhoggene også synes i bildet mens du lader opp.

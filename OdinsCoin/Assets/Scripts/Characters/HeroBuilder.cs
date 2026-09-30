@@ -68,6 +68,7 @@ namespace OdinsCoin
                 rightFoot = joints[Joints.RightFoot],
                 axeRest = joints[Joints.Weapon].localPosition,
                 scale = Fit.Of(spec.body).s,
+                eyeHeight = HeroModel.HeadCentre(Fit.Of(spec.body)),
                 bowString = BowStringOf(joints, Fit.Of(spec.body).s),
             };
         }

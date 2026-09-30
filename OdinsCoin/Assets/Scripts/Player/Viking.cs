@@ -33,6 +33,10 @@ namespace OdinsCoin
 
         public VikingBuilder.Parts Parts { get { return parts; } }
         float verticalSpeed;
+        /// <summary>In first person you move in any direction while facing where you look: this is that motion.</summary>
+        Vector3 strafe;
+        /// <summary>How quickly you get up to speed and stop in first person (m/s²), and how little you can steer in the air.</summary>
+        public const float StrafeAccel = 24f, StrafeBrake = 30f, StrafeAirAccel = 3f;
         float bailAnim;
         float facing;
         /// <summary>Speed, turning and footsteps: turning takes steps, speed builds up and dies down.</summary>
@@ -126,8 +130,10 @@ namespace OdinsCoin
                 Teleport(ship.TransformPoint(shipLocal));
                 float was = facing;
                 facing = ship.eulerAngles.y + shipLocalYaw;
-                // The ship turned under us: so did we.
+                // The ship turned under us: so did we (and, in first person, so did our view).
                 loco.Rotate(Mathf.DeltaAngle(was, facing));
+                var turning = CameraRig.Instance;
+                if (turning != null && turning.FirstPerson && !AtHelm) turning.Turn(Mathf.DeltaAngle(was, facing));
             }
 
             if (combat == null) combat = GetComponent<VikingCombat>();
@@ -192,12 +198,29 @@ namespace OdinsCoin
                 verticalSpeed -= Gravity * dt;
             }
 
-            // Walking, turning and stepping: the body turns by planting its feet, so it never spins on the spot.
             bool footing = Swimming || controller.isGrounded;
-            if (footing) loco.Step(new Vector2(move.x, move.z), speed, dt);
-            else loco.Air(new Vector2(move.x, move.z), dt);
-            facing = loco.heading;
-            controller.Move((loco.Velocity + Vector3.up * verticalSpeed) * dt);
+            if (rig != null && rig.FirstPerson)
+            {
+                // First person: you face where you look and move any way at once, forwards, backwards or sideways.
+                strafe = Strafe(strafe, move, speed, footing, dt);
+                facing = rig.Yaw;
+                loco.Face(facing);
+                // The legs still step (for the arms, the body's sway and your shadow) at the speed you're moving.
+                var ahead = new Vector2(Mathf.Sin(facing * Mathf.Deg2Rad), Mathf.Cos(facing * Mathf.Deg2Rad)) * Mathf.Clamp01(move.magnitude);
+                if (footing) loco.Step(ahead, new Vector2(strafe.x, strafe.z).magnitude / Mathf.Max(0.01f, Mathf.Clamp01(move.magnitude)), dt);
+                else loco.Air(ahead, dt);
+                loco.Face(facing);
+                controller.Move((strafe + Vector3.up * verticalSpeed) * dt);
+            }
+            else
+            {
+                // Walking, turning and stepping: the body turns by planting its feet, so it never spins on the spot.
+                if (footing) loco.Step(new Vector2(move.x, move.z), speed, dt);
+                else loco.Air(new Vector2(move.x, move.z), dt);
+                facing = loco.heading;
+                strafe = loco.Velocity;
+                controller.Move((loco.Velocity + Vector3.up * verticalSpeed) * dt);
+            }
             transform.rotation = Quaternion.Euler(0f, facing, 0f);
 
             // 4. Are we standing on the ship? Then remember where, in ship space.
@@ -227,6 +250,21 @@ namespace OdinsCoin
             }
 
             Animate(dt);
+        }
+
+        /// <summary>
+        /// First-person movement: speed up towards the pushed direction and speed, brake harder than you speed up,
+        /// and in the air carry on with only a little steering (a jump keeps its momentum).
+        /// </summary>
+        public static Vector3 Strafe(Vector3 velocity, Vector3 wish, float speed, bool footing, float dt)
+        {
+            wish.y = 0f;
+            if (wish.sqrMagnitude > 1f) wish.Normalize();
+            var target = wish * speed;
+            velocity.y = 0f;
+            if (!footing) return wish.sqrMagnitude < 0.01f ? velocity : Vector3.MoveTowards(velocity, target, StrafeAirAccel * dt);
+            float rate = target.sqrMagnitude > velocity.sqrMagnitude ? StrafeAccel : StrafeBrake;
+            return Vector3.MoveTowards(velocity, target, rate * dt);
         }
 
         void UpdatePrompt()

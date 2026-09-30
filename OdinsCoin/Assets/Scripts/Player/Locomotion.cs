@@ -80,6 +80,15 @@ namespace OdinsCoin
             next = Foot(at, facing, true);
         }
 
+        /// <summary>
+        /// Face <paramref name="facing"/> straight away, keeping the stride going (in first person the body turns
+        /// with your view; the legs keep stepping underneath).
+        /// </summary>
+        public void Face(float facing)
+        {
+            heading = stepFrom = stepTo = desired = facing;
+        }
+
         /// <summary>Turn everything by <paramref name="degrees"/> (the ship under us turned).</summary>
         public void Rotate(float degrees)
         {

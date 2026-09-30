@@ -23,6 +23,8 @@ namespace OdinsCoin
         int comboStep;
         bool comboQueued;
         float block;
+        /// <summary>How far the arms are lifted into view (first person), eased in and out.</summary>
+        float lift;
 
         void Awake()
         {
@@ -139,6 +141,12 @@ namespace OdinsCoin
             // Shield: slides from the back to the front arm while blocking.
             block = Mathf.MoveTowards(block, Blocking ? 1f : 0f, Time.deltaTime * 6f);
             HeroPose.Block(parts, block);
+            // In first person, weapon and shield are held up where you can see them (not while carrying a chest,
+            // at the steering oar or swimming).
+            var rig = CameraRig.Instance;
+            bool raise = rig != null && rig.FirstPerson && !Health.Dead && viking.Carrying == null && !viking.AtHelm && !viking.Swimming;
+            lift = Mathf.MoveTowards(lift, raise ? 1f : 0f, Time.deltaTime * 4f);
+            if (lift > 0f) HeroPose.FirstPersonArms(parts, lift);
             if (Health.Dead) parts.body.localRotation = Quaternion.Euler(-80f, 0f, 0f);
         }
 

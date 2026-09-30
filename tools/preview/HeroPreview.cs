@@ -35,6 +35,12 @@ public static class HeroPreview
         public float zoom = 1f;
         /// <summary>How far the camera looks down (degrees).</summary>
         public float pitch = 8f;
+        /// <summary>A real perspective camera at <see cref="eye"/> (first person), instead of the drawn front view.</summary>
+        public bool perspective;
+        public Vector3 eye;
+        public float fov = 75f;
+        /// <summary>Joints not drawn (the hero's own head, seen from inside it).</summary>
+        public HashSet<string> hide = new HashSet<string>();
     }
 
     static readonly Color Paper = new Color(0.965f, 0.945f, 0.9f);
@@ -237,6 +243,7 @@ public static class HeroPreview
         if (args.Length > 13) ShipSheet(args[12], args[13]);
         if (args.Length > 15) BuildingSheet(args[14], args[15]);
         if (args.Length > 16) HarbourScene(args[16]);
+        if (args.Length > 18) FirstPersonSheet(args[17], args[18]);
         Directory.CreateDirectory(args[2]);
         ExportObj(HeroModel.Build(raider), Path.Combine(args[2], "raider.obj"));
         ExportObj(HeroModel.BuildWeapon(raider), Path.Combine(args[2], "two-hand-axe.obj"));
@@ -517,6 +524,116 @@ public static class HeroPreview
     /// Every weapon's attack (rows) through its key moments (columns): ready, wind-up, the swing, the blow, the
     /// follow-through and back, as the game's HeroAttacks poses them, for docs/attacks.png.
     /// </summary>
+    /// <summary>The hero at moment <paramref name="t"/> of an attack, as the game poses it.</summary>
+    static Pose AttackPose(CharacterSpec spec, VikingModel model, Vector3 restGrip, HeroPose.CarryPose carry, AttackMove move, float t)
+    {
+        float wgt = move.Weight(t);
+        var v = move.Sample(t);
+        var pose = new Pose();
+        // Under the move: the weapon carried as when walking (or plain rest).
+        Quaternion baseArmR = carry.set ? Quaternion.Euler(carry.arm) : Quaternion.identity;
+        Quaternion baseForeR = carry.set ? Quaternion.Euler(carry.forearm) : Quaternion.identity;
+        var armR = Quaternion.Slerp(baseArmR, Quaternion.Euler(v[(int)AttackMove.Ch.ArmRX], 0f, v[(int)AttackMove.Ch.ArmRZ]), wgt);
+        var foreR = Quaternion.Slerp(baseForeR, Quaternion.Euler(v[(int)AttackMove.Ch.ElbowR], 0f, 0f), wgt);
+        float lw = move.twoHanded ? wgt : wgt * 0.5f;
+        pose.rot[Joints.RightArm] = armR;
+        pose.rot[Joints.RightForearm] = foreR;
+        pose.rot[Joints.LeftArm] = Quaternion.Slerp(Quaternion.identity, Quaternion.Euler(v[(int)AttackMove.Ch.ArmLX], 0f, v[(int)AttackMove.Ch.ArmLZ]), lw);
+        pose.rot[Joints.LeftForearm] = Quaternion.Slerp(Quaternion.identity, Quaternion.Euler(v[(int)AttackMove.Ch.ElbowL], 0f, 0f), lw);
+        var baseWeapon = carry.set ? HeroPose.WeaponInFist(carry) : Quaternion.Euler(Weapons.RestEuler(spec.weapon));
+        var haft = new Vector3(v[(int)AttackMove.Ch.HaftX], v[(int)AttackMove.Ch.HaftY], v[(int)AttackMove.Ch.HaftZ]);
+        var inFist = HeroAttacks.WeaponRotation(armR, foreR, haft, v[(int)AttackMove.Ch.Roll]);
+        pose.rot[Joints.Weapon] = Quaternion.Slerp(baseWeapon, inFist, wgt);
+        var baseGrip = restGrip + (carry.set ? HeroPose.GripSlide(carry, Fit.Of(spec.body).s) : Vector3.zero);
+        pose.pos[Joints.Weapon] = Vector3.Lerp(baseGrip, restGrip + inFist * Vector3.forward * (move.slide * Fit.Of(spec.body).s), wgt);
+        pose.rot[Joints.Body] = Quaternion.Euler(v[(int)AttackMove.Ch.Pitch] * wgt, v[(int)AttackMove.Ch.Yaw] * wgt, 0f);
+        pose.pos[Joints.Body] = new Vector3(0f, 0f, v[(int)AttackMove.Ch.Lunge] * wgt);
+        pose.rot[Joints.LeftLeg] = Quaternion.Euler(-12f * wgt, 0f, -6f);
+        pose.rot[Joints.RightLeg] = Quaternion.Euler(10f * wgt, 0f, 6f);
+        // A bow's string drawn back to the hand, as the game does it.
+        if (model.Find(Joints.BowString) != null)
+        {
+            float sc = Fit.Of(spec.body).s;
+            Vector3 fp, bp; Quaternion fr, br;
+            World(model, pose, Joints.LeftForearm, out fp, out fr);
+            World(model, pose, Joints.BowString, out bp, out br);
+            var hand = fp + fr * new Vector3(0f, -Fit.Of(spec.body).foreArm, 0f);
+            var drawPull = BowDraw.Pull(Quaternion.Inverse(br) * (hand - bp), sc, BowDraw.Held(move, t));
+            pose.pull[Joints.BowString] = drawPull;
+            if (drawPull.sqrMagnitude > 1e-8f)
+            {
+                Vector3 nock; Quaternion arrowRot;
+                BowDraw.Arrow(drawPull, sc, out nock, out arrowRot);
+                pose.show.Add(Joints.NockedArrow);
+                pose.pos[Joints.NockedArrow] = nock;
+                pose.rot[Joints.NockedArrow] = arrowRot;
+            }
+        }
+        return pose;
+    }
+
+    /// <summary>
+    /// What you see in first person: out of the hero's eyes (the head hidden, as the game hides it), a Saxon
+    /// guard in front, at the wind-up and at the blow of each hero's first attack.
+    /// </summary>
+    static void FirstPersonSheet(string rgbaPath, string labelPath)
+    {
+        var heroes = new[] { OutfitId.Raider, OutfitId.Jarl, OutfitId.SpearGuard, OutfitId.Scout };
+        const int cellW = 960, cellH = 600;
+        int cols = 2, w = cellW * cols, h = cellH * heroes.Length;
+        var img = new float[w * h * 3];
+        for (int i = 0; i < w * h; i++) { img[i * 3] = Paper.r; img[i * 3 + 1] = Paper.g; img[i * 3 + 2] = Paper.b; }
+        var labels = new List<string> { "cols=" + cols };
+        var foeSpec = NpcHeroes.Saxon(7);
+        var foe = Full(foeSpec);
+        string foeRoot = foe.Joints[0].name;
+        for (int r = 0; r < heroes.Length; r++)
+        {
+            var spec = CharacterSpec.Default(heroes[r]);
+            var model = Full(spec);
+            var restGrip = model.Find(Joints.Weapon).localPosition;
+            var fit = Fit.Of(spec.body);
+            var hide = new HashSet<string>();
+            foreach (var j in model.Joints)
+            {
+                // The head and everything hung from it (hat, hair, braids, eyes).
+                for (var k = j; k != null; k = k.parent != null ? model.Find(k.parent) : null)
+                    if (k.name == Joints.Head) { hide.Add(j.name); break; }
+            }
+            var move = HeroAttacks.Combo(spec.weapon)[0];
+            float windUp = move.keys[1].t;
+            foreach (var k in move.keys) if (k.t < move.hitAt && k.t > 0f) windUp = k.t;
+            for (int c = 0; c < cols; c++)
+            {
+                float t = c == 0 ? windUp : move.hitAt;
+                var pose = AttackPose(spec, model, restGrip, HeroPose.CarryFor(spec.weapon), move, t);
+                HeroPose.FirstPersonArms(pose.rot, 1f);
+                Vector3 hp; Quaternion hr;
+                World(model, pose, Joints.Head, out hp, out hr);
+                var eye = CameraRig.EyePosition(hp, Vector3.up, Vector3.forward, HeroModel.HeadCentre(fit), fit.s);
+                var cell = new float[w * cellH * 3];
+                Array.Copy(img, r * w * cellH * 3, cell, 0, cell.Length);
+                // The foe first (further away), then your own arms and weapon over it.
+                var foePose = new Pose();
+                foePose.pos[foeRoot] = new Vector3(0.3f, 0f, 2.6f);
+                foePose.rot[foeRoot] = Quaternion.Euler(0f, 180f, 0f);
+                Render(cell, w, cellH, c * cellW, cellW, cellH, new Shot { model = foe, pose = foePose, perspective = true, eye = eye, yaw = 0f, pitch = 4f });
+                Render(cell, w, cellH, c * cellW, cellW, cellH, new Shot { model = model, pose = pose, perspective = true, eye = eye, yaw = 0f, pitch = 4f, hide = hide });
+                Array.Copy(cell, 0, img, r * w * cellH * 3, cell.Length);
+                labels.Add(Outfits.Get(heroes[r]).title + ": " + move.name + (c == 0 ? ", wind-up" : ", blow"));
+            }
+        }
+        using (var f = new BinaryWriter(File.Create(rgbaPath)))
+        {
+            f.Write(w); f.Write(h);
+            for (int i = 0; i < w * h; i++)
+            {
+                f.Write((byte)(Mathf.Clamp01(img[i * 3]) * 255)); f.Write((byte)(Mathf.Clamp01(img[i * 3 + 1]) * 255)); f.Write((byte)(Mathf.Clamp01(img[i * 3 + 2]) * 255)); f.Write((byte)255);
+            }
+        }
+        File.WriteAllLines(labelPath, labels.ToArray());
+    }
+
     static void AttackSheet(string rgbaPath, string labelPath)
     {
         var rows = new[] { OutfitId.Raider, OutfitId.Jarl, OutfitId.SpearGuard, OutfitId.Scout, OutfitId.Seer };
@@ -541,48 +658,8 @@ public static class HeroPreview
                 // The wind-up is the last key before the hit: the most drawn-back moment (a bow at full draw).
                 float windUp = move.keys[1].t;
                 foreach (var k in move.keys) if (k.t < move.hitAt && k.t > 0f) windUp = k.t;
-                float t = c % 2 == 0 ? windUp : move.hitAt, wgt = move.Weight(t);
-                var v = move.Sample(t);
-                var pose = new Pose();
-                // Under the move: the weapon carried as when walking (or plain rest).
-                Quaternion baseArmR = carry.set ? Quaternion.Euler(carry.arm) : Quaternion.identity;
-                Quaternion baseForeR = carry.set ? Quaternion.Euler(carry.forearm) : Quaternion.identity;
-                var armR = Quaternion.Slerp(baseArmR, Quaternion.Euler(v[(int)AttackMove.Ch.ArmRX], 0f, v[(int)AttackMove.Ch.ArmRZ]), wgt);
-                var foreR = Quaternion.Slerp(baseForeR, Quaternion.Euler(v[(int)AttackMove.Ch.ElbowR], 0f, 0f), wgt);
-                float lw = move.twoHanded ? wgt : wgt * 0.5f;
-                pose.rot[Joints.RightArm] = armR;
-                pose.rot[Joints.RightForearm] = foreR;
-                pose.rot[Joints.LeftArm] = Quaternion.Slerp(Quaternion.identity, Quaternion.Euler(v[(int)AttackMove.Ch.ArmLX], 0f, v[(int)AttackMove.Ch.ArmLZ]), lw);
-                pose.rot[Joints.LeftForearm] = Quaternion.Slerp(Quaternion.identity, Quaternion.Euler(v[(int)AttackMove.Ch.ElbowL], 0f, 0f), lw);
-                var baseWeapon = carry.set ? HeroPose.WeaponInFist(carry) : Quaternion.Euler(Weapons.RestEuler(spec.weapon));
-                var haft = new Vector3(v[(int)AttackMove.Ch.HaftX], v[(int)AttackMove.Ch.HaftY], v[(int)AttackMove.Ch.HaftZ]);
-                var inFist = HeroAttacks.WeaponRotation(armR, foreR, haft, v[(int)AttackMove.Ch.Roll]);
-                pose.rot[Joints.Weapon] = Quaternion.Slerp(baseWeapon, inFist, wgt);
-                var baseGrip = restGrip + (carry.set ? HeroPose.GripSlide(carry, Fit.Of(spec.body).s) : Vector3.zero);
-                pose.pos[Joints.Weapon] = Vector3.Lerp(baseGrip, restGrip + inFist * Vector3.forward * (move.slide * Fit.Of(spec.body).s), wgt);
-                pose.rot[Joints.Body] = Quaternion.Euler(v[(int)AttackMove.Ch.Pitch] * wgt, v[(int)AttackMove.Ch.Yaw] * wgt, 0f);
-                pose.pos[Joints.Body] = new Vector3(0f, 0f, v[(int)AttackMove.Ch.Lunge] * wgt);
-                pose.rot[Joints.LeftLeg] = Quaternion.Euler(-12f * wgt, 0f, -6f);
-                pose.rot[Joints.RightLeg] = Quaternion.Euler(10f * wgt, 0f, 6f);
-                // A bow's string drawn back to the hand, as the game does it.
-                if (model.Find(Joints.BowString) != null)
-                {
-                    float sc = Fit.Of(spec.body).s;
-                    Vector3 fp, bp; Quaternion fr, br;
-                    World(model, pose, Joints.LeftForearm, out fp, out fr);
-                    World(model, pose, Joints.BowString, out bp, out br);
-                    var hand = fp + fr * new Vector3(0f, -Fit.Of(spec.body).foreArm, 0f);
-                    var drawPull = BowDraw.Pull(Quaternion.Inverse(br) * (hand - bp), sc, BowDraw.Held(move, t));
-                    pose.pull[Joints.BowString] = drawPull;
-                    if (drawPull.sqrMagnitude > 1e-8f)
-                    {
-                        Vector3 nock; Quaternion arrowRot;
-                        BowDraw.Arrow(drawPull, sc, out nock, out arrowRot);
-                        pose.show.Add(Joints.NockedArrow);
-                        pose.pos[Joints.NockedArrow] = nock;
-                        pose.rot[Joints.NockedArrow] = arrowRot;
-                    }
-                }
+                float t = c % 2 == 0 ? windUp : move.hitAt;
+                var pose = AttackPose(spec, model, restGrip, carry, move, t);
                 Render(row, w, cellH, c * cellW, cellW, cellH, new Shot { model = model, pose = pose, yaw = 235f, zoom = 0.66f });
                 labels.Add((c / 2 + 1) + ". " + move.name + (c % 2 == 0 ? ": wind-up" : ": blow"));
             }
@@ -726,6 +803,8 @@ public static class HeroPreview
         for (int i = 0; i < depth.Length; i++) depth[i] = float.MaxValue;
 
         // Soft oval shadow on the ground.
+        float focal = cellH / 2f / Mathf.Tan(shot.fov * 0.5f * Mathf.Deg2Rad);
+        if (!shot.perspective)
         for (int y = 0; y < cellH; y++)
             for (int x = 0; x < cellW; x++)
             {
@@ -754,7 +833,7 @@ public static class HeroPreview
         bool flex = leftLegJ != null && (Mathf.Abs(leftSwing) > 0.2f || Mathf.Abs(rightSwing) > 0.2f);
         foreach (var piece in shot.model.Pieces)
         {
-            if (!Visible(shot, piece.joint)) continue;
+            if (!Visible(shot, piece.joint) || shot.hide.Contains(piece.joint)) continue;
             Vector3 jp; Quaternion jr;
             World(shot.model, shot.pose, piece.joint, out jp, out jr);
             var mesh = piece.mesh;
@@ -787,6 +866,13 @@ public static class HeroPreview
             for (int i = 0; i < n; i++)
             {
                 normal[i] = normal[i].normalized;
+                if (shot.perspective)
+                {
+                    Vector3 pp = inv * (world[i] - shot.eye);
+                    float zz = Mathf.Max(pp.z, 1e-4f);
+                    screen[i] = new Vector3(cx + pp.x / zz * focal, cellH / 2f - pp.y / zz * focal, pp.z);
+                    continue;
+                }
                 Vector3 cp = inv * (world[i] - new Vector3(0f, 0.9f, 0f));
                 screen[i] = new Vector3(cx + cp.x * scale, groundY - (cp.y + 0.9f) * scale, cp.z);
             }
@@ -794,7 +880,13 @@ public static class HeroPreview
             {
                 int a = mesh.Triangles[t], b = mesh.Triangles[t + 1], c = mesh.Triangles[t + 2];
                 Vector3 fn = Vector3.Cross(world[b] - world[a], world[c] - world[a]);
-                if (Vector3.Dot(fn, forward) >= 0f) continue; // back face, culled like Unity
+                if (shot.perspective)
+                {
+                    // Behind the near plane: not drawn. Facing away from the eye: culled.
+                    if (screen[a].z < 0.05f || screen[b].z < 0.05f || screen[c].z < 0.05f) continue;
+                    if (Vector3.Dot(fn, world[a] - shot.eye) >= 0f) continue;
+                }
+                else if (Vector3.Dot(fn, forward) >= 0f) continue; // back face, culled like Unity
                 Tri(img, depth, w, x0, cellW, cellH, screen[a], screen[b], screen[c], normal[a], normal[b], normal[c], mesh.Uvs[a], mesh.Uvs[b], mesh.Uvs[c], tex, InkStyle.HatchAmount(piece.surface), InkStyle.Flatness(piece.surface), piece.color, piece.ink, light, forward);
             }
         }

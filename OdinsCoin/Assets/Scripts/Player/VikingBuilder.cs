@@ -21,6 +21,8 @@ namespace OdinsCoin
             /// <summary>Where the weapon sits in the fist at rest, and the body's size (heroes only).</summary>
             public Vector3 axeRest;
             public float scale = 1f;
+            /// <summary>How far above the head joint (the neck) the eyes are, for the first-person camera.</summary>
+            public float eyeHeight = 0.25f;
         }
 
         public static Parts Build(Transform root, Color tunic)

@@ -132,6 +132,33 @@ namespace OdinsCoin
     public static class HeroPose
     {
         /// <summary>
+        /// In first person the arms are raised forward around the shoulders by this much (degrees), so the weapon
+        /// and bow are held up in front of your eyes and every swing crosses your view. The shield arm is raised
+        /// less, so a shield doesn't hide what's in front of you.
+        /// </summary>
+        public const float FirstPersonRaise = 30f, FirstPersonShieldRaise = 12f;
+
+        /// <summary>The first-person lift for one arm, <paramref name="amount"/> 0..1, on top of whatever it's doing.</summary>
+        public static Quaternion FirstPersonLift(bool weaponArm, float amount)
+        {
+            return Quaternion.Euler(-(weaponArm ? FirstPersonRaise : FirstPersonShieldRaise) * amount, 0f, 0f);
+        }
+
+        /// <summary>The same lift on a pose given as joint rotations (the preview's poses).</summary>
+        public static void FirstPersonArms(System.Collections.Generic.Dictionary<string, Quaternion> rot, float amount)
+        {
+            foreach (var j in new[] { Joints.LeftArm, Joints.RightArm })
+                rot[j] = FirstPersonLift(j == Joints.RightArm, amount) * (rot.ContainsKey(j) ? rot[j] : Quaternion.identity);
+        }
+
+        /// <summary>The same lift on the hero's arm bones in the game.</summary>
+        public static void FirstPersonArms(VikingBuilder.Parts parts, float amount)
+        {
+            if (parts.leftArm != null) parts.leftArm.localRotation = FirstPersonLift(false, amount) * parts.leftArm.localRotation;
+            if (parts.rightArm != null) parts.rightArm.localRotation = FirstPersonLift(true, amount) * parts.rightArm.localRotation;
+        }
+
+        /// <summary>
         /// How much the elbow bends (degrees, negative = forearm forward) for an upper arm swung by
         /// <paramref name="armPitch"/>: always a little, and more as the arm swings forward, like a relaxed walk.
         /// </summary>

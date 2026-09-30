@@ -100,6 +100,25 @@ public static class LogicTests
         SaveGame.Deserialize(SaveGame.Serialize(new Fortune(), clocked), out fg, out fu);
         Check(fu.ClockDay == 12 && Mathf.Abs(fu.ClockHours - 21.75f) < 1e-4f, "the voyage's day and hour survive a save");
 
+        // First person: look out of the hero's eyes, face where you look, move any way at once.
+        Check(CameraRig.ClampPitch(120f, true) == CameraRig.LookLimit && CameraRig.ClampPitch(-120f, true) == -CameraRig.LookLimit
+            && CameraRig.ClampPitch(-40f, false) == -10f, "first person looks almost straight up and down; the orbit camera stays above the horizon");
+        var eyeAt = CameraRig.EyePosition(new Vector3(0f, 1.3f, 0f), Vector3.up, Vector3.forward, 0.3f, 1f);
+        Check(Mathf.Abs(eyeAt.y - 1.6f) < 1e-4f && eyeAt.z > 0f && eyeAt.z < 0.1f, "the eyes sit in the middle of the head, just in front of its centre");
+        var strafeV = Vector3.zero;
+        for (int i = 0; i < 60; i++) strafeV = Viking.Strafe(strafeV, Vector3.right, Viking.WalkSpeed, true, 1f / 60f);
+        Check(Mathf.Abs(strafeV.x - Viking.WalkSpeed) < 0.01f && Mathf.Abs(strafeV.z) < 1e-4f, "in first person you sidestep at full walking speed within a second");
+        var braked = strafeV;
+        for (int i = 0; i < 12; i++) braked = Viking.Strafe(braked, Vector3.zero, Viking.WalkSpeed, true, 1f / 60f);
+        Check(braked.magnitude < 0.01f, "letting go stops you within a fifth of a second");
+        var airV = Viking.Strafe(new Vector3(0f, 0f, 5f), Vector3.back, Viking.WalkSpeed, false, 0.1f);
+        var drift = Viking.Strafe(new Vector3(0f, 0f, 5f), Vector3.zero, Viking.WalkSpeed, false, 0.1f);
+        Check(airV.z > 4.5f && airV.z < 5f && drift.z == 5f, "in the air a jump keeps its momentum, with only a little steering");
+        var facer = new Locomotion();
+        facer.Reset(Vector2.zero, 0f);
+        for (int i = 0; i < 30; i++) { facer.Face(90f); facer.Step(new Vector2(1f, 0f), Viking.WalkSpeed, 1f / 60f); facer.Face(90f); }
+        Check(facer.heading == 90f && facer.Stepping && facer.speed > 1f, "the body faces your view at once while the legs keep stepping");
+
         // Faster time on a quiet passage, never with danger about.
         string why;
         Check(TimeWarp.Allowed(true, 5000f, false, 0f, false, out why) && why == null, "a quiet passage can run fast");
