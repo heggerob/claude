@@ -1336,7 +1336,7 @@ namespace OdinsCoin
                 for (int k = 0; k < 4; k++)
                 {
                     var hang = Vector3.Lerp(beam[2], beam[4], k / 3f) - new Vector3(0f, 0.02f * s, 0f);
-                    Charm(d, hang, (0.1f + 0.06f * (k % 3)) * s, k + 3 * (x > 0f ? 1 : 0), rng);
+                    Charm(d, hang, (0.12f + 0.09f * ((k + (x > 0f ? 1 : 0)) % 3)) * s, k + 3 * (x > 0f ? 1 : 0), rng);
                 }
                 // One long string of charms hanging from the beam clear of the hood down past the shoulder:
                 // a rune disc, a bead, another disc, a tooth. (Kept away from the face, which stays clear.)
