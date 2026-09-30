@@ -779,15 +779,16 @@ namespace OdinsCoin
                 float a = i * 0.32f;
                 d.Add(Joints.Head, d.pal.brass, MeshData.Ellipsoid(new Vector3(Mathf.Sin(a) * r * 1.13f, brim + 0.02f * r, Mathf.Cos(a) * r * 1.15f), Vector3.one * 0.006f * s, 5, 3), false);
             }
-            // A pale rune (like a K with a crossbar) on the front.
-            float rz = r * 1.02f, ry = brim + 0.45f * r;
+            // A big pale rune (like a K with a crossbar) painted on the front, placed on the cloth's surface and
+            // carried by the same offset and tilt as the cloth so it sits on it.
+            float ry = brim + 0.45f * r, rz = r * 1.05f * 1.05f + 0.004f * s;
             var rune = new[] {
                 new[] { new Vector3(-0.02f, -0.025f, 0f), new Vector3(-0.02f, 0.03f, 0f) },
                 new[] { new Vector3(-0.02f, 0.003f, 0f), new Vector3(0.018f, 0.03f, 0f) },
                 new[] { new Vector3(-0.02f, 0.003f, 0f), new Vector3(0.018f, -0.025f, 0f) } };
             foreach (var seg in rune)
-                d.Add(Joints.Head, d.pal.emblem, MeshData.Tube(new[] { new Vector3(0f, ry, rz) + seg[0] * s, new Vector3(0f, ry, rz) + seg[1] * s }, new[] { 0.004f * s, 0.004f * s }, 4)
-                    .Transformed(Vector3.zero, Quaternion.Euler(-12f, 0f, 0f), Vector3.one), false);
+                d.Add(Joints.Head, d.pal.emblem, MeshData.Tube(new[] { new Vector3(0f, ry, rz) + seg[0] * 1.7f * s, new Vector3(0f, ry, rz) + seg[1] * 1.7f * s }, new[] { 0.007f * s, 0.007f * s }, 4)
+                    .Transformed(new Vector3(0f, 0f, -0.03f * r), Quaternion.Euler(-8f, 0f, 0f), Vector3.one), false);
             // The knot at the side behind the ear, and two tails flaring out and down past the chin.
             var knot = new Vector3(r * 0.9f, brim + 0.05f * r, -r * 0.45f);
             d.Add(Joints.Head, d.pal.accent, MeshData.Ellipsoid(knot, new Vector3(0.035f, 0.035f, 0.035f) * s, 8, 5));
@@ -1458,7 +1459,7 @@ namespace OdinsCoin
             string bj = d.Swing(Joints.RightBraid, Joints.Head, path[0], SwingKind.Braid);
             var p0 = path[0];
             for (int i = 0; i < path.Length; i++) path[i] -= p0;
-            d.Add(bj, d.pal.hair, CharacterKit.Braid(path, 0.038f * s));
+            d.Add(bj, d.pal.hair, CharacterKit.Braid(path, 0.05f * s));
             Vector3 end = path[path.Length - 1];
             d.Add(bj, d.pal.leatherDark, MeshData.Ellipsoid(CharacterKit.Along(path, 0.9f), new Vector3(0.03f, 0.013f, 0.03f) * s, 8, 4), false);
             d.Add(bj, d.pal.hair, CharacterKit.Tuft(end, end + new Vector3(0f, -0.07f * s, 0.01f), 0.026f * s));
