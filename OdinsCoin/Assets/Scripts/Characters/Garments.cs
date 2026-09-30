@@ -1386,7 +1386,7 @@ namespace OdinsCoin
         public static void FurCap(Dresser d)
         {
             // A darker, mottled brown fur than the pelt, wrapped with a dark blue cloth band, as in the concept art.
-            var capFur = Color.Lerp(d.pal.fur, d.pal.furShadow, 0.65f);
+            var capFur = Color.Lerp(d.pal.fur, d.pal.furShadow, 0.8f);
             var capBand = Color.Lerp(d.pal.clothDark, new Color(0.14f, 0.19f, 0.3f), 0.75f);
             var f = d.fit;
             float r = f.headR, cy = HeroModel.HeadCentre(f), s = d.S;
@@ -1399,11 +1399,13 @@ namespace OdinsCoin
             d.Add(Joints.Head, d.pal.fur, CharacterKit.FurRing(Vector3.zero, r * 1.12f, 1f, 0.045f * s, 16, 0.03f * s, d.seed + 81, 0.3f).Transformed(new Vector3(0f, brim + 0.025f * s, -0.02f * r), tilt, Vector3.one));
             // Shaggy tufts over the crown in both shades.
             var rng = new System.Random(d.seed + 82);
-            for (int i = 0; i < 10; i++)
+            // Mottled like the concept's pelt hat: pale patches and dark spots among the brown.
+            var spot = VikingModel.Shade(d.pal.furShadow, 0.7f);
+            for (int i = 0; i < 18; i++)
             {
                 float a = 0.9f + (float)rng.NextDouble() * Mathf.PI * 1.1f, e = 0.3f + (float)rng.NextDouble() * 0.9f;
                 var p = new Vector3(Mathf.Cos(a) * Mathf.Cos(e), Mathf.Sin(e), Mathf.Sin(a) * Mathf.Cos(e) * 0.6f) * r * 1.08f;
-                d.Add(Joints.Head, i % 3 == 0 ? d.pal.fur : capFur, MeshData.Ellipsoid(p, new Vector3(0.045f, 0.03f, 0.045f) * s, 7, 4).Transformed(new Vector3(0f, brim, -0.02f * r), tilt, Vector3.one));
+                d.Add(Joints.Head, i % 3 == 0 ? d.pal.fur : i % 3 == 1 ? spot : capFur, MeshData.Ellipsoid(p, new Vector3(0.042f, 0.028f, 0.042f) * s, 7, 4).Transformed(new Vector3(0f, brim, -0.02f * r), tilt, Vector3.one));
             }
         }
 
