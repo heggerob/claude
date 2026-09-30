@@ -17,3 +17,21 @@ Ett punkt om gangen. Hvert punkt kompileres mot den falske Unity-API-en (`tools/
 - [x] **9. Methallen:** selge bytte, oppgradere skipet og utstyret (seil, årer, skrog, brynje, øks), terningspill mot Bjørn og skrytetavle.
 - [x] **10. Farer på havet:** storm (regn, lyn, tåke, vann i skroget og øsing), danske vikingskip med bueskyttere og ramming, og Jormungand.
 - [x] **11. Lyd og meny:** generert lyd (25 lyder, hav/vind/regn-løkker), tittelskjerm, pausemeny, innstillinger og automatisk lagring.
+
+## Del 2: Ny retning (se [DESIGN.md](DESIGN.md))
+
+Sea of Thieves med vikinger og Zelda-utforsking, enkelt og artig. Gamblingen er å satse skatten om bord.
+
+- [ ] **12. Satse skatten ved alteret:** legg en kiste på alteret og kast. Kron gir neste trinn (vanlig, sølv, gull,
+  Odins skatt, dobbel verdi), mynt betyr at Odin tar den. «Alt eller ingenting» satser hele dekket. Oddsen vises
+  alltid. Velsignelser og forbannelser fjernes fra mynten.
+- [ ] **13. Skatten er i fare om bord:** synker skipet, synker kistene og kan dykkes opp igjen der det sank.
+- [ ] **14. Enkel styring:** W og S for seil og A og D for ror ved roret. Anker og fortøyning skjer av seg selv ved
+  brygga. Færre taster og menyer.
+- [ ] **15. Verdensskala** (du bestemmer): krympet verden, eller full størrelse som nå.
+- [ ] **16. Landemerker:** hvert sted får noe høyt eller lyst som synes langt unna.
+- [ ] **17. Utsiktspunkter:** klatre opp og få området tegnet inn på sjøkartet.
+- [ ] **18. Runesteiner:** små gåter eller kamper som gir runer (helse, utholdenhet, bedre odds).
+- [ ] **19. Klatring og utholdenhet.**
+- [ ] **20. Hemmeligheter:** grotter, skattekart og en ravn som leder deg.
+- [ ] **21. Tips i stedet for oppdragsliste:** Bjørn og byfolket forteller rykter om hvor skatten er.
