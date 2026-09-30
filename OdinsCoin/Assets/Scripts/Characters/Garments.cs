@@ -788,7 +788,7 @@ namespace OdinsCoin
         {
             var f = d.fit;
             float r = f.headR, cy = HeroModel.HeadCentre(f), s = d.S;
-            float brim = cy + 0.2f * r;
+            float brim = cy + 0.3f * r;
             d.Add(Joints.Head, d.pal.accent, MeshData.Lathe(new[] {
                 new Vector2(r * 1.07f, brim - 0.05f * r), new Vector2(r * 1.09f, brim + 0.3f * r), new Vector2(r * 1.0f, brim + 0.65f * r),
                 new Vector2(r * 0.75f, brim + 0.92f * r), new Vector2(0.01f, brim + 1.05f * r) }, 18)
@@ -1482,7 +1482,7 @@ namespace OdinsCoin
             string bj = d.Swing(Joints.RightBraid, Joints.Head, path[0], SwingKind.Braid);
             var p0 = path[0];
             for (int i = 0; i < path.Length; i++) path[i] -= p0;
-            d.Add(bj, d.pal.hair, CharacterKit.Braid(path, 0.05f * s));
+            d.Add(bj, d.pal.hair, CharacterKit.Braid(path, 0.038f * s));
             Vector3 end = path[path.Length - 1];
             d.Add(bj, d.pal.leatherDark, MeshData.Ellipsoid(CharacterKit.Along(path, 0.9f), new Vector3(0.03f, 0.013f, 0.03f) * s, 8, 4), false);
             d.Add(bj, d.pal.hair, CharacterKit.Tuft(end, end + new Vector3(0f, -0.07f * s, 0.01f), 0.026f * s));
