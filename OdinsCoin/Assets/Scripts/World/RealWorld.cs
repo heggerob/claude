@@ -153,6 +153,25 @@ namespace OdinsCoin
         readonly Dictionary<Place, List<TreasureChest>> loot = new Dictionary<Place, List<TreasureChest>>();
         float nextCheck;
 
+        public static PlaceSites Instance { get; private set; }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() { Instance = null; }
+
+        void Awake() { Instance = this; }
+
+        /// <summary>
+        /// Take every place down, to be put up again as the ship comes near: after a save is loaded (or a new game
+        /// begun), so hoards dug, caves emptied, feathers found and places plundered in it stay that way.
+        /// </summary>
+        public void Refresh()
+        {
+            foreach (var kv in built) if (kv.Value != null) Destroy(kv.Value.gameObject);
+            built.Clear();
+            loot.Clear();
+            nextCheck = 0f;
+        }
+
         public void Setup(WorldMap map, Transform world, Transform focus)
         {
             this.map = map;

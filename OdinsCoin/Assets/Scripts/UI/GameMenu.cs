@@ -83,6 +83,8 @@ namespace OdinsCoin
             else SaveGame.NewGame();
             // The ship at the jetty is the one the save says you sail.
             if (GameBootstrap.Instance != null) GameBootstrap.Instance.SwapShip(Upgrades.Current.SailingDesign);
+            // The places near home were put up behind the title screen: put them up again as this save has them.
+            if (PlaceSites.Instance != null) PlaceSites.Instance.Refresh();
             // Her crew, as many as the save's oars upgrade has hired.
             if (GameBootstrap.Instance != null && GameBootstrap.Instance.Ship != null) Crew.Create(GameBootstrap.Instance.Ship);
             // And she's where the voyage was left, if that was out at sea.
