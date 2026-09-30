@@ -81,6 +81,14 @@ namespace OdinsCoin
 
         static readonly Color RockA = new Color(0.44f, 0.42f, 0.4f), RockB = new Color(0.34f, 0.33f, 0.32f), Floor = new Color(0.3f, 0.27f, 0.23f);
 
+        /// <summary>Turf drawn at the same scale as the grass round it: its texture laid on from above.</summary>
+        static MeshData Turf(MeshData mesh)
+        {
+            mesh.Uvs.Clear();
+            foreach (var v in mesh.Vertices) mesh.Uvs.Add(new Vector2(v.x, v.z) / TerrainPatch.TextureTile);
+            return mesh;
+        }
+
         /// <summary>The chamber: boulder walls either side and at the back, a rock roof over, a floor, open at the front (+Z).</summary>
         public static VikingModel Model()
         {
@@ -98,10 +106,10 @@ namespace OdinsCoin
             m.Put(RockB, SurfaceKind.Stone, MeshData.Ellipsoid(new Vector3(0f, Height + 0.3f, 0.3f), new Vector3(HalfWidth + 1.4f, 0.8f, 0.9f), 8, 5));
             // Turf heaped over and round it, so it's a mouth in a knoll, not a heap of stones on the grass: a cap over
             // the roof, a shoulder either side of the mouth and a hump behind, all clear of the way in.
-            m.Put(Materials.Grass, SurfaceKind.Plain, MeshData.Ellipsoid(new Vector3(0f, Height + 1.9f, -Depth / 2f - 1.5f), new Vector3(HalfWidth + 4f, 2.2f, Depth / 2f + 3.5f), 12, 6));
+            m.Put(Materials.Grass, SurfaceKind.Grass, Turf(MeshData.Ellipsoid(new Vector3(0f, Height + 1.9f, -Depth / 2f - 1.5f), new Vector3(HalfWidth + 4f, 2.2f, Depth / 2f + 3.5f), 12, 6)));
             foreach (float side in new[] { -1f, 1f })
-                m.Put(Materials.Grass, SurfaceKind.Plain, MeshData.Ellipsoid(new Vector3(side * (HalfWidth + 4.5f), Height * 0.5f, -Depth / 2f), new Vector3(4f, Height * 1.0f, Depth / 2f + 3f), 10, 6));
-            m.Put(Materials.Grass, SurfaceKind.Plain, MeshData.Ellipsoid(new Vector3(0f, Height * 0.5f, -Depth - 4.5f), new Vector3(HalfWidth + 6f, Height * 1.3f, 4f), 10, 6));
+                m.Put(Materials.Grass, SurfaceKind.Grass, Turf(MeshData.Ellipsoid(new Vector3(side * (HalfWidth + 4.5f), Height * 0.5f, -Depth / 2f), new Vector3(4f, Height * 1.0f, Depth / 2f + 3f), 10, 6)));
+            m.Put(Materials.Grass, SurfaceKind.Grass, Turf(MeshData.Ellipsoid(new Vector3(0f, Height * 0.5f, -Depth - 4.5f), new Vector3(HalfWidth + 6f, Height * 1.3f, 4f), 10, 6)));
             // A few rocks breaking through the turf.
             m.Put(RockA, SurfaceKind.Stone, MeshData.Ellipsoid(new Vector3(-HalfWidth - 2.5f, Height * 0.9f, 1.2f), new Vector3(1.1f, 0.8f, 0.9f), 7, 4));
             m.Put(RockB, SurfaceKind.Stone, MeshData.Ellipsoid(new Vector3(HalfWidth + 3.2f, Height * 0.7f, 0.8f), new Vector3(0.9f, 0.7f, 0.8f), 7, 4));
