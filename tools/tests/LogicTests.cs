@@ -666,7 +666,7 @@ public static class LogicTests
             worst = Math.Max(worst, Math.Abs(TerrainDetail.Height(map, px, pz) - map.GroundHeight((float)px, (float)pz)));
         }
         Check(worst < 80f, "made-up detail stays within tens of metres of the real land (" + worst + ")");
-        Check(TerrainDetail.Kind(2000f, 0.1f) == Ground.Snow && TerrainDetail.Kind(-10f, 0f) == Ground.Seabed && TerrainDetail.Kind(0.3f, 0.1f) == Ground.Sand && TerrainDetail.Kind(2f, 0.1f) == Ground.Grass && TerrainDetail.Kind(200f, 1.5f) == Ground.Rock,
+        Check(TerrainDetail.Kind(2000f, 0.1f) == Ground.Snow && TerrainDetail.Kind(-10f, 0f) == Ground.Seabed && TerrainDetail.Kind(0.1f, 0.1f) == Ground.Sand && TerrainDetail.Kind(2f, 0.1f) == Ground.Grass && TerrainDetail.Kind(200f, 1.5f) == Ground.Rock,
             "peaks are snow, the sea floor seabed, beaches sand and cliffs rock");
 
         // The floating origin: shifting keeps global positions and brings the player home.

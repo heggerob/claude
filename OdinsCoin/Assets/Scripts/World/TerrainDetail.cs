@@ -40,7 +40,7 @@ namespace OdinsCoin
             if (realHeight < -0.5f) return Ground.Seabed;
             if (realHeight > 1500f || (realHeight > 1100f && slope < 0.5f)) return Ground.Snow;
             // Only a strip of beach at the waterline: the low farmland of the south is green, not a desert.
-            if (realHeight < 0.5f && slope < 0.35f) return Ground.Sand;
+            if (realHeight < 0.22f && slope < 0.35f) return Ground.Sand;
             if (slope > 0.7f || realHeight > 850f) return Ground.Rock;
             return Ground.Grass;
         }
