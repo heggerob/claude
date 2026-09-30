@@ -63,6 +63,9 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
   - [x] Spilleren er en storybook-helt (`HeroBuilder`). Blokkering løfter skjoldarmen med albue i stedet for å flytte skjoldet.
   - [x] Saksere, danske raidere, Bjørn og Gunnar er helter (`NpcHeroes`): antrekk med egne farger og kropp fra et frø, så ingen er like. De er med nederst i `docs/heroes.png`.
   - [x] Animasjoner for pinnelemmer (`HeroPose`): albuene bøyer seg når armene svinger i gange, knyttes stramt i opptrekket til et hugg og strekkes når slaget treffer. Albuene bøyes også når figuren bærer kister og øser vann, og alle puster sakte når de står.
-- [ ] **12. Skins:** fargesett og varianter for hver figur, kjøpt for gull i methallen, med en figur som snurrer rundt i butikken.
+- [x] **12. Skins:** fargesett og varianter for hver figur, kjøpt for gull i methallen, med en figur som snurrer rundt i butikken. (se [docs/skins.png](docs/skins.png))
+  - Hvert antrekk har sine klassiske farger gratis og to skins å kjøpe (250–700 gull). Til sammen er det 12 skins, og de endrer bare fargene, ikke evnene.
+  - Methallen har fått fanen «Colours»: du kan prøve et skin på den snurrende figuren ved døra, kjøpe det og ta det på. Heltemenyen lar deg bytte mellom skinsene du eier.
+  - Det du har kjøpt, lagres for seg (`SkinLocker`) og blir med til nye seilaser.
 - [ ] **13. Detaljer:** runer og mønstre på stoff, nagler og ringer, kapper som blafrer i vinden, og flere ansiktsuttrykk.
 - [ ] **14. Flere skins:** nye sett (vinter, draugr, gull-jarl, havfolk) og sjeldne skins fra kister.

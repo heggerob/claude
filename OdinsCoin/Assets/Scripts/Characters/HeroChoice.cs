@@ -14,7 +14,10 @@ namespace OdinsCoin
 
         public static CharacterSpec Load()
         {
-            return Parse(PlayerPrefs.GetString(Key, ""));
+            var spec = Parse(PlayerPrefs.GetString(Key, ""));
+            // A skin you don't own (a new install, a hand-edited key) falls back to the classic colours.
+            if (spec.skin != null && !SkinLocker.Current.Owns(spec.skin)) spec.skin = null;
+            return spec;
         }
 
         public static void Save(CharacterSpec spec)
@@ -33,6 +36,7 @@ namespace OdinsCoin
             sb.Append("hair=").Append(spec.hair).Append('\n');
             sb.Append("weapon=").Append(spec.weapon).Append('\n');
             sb.Append("offhand=").Append(spec.offHand).Append('\n');
+            if (spec.skin != null) sb.Append("skin=").Append(spec.skin).Append('\n');
             return sb.ToString();
         }
 
@@ -64,6 +68,7 @@ namespace OdinsCoin
                 else if ((v = Value(line, "hair")) != null) { HairStyle h; if (TryEnum(v, out h)) spec.hair = h; }
                 else if ((v = Value(line, "weapon")) != null) { WeaponId w; if (TryEnum(v, out w)) spec.weapon = w; }
                 else if ((v = Value(line, "offhand")) != null) { OffHandId oh; if (TryEnum(v, out oh)) spec.offHand = oh; }
+                else if ((v = Value(line, "skin")) != null) { var s = Skins.Get(v); if (s != null && s.outfit == spec.outfit && s.cost > 0) spec.skin = s.id; }
             }
             return spec;
         }

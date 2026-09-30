@@ -181,6 +181,7 @@ public static class HeroPreview
         foreach (var s in shots) labels.Add(s.label);
         File.WriteAllLines(args[1], labels.ToArray());
         if (args.Length > 4) MotionStrip(args[3], args[4], jarlModel);
+        if (args.Length > 6) SkinSheet(args[5], args[6]);
         Directory.CreateDirectory(args[2]);
         ExportObj(HeroModel.Build(raider), Path.Combine(args[2], "raider.obj"));
         ExportObj(HeroModel.BuildWeapon(raider), Path.Combine(args[2], "two-hand-axe.obj"));
@@ -238,6 +239,43 @@ public static class HeroPreview
         }
         var labels = new List<string>();
         foreach (var f in frames) labels.Add(f.label);
+        File.WriteAllLines(labelPath, labels.ToArray());
+    }
+
+    /// <summary>Every outfit (columns) in every one of its skins (rows), for docs/skins.png.</summary>
+    static void SkinSheet(string rgbaPath, string labelPath)
+    {
+        var outfits = (OutfitId[])Enum.GetValues(typeof(OutfitId));
+        int rows = 0;
+        foreach (var o in outfits) rows = Math.Max(rows, Skins.For(o).Count);
+        const int cellW = 520, cellH = 900;
+        int cols = outfits.Length, w = cellW * cols, h = cellH * rows;
+        var img = new float[w * h * 3];
+        for (int i = 0; i < w * h; i++) { img[i * 3] = Paper.r; img[i * 3 + 1] = Paper.g; img[i * 3 + 2] = Paper.b; }
+        var labels = new List<string> { "cols=" + cols };
+        for (int r = 0; r < rows; r++)
+        {
+            var row = new float[w * cellH * 3];
+            for (int i = 0; i < w * cellH; i++) { row[i * 3] = Paper.r; row[i * 3 + 1] = Paper.g; row[i * 3 + 2] = Paper.b; }
+            for (int c = 0; c < cols; c++)
+            {
+                var list = Skins.For(outfits[c]);
+                if (r >= list.Count) { labels.Add(""); continue; }
+                var spec = CharacterSpec.Default(outfits[c]);
+                spec.skin = list[r].cost == 0 ? null : list[r].id;
+                Render(row, w, cellH, c * cellW, cellW, cellH, new Shot { label = list[r].name, model = Full(spec), yaw = 195f });
+                labels.Add(Outfits.Get(outfits[c]).title.Replace("The ", "") + ": " + list[r].name + (list[r].cost > 0 ? " (" + list[r].cost + " gold)" : ""));
+            }
+            Array.Copy(row, 0, img, r * w * cellH * 3, row.Length);
+        }
+        using (var f = new BinaryWriter(File.Create(rgbaPath)))
+        {
+            f.Write(w); f.Write(h);
+            for (int i = 0; i < w * h; i++)
+            {
+                f.Write((byte)(Mathf.Clamp01(img[i * 3]) * 255)); f.Write((byte)(Mathf.Clamp01(img[i * 3 + 1]) * 255)); f.Write((byte)(Mathf.Clamp01(img[i * 3 + 2]) * 255)); f.Write((byte)255);
+            }
+        }
         File.WriteAllLines(labelPath, labels.ToArray());
     }
 

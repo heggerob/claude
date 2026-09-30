@@ -19,7 +19,7 @@ namespace OdinsCoin
         {
             var fit = Fit.Of(spec.body);
             var outfit = Outfits.Get(spec.outfit);
-            var d = new Dresser { model = new VikingModel(), fit = fit, pal = spec.palette ?? outfit.palette(), seed = 17 + (int)spec.outfit * 31 };
+            var d = new Dresser { model = new VikingModel(), fit = fit, pal = spec.Paint(), seed = 17 + (int)spec.outfit * 31 };
             Joints.Build(d.model, fit);
             BaseBody(d);
             Hair(d, spec.hair);
@@ -32,7 +32,7 @@ namespace OdinsCoin
         public static VikingModel BuildWeapon(CharacterSpec spec)
         {
             var fit = Fit.Of(spec.body);
-            var d = new Dresser { model = new VikingModel(), fit = fit, pal = spec.palette ?? Outfits.Get(spec.outfit).palette(), seed = 5 };
+            var d = new Dresser { model = new VikingModel(), fit = fit, pal = spec.Paint(), seed = 5 };
             d.model.AddJoint(Joints.Weapon, null, Vector3.zero);
             Weapons.Build(d, spec.weapon);
             d.model.AddOutlines(OutlineWidth * fit.s, d.pal.ink);
@@ -43,7 +43,7 @@ namespace OdinsCoin
         public static VikingModel BuildOffHand(CharacterSpec spec)
         {
             var fit = Fit.Of(spec.body);
-            var d = new Dresser { model = new VikingModel(), fit = fit, pal = spec.palette ?? Outfits.Get(spec.outfit).palette(), seed = 9 };
+            var d = new Dresser { model = new VikingModel(), fit = fit, pal = spec.Paint(), seed = 9 };
             d.model.AddJoint(Joints.OffHand, null, Vector3.zero);
             Weapons.BuildOffHand(d, spec.offHand);
             d.model.AddOutlines(OutlineWidth * fit.s, d.pal.ink);

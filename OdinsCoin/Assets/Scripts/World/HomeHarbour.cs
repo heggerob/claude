@@ -141,6 +141,9 @@ namespace OdinsCoin
             for (int i = 0; i < 3; i++)
                 LongshipBuilder.Deco(PrimitiveType.Cube, k, new Vector3(-0.3f + i * 0.28f, 0.95f, 1f), new Vector3(0.12f, 0.12f, 0.12f), new Color(0.92f, 0.88f, 0.78f));
             Keeper = k;
+            // Beside him, a turning stand showing off the skins he sells.
+            var stand = SkinStand.Create(transform, k.position + k.rotation * new Vector3(2.4f, 0f, 0.6f), k.rotation);
+            stand.Show(HeroChoice.Load());
         }
 
         void BuildTrader()

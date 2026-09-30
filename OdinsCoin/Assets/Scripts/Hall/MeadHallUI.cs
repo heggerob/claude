@@ -15,7 +15,7 @@ namespace OdinsCoin
 
         public static bool IsOpenNow { get { return Instance != null && Instance.open; } }
 
-        enum Tab { Upgrades, Dice, Boasts }
+        enum Tab { Upgrades, Skins, Dice, Boasts }
         enum DiceState { Betting, Rolling, Reroll, Done }
 
         const float RollTime = 1.1f;
@@ -114,10 +114,10 @@ namespace OdinsCoin
             GUILayout.Label("THE MEAD HALL", title);
             GUILayout.Label("<color=#aaaaaa>Bjorn wipes a horn and nods at you.</color>   Gold: <b>" + Fortune.Current.Gold + "</b>", text);
             GUILayout.BeginHorizontal();
-            foreach (Tab t in new[] { Tab.Upgrades, Tab.Dice, Tab.Boasts })
+            foreach (Tab t in new[] { Tab.Upgrades, Tab.Skins, Tab.Dice, Tab.Boasts })
             {
                 var tt = t;
-                string label = (t == tab ? "▶ " : "") + (t == Tab.Upgrades ? "Upgrades" : t == Tab.Dice ? "Dice with Bjorn" : "Boasting board");
+                string label = (t == tab ? "▶ " : "") + (t == Tab.Upgrades ? "Upgrades" : t == Tab.Skins ? "Colours" : t == Tab.Dice ? "Dice with Bjorn" : "Boasting board");
                 GUI.enabled = dice != DiceState.Rolling && dice != DiceState.Reroll;
                 if (GUILayout.Button(label, GUILayout.Height(30))) deferred += () => { tab = tt; if (dice == DiceState.Done) dice = DiceState.Betting; };
                 GUI.enabled = true;
@@ -126,6 +126,7 @@ namespace OdinsCoin
             GUILayout.Space(8);
 
             if (tab == Tab.Upgrades) DrawUpgrades();
+            else if (tab == Tab.Skins) DrawSkins();
             else if (tab == Tab.Dice) DrawDice();
             else DrawBoasts();
 
@@ -175,6 +176,63 @@ namespace OdinsCoin
                 if (GUILayout.Button(string.Format("Have Gunnar fetch the cargo off your ship: {0} chest{1}, {2} gold", count, count == 1 ? "" : "s", gold), GUILayout.Height(30)))
                     deferred += () => { int n; int g = home.SellCargo(Ship, out n); CombatHud.Banner("+" + g + " GOLD", "Gunnar hauls " + n + " chest" + (n == 1 ? "" : "s") + " up the hill."); };
             }
+        }
+
+        /// <summary>
+        /// Skins for the hero you're playing: try one on the turning stand, buy it, wear it. Only colours change;
+        /// the abilities stay the same.
+        /// </summary>
+        void DrawSkins()
+        {
+            var player = GameBootstrap.Instance != null ? GameBootstrap.Instance.Player : null;
+            var hero = player != null && player.Hero != null ? player.Hero : HeroChoice.Load();
+            var locker = SkinLocker.Current;
+            var fortune = Fortune.Current;
+            GUILayout.Label("<color=#aaaaaa>Colours for " + Outfits.Get(hero.outfit).title + ". Look at the stand by the door. Only the look changes.</color>", small);
+            string wearing = hero.skin ?? Skins.ClassicId(hero.outfit);
+            foreach (var skin in Skins.For(hero.outfit))
+            {
+                var s = skin;
+                bool owned = locker.Owns(s), worn = s.id == wearing;
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("<b>" + s.name + "</b>" + (worn ? "  <color=#ffd060>(wearing)</color>" : "") + "\n<size=12><color=#aaaaaa>" + s.blurb + "</color></size>", text);
+                if (GUILayout.Button("Try on", GUILayout.Width(80f), GUILayout.Height(40))) deferred += () => ShowOnStand(hero, s);
+                if (owned)
+                {
+                    GUI.enabled = !worn;
+                    if (GUILayout.Button(worn ? "Worn" : "Wear", GUILayout.Width(110f), GUILayout.Height(40))) deferred += () => Wear(hero, s);
+                }
+                else
+                {
+                    GUI.enabled = locker.CanBuy(s, fortune);
+                    if (GUILayout.Button("Buy\n<size=12>" + s.cost + " gold</size>", GUILayout.Width(110f), GUILayout.Height(40)))
+                        deferred += () => { if (locker.Buy(s, fortune)) { locker.Save(); SaveGame.Save(); Sfx.Play(SfxId.Purchase); Wear(hero, s); CombatHud.Banner(s.name.ToUpper(), "Bjorn's wife has it dyed and stitched while you drink."); } };
+                }
+                GUI.enabled = true;
+                GUILayout.EndHorizontal();
+            }
+        }
+
+        static CharacterSpec WithSkin(CharacterSpec hero, SkinDef s)
+        {
+            var spec = HeroChoice.Parse(HeroChoice.Serialize(hero));
+            spec.palette = null;
+            spec.skin = s.cost == 0 ? null : s.id;
+            return spec;
+        }
+
+        static void ShowOnStand(CharacterSpec hero, SkinDef s)
+        {
+            if (SkinStand.Instance != null) SkinStand.Instance.Show(WithSkin(hero, s));
+        }
+
+        static void Wear(CharacterSpec hero, SkinDef s)
+        {
+            var spec = WithSkin(hero, s);
+            HeroChoice.Save(spec);
+            var player = GameBootstrap.Instance != null ? GameBootstrap.Instance.Player : null;
+            if (player != null) player.Rebuild(spec);
+            ShowOnStand(spec, s);
         }
 
         void DrawDice()

@@ -195,10 +195,15 @@ namespace OdinsCoin
         public BodyShape body = new BodyShape();
         public HairStyle hair = HairStyle.LongBraids;
         public OutfitId outfit = OutfitId.Raider;
-        /// <summary>Null = the outfit's default palette.</summary>
+        /// <summary>Null = the outfit's default palette (or the skin's, if one is set).</summary>
         public Palette palette;
+        /// <summary>A skin id (see <see cref="Skins"/>); null = classic colours. An explicit palette wins over it.</summary>
+        public string skin;
         public WeaponId weapon = WeaponId.None;
         public OffHandId offHand = OffHandId.None;
+
+        /// <summary>The colours this character is painted in: its own palette, else its skin, else the outfit's.</summary>
+        public Palette Paint() { return palette ?? Skins.Paint(outfit, skin); }
 
         public static CharacterSpec Default(OutfitId outfit)
         {

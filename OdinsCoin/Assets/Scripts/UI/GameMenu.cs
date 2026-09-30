@@ -236,6 +236,16 @@ namespace OdinsCoin
 
             if (Stepper("Weapon: " + HeroChoice.Name(editing.weapon), s => editing.weapon = HeroChoice.Cycle(editing.weapon, s))) RebuildPlayer();
             if (Stepper("Off hand: " + HeroChoice.Name(editing.offHand), s => editing.offHand = HeroChoice.Cycle(editing.offHand, s))) RebuildPlayer();
+            // Colours: the skins you own for this outfit (more are sold in the mead hall).
+            var owned = Skins.For(editing.outfit).FindAll(k => SkinLocker.Current.Owns(k));
+            int at = Mathf.Max(0, owned.FindIndex(k => k.id == (editing.skin ?? Skins.ClassicId(editing.outfit))));
+            if (Stepper("Colours: " + owned[at].name, s =>
+            {
+                var next = owned[((at + s) % owned.Count + owned.Count) % owned.Count];
+                editing.skin = next.cost == 0 ? null : next.id;
+            })) RebuildPlayer();
+            if (owned.Count < Skins.For(editing.outfit).Count)
+                GUILayout.Label("<color=#888888>More colours are sold in the mead hall.</color>", small);
 
             GUILayout.FlexibleSpace();
             if (GUILayout.Button("Done  [Esc]", GUILayout.Height(34))) deferred += CloseHero;

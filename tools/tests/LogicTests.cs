@@ -34,6 +34,7 @@ public static class LogicTests
         HeroChoiceTests();
         NpcHeroTests();
         StickAnimTests();
+        SkinTests();
         CombatTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
@@ -806,6 +807,47 @@ public static class LogicTests
         float lo = 99f, hi = -99f;
         for (float t = 0f; t < 10f; t += 0.05f) { float b = HeroPose.Breath(t); lo = Math.Min(lo, b); hi = Math.Max(hi, b); }
         Check(hi > 1f && lo < -1f && hi < 3f && lo > -3f, "breathing rocks the body a degree or two");
+    }
+
+    static void SkinTests()
+    {
+        var ids = new HashSet<string>();
+        foreach (var s in Skins.All) Check(ids.Add(s.id), "skin id " + s.id + " is unique");
+        foreach (OutfitId o in Enum.GetValues(typeof(OutfitId)))
+        {
+            var list = Skins.For(o);
+            Check(list.Count >= 3 && list.Exists(s => s.cost == 0), o + " has classic colours and at least two skins to buy");
+            var classic = Skins.Paint(o, Skins.ClassicId(o));
+            Check(classic.cloth.Equals(Outfits.Get(o).palette().cloth), o + " classic colours are the outfit's own");
+            foreach (var s in list)
+            {
+                if (s.cost == 0) continue;
+                var p = Skins.Paint(o, s.id);
+                bool changed = !p.cloth.Equals(classic.cloth) || !p.accent.Equals(classic.accent) || !p.emblem.Equals(classic.emblem);
+                Check(changed, s.id + " really changes the colours");
+                Check(p.hair.Equals(classic.hair), s.id + " leaves the hair alone");
+                var spec = CharacterSpec.Default(o); spec.skin = s.id;
+                Check(HeroModel.Build(spec).Pieces.Count > 20, s.id + " builds");
+            }
+        }
+        Check(Skins.Paint(OutfitId.Jarl, "raider.ash").cloth.Equals(Outfits.Get(OutfitId.Jarl).palette().cloth), "another outfit's skin gives classic colours");
+
+        var f = new Fortune { Gold = 300 };
+        var locker = SkinLocker.Parse("");
+        var ash = Skins.Get("raider.ash");
+        var blood = Skins.Get("raider.bloodmoon");
+        Check(locker.Owns(Skins.ClassicId(OutfitId.Raider)) && !locker.Owns(ash), "classic is owned, the rest must be bought");
+        Check(!locker.Buy(blood, f) && f.Gold == 300, "can't buy what you can't afford");
+        Check(locker.Buy(ash, f) && f.Gold == 50 && locker.Owns(ash), "buying takes the gold and gives the skin");
+        Check(!locker.Buy(ash, f) && f.Gold == 50, "can't buy the same skin twice");
+        var back = SkinLocker.Parse(locker.Serialize());
+        Check(back.Owns(ash) && !back.Owns(blood), "owned skins survive saving");
+        Check(!SkinLocker.Parse("nonsense,raider.bloodmoon,,").Owns("nonsense") && SkinLocker.Parse("raider.bloodmoon").Owns(blood), "unknown ids are dropped");
+
+        var hero = CharacterSpec.Default(OutfitId.Raider); hero.skin = "raider.ash";
+        Check(HeroChoice.Parse(HeroChoice.Serialize(hero)).skin == "raider.ash", "the hero remembers its skin");
+        var wrong = HeroChoice.Parse("outfit=Jarl\nskin=raider.ash");
+        Check(wrong.skin == null, "a skin for another outfit is ignored");
     }
 
     static float Avg(float tone) { float s = 0f; for (int y = 0; y < 40; y++) for (int x = 0; x < 40; x++) s += InkStyle.Hatch(tone, x, y); return s / 1600f; }
