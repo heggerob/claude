@@ -12,6 +12,14 @@ namespace OdinsCoin
         /// <summary>The deck's height above the waterline (the planks sit a little below the rail).</summary>
         public static float DeckY(ShipDesign d) { return d.freeboard - 0.52f; }
 
+        /// <summary>Where the helmsman stands (ship-local): at the tiller by the stern, a step to starboard.</summary>
+        public static Vector3 HelmStation(ShipDesign d, float deckY)
+        {
+            float k, g, hb;
+            ShipModel.Section(d, (-d.length / 2f + 2.8f) / (d.length / 2f), out k, out g, out hb);
+            return new Vector3(Mathf.Min(1.1f, hb * 0.45f), deckY + 0.05f, -d.length / 2f + 2.8f);
+        }
+
         public static LongshipBuilder.Parts Build(Transform root, ShipDesign d, ShipLook look)
         {
             var parts = new LongshipBuilder.Parts { root = root, deck = root };
@@ -83,10 +91,11 @@ namespace OdinsCoin
                 }
             }
 
-            // The helmsman stands at the tiller, just forward of the sternpost.
+            // The helmsman stands at the tiller, just forward of the sternpost, a step to starboard of the centre
+            // line so the mizzen mast isn't right in front of his eyes.
             var helm = new GameObject("Helm").transform;
             helm.SetParent(root, false);
-            helm.localPosition = new Vector3(0f, deckY + 0.05f, -d.length / 2f + 2.8f);
+            helm.localPosition = HelmStation(d, deckY);
             parts.helm = helm;
 
             // Odin's altar on the deck before the main mast.

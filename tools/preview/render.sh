@@ -278,6 +278,14 @@ w, h = struct.unpack('<ii', data[:8])
 Image.frombytes('RGBA', (w, h), data[8:]).save(sys.argv[2])
 print('wrote', sys.argv[2])
 PY
+python3 - "$TMP/scene.rgba.helm" OdinsCoin/docs/scene-helm.png <<'PY'
+import struct, sys
+from PIL import Image
+data = open(sys.argv[1], 'rb').read()
+w, h = struct.unpack('<ii', data[:8])
+Image.frombytes('RGBA', (w, h), data[8:]).save(sys.argv[2])
+print('wrote', sys.argv[2])
+PY
 fi
 
 # Side-by-side against the concept sheet: reference on the left, our render on the right.

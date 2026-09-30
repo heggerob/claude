@@ -226,6 +226,15 @@ public static class LogicTests
             Check(wallsAlongGate == 2, "the gate side's fence is two pieces with the gap between");
         }
 
+        // The helmsman stands a step to starboard, on the deck, inside the hull.
+        foreach (var design in new[] { ShipDesign.Skerrycutter, ShipDesign.Wavewolf, ShipDesign.Stormbreaker, ShipDesign.Krakenhall })
+        {
+            var station = DesignedShipBuilder.HelmStation(design, DesignedShipBuilder.DeckY(design));
+            float sk, sg, shb;
+            ShipModel.Section(design, station.z / (design.length / 2f), out sk, out sg, out shb);
+            Check(station.x > 0.2f && station.x < shb - 0.3f && station.z < -design.length / 2f + 3f, design.title + ": the helm stands to starboard of the mast, inside the rail, by the stern");
+        }
+
         // Faster time on a quiet passage, never with danger about.
         string why;
         Check(TimeWarp.Allowed(true, 5000f, false, 0f, false, out why) && why == null, "a quiet passage can run fast");

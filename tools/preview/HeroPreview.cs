@@ -573,6 +573,20 @@ public static class HeroPreview
             }
         Render(fp, w, h, 0, w, h, new Shot { model = m, pose = pose, perspective = true, eye = eye, yaw = gaze, pitch = 3f, fov = 70f });
         WriteRgba(rgbaPath + ".fp", fp, w, h);
+
+        // And from the steering oar of the Wavewolf at the jetty, looking forward along her deck.
+        var helmEye = berth + jettyTurn * (DesignedShipBuilder.HelmStation(wolf, DesignedShipBuilder.DeckY(wolf)) + new Vector3(0f, 1.4f, 0f));
+        var helm = new float[w * h * 3];
+        Array.Copy(fp, helm, fp.Length);
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+            {
+                float k = y / (float)h;
+                int i = (y * w + x) * 3;
+                helm[i] = Mathf.Lerp(0.62f, 0.9f, k); helm[i + 1] = Mathf.Lerp(0.74f, 0.9f, k); helm[i + 2] = Mathf.Lerp(0.86f, 0.88f, k);
+            }
+        Render(helm, w, h, 0, w, h, new Shot { model = m, pose = pose, perspective = true, eye = helmEye, yaw = jetty.yaw, pitch = 6f, fov = 75f });
+        WriteRgba(rgbaPath + ".helm", helm, w, h);
     }
 
     static void WriteRgba(string path, float[] img, int w, int h)
