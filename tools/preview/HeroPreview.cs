@@ -175,6 +175,16 @@ public static class HeroPreview
         carrySpear.rot[Joints.RightForearm] = Quaternion.Euler(spearPose.forearm);
         carrySpear.rot[Joints.Weapon] = HeroPose.WeaponInFist(spearPose);
         shots.Add(new Shot { label = "Spear carry (in game)", model = Full(CharacterSpec.Default(OutfitId.SpearGuard)), pose = carrySpear, yaw = 200f });
+        foreach (var carried in new[] { OutfitId.Jarl, OutfitId.Scout })
+        {
+            var spec = CharacterSpec.Default(carried);
+            var cp = HeroPose.CarryFor(spec.weapon);
+            var pose = new Pose();
+            pose.rot[Joints.RightArm] = Quaternion.Euler(cp.arm);
+            pose.rot[Joints.RightForearm] = Quaternion.Euler(cp.forearm);
+            pose.rot[Joints.Weapon] = HeroPose.WeaponInFist(cp);
+            shots.Add(new Shot { label = HeroChoice.Name(spec.weapon) + " carry (in game)", model = Full(spec), pose = pose, yaw = 200f });
+        }
         // Faces: the dash eyes turn to ^ ^ when happy and > < when hurt.
         shots.Add(new Shot { label = "Happy (heads!)", model = HeroModel.Build(CharacterSpec.Default(OutfitId.Scout)), yaw = 182f, face = Expression.Happy });
         shots.Add(new Shot { label = "Hurt", model = HeroModel.Build(CharacterSpec.Default(OutfitId.Navigator)), yaw = 182f, face = Expression.Hurt });

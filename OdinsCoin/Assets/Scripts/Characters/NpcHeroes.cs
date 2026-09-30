@@ -135,7 +135,8 @@ namespace OdinsCoin
         public static void AxeCarry(VikingBuilder.Parts parts, float amount) { Carry(parts, WeaponId.TwoHandAxe, amount); }
 
         /// <summary>How a weapon is carried while walking: upper arm, forearm (local Euler) and the haft's direction in the body.</summary>
-        public struct CarryPose { public Vector3 arm, forearm, haft; public bool set; }
+        public struct CarryPose { public Vector3 arm, forearm, haft; public bool set; /// <summary>Turn about the haft, degrees (to show a blade's flat).</summary>
+            public float roll; }
 
         public static CarryPose CarryFor(WeaponId w)
         {
@@ -145,6 +146,10 @@ namespace OdinsCoin
                 // Long hafts held upright in a fist at chest height, the butt clear of the ground.
                 case WeaponId.Spear: return new CarryPose { set = true, arm = new Vector3(-6f, 0f, 30f), forearm = new Vector3(-50f, 0f, -18f), haft = new Vector3(0.03f, 1f, 0.05f) };
                 case WeaponId.Staff: return new CarryPose { set = true, arm = new Vector3(-6f, 0f, 28f), forearm = new Vector3(-50f, 0f, -16f), haft = new Vector3(0.04f, 1f, 0.08f) };
+                // A sword hangs point-down from a loose fist, angled out and forward like the Jarl's.
+                case WeaponId.Sword: return new CarryPose { set = true, arm = new Vector3(-6f, 0f, 14f), forearm = new Vector3(-24f, 0f, -8f), haft = new Vector3(0.12f, -1f, 0.3f), roll = 90f };
+                // A bow held low at the side, slanting down and back.
+                case WeaponId.Bow: return new CarryPose { set = true, arm = new Vector3(0f, 0f, 10f), forearm = new Vector3(-20f, 0f, 0f), haft = new Vector3(0.35f, 0.75f, -0.4f) };
                 default: return new CarryPose();
             }
         }
@@ -156,7 +161,7 @@ namespace OdinsCoin
             // Upright things turn their flat side (a pennant, a rune stone) out to the right; others face forward.
             Vector3 side = Mathf.Abs(haft.y) > 0.8f ? Vector3.back : Vector3.forward;
             Quaternion inBody = Quaternion.LookRotation(haft, Vector3.Cross(side, haft));
-            return Quaternion.Inverse(Quaternion.Euler(p.arm) * Quaternion.Euler(p.forearm)) * inBody;
+            return Quaternion.Inverse(Quaternion.Euler(p.arm) * Quaternion.Euler(p.forearm)) * inBody * Quaternion.AngleAxis(p.roll, Vector3.forward);
         }
 
         /// <summary>Carry the hero's weapon the way it's meant to be carried (if it has a carry pose).</summary>

@@ -836,6 +836,11 @@ public static class LogicTests
         Check(haft.y > 0.2f && haft.z < -0.3f && haft.x < -0.7f, "the carried axe lies up and back over the shoulder (" + haft + ")");
         Vector3 fist = Quaternion.Euler(HeroPose.AxeCarryArm) * (Vector3.down + Quaternion.Euler(HeroPose.AxeCarryForearm) * Vector3.down);
         Check(fist.y > -0.6f, "the carrying fist comes up towards the shoulder (" + fist + ")");
+        {
+            var sw = HeroPose.CarryFor(WeaponId.Sword);
+            Vector3 down = Quaternion.Euler(sw.arm) * Quaternion.Euler(sw.forearm) * HeroPose.WeaponInFist(sw) * Vector3.forward;
+            Check(down.y < -0.8f, "a carried sword hangs point-down (" + down + ")");
+        }
         foreach (var w in new[] { WeaponId.Spear, WeaponId.Staff })
         {
             var p = HeroPose.CarryFor(w);

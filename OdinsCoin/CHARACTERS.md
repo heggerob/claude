@@ -71,7 +71,7 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
     - **Speider:** en vifte av piler over skulderen.
     - **Navigatør:** lengre og fyldigere kappe bak.
   - Til runde 8:
-    - Sverd og bue trenger også egne bærestillinger i spillet.
+    - [x] Sverd og bue har egne bærestillinger: sverdet henger med spissen ned og den flate siden ut, og buen holdes lavt og på skrå. Se `docs/heroes.png`.
     - [x] Hanskene er store, med knoker, tommel og en utsvingt mansjett med lys søm, som i bildet.
 - [x] **9. Bevegelse i plaggene:** (se [docs/motion.png](docs/motion.png)) kapper, skjørt, fletter, pels og vimpler svinger og henger etter når figuren går, snur og hugger (enkel fysikk med fjærer).
 - [ ] **10. Tegneserie-look på alt:** tusj-kanter på skipet, øyene, trærne, husene og havet, skravur med blyant eller tusj i skyggene, og papirkorn over hele bildet.
