@@ -1244,9 +1244,12 @@ namespace OdinsCoin
             float r = f.headR, cy = HeroModel.HeadCentre(f), s = d.S;
             float brim = cy + 0.2f * r;
             var tilt = Quaternion.Euler(-6f, 0f, 12f);
-            d.Add(Joints.Head, d.pal.clothDark, MeshData.Dome(Vector3.zero, new Vector3(r * 1.1f, r * 1.05f, r * 1.1f), 16, 6).Transformed(new Vector3(0f, brim, -0.02f * r), tilt, Vector3.one));
+            // A fur hat (pelt side out) with a dark cloth band wound slantwise across it, as in the concept art.
+            d.Add(Joints.Head, d.pal.fur, MeshData.Dome(Vector3.zero, new Vector3(r * 1.1f, r * 1.05f, r * 1.1f), 16, 6).Transformed(new Vector3(0f, brim, -0.02f * r), tilt, Vector3.one));
+            d.Add(Joints.Head, d.pal.clothDark, CharacterKit.Band(0.38f * r, 0.42f * r, r * 1.09f, 1f, 20)
+                .Transformed(new Vector3(0f, brim, -0.02f * r), tilt * Quaternion.Euler(8f, 0f, -24f), Vector3.one));
             d.Add(Joints.Head, d.pal.fur, CharacterKit.FurRing(Vector3.zero, r * 1.12f, 1f, 0.045f * s, 16, 0.03f * s, d.seed + 81, 0.3f).Transformed(new Vector3(0f, brim + 0.025f * s, -0.02f * r), tilt, Vector3.one));
-            // Shaggy fur over the crown, leaving dark cloth showing on one side.
+            // Shaggy tufts over the crown in both shades.
             var rng = new System.Random(d.seed + 82);
             for (int i = 0; i < 10; i++)
             {
@@ -1262,7 +1265,7 @@ namespace OdinsCoin
             var f = d.fit;
             float s = d.S;
             d.Add(Joints.Body, d.pal.accent, MeshData.Lathe(new[] {
-                new Vector2(f.chestR * 0.5f, f.neckY - 0.01f * s), new Vector2(f.chestR * 0.85f, f.neckY + 0.04f * s), new Vector2(f.chestR * 0.6f, f.neckY + 0.08f * s) }, 16)
+                new Vector2(f.chestR * 0.5f, f.neckY - 0.03f * s), new Vector2(f.chestR * 0.85f, f.neckY + 0.01f * s), new Vector2(f.chestR * 0.6f, f.neckY + 0.04f * s) }, 16)
                 .Transformed(Vector3.zero, Quaternion.identity, new Vector3(1f, 1f, 0.95f)));
             // A wide capelet over both shoulders, down to the upper arms, falling to a ragged point at the front of the chest.
             float capeBottom = f.shoulderY - 0.1f * s;
