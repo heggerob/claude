@@ -82,7 +82,9 @@ namespace OdinsCoin
                 palette = () => new Palette {
                     cloth = new Color(0.3f, 0.22f, 0.16f), clothDark = new Color(0.2f, 0.15f, 0.11f),
                     accent = new Color(0.23f, 0.32f, 0.43f), cloth2 = new Color(0.64f, 0.5f, 0.22f), emblem = new Color(0.87f, 0.84f, 0.74f),
-                    hair = new Color(0.9f, 0.74f, 0.44f), leather = new Color(0.5f, 0.34f, 0.2f) },
+                    hair = new Color(0.9f, 0.74f, 0.44f), leather = new Color(0.5f, 0.34f, 0.2f),
+                    // A pale sheepskin collar, as in the concept art.
+                    fur = new Color(0.9f, 0.84f, 0.72f), furShadow = new Color(0.7f, 0.64f, 0.55f) },
                 defaultHair = HairStyle.SideBraid, suggestedWeapon = WeaponId.None, suggestedOffHand = OffHandId.Map,
                 abilities = new[] {
                     new Ability { id = "stars", name = "Read the Stars", description = "Shows the way to the nearest island and treasure." },

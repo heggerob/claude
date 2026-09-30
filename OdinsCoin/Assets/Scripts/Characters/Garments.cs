@@ -714,9 +714,9 @@ namespace OdinsCoin
             foreach (var seg in rune)
                 d.Add(Joints.Head, d.pal.emblem, MeshData.Tube(new[] { new Vector3(0f, ry, rz) + seg[0] * s, new Vector3(0f, ry, rz) + seg[1] * s }, new[] { 0.004f * s, 0.004f * s }, 4)
                     .Transformed(Vector3.zero, Quaternion.Euler(-12f, 0f, 0f), Vector3.one), false);
-            // The knot at the back left, and two tails hanging down.
-            var knot = new Vector3(r * 0.55f, brim + 0.35f * r, -r * 0.95f);
-            d.Add(Joints.Head, d.pal.accent, MeshData.Ellipsoid(knot, new Vector3(0.035f, 0.03f, 0.03f) * s, 8, 5));
+            // The knot at the side behind the ear, and two tails flaring out and down past the chin.
+            var knot = new Vector3(r * 0.9f, brim + 0.05f * r, -r * 0.45f);
+            d.Add(Joints.Head, d.pal.accent, MeshData.Ellipsoid(knot, new Vector3(0.035f, 0.035f, 0.035f) * s, 8, 5));
             for (int t = 0; t < 2; t++)
             {
                 var grid = new Vector3[4, 2];
@@ -724,9 +724,10 @@ namespace OdinsCoin
                     for (int c = 0; c < 2; c++)
                     {
                         float v = r2 / 3f;
-                        grid[r2, c] = knot + new Vector3((0.005f + t * 0.03f + v * 0.015f) * s + c * 0.03f * s, -0.01f * s - v * (0.13f + t * 0.04f) * s, -0.015f * s - v * 0.03f * s);
+                        grid[r2, c] = knot + new Vector3((0.01f + v * (0.035f + t * 0.03f)) * s, -0.01f * s - v * (0.15f + t * 0.05f) * s,
+                            (-0.01f - t * 0.035f) * s + (c * 0.038f - 0.019f) * s * (1f - 0.3f * v));
                     }
-                d.Add(Joints.Head, d.pal.accent, CharacterKit.Sheet(grid, new Vector3(0.3f, 0f, -1f), 0.01f * s));
+                d.Add(Joints.Head, t == 0 ? d.pal.accent : VikingModel.Shade(d.pal.accent, 0.8f), CharacterKit.Sheet(grid, Vector3.right, 0.01f * s));
             }
             // Fringe of hair at the temples.
             foreach (float x in new[] { -1f, 1f })
