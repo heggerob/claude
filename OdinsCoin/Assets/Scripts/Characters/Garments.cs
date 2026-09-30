@@ -474,11 +474,12 @@ namespace OdinsCoin
                     float a = (k + 0.5f) * Mathf.PI * 0.5f;
                     d.Add(Joints.Body, d.pal.brass, MeshData.Ellipsoid(at + new Vector3(Mathf.Cos(a) * br * 0.6f, Mathf.Sin(a) * br * 0.6f, 0.013f * s), Vector3.one * 0.008f * s, 5, 3), false);
                 }
-                // Strap from the brooch across the chest to the opposite hip, with a ring halfway.
-                var end = new Vector3(-x * f.waistR * 0.8f, f.waist + 0.03f * s, f.waistR * f.depth + 0.03f);
-                var mid = Vector3.Lerp(at, end, 0.5f) + new Vector3(0f, 0f, 0.02f * s);
-                d.Add(Joints.Body, d.pal.leather, MeshData.Tube(new[] { at + new Vector3(0f, -0.03f * s, -0.01f * s), mid, end }, new[] { 0.014f * s, 0.015f * s, 0.014f * s }, 5), false);
-                d.Add(Joints.Body, d.pal.brass, MeshData.Lathe(new[] { new Vector2(0.02f * s, -0.005f * s), new Vector2(0.02f * s, 0.005f * s) }, 10).Transformed(mid + new Vector3(0f, 0f, 0.016f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one), false);
+                // Strap from the brooch across the chest down into the belt on the other side, standing out over the
+                // coat so the harness crosses the chest as in the concept art, held by one ring where the two cross.
+                var end = new Vector3(-x * f.waistR * 0.75f, f.waist + 0.035f * s, f.waistR * f.depth + 0.06f * s);
+                var mid = Vector3.Lerp(at, end, 0.5f) + new Vector3(0f, 0f, 0.035f * s);
+                d.Add(Joints.Body, d.pal.leather, MeshData.Tube(new[] { at + new Vector3(0f, -0.03f * s, -0.01f * s), mid, end }, new[] { 0.016f * s, 0.017f * s, 0.016f * s }, 5), false);
+                if (x > 0f) d.Add(Joints.Body, d.pal.brass, Ring(new Vector3(0f, mid.y, mid.z + 0.014f * s), Vector3.forward, 0.03f * s, 0.008f * s), false);
             }
         }
 
