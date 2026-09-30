@@ -267,8 +267,8 @@ namespace OdinsCoin
                                 float u = c / (float)(pcol - 1), v = r / (float)(prow - 1);
                                 float tail = u > 0.7f ? (r == 1 || r == 2 ? -0.05f : 0.03f) * (u - 0.7f) / 0.3f : 0f;
                                 // Hanging in still air: it droops away from the shaft in a slow curve.
-                                float droop = 0.2f * u * u + 0.06f * u;
-                                grid[r, c] = new Vector3(0.012f * s * Mathf.Sin(u * 5f), (0.02f + u * 0.3f + tail) * s, (0.77f - v * (0.22f - 0.08f * u) - droop) * s);
+                                float droop = 0.12f * u * u + 0.05f * u;
+                                grid[r, c] = new Vector3(0.012f * s * Mathf.Sin(u * 5f), (0.02f + u * 0.26f + tail) * s, (0.77f - v * (0.27f - 0.12f * u) - droop) * s);
                             }
                         d.Add(Joints.Weapon, d.pal.accent, CharacterKit.Sheet(grid, Vector3.right, 0.008f * s));
                         // The knot sign, painted on both faces of the cloth.
