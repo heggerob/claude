@@ -1339,9 +1339,9 @@ namespace OdinsCoin
                 new Vector2(f.chestR * 0.5f, f.neckY - 0.06f * s), new Vector2(f.chestR * 0.88f, f.neckY - 0.025f * s), new Vector2(f.chestR * 0.68f, f.neckY + 0.005f * s) }, 16)
                 .Transformed(Vector3.zero, Quaternion.identity, new Vector3(1f, 1f, 0.95f)));
             // A wide capelet over both shoulders, down to the upper arms, falling to a ragged point at the front of the chest.
-            float capeBottom = f.shoulderY - 0.14f * s;
+            float capeBottom = f.shoulderY - 0.12f * s;
             d.Add(Joints.Body, d.pal.accent, CharacterKit.RaggedSkirt(f.neckY - 0.025f * s, f.chestR * 0.75f, capeBottom, f.shoulderX + 0.11f * s, 0.85f, 24, 0.06f * s, d.seed + 83,
-                a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return -0.12f * s * c * c * c * c; }, a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return Mathf.Lerp(1f, 0.6f, c * c); }));
+                a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return -0.07f * s * c * c * c * c; }, a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return Mathf.Lerp(1f, 0.6f, c * c); }));
             // The hood, down, bunched behind the neck.
             d.Add(Joints.Body, VikingModel.Shade(d.pal.accent, 0.85f), MeshData.Ellipsoid(new Vector3(0f, f.neckY + 0.02f * s, -f.chestR * 0.7f), new Vector3(0.11f, 0.08f, 0.07f) * s, 12, 7));
         }
