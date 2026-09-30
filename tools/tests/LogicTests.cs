@@ -34,6 +34,7 @@ public static class LogicTests
         HeroChoiceTests();
         NpcHeroTests();
         StickAnimTests();
+        ClothWindTests();
         SkinTests();
         CombatTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
@@ -795,6 +796,25 @@ public static class LogicTests
             Check(usesPalette, spec.outfit + " NPC wears its own colours");
         }
         Check(NpcHeroes.DanishRaider(1).weapon == WeaponId.Bow && NpcHeroes.Gunnar().offHand == OffHandId.Map && NpcHeroes.Bjorn().weapon == WeaponId.None, "NPCs carry the right things");
+    }
+
+    static void ClothWindTests()
+    {
+        // Standing still in a wind from behind (air moving +Z) blows a cape forward: pitch goes negative (+Z side).
+        var still = SwingSpring.For(SwingKind.Banner);
+        for (int i = 0; i < 400; i++) still.Step(0.02f, -new Vector3(0f, 0f, 5f), Vector3.zero);
+        var moving = SwingSpring.For(SwingKind.Banner);
+        for (int i = 0; i < 400; i++) moving.Step(0.02f, new Vector3(0f, 0f, 5f), Vector3.zero);
+        Check(still.pitch < -1f && moving.pitch > 1f, "wind from behind blows forward, walking into still air trails back (" + still.pitch + ", " + moving.pitch + ")");
+        Check(Math.Abs(ClothWind.Flutter(0f, 3.3f, 1f)) < 1e-5f, "no wind, no flutter");
+        float peak = 0f;
+        for (float t = 0f; t < 5f; t += 0.01f) peak = Math.Max(peak, Math.Abs(ClothWind.Flutter(8f, t, 0.5f)));
+        Check(peak > 3f && peak < 12f, "a strong wind flutters a few degrees (" + peak + ")");
+        Check(Math.Abs(ClothWind.Flutter(30f, 1f, 0f)) <= 12f * 0.9f + 1e-3f, "a gale is capped");
+        // A fluttering spring stays within its limits.
+        var cape = SwingSpring.For(SwingKind.Cape);
+        for (int i = 0; i < 2000; i++) cape.Step(0.016f, new Vector3(3f, 0f, -6f), Vector3.zero, ClothWind.Flutter(10f, i * 0.016f, 0f), ClothWind.Flutter(10f, i * 0.016f, 1.7f));
+        Check(cape.pitch >= cape.minPitch - 0.01f && cape.pitch <= cape.maxPitch + 0.01f && Math.Abs(cape.roll) <= cape.maxRoll + 0.01f, "flutter stays within the cape's limits");
     }
 
     static void StickAnimTests()

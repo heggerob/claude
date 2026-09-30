@@ -27,12 +27,18 @@ namespace OdinsCoin
         /// Advance by <paramref name="dt"/>, given the pivot's velocity and acceleration in the pivot's parent space
         /// (+Z forward, +X right).
         /// </summary>
-        public void Step(float dt, Vector3 localVelocity, Vector3 localAccel)
+        public void Step(float dt, Vector3 localVelocity, Vector3 localAccel) { Step(dt, localVelocity, localAccel, 0f, 0f); }
+
+        /// <summary>
+        /// ...with <paramref name="localVelocity"/> taken relative to the air (so wind counts), plus a flutter:
+        /// extra degrees of pitch and roll the gusts add this instant.
+        /// </summary>
+        public void Step(float dt, Vector3 localVelocity, Vector3 localAccel, float flutterPitch, float flutterRoll)
         {
             if (dt <= 0f) return;
             // Where it would settle at this speed: trailing behind, against the direction of travel.
-            float targetPitch = Mathf.Atan2(drag * localVelocity.z * Mathf.Abs(localVelocity.z), 9.81f) * Mathf.Rad2Deg;
-            float targetRoll = -Mathf.Atan2(drag * localVelocity.x * Mathf.Abs(localVelocity.x), 9.81f) * Mathf.Rad2Deg;
+            float targetPitch = Mathf.Atan2(drag * localVelocity.z * Mathf.Abs(localVelocity.z), 9.81f) * Mathf.Rad2Deg + flutterPitch;
+            float targetRoll = -Mathf.Atan2(drag * localVelocity.x * Mathf.Abs(localVelocity.x), 9.81f) * Mathf.Rad2Deg + flutterRoll;
             // A few small steps keep the spring stable at low frame rates.
             int steps = Mathf.Clamp(Mathf.CeilToInt(dt / 0.01f), 1, 8);
             float h = dt / steps;
@@ -67,6 +73,26 @@ namespace OdinsCoin
 
     public enum SwingKind { Cape, Banner, Braid }
 
+    /// <summary>The air around the characters: how the sea wind reaches capes and braids.</summary>
+    public static class ClothWind
+    {
+        /// <summary>How much of the open-sea wind a person feels (sheltered by the hull, the hall, the land).</summary>
+        public const float Shelter = 0.5f;
+
+        /// <summary>The air's velocity in m/s, world space. Tests and the preview can swap it.</summary>
+        public static System.Func<Vector3> Air = () => Wind.Direction * Wind.Knots * 0.514f * Shelter;
+
+        /// <summary>
+        /// Gusts: a flutter angle in degrees for wind speed <paramref name="speed"/> (m/s) at time
+        /// <paramref name="t"/>, different for each swinging thing (<paramref name="phase"/>). Grows with the wind.
+        /// </summary>
+        public static float Flutter(float speed, float t, float phase)
+        {
+            float k = Mathf.Clamp(speed, 0f, 12f) * 0.9f;
+            return k * (0.6f * Mathf.Sin(t * 7.3f + phase) + 0.4f * Mathf.Sin(t * 12.1f + phase * 2.3f));
+        }
+    }
+
     /// <summary>
     /// Drives every swinging joint of a character: works out how each pivot moves from frame to frame and lets
     /// its spring swing the joint. Added by <see cref="HeroBuilder"/>.
@@ -79,13 +105,16 @@ namespace OdinsCoin
             public SwingSpring spring;
             public Vector3 lastPos, lastVel;
             public bool primed;
+            public float phase;
         }
 
         readonly List<Entry> entries = new List<Entry>();
+        // Counts every swinging thing made, so no two flutter in step.
+        static int made;
 
         public void Add(Transform joint, SwingKind kind)
         {
-            entries.Add(new Entry { joint = joint, spring = SwingSpring.For(kind) });
+            entries.Add(new Entry { joint = joint, spring = SwingSpring.For(kind), phase = (made++) * 2.1f + joint.name.Length * 0.37f });
         }
 
         public int Count { get { return entries.Count; } }
@@ -107,7 +136,11 @@ namespace OdinsCoin
                 // Teleports (respawning, climbing aboard) would fling everything: ignore absurd jumps.
                 if (vel.sqrMagnitude > 400f) { e.lastVel = Vector3.zero; continue; }
                 Quaternion toLocal = parent != null ? Quaternion.Inverse(parent.rotation) : Quaternion.identity;
-                e.spring.Step(dt, toLocal * vel, toLocal * Vector3.ClampMagnitude(acc, 60f));
+                // Moving through still air and standing in the wind look the same to a cape.
+                Vector3 air = ClothWind.Air();
+                float speed = air.magnitude, phase = e.phase;
+                e.spring.Step(dt, toLocal * (vel - air), toLocal * Vector3.ClampMagnitude(acc, 60f),
+                    ClothWind.Flutter(speed, Time.time, phase), ClothWind.Flutter(speed, Time.time, phase + 1.7f) * 0.5f);
                 e.joint.localRotation = e.spring.Rotation;
             }
         }
