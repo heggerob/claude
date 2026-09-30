@@ -164,6 +164,11 @@ med ror, seil i vinden og årer.
   - De styrer mot havna, ror når vinden er for langt forut, og svinger unna grunt vann.
   - Legger du deg langs siden, stryker de seilet uten kamp, og kistene på dekk er dine.
   - De forsvinner når de når havna, eller når du er mer enn 15 km unna.
+- [x] **16. Oppdrag fra Bjørn (`Hall/Commissions.cs`):** mjødhallen har en ny fane, «Commissions».
+  - Bjørn tilbyr tre raid på ekte steder som ikke er plyndret ennå: det nærmeste, og så steder lenger unna.
+  - Bonusen øker med avstanden hjemmefra og med antall vakter. Borre, like ved, gir 230 gull; Reykjavík gir 1 120.
+  - Du har ett oppdrag om gangen. HUD-en viser avstand og kurs dit, og bonusen utbetales idet stedet er plyndret.
+  - Oppdraget og de plyndrede stedene lagres.
 
 ## Merk
 

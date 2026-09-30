@@ -397,6 +397,26 @@ public static class LogicTests
             }
         map.Detail = null;
 
+        // Bjorn's commissions: raids on places not yet stripped, the nearest first, paying more the further they are.
+        var homeG = Places.Position(map, Places.Find("Kaupang"));
+        var offers = Commissions.Offers(map, homeG, new HashSet<string>(), 3, 5);
+        var offersRaided = Commissions.Offers(map, homeG, new HashSet<string> { offers[0].place.name }, 3, 5);
+        bool allRaidable = true;
+        foreach (var o in offers) if (PlaceLife.PlunderOf(o.place.kind).chests == 0) allRaidable = false;
+        Check(offers.Count == 3 && allRaidable && offers[0].place.name != offers[1].place.name, "Bjorn offers three different raids on places with plunder (" + offers[0].place.name + ", " + offers[1].place.name + ", " + offers[2].place.name + ")");
+        bool skipped = true;
+        foreach (var o in offersRaided) if (o.place.name == offers[0].place.name) skipped = false;
+        Check(skipped, "a place already plundered isn't offered again");
+        Check(Commissions.Reward(map, Places.Find("Reykjavík"), homeG) > Commissions.Reward(map, Places.Find("Borre"), homeG) + 300,
+            "a raid on far Reykjavík pays far more than one on Borre, next door (" + Commissions.Reward(map, Places.Find("Reykjavík"), homeG) + " vs " + Commissions.Reward(map, Places.Find("Borre"), homeG) + ")");
+        var commissioned = new Upgrades { Commission = "Lindisfarne", CommissionReward = 540 };
+        commissioned.Raided.Add("Iona");
+        Fortune cfg; Upgrades cfu;
+        SaveGame.Deserialize(SaveGame.Serialize(new Fortune(), commissioned), out cfg, out cfu);
+        Check(cfu.Commission == "Lindisfarne" && cfu.CommissionReward == 540 && cfu.Raided.Contains("Iona"), "the commission and the plundered places survive a save");
+        SaveGame.Deserialize("gold=1\ncommission=Atlantis,99999\nraided=Nowhere,Iona\n", out cfg, out cfu);
+        Check(cfu.Commission == null && cfu.Raided.Count == 1, "made-up places in a save are ignored");
+
         // Merchants sail for one of the market towns near where they're met.
         var nearBergen = MerchantTraffic.PickPort(map, map.ToWorld(60.3f, 4.9f));
         Check(nearBergen != null && PlaceLife.HasMarket(nearBergen) && Vector3.Distance(Places.Position(map, nearBergen), map.ToWorld(60.3f, 4.9f)) < 700000f,

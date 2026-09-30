@@ -50,6 +50,13 @@ namespace OdinsCoin
         public int ClockDay;
         public float ClockHours = SkyClock.StartHour;
 
+        /// <summary>The real places stripped this voyage.</summary>
+        public readonly List<string> Raided = new List<string>();
+
+        /// <summary>The raid Bjorn has commissioned (a place's name, or null) and what it pays.</summary>
+        public string Commission;
+        public int CommissionReward;
+
         /// <summary>The ships you own (design ids), and the one moored at the jetty for you to sail.</summary>
         public readonly List<string> Fleet = new List<string> { Shipwright.Starter.id };
         public string Sailing = Shipwright.Starter.id;

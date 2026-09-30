@@ -35,6 +35,16 @@ namespace OdinsCoin
             DrawDangers();
 
             // Nearest land.
+            // Bjorn's commission: where it is from here.
+            var commission = Upgrades.Current.Commission;
+            if (!string.IsNullOrEmpty(commission) && RealWorld.Active && WorldMap.Current != null && Places.Find(commission) != null && Ship != null)
+            {
+                var target = Places.Position(WorldMap.Current, Places.Find(commission));
+                var here = Ship.transform.position;
+                float dx = target.x - (float)WorldOrigin.GlobalX(here), dz = target.z - (float)WorldOrigin.GlobalZ(here);
+                float bearing = Mathf.Repeat(Mathf.Atan2(dx, dz) * Mathf.Rad2Deg, 360f);
+                GUI.Label(new Rect(20f, Screen.height - 34f, 560f, 22f), string.Format("<color=#ffd060>Commission:</color> plunder <b>{0}</b>, {1}, bearing {2:000}°", commission, Distance(Mathf.Sqrt(dx * dx + dz * dz)), bearing), style);
+            }
             if (Player != null && RealWorld.Active)
             {
                 float dist, bearing;

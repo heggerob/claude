@@ -37,6 +37,9 @@ namespace OdinsCoin
             Line(sb, "fleet", string.Join(",", u.Fleet.ToArray()));
             Line(sb, "sailing", u.Sailing);
             Line(sb, "clock", u.ClockDay.ToString(CultureInfo.InvariantCulture) + "," + u.ClockHours.ToString("R", CultureInfo.InvariantCulture));
+            if (u.Raided.Count > 0) Line(sb, "raided", string.Join(",", u.Raided.ToArray()));
+            if (!string.IsNullOrEmpty(u.Commission))
+                Line(sb, "commission", u.Commission + "," + u.CommissionReward.ToString(CultureInfo.InvariantCulture));
             if (u.AtSea)
                 Line(sb, "at", u.SeaX.ToString("R", CultureInfo.InvariantCulture) + "," + u.SeaZ.ToString("R", CultureInfo.InvariantCulture) + "," + u.SeaHeading.ToString("R", CultureInfo.InvariantCulture));
             return sb.ToString();
@@ -75,6 +78,16 @@ namespace OdinsCoin
                     case "flips": if (nums.Length == 2) { f.Flips = nums[0]; f.HeadsCount = nums[1]; } break;
                     case "plunder": if (nums.Length == 2) { f.ChestsSold = nums[0]; f.GoldPlundered = nums[1]; } break;
                     case "dice": if (nums.Length == 2) { f.DiceWon = nums[0]; f.DiceLost = nums[1]; } break;
+                    case "raided":
+                        foreach (var name in value.Split(','))
+                            if (Places.Find(name.Trim()) != null && !u.Raided.Contains(name.Trim())) u.Raided.Add(name.Trim());
+                        break;
+                    case "commission":
+                        var cparts = value.Split(',');
+                        int reward;
+                        if (cparts.Length == 2 && Places.Find(cparts[0].Trim()) != null && int.TryParse(cparts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out reward))
+                        { u.Commission = cparts[0].Trim(); u.CommissionReward = Mathf.Clamp(reward, 0, 5000); }
+                        break;
                     case "clock":
                         var clock = value.Split(',');
                         int cd; float ch;
@@ -145,6 +158,8 @@ namespace OdinsCoin
         public static void RecordVoyage(Upgrades u)
         {
             if (SkyClock.Instance != null) { u.ClockDay = SkyClock.Day; u.ClockHours = SkyClock.Hours; }
+            u.Raided.Clear();
+            u.Raided.AddRange(PlaceLife.Raided);
             var boot = GameBootstrap.Instance;
             u.AtSea = false;
             if (boot == null || boot.Ship == null || !RealWorld.Active) return;

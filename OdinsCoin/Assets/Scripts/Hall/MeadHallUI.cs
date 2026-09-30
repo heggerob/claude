@@ -15,7 +15,7 @@ namespace OdinsCoin
 
         public static bool IsOpenNow { get { return Instance != null && Instance.open; } }
 
-        enum Tab { Upgrades, Ships, Skins, Dice, Boasts }
+        enum Tab { Upgrades, Ships, Commissions, Skins, Dice, Boasts }
         enum DiceState { Betting, Rolling, Reroll, Done }
 
         const float RollTime = 1.1f;
@@ -114,10 +114,10 @@ namespace OdinsCoin
             GUILayout.Label("THE MEAD HALL", title);
             GUILayout.Label("<color=#aaaaaa>Bjorn wipes a horn and nods at you.</color>   Gold: <b>" + Fortune.Current.Gold + "</b>", text);
             GUILayout.BeginHorizontal();
-            foreach (Tab t in new[] { Tab.Upgrades, Tab.Ships, Tab.Skins, Tab.Dice, Tab.Boasts })
+            foreach (Tab t in new[] { Tab.Upgrades, Tab.Ships, Tab.Commissions, Tab.Skins, Tab.Dice, Tab.Boasts })
             {
                 var tt = t;
-                string label = (t == tab ? "▶ " : "") + (t == Tab.Upgrades ? "Upgrades" : t == Tab.Ships ? "Shipwright" : t == Tab.Skins ? "Colours" : t == Tab.Dice ? "Dice with Bjorn" : "Boasting board");
+                string label = (t == tab ? "▶ " : "") + (t == Tab.Upgrades ? "Upgrades" : t == Tab.Ships ? "Shipwright" : t == Tab.Commissions ? "Commissions" : t == Tab.Skins ? "Colours" : t == Tab.Dice ? "Dice with Bjorn" : "Boasting board");
                 GUI.enabled = dice != DiceState.Rolling && dice != DiceState.Reroll;
                 if (GUILayout.Button(label, GUILayout.Height(30))) deferred += () => { tab = tt; if (dice == DiceState.Done) dice = DiceState.Betting; };
                 GUI.enabled = true;
@@ -127,6 +127,7 @@ namespace OdinsCoin
 
             if (tab == Tab.Upgrades) DrawUpgrades();
             else if (tab == Tab.Ships) DrawShips();
+            else if (tab == Tab.Commissions) DrawCommissions();
             else if (tab == Tab.Skins) DrawSkins();
             else if (tab == Tab.Dice) DrawDice();
             else DrawBoasts();
@@ -176,6 +177,44 @@ namespace OdinsCoin
                 GUILayout.Space(4);
                 if (GUILayout.Button(string.Format("Have Gunnar fetch the cargo off your ship: {0} chest{1}, {2} gold", count, count == 1 ? "" : "s", gold), GUILayout.Height(30)))
                     deferred += () => { int n; int g = home.SellCargo(Ship, out n); CombatHud.Banner("+" + g + " GOLD", "Gunnar hauls " + n + " chest" + (n == 1 ? "" : "s") + " up the hill."); };
+            }
+        }
+
+        /// <summary>Where home is, in global map coordinates.</summary>
+        static Vector3 HomeGlobal()
+        {
+            var home = HomeHarbour.HomeCentre + HomeHarbour.Drift;
+            return new Vector3((float)WorldOrigin.GlobalX(home), 0f, (float)WorldOrigin.GlobalZ(home));
+        }
+
+        /// <summary>Bjorn's commissions: one raid at a time on a real place, for a bonus when it's plundered.</summary>
+        void DrawCommissions()
+        {
+            var up = Upgrades.Current;
+            var map = WorldMap.Current;
+            if (map == null || !RealWorld.Active) { GUILayout.Label("Bjorn has no work for you on the storybook isles.", text); return; }
+            var homeGlobal = HomeGlobal();
+            if (!string.IsNullOrEmpty(up.Commission))
+            {
+                var place = Places.Find(up.Commission);
+                float km = place != null ? Vector3.Distance(Places.Position(map, place), homeGlobal) / 1000f : 0f;
+                GUILayout.Label(string.Format("<b>Your commission:</b> plunder <b>{0}</b> ({1}), {2:0} km from home.\n<size=12>Bjorn pays <b>{3} gold</b> the moment the last chest is carried off.</size>",
+                    up.Commission, place != null ? place.modern : "?", km, up.CommissionReward), text);
+                if (GUILayout.Button("Give it up", GUILayout.Width(190f), GUILayout.Height(32)))
+                    deferred += () => { up.Commission = null; up.CommissionReward = 0; SaveGame.Save(); };
+                return;
+            }
+            GUILayout.Label("<size=12>\"There's silver to be had,\" says Bjorn. \"Strip one of these and I'll pay you on top of what you carry off.\"</size>", text);
+            foreach (var offer in Commissions.Offers(map, homeGlobal, PlaceLife.Raided, 3, SkyClock.Day * 7919 + 17))
+            {
+                var o = offer;
+                float km = Vector3.Distance(Places.Position(map, o.place), homeGlobal) / 1000f;
+                var plunder = PlaceLife.PlunderOf(o.place.kind);
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(string.Format("<b>{0}</b> ({1}), {2:0} km\n<size=12>{3} chests, {4} guards · <color=#aaaaaa>{5}</color></size>", o.place.name, o.place.modern, km, plunder.chests, plunder.guards, o.place.blurb), text);
+                if (GUILayout.Button("Take it on\n<size=12>+" + o.reward + " gold</size>", GUILayout.Width(190f), GUILayout.Height(48)))
+                    deferred += () => { up.Commission = o.place.name; up.CommissionReward = o.reward; SaveGame.Save(); CombatHud.Banner("A COMMISSION", "Plunder " + o.place.name + " for Bjorn: +" + o.reward + " gold when it's done."); };
+                GUILayout.EndHorizontal();
             }
         }
 

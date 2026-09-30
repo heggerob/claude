@@ -189,7 +189,17 @@ namespace OdinsCoin
                 if (left) continue;
                 PlaceLife.Raided.Add(kv.Key.name);
                 Fortune.Current.AddFavour(0.1f);
-                CombatHud.Banner(kv.Key.name.ToUpper() + " IS PLUNDERED", "The skalds will sing of it. Sell the chests at a market town, or at home.");
+                var up = Upgrades.Current;
+                if (up.Commission == kv.Key.name)
+                {
+                    // Bjorn's commission done: his silver comes by the next ship.
+                    Fortune.Current.Gold += up.CommissionReward;
+                    CombatHud.Banner(kv.Key.name.ToUpper() + " IS PLUNDERED", "Bjorn's commission is done: +" + up.CommissionReward + " gold. The skalds will sing of it.");
+                    up.Commission = null;
+                    up.CommissionReward = 0;
+                    SaveGame.Save();
+                }
+                else CombatHud.Banner(kv.Key.name.ToUpper() + " IS PLUNDERED", "The skalds will sing of it. Sell the chests at a market town, or at home.");
             }
         }
 
