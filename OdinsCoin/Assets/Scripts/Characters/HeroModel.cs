@@ -387,7 +387,7 @@ namespace OdinsCoin
                     {
                         // A big shield of red planks with an iron rim and boss and a pale triple-knot painted on it,
                         // held in front of the body, face forward (+Z).
-                        float rad = 0.34f * s;
+                        float rad = 0.37f * s;
                         var at = new Vector3(0f, 0.02f * s, 0.06f * s);
                         for (int q = 0; q < 6; q++)
                         {
@@ -402,7 +402,13 @@ namespace OdinsCoin
                         var kRim = new Vector3[33];
                         var kRr = new float[33];
                         for (int i = 0; i < kRim.Length; i++) { float a = i / 32f * Mathf.PI * 2f; kRim[i] = at + new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * rad; kRr[i] = 0.02f * s; }
-                        d.Add(Joints.OffHand, d.pal.metal, MeshData.Tube(kRim, kRr, 6));
+                        d.Add(Joints.OffHand, VikingModel.Shade(d.pal.metal, 0.75f), MeshData.Tube(kRim, kRr, 6));
+                        // Rivets holding the rim on.
+                        for (int i = 0; i < 14; i++)
+                        {
+                            float a = (i + 0.5f) / 14f * Mathf.PI * 2f;
+                            d.Add(Joints.OffHand, d.pal.metal, MeshData.Ellipsoid(at + new Vector3(Mathf.Cos(a) * rad * 0.9f, Mathf.Sin(a) * rad * 0.9f, 0.016f * s), Vector3.one * 0.009f * s, 5, 3), false);
+                        }
                         d.Add(Joints.OffHand, d.pal.metal, MeshData.Dome(Vector3.zero, new Vector3(0.065f, 0.055f, 0.065f) * s, 12, 4).Transformed(at + new Vector3(0f, 0f, 0.012f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one));
                         // The triquetra: three pointed lobes (vesicas) meeting at the boss, woven with a circle.
                         for (int k = 0; k < 3; k++)
