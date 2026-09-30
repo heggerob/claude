@@ -832,6 +832,24 @@ public static class LogicTests
 
     static void ClothWindTests()
     {
+        // A jump: the cape floats up while the hero falls, then is slammed back down by the landing.
+        {
+            var jcape = SwingSpring.For(SwingKind.Cape);
+            const float dt = 1f / 60f;
+            for (int i = 0; i < 120; i++) jcape.Step(dt, Vector3.zero, Vector3.zero);
+            float hanging = jcape.pitch;
+            float vy = 5.5f, jpeak = 0f;
+            for (int i = 0; i < 40; i++) { vy -= 18f * dt; jcape.Step(dt, new Vector3(0f, vy, 0f), new Vector3(0f, -18f, 0f)); jpeak = Mathf.Max(jpeak, jcape.pitch); }
+            Check(jpeak > hanging + 25f, "a cape floats up during a jump's fall (" + jpeak + " degrees)");
+            // Landing: the fall stops dead in a frame or two.
+            jcape.Step(dt, new Vector3(0f, -1f, 0f), new Vector3(0f, 60f, 0f));
+            jcape.Step(dt, Vector3.zero, new Vector3(0f, 60f, 0f));
+            for (int i = 0; i < 40; i++) jcape.Step(dt, Vector3.zero, Vector3.zero);
+            Check(Mathf.Abs(jcape.pitch - hanging) < 10f, "and drops back after the landing (" + jcape.pitch + ")");
+            var jstill = SwingSpring.For(SwingKind.Cape);
+            for (int i = 0; i < 120; i++) jstill.Step(dt, Vector3.zero, Vector3.zero);
+            Check(Mathf.Abs(jstill.pitch) < 2f && Mathf.Abs(jstill.roll) < 1f, "standing jstill, it just hangs");
+        }
         // Standing still in a wind from behind (air moving +Z) blows a cape forward: pitch goes negative (+Z side).
         var still = SwingSpring.For(SwingKind.Banner);
         for (int i = 0; i < 400; i++) still.Step(0.02f, -new Vector3(0f, 0f, 5f), Vector3.zero);

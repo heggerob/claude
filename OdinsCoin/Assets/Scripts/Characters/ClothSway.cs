@@ -36,16 +36,23 @@ namespace OdinsCoin
         public void Step(float dt, Vector3 localVelocity, Vector3 localAccel, float flutterPitch, float flutterRoll)
         {
             if (dt <= 0f) return;
-            // Where it would settle at this speed: trailing behind, against the direction of travel.
-            float targetPitch = Mathf.Atan2(drag * localVelocity.z * Mathf.Abs(localVelocity.z), 9.81f) * Mathf.Rad2Deg + flutterPitch;
-            float targetRoll = -Mathf.Atan2(drag * localVelocity.x * Mathf.Abs(localVelocity.x), 9.81f) * Mathf.Rad2Deg + flutterRoll;
+            // The gravity it feels: less when the pivot drops away under it (a jump's fall, ~zero or even "up"
+            // since heroes fall faster than cloth), more when the pivot is stopped hard (landing).
+            float felt = Mathf.Clamp(9.81f + localAccel.y, -4f, 40f);
+            // Falling through the air pushes it up behind; rising presses it down.
+            float lift = drag * -localVelocity.y * Mathf.Abs(localVelocity.y);
+            // Where it would settle: trailing behind against the direction of travel, floating up in a fall.
+            float targetPitch = Mathf.Atan2(drag * localVelocity.z * Mathf.Abs(localVelocity.z) + lift, felt) * Mathf.Rad2Deg + flutterPitch;
+            float targetRoll = -Mathf.Atan2(drag * localVelocity.x * Mathf.Abs(localVelocity.x), Mathf.Max(2f, felt)) * Mathf.Rad2Deg + flutterRoll;
+            // With little gravity to pull it straight it drifts lazily; slammed down by a landing it snaps.
+            float pull = stiffness * Mathf.Clamp(Mathf.Abs(felt) / 9.81f, 0.3f, 2.5f);
             // A few small steps keep the spring stable at low frame rates.
             int steps = Mathf.Clamp(Mathf.CeilToInt(dt / 0.01f), 1, 8);
             float h = dt / steps;
             for (int i = 0; i < steps; i++)
             {
-                float pa = -stiffness * (pitch - targetPitch) - damping * pitchVel + inertia * localAccel.z;
-                float ra = -stiffness * (roll - targetRoll) - damping * rollVel - inertia * localAccel.x;
+                float pa = -pull * (pitch - targetPitch) - damping * pitchVel + inertia * localAccel.z;
+                float ra = -pull * (roll - targetRoll) - damping * rollVel - inertia * localAccel.x;
                 pitchVel += pa * h;
                 rollVel += ra * h;
                 pitch += pitchVel * h;

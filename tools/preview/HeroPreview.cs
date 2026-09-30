@@ -270,13 +270,16 @@ public static class HeroPreview
             if (!jumped && t >= 3.15f) { jumped = true; vy = 5.5f; }
             bool grounded = y <= 0f && vy <= 0f;
             if (grounded) loco.Step(wish, maxSpeed, dt); else loco.Air(wish, dt);
+            float vyBefore = vy;
             vy -= 18f * dt;
             y += vy * dt;
             if (y <= 0f) { y = 0f; if (vy < 0f && !grounded) { } }
             grounded = y <= 0f;
             anim.Step(dt, loco, grounded, vy, false, t);
             if (grounded) vy = Mathf.Max(vy, 0f);
-            foreach (var s in springs.Values) s.Step(dt, new Vector3(0f, 0f, loco.speed), new Vector3(0f, 0f, loco.acceleration));
+            // The springs feel the jump too, as in the game (which clamps the landing jolt the same way).
+            float ay = Mathf.Clamp((vy - vyBefore) / dt, -60f, 60f);
+            foreach (var s in springs.Values) s.Step(dt, new Vector3(0f, grounded ? 0f : vy, loco.speed), new Vector3(0f, ay, loco.acceleration));
             t += dt;
             if (t >= captures[next])
             {
