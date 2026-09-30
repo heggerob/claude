@@ -456,6 +456,43 @@ namespace OdinsCoin
         }
 
         /// <summary>Two big round gold brooches on the chest, joined by straps crossing down to the belt.</summary>
+        /// <summary>
+        /// Two leather straps from under the brooches crossing on the chest down to the opposite hip, with a gold
+        /// ring where they cross, as on the concept's jarl.
+        /// </summary>
+        public static void CrossStraps(Dresser d)
+        {
+            var f = d.fit;
+            float s = d.S;
+            float top = f.shoulderY - 0.12f * s, bottom = f.waist + 0.01f * s;
+            System.Func<float, float, Vector3> onChest = (x, y) =>
+            {
+                float r = f.TorsoRadius(Mathf.Max(y, f.waist)) * 1.02f;
+                return new Vector3(x, y, Mathf.Sqrt(Mathf.Max(0f, r * r - x * x)) * f.depth + 0.012f * s);
+            };
+            foreach (float side in new[] { -1f, 1f })
+            {
+                const int n = 8;
+                var path = new Vector3[n];
+                for (int i = 0; i < n; i++)
+                {
+                    float t = i / (float)(n - 1);
+                    path[i] = onChest(Mathf.Lerp(side * f.chestR * 0.72f, -side * f.waistR * 0.7f, t), Mathf.Lerp(top, bottom, t));
+                }
+                d.Add(Joints.Body, d.pal.leather, MeshData.Tube(path, Radii(n, 0.014f * s), 6), false);
+            }
+            var cross = onChest(0f, (top + bottom) / 2f) + new Vector3(0f, 0f, 0.008f * s);
+            d.Add(Joints.Body, d.pal.brass, MeshData.Lathe(new[] { new Vector2(0.03f * s, -0.006f * s), new Vector2(0.032f * s, 0f), new Vector2(0.03f * s, 0.006f * s), new Vector2(0.02f * s, 0.006f * s), new Vector2(0.02f * s, -0.006f * s) }, 16)
+                .Transformed(cross, Quaternion.Euler(90f, 0f, 0f), Vector3.one), false, SurfaceKind.Metal);
+        }
+
+        static float[] Radii(int count, float r)
+        {
+            var a = new float[count];
+            for (int i = 0; i < count; i++) a[i] = r;
+            return a;
+        }
+
         public static void Brooches(Dresser d)
         {
             var f = d.fit;
