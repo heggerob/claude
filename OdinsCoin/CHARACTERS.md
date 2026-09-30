@@ -62,10 +62,17 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
     - **Raider:** mørkt stål, høyere støvler og bredere stilling.
     - **Spydvakt:** vimpelen sitter høyere på spydet.
     - **Seer:** hvitt hår rammer inn ansiktet i hetta, og smykkene er større.
-  - Til runde 7:
-    - Seeren og Spydvakten trenger flere runeskiver og kjeder over hele kroppen.
-    - [x] Sjekk hver figur fra flere vinkler: `docs/turnaround.png` viser alle forfra, på skrå, fra siden og bakfra. Den avslørte at våpnene stakk rett fram i hvilestilling. Nå har hvert våpen sin egen hvilevinkel (`Weapons.RestEuler`).
-    - [x] Øksa hviler på skulderen i spillet (`HeroPose.AxeCarry`): armen går ut, albuen bøyes opp, og vinkelen på skaftet regnes ut fra armen. Øksa tas ned når figuren hugger. Se «Axe carry (in game)» i `docs/heroes.png`.
+  - Runde 7 (ferdig):
+    - **Alle:** kortere skjørt, så pinnebeina synes. Figurene står litt på skrå, pelsen holder seg lys, og hvert våpen har en egen hvilestilling. Rundbildet (`docs/turnaround.png`) viser hver figur fra fire kanter.
+    - **Jarl:** avrundet kronehjelm lavt over pannen, med fire buede horn med gullkant.
+    - **Raider:** bærer øksa over skulderen i spillet.
+    - **Spydvakt:** høyere spyd der vimpelen går klar av hjelmen. Spyd og stav bæres oppreist.
+    - **Seer:** lange snorer med runeskiver ved ansiktet og nedover stola, og en stav med gevirgreiner og en innfattet stein.
+    - **Speider:** en vifte av piler over skulderen.
+    - **Navigatør:** lengre og fyldigere kappe bak.
+  - Til runde 8:
+    - Sverd og bue trenger også egne bærestillinger i spillet.
+    - Hendene er fortsatt små svarte kuler, mens bildet har tydelige hansker.
 - [x] **9. Bevegelse i plaggene:** (se [docs/motion.png](docs/motion.png)) kapper, skjørt, fletter, pels og vimpler svinger og henger etter når figuren går, snur og hugger (enkel fysikk med fjærer).
 - [ ] **10. Tegneserie-look på alt:** tusj-kanter på skipet, øyene, trærne, husene og havet, skravur med blyant eller tusj i skyggene, og papirkorn over hele bildet.
   - [x] Skravur i skyggene: shaderen `OdinsCoin/InkToon` (i `Resources/Shaders`) gir myk tegnet belysning med kalde skygger, enkle blyantstreker på skyggesiden og kryss-skravur i de mørkeste delene. Ansiktene får ingen skravur, så de holder seg rene. Den brukes på alt som ikke er blankt (havet beholder Lit). `InkStyle.cs` har samme matte, og forhåndsvisningen bruker den.
