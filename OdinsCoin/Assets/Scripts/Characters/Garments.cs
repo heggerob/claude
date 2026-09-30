@@ -597,7 +597,7 @@ namespace OdinsCoin
             var f = d.fit;
             float s = d.S;
             var top = new Vector3(0f, f.shoulderY + 0.02f * s, -f.chestR * f.depth * 0.3f);
-            float tw = f.shoulderX * 2.4f, bw = f.shoulderX * 3.2f, len = backLength * s, wrap = f.chestR * 1.2f;
+            float tw = f.shoulderX * 2.4f, bw = f.shoulderX * 3.8f, len = backLength * s, wrap = f.chestR * 1.4f;
             string cape = d.Swing(Joints.Cape, Joints.Body, top, SwingKind.Cape);
             d.Add(cape, d.pal.accent, CharacterKit.Cape(top, tw, bw, len, wrap, 0.08f * s, d.seed + 51, 0.016f * s).Moved(-top));
             // Embroidered border across the back, above the torn hem.
