@@ -198,11 +198,12 @@ namespace OdinsCoin
                     blade.Add(new Vector2(0.93f, -0.16f));
                     blade.Add(new Vector2(0.87f, -0.11f));
                     // Convex-ish from the first point for the fan: keep the neck as the first vertex.
-                    d.Add(Joints.Weapon, d.pal.metal, MeshData.Extrude(blade.ToArray(), 0.022f).Transformed(Vector3.zero, Quaternion.identity, Vector3.one * s));
+                    // Worn grey steel, lighter than the helm iron, as in the concept art.
+                    d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 1.45f), MeshData.Extrude(blade.ToArray(), 0.022f).Transformed(Vector3.zero, Quaternion.identity, Vector3.one * s), true, SurfaceKind.Metal);
                     var edge = new System.Collections.Generic.List<Vector2>();
                     for (int i = 0; i <= 8; i++) edge.Add(Edge(i / 8f, 0.008f));
                     for (int i = 8; i >= 0; i--) edge.Add(Edge(i / 8f, -0.025f));
-                    d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 1.35f), MeshData.Tube(ToPath(edge, 0.016f, s, 9), Radii(9, 0.012f * s), 4), false);
+                    d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 2.1f), MeshData.Tube(ToPath(edge, 0.016f, s, 9), Radii(9, 0.012f * s), 4), false);
                     break;
                 case WeaponId.Spear:
                     // A tall spear held about a third of the way up: an ash shaft with leather bindings, a leaf-shaped
