@@ -241,12 +241,19 @@ namespace OdinsCoin
                             bladeGrid[i, c] = new Vector3(0f, p.y, p.x) * s;
                         }
                     }
-                    // Worn grey steel, lighter than the helm iron, as in the concept art.
-                    d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 1.45f), CharacterKit.Sheet(bladeGrid, Vector3.right, 0.022f * s), true, SurfaceKind.Metal);
+                    // Worn dark steel with a bright honed edge, as in the concept art.
+                    d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 1.1f), CharacterKit.Sheet(bladeGrid, Vector3.right, 0.022f * s), true, SurfaceKind.Metal);
                     var edge = new System.Collections.Generic.List<Vector2>();
                     for (int i = 0; i <= 8; i++) edge.Add(Edge(i / 8f, 0.008f));
                     for (int i = 8; i >= 0; i--) edge.Add(Edge(i / 8f, -0.025f));
-                    d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 2.1f), MeshData.Tube(ToPath(edge, 0.016f, s, 9), Radii(9, 0.012f * s), 4), false);
+                    d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 2.4f), MeshData.Tube(ToPath(edge, 0.016f, s, 9), Radii(9, 0.012f * s), 4), false);
+                    // The honed bevel: a pale band just inside the edge on each face.
+                    foreach (float face in new[] { -1f, 1f })
+                    {
+                        var bevel = new Vector3[9];
+                        for (int i = 0; i < bevel.Length; i++) { var e = Edge(i / 8f, -0.03f); bevel[i] = new Vector3(face * 0.013f, e.y, e.x) * s; }
+                        d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 2.2f), MeshData.Tube(bevel, Radii(9, 0.014f * s), 4).Transformed(Vector3.zero, Quaternion.identity, new Vector3(0.3f, 1f, 1f)), false);
+                    }
                     break;
                 case WeaponId.Spear:
                     // A tall spear held about a third of the way up: an ash shaft with leather bindings, a leaf-shaped
