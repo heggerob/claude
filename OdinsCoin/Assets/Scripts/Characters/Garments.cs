@@ -106,9 +106,14 @@ namespace OdinsCoin
             foreach (var joint in new[] { Joints.LeftForearm, Joints.RightForearm })
             {
                 float wrist = -f.foreArm;
-                d.Add(joint, d.pal.leatherDark, MeshData.Lathe(new[] { new Vector2(0.02f * s, wrist + 0.03f * s), new Vector2(0.038f * s, wrist + 0.09f * s), new Vector2(0.041f * s, wrist + 0.1f * s) }, 10));
-                d.Add(joint, d.pal.leatherDark, MeshData.Ellipsoid(new Vector3(0f, wrist - 0.022f * s, 0.006f * s), new Vector3(0.036f, 0.046f, 0.04f) * s, 10, 6));
-                d.Add(joint, d.pal.leatherDark, MeshData.Ellipsoid(new Vector3(0f, wrist - 0.008f * s, 0.034f * s), new Vector3(0.016f, 0.027f, 0.016f) * s, 6, 4));
+                // A flared gauntlet cuff with a pale stitched rim.
+                d.Add(joint, d.pal.leatherDark, MeshData.Lathe(new[] { new Vector2(0.022f * s, wrist + 0.02f * s), new Vector2(0.042f * s, wrist + 0.1f * s), new Vector2(0.047f * s, wrist + 0.11f * s) }, 12));
+                d.Add(joint, d.pal.leather, CharacterKit.Band(wrist + 0.1f * s, 0.008f * s, 0.048f * s, 1f, 12), false);
+                // A big mitten-like fist, knuckles and a thumb: chunky, as the concept art draws the hands.
+                d.Add(joint, d.pal.leatherDark, MeshData.Ellipsoid(new Vector3(0f, wrist - 0.028f * s, 0.008f * s), new Vector3(0.043f, 0.054f, 0.047f) * s, 12, 7));
+                for (int k = -1; k <= 1; k++)
+                    d.Add(joint, d.pal.leatherDark, MeshData.Ellipsoid(new Vector3(k * 0.022f * s, wrist - 0.06f * s, 0.03f * s), Vector3.one * 0.018f * s, 6, 4), false);
+                d.Add(joint, d.pal.leatherDark, MeshData.Ellipsoid(new Vector3(0f, wrist - 0.01f * s, 0.042f * s), new Vector3(0.018f, 0.03f, 0.018f) * s, 6, 4));
             }
         }
 
