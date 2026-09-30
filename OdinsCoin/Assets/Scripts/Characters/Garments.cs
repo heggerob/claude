@@ -484,23 +484,40 @@ namespace OdinsCoin
         {
             var f = d.fit;
             float s = d.S;
-            float y = f.waist, r = f.waistR * 1.06f, depth = f.depth + 0.05f;
-            d.Add(Joints.Body, d.pal.leatherDark, CharacterKit.Band(y, 0.06f * s, r, depth));
-            d.Add(Joints.Body, d.pal.leather, CharacterKit.Band(y - 0.07f * s, 0.03f * s, d.SkirtRadius(y - 0.07f * s) * 1.03f, depth + 0.01f));
+            // A wide brown belt standing out over the coat, and a thinner dark one slung below it.
+            float y = f.waist, r = f.waistR * 1.1f + 0.008f * s, depth = f.depth + 0.1f;
+            d.Add(Joints.Body, d.pal.leather, CharacterKit.Band(y, 0.075f * s, r, depth));
+            d.Add(Joints.Body, d.pal.leatherDark, CharacterKit.Band(y - 0.075f * s, 0.032f * s, d.SkirtRadius(y - 0.075f * s) * 1.05f, depth + 0.02f));
+            // Big open gold rings on the belt, as in the concept art, the side ones hung with straps ending in rings.
             for (int i = -2; i <= 2; i++)
             {
                 float a = i * 0.42f;
-                var at = new Vector3(Mathf.Sin(a) * r, y - (i == 0 ? 0f : 0.01f) * s, Mathf.Cos(a) * r * depth + 0.012f);
-                float size = i == 0 ? 0.034f : 0.022f;
-                d.Add(Joints.Body, d.pal.brass, MeshData.Lathe(new[] { new Vector2(size * s, -0.006f * s), new Vector2(size * s, 0.006f * s) }, 12)
-                    .Transformed(at, Quaternion.LookRotation(new Vector3(Mathf.Sin(a), 0f, Mathf.Cos(a))) * Quaternion.Euler(90f, 0f, 0f), Vector3.one), false);
+                var outward = new Vector3(Mathf.Sin(a), 0f, Mathf.Cos(a));
+                var at = new Vector3(Mathf.Sin(a) * r, y - (i == 0 ? 0f : 0.012f) * s, Mathf.Cos(a) * r * depth + 0.014f);
+                float size = i == 0 ? 0.042f : 0.03f;
+                d.Add(Joints.Body, d.pal.brass, Ring(at, outward, size * s, 0.008f * s), false);
                 if (i != 0)
                 {
-                    var hang = at + new Vector3(0f, -0.13f * s, 0.02f * s);
-                    d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(new[] { at + new Vector3(0f, -size * s, 0f), hang }, new[] { 0.008f * s, 0.007f * s }, 5), false);
-                    d.Add(Joints.Body, d.pal.brass, MeshData.Ellipsoid(hang, Vector3.one * 0.01f * s, 5, 3), false);
+                    var hang = at + new Vector3(0f, -0.14f * s, 0.02f * s);
+                    d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(new[] { at + new Vector3(0f, -size * s, 0f), hang }, new[] { 0.009f * s, 0.008f * s }, 5), false);
+                    d.Add(Joints.Body, d.pal.brass, Ring(hang + new Vector3(0f, -0.018f * s, 0f), outward, 0.02f * s, 0.006f * s), false);
                 }
             }
+        }
+
+        /// <summary>An open metal ring (a torus) centred at <paramref name="at"/>, its face turned towards <paramref name="facing"/>.</summary>
+        public static MeshData Ring(Vector3 at, Vector3 facing, float radius, float thickness)
+        {
+            var rot = Quaternion.LookRotation(facing);
+            var path = new Vector3[17];
+            var radii = new float[17];
+            for (int i = 0; i < path.Length; i++)
+            {
+                float t = i / 16f * Mathf.PI * 2f;
+                path[i] = at + rot * new Vector3(Mathf.Cos(t) * radius, Mathf.Sin(t) * radius, 0f);
+                radii[i] = thickness;
+            }
+            return MeshData.Tube(path, radii, 5);
         }
 
         /// <summary>The jarl's tall black crown-helm: flaring up from a low brim, gold-trimmed, with curved horns and a rune plate.</summary>
