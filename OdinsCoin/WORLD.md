@@ -16,12 +16,25 @@ med ror, seil i vinden og årer.
     havnivå (Vänern, Ladoga) er land foreløpig, og fjordene er grove på 1 km (finere kyst kommer i punkt 3).
 - [x] **2. Verdenskart i spillet (`WorldMap`):** høyde og dybde for et hvilket som helst punkt, omregning
   mellom breddegrad/lengdegrad og spillkoordinater, og et oversiktskart (`docs/worldmap.png`).
-- [ ] **3. Landskap som strømmes inn:** terreng lastes i ruter rundt spilleren og fjernes bak, med ekstra
+- [x] **3. Landskap som strømmes inn:** terreng lastes i ruter rundt spilleren og fjernes bak, med ekstra
   detalj lagt på i kode (kyststein, skjær, fjell). Flytende origo, så presisjonen holder over tusenvis av
   kilometer.
+  - Ferdig (`WorldTerrain`, `TerrainDetail`, `WorldOrigin`).
+    - Ruter på 1 km lastes rundt skipet, over et grovt lag på 128 km ut mot horisonten.
+    - Bakken får farge etter hva den er: sand, gress, fjell eller snø.
+  - Kystlaget (`tools/world/build_detail.py`, `Resources/World/coast.bytes`, 21,6 MB):
+    - 1 975 ruter på 25 km med 200 m oppløsning langs alle kyster, bygget fra zoom-11-fliser.
+    - Fjorder og sund er med, og vannet på 0 m regnes som sjø.
+    - Mälaren er havbukt, slik den var i vikingtiden.
+    - Se [docs/coast-bergen.png](docs/coast-bergen.png), [docs/coast-lofoten.png](docs/coast-lofoten.png) og
+      [docs/coast-oslofjord.png](docs/coast-oslofjord.png).
+  - Ikke koblet inn i selve spillet ennå (se punkt 4).
 - [ ] **4. Ekte steder og baser:** vikingtidens byer og handelssteder på riktig sted (Kaupang, Nidaros,
   Bjørgvin, Avaldsnes, Borg i Lofoten, Hedeby, Ribe, Roskilde, Birka, Sigtuna, Uppsala, Visby, Lindisfarne,
   Jorvik, Dublin, Kirkwall, Reykjavík, Lundenwic, Novgorod med flere), med havn, brygger og hus.
+  - Ferdig (`World/Places.cs`): 26 steder på ekte koordinater (byer, haller, klostre, Jomsborg). Alle har en
+    havn som er minst 2,5 m dyp, funnet på det ekte kartet.
+  - Gjenstår: bygge stedene i spillet og starte spillet i den ekte verdenen.
 - [ ] **5. Hytter og hus:** langhus, naust, stabbur, gammer, vakttårn, palisader og brygger, tegnet i samme
   stil som figurene.
   - Ferdig (`World/Buildings.cs`, se [docs/buildings.png](docs/buildings.png)), i ekte størrelser:
