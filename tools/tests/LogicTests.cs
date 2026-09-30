@@ -11,7 +11,7 @@ public static class LogicTests
 
     static void Check(bool ok, string what)
     {
-        if (ok) passes++;
+        if (ok) { passes++; if (Environment.GetEnvironmentVariable("VERBOSE") != null) Console.WriteLine("ok: " + what); }
         else { failures++; Console.WriteLine("FAIL: " + what); }
     }
 
@@ -43,8 +43,99 @@ public static class LogicTests
         SkinTests();
         CombatTests();
         WorldMapTests();
+        ShipPhysicsTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
+    }
+
+    static void ShipPhysicsTests()
+    {
+        var wolf = ShipDesign.Wavewolf;
+        Func<ShipDesign, ShipPhysics.State, ShipPhysics.Controls, Vector2, float, ShipPhysics.State> run = (d, s, c, air, seconds) =>
+        {
+            for (float t = 0f; t < seconds; t += 0.02f) s = ShipPhysics.Step(d, s, c, air, 0.02f);
+            return s;
+        };
+        var calm = Vector2.zero;
+        var rest = new ShipPhysics.State();
+
+        // The classes are big: every one bigger than the last, the flagship over 60 m and hundreds of tonnes.
+        for (int i = 1; i < ShipDesign.All.Length; i++)
+            Check(ShipDesign.All[i].Mass > ShipDesign.All[i - 1].Mass && ShipDesign.All[i].length > ShipDesign.All[i - 1].length, ShipDesign.All[i].title + " is bigger than " + ShipDesign.All[i - 1].title);
+        Check(ShipDesign.Krakenhall.length > 60f && ShipDesign.Krakenhall.Mass > 500000f && ShipDesign.Stormbreaker.sails.Length == 3, "the flagship is over 60 m and 500 t; the war galley has three masts (" + ShipDesign.Krakenhall.Mass / 1000f + " t)");
+        foreach (var d in ShipDesign.All) Check(d.GM > 0.3f, d.title + " is stable: she comes back upright when heeled (GM " + d.GM + " m)");
+
+        // She floats at her design draught: the hull's cells at that depth hold up exactly her weight.
+        foreach (var d in ShipDesign.All)
+        {
+            float lift = 0f;
+            foreach (var c in ShipPhysics.FloatCells(d)) lift += ShipPhysics.CellBuoyancy(d, c, d.draught);
+            Check(Math.Abs(lift - d.Mass * ShipPhysics.G) < d.Mass * ShipPhysics.G * 0.01f, d.title + " floats at her draught");
+        }
+
+        // Rowing: a steady few knots, like real oared ships, no faster.
+        var rowed = run(wolf, rest, new ShipPhysics.Controls { oarsPort = 1f, oarsStarboard = 1f }, calm, 120f);
+        float rowKn = ShipPhysics.Knots(rowed.u);
+        Check(rowKn > 4f && rowKn < 8f, "rowing, the Wavewolf makes a steady few knots (" + rowKn + " kn)");
+        Check(Math.Abs(rowed.heading) < 1f, "rowing both sides evenly goes straight");
+
+        // The rudder needs water flowing past it: at rest it does nothing, under way it turns her.
+        var still = run(wolf, rest, new ShipPhysics.Controls { rudder = 1f }, calm, 20f);
+        Check(Math.Abs(still.heading) < 0.5f, "at rest the rudder can't turn her (" + still.heading + " deg)");
+        var turning = run(wolf, rowed, new ShipPhysics.Controls { rudder = 1f, oarsPort = 1f, oarsStarboard = 1f }, calm, 30f);
+        Check(turning.heading > 30f, "under way, hard to starboard turns her to starboard (" + turning.heading + " deg in 30 s)");
+        var turningPort = run(wolf, rowed, new ShipPhysics.Controls { rudder = -1f, oarsPort = 1f, oarsStarboard = 1f }, calm, 30f);
+        Check(turningPort.heading < -30f, "and hard to port turns her to port (" + turningPort.heading + ")");
+        Check(turning.u < rowed.u, "turning hard costs speed");
+
+        // Rowing one side and backing the other spins her almost on the spot.
+        var spun = run(wolf, rest, new ShipPhysics.Controls { oarsPort = 1f, oarsStarboard = -1f }, calm, 60f);
+        Check(spun.heading > 40f && spun.position.magnitude < 60f, "pulling port and backing starboard spins her round to starboard where she lies (" + spun.heading + " deg, " + spun.position.magnitude + " m)");
+
+        // Sailing: a fresh breeze (8 m/s, ~16 kn) from astern drives her well, but not much past hull speed.
+        var wind = new Vector2(0f, 8f); // blowing north, towards her bow's direction: from astern
+        var run1 = run(wolf, rest, new ShipPhysics.Controls { sail = 1f }, wind, 180f);
+        Check(ShipPhysics.Knots(run1.u) > 5f && run1.u < wolf.HullSpeed * 1.25f, "running before a fresh breeze she makes " + ShipPhysics.Knots(run1.u) + " kn (hull speed " + ShipPhysics.Knots(wolf.HullSpeed) + " kn)");
+        // Straight into the wind nothing drives her: she stops and is blown back.
+        var upwind = run(wolf, new ShipPhysics.State { u = 3f }, new ShipPhysics.Controls { sail = 1f }, new Vector2(0f, -8f), 90f);
+        Check(upwind.u < 0.3f, "no sail drives her straight into the wind (" + upwind.u + " m/s)");
+        // Sails furled, the wind still pushes the hull and masts along.
+        var drift = run(wolf, rest, new ShipPhysics.Controls(), new Vector2(0f, 12f), 120f);
+        Check(drift.u > 0.2f && drift.u < 2f, "furled in a gale she still drifts downwind (" + drift.u + " m/s)");
+
+        // A reach: wind on the beam. She sails, makes a little leeway, and heels.
+        var beam = new Vector2(8f, 0f); // blowing east, from her port side as she heads north
+        // A helmsman holds her on course (north) with the rudder.
+        var reach = rest;
+        for (float t = 0f; t < 180f; t += 0.02f)
+            reach = ShipPhysics.Step(wolf, reach, new ShipPhysics.Controls { sail = 1f, rudder = Mathf.Clamp(-reach.heading * 0.08f - reach.r * 3f, -1f, 1f) }, beam, 0.02f);
+        Check(Math.Abs(reach.heading) < 5f, "a helmsman can hold her on a beam reach (" + reach.heading + " deg off course)");
+        float leeway = Mathf.Atan2(reach.v, reach.u) * Mathf.Rad2Deg;
+        Check(ShipPhysics.Knots(reach.u) > 3f, "on a beam reach she sails (" + ShipPhysics.Knots(reach.u) + " kn, heading " + reach.heading + ", v " + reach.v + ")");
+        Check(leeway > 1f && leeway < 12f, "the keel keeps her leeway to a few degrees, to leeward (" + leeway + " deg)");
+
+        // Lateen sails point higher: 45 degrees off the wind, a lateen drives where a square sail can barely.
+        var flow45 = new Vector2(Mathf.Sin(-135f * Mathf.Deg2Rad), Mathf.Cos(-135f * Mathf.Deg2Rad)) * 8f; // apparent wind from 45 deg off the starboard bow
+        float c1, c2;
+        var lateen = ShipPhysics.Sail(new SailPlan { rig = Rig.Lateen, area = 100f, maxBrace = 80f }, new Vector2(-flow45.x, -flow45.y) * -1f, 1f, out c1);
+        var square = ShipPhysics.Sail(new SailPlan { rig = Rig.Square, area = 100f, maxBrace = 50f }, new Vector2(-flow45.x, -flow45.y) * -1f, 1f, out c2);
+        Check(lateen.y > 0f && lateen.y > square.y * 1.3f, "45 degrees off the wind a lateen sail drives far better than a square one (" + lateen.y + " vs " + square.y + " N)");
+
+        // Past hull speed the bow wave is a wall.
+        float slow = ShipPhysics.Resistance(wolf, wolf.HullSpeed * 0.7f), fast = ShipPhysics.Resistance(wolf, wolf.HullSpeed * 1.3f);
+        Check(fast > slow * 5f, "resistance climbs steeply past hull speed (" + slow + " -> " + fast + " N)");
+
+        // A war galley heels in a strong beam wind, but stays well on her feet.
+        var galley = ShipDesign.Stormbreaker;
+        var f = ShipPhysics.Total(galley, 3f, 0f, 0f, new Vector2(-12f, 0f), new ShipPhysics.Controls { sail = 1f }, 0f);
+        float heel = Math.Abs(ShipPhysics.HeelAngle(galley, f.heel));
+        Check(heel > 1f && heel < 25f, "a strong beam wind heels the war galley a few degrees (" + heel + " deg)");
+        // A bigger ship answers the helm more slowly.
+        var bigTurn = run(ShipDesign.Krakenhall, new ShipPhysics.State { u = 3f }, new ShipPhysics.Controls { rudder = 1f, oarsPort = 1f, oarsStarboard = 1f }, calm, 10f);
+        var smallTurn = run(ShipDesign.Skerrycutter, new ShipPhysics.State { u = 3f }, new ShipPhysics.Controls { rudder = 1f, oarsPort = 1f, oarsStarboard = 1f }, calm, 10f);
+        Check(smallTurn.heading > bigTurn.heading * 1.5f, "the little skerrycutter turns far quicker than the flagship (" + smallTurn.heading + " vs " + bigTurn.heading + " deg in 10 s)");
+        // Oars pull in strokes.
+        Check(ShipPhysics.Oars(18, 1f, 2f, 0.25f) > ShipPhysics.Oars(18, 1f, 2f, 0.75f) * 2f, "the oars pull hardest mid-stroke");
     }
 
     static void WorldMapTests()

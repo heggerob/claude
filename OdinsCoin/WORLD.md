@@ -27,9 +27,24 @@ med ror, seil i vinden og årer.
 - [ ] **6. Nye skip:** egne, oppdiktede skipsklasser som er større enn langskip, med flere master, høy
   akterkastell, dragehoder og tunge årerekker. Hvert skip er en design (lengde, bredde, dypgang, vekt, master,
   seil, årer, ror).
+  - Ferdig (`Ship/ShipDesign.cs`): fire klasser.
+    - **Skerrycutter** (17 m): grunn og rask gjennom skjærgården.
+    - **Wavewolf** (30 m): slank raider med latinseil akter, som går høyere mot vinden.
+    - **Stormbreaker** (44 m): tremastet krigsgalei med akterkastell og 30 årer per side.
+    - **Krakenhall** (62 m, over 1 000 tonn): firemastet flaggskip.
+  - Gjenstår: modellene (utseendet).
 - [ ] **7. Ekte skipsfysikk:** oppdrift fra skrogets form, motstand i vannet, sideveis grep fra kjølen,
   seil som gir kraft etter vinkelen mot den tilsynelatende vinden, ror som bare virker når skipet har fart,
   og årer som tar tak i vannet i takt.
+  - Ferdig (`Ship/ShipPhysics.cs`), testet med tall:
+    - **Motstand:** friksjon etter ITTC-57 og bølgemotstand, som stiger bratt forbi skrogfarten (rundt 13 knop for 30 m).
+    - **Årer:** Wavewolf ror i rundt 4 knop. Ror én side og skåt den andre, så snur hun på stedet.
+    - **Ror:** gjør ingenting når skipet står stille.
+    - **Seil:** rundt 10 knop på slør i 16 knops vind, med 3° avdrift. Ingen seil drar rett mot vinden, og
+      latinseil går høyere enn råseil.
+    - **Krenging:** krigsgaleien krenger noen grader i sterk sidevind.
+    - **Svinging:** små skip svinger mye raskere enn store.
+  - Gjenstår: koble fysikken til skipene i spillet (oppdrift på bølgene per celle i skroget).
 - [ ] **8. Seiling i praksis:** kryssing mot vinden, rev av seil i storm, ankring, fortøying ved brygga.
 
 ## Merk
