@@ -1347,15 +1347,24 @@ namespace OdinsCoin
             // Loose wavy locks falling to the shoulder on the braid's side.
             d.Add(Joints.Head, d.pal.hair, CharacterKit.Tuft(new Vector3(r * 0.95f, cy + r * 0.1f, r * 0.05f), new Vector3(r * 1.2f, cy - r * 1.1f, r * 0.1f), 0.03f * s));
             d.Add(Joints.Head, d.pal.hair, CharacterKit.Tuft(new Vector3(r * 0.9f, cy, -r * 0.3f), new Vector3(r * 1.3f, cy - r * 1.3f, -r * 0.25f), 0.026f * s));
-            // The braid itself, gathered low at the back and swinging out over the right shoulder.
-            var path = new[] { new Vector3(r * 0.6f, cy - r * 0.55f, -r * 0.75f), new Vector3(r * 1.05f, cy - r * 1.05f, -r * 0.6f), new Vector3(r * 1.35f, cy - r * 1.7f, -r * 0.4f), new Vector3(r * 1.45f, cy - r * 2.3f, -r * 0.3f) };
+            // A short braid gathered low at the back and tied, then loosening into a tail of wavy locks that flares
+            // out over the right shoulder, as in the concept art.
+            var path = new[] { new Vector3(r * 0.6f, cy - r * 0.55f, -r * 0.75f), new Vector3(r * 1.0f, cy - r * 0.95f, -r * 0.62f), new Vector3(r * 1.25f, cy - r * 1.3f, -r * 0.5f) };
             string bj = d.Swing(Joints.LeftBraid, Joints.Head, path[0], SwingKind.Braid);
             var p0 = path[0];
             for (int i = 0; i < path.Length; i++) path[i] -= p0;
-            d.Add(bj, d.pal.hair, CharacterKit.Braid(path, 0.03f * s));
+            d.Add(bj, d.pal.hair, CharacterKit.Braid(path, 0.032f * s));
             var end = path[path.Length - 1];
-            d.Add(bj, d.pal.hair, CharacterKit.Tuft(end, end + new Vector3(0.02f, -0.08f, 0.01f) * s, 0.028f * s));
-            d.Add(bj, d.pal.hair, CharacterKit.Tuft(path[1], path[1] + new Vector3(0.07f, -0.05f, 0f) * s, 0.015f * s));
+            d.Add(bj, d.pal.leatherDark, MeshData.Ellipsoid(end, new Vector3(0.028f, 0.014f, 0.028f) * s, 8, 4), false);
+            var locks = new[] { new Vector3(0.07f, -0.13f, 0.02f), new Vector3(0.11f, -0.07f, -0.02f), new Vector3(0.03f, -0.17f, 0.03f), new Vector3(0.09f, -0.16f, -0.01f) };
+            for (int i = 0; i < locks.Length; i++)
+            {
+                // Each lock bends once on the way down, so the tail reads as wavy rather than a stiff brush.
+                var tip = end + locks[i] * s;
+                var mid = Vector3.Lerp(end, tip, 0.5f) + new Vector3(-0.02f, 0f, 0.01f) * s * ((i & 1) == 0 ? 1f : -1f);
+                d.Add(bj, i == 3 ? VikingModel.Shade(d.pal.hair, 0.8f) : d.pal.hair, CharacterKit.Tuft(end, mid, 0.024f * s));
+                d.Add(bj, i == 3 ? VikingModel.Shade(d.pal.hair, 0.8f) : d.pal.hair, CharacterKit.Tuft(mid, tip, 0.017f * s));
+            }
         }
 
         /// <summary>One thick braid over the right shoulder, down the front to the waist.</summary>
