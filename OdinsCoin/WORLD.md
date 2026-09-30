@@ -105,6 +105,9 @@ med ror, seil i vinden og årer.
     - **Fortøying (G ved brygga):** fortøyninger fra baug og hekk til pullertene på brygga. Reisen starter
       fortøyd hjemme, og hver brygge ved de ekte stedene har pullerter.
     - HUD-en varsler når du tar inn vann eller ankeret drar.
+    - **Grunnstøting:** et forsiktig puff mot en sandbanke gjør ingenting. Treffer du grunnen i fart, blir bordgangen
+      slått inn, med flere hull jo fortere du går. I 10 knop får skipet tre hull. Hullene må tettes, og vannet må
+      øses ut.
     - **Kryssing:** fysikken regner ut hvor høyt hvert skip går mot vinden i vinden som blåser nå (Wavewolf 51°,
       den råriggede Skerrycutter 55° i 16 knop). HUD-en viser seilingen: slør, halvvind, bidevind, og «in irons»
       med de to kursene du må krysse på for å komme opp mot vinden.

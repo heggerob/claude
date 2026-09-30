@@ -491,6 +491,7 @@ namespace OdinsCoin
             Body.AddRelativeTorque(new Vector3(-ang.x, 0f, -ang.z) * d.Mass * d.beam * 0.6f);
 
             // Aground: where the real sea floor comes up under her keel, she grinds to a stop.
+            bool wasAground = Aground;
             Aground = false;
             var map = RealWorld.Active ? WorldMap.Current : null;
             if (map != null)
@@ -502,6 +503,14 @@ namespace OdinsCoin
                     Aground = true;
                     Vector3 v = Compat.Velocity(Body);
                     v.y = 0f;
+                    // Striking the bottom at speed stoves in the strakes.
+                    int holes = Seamanship.GroundingHoles(v.magnitude);
+                    if (!wasAground && PlayerShip && holes > 0)
+                    {
+                        Hull.Holes += holes;
+                        CombatHud.Banner("SHE STRIKES THE ROCKS!", holes + (holes == 1 ? " plank" : " planks") + " stove in. Plug them and bail (E), and take her off gently.");
+                        Sfx.At(SfxId.RamCrash, keel);
+                    }
                     Body.AddForce(-v * d.Mass * 1.5f + Vector3.up * d.Mass * ShipPhysics.G * Mathf.Clamp01((floor - keel.y) / d.draught) * 0.5f);
                 }
             }

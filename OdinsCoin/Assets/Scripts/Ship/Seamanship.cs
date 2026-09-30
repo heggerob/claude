@@ -111,6 +111,15 @@ namespace OdinsCoin
             return dir * pull;
         }
 
+        // ---- Grounding ----
+
+        /// <summary>A gentle nudge onto a sandbank does no harm; the faster she strikes, the more planks stove in.</summary>
+        public static int GroundingHoles(float speed)
+        {
+            if (speed < 1.5f) return 0;
+            return Mathf.Min(6, Mathf.CeilToInt((speed - 1.5f) / 1.5f));
+        }
+
         // ---- Mooring ----
 
         /// <summary>How far from a bollard she can be to throw a line to it (m).</summary>

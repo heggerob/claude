@@ -156,6 +156,10 @@ public static class LogicTests
             "the anchor holds her bare-poled in 28 kn (" + (bare / 1000f).ToString("0.0") + " kN of " + (Seamanship.HoldingForce(wolf) / 1000f).ToString("0") + ") but not under full sail in a gale (" + (sailPull / 1000f).ToString("0") + " kN)");
         Check(Seamanship.MaxAnchorDepth >= 20f && Seamanship.MaxAnchorDepth <= Seamanship.RodeLength, "she can anchor in water up to " + Seamanship.MaxAnchorDepth + " m deep");
 
+        // Running aground: a nudge at a walking pace is harmless, striking at full speed stoves in her planks.
+        Check(Seamanship.GroundingHoles(1f) == 0 && Seamanship.GroundingHoles(3f) == 1 && Seamanship.GroundingHoles(5.5f) >= 3 && Seamanship.GroundingHoles(50f) == 6,
+            "grounding gently does no harm; at ten knots she's holed in " + Seamanship.GroundingHoles(5.14f) + " places");
+
         // Mooring lines: slack until they're taken up, then they hold her in.
         Check(Seamanship.LinePull(wolf, new Vector3(3f, 0f, 0f), Vector3.zero, 4f) == Vector3.zero, "a slack line doesn't pull");
         var line = Seamanship.LinePull(wolf, new Vector3(5f, 0f, 0f), Vector3.zero, 4f);
