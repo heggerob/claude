@@ -267,6 +267,19 @@ namespace OdinsCoin
             return Vector3.MoveTowards(velocity, target, rate * dt);
         }
 
+        /// <summary>
+        /// Where your hands reach for things: at your middle, or in first person a little in front of you, so you
+        /// pick up the chest you're looking at rather than one behind you.
+        /// </summary>
+        Vector3 ReachPoint()
+        {
+            var rig = CameraRig.Instance;
+            return ReachPoint(transform.position, rig != null && rig.FirstPerson ? rig.FlatForward : Vector3.zero);
+        }
+
+        /// <summary><see cref="ReachPoint()"/> for a body at <paramref name="at"/> looking along <paramref name="look"/> (zero in third person).</summary>
+        public static Vector3 ReachPoint(Vector3 at, Vector3 look) { return at + Vector3.up * 0.5f + look * (InteractRange * 0.45f); }
+
         void UpdatePrompt()
         {
             Prompt = null;
@@ -300,7 +313,7 @@ namespace OdinsCoin
                 Prompt = CanClimbAboard ? "[E] Climb aboard" : "[E] Put the chest down";
                 return;
             }
-            var chest = TreasureChest.NearestFree(transform.position + Vector3.up * 0.5f, InteractRange);
+            var chest = TreasureChest.NearestFree(ReachPoint(), InteractRange);
             if (chest != null) { Prompt = "[E] Pick up the chest (" + chest.Value + " gold)"; return; }
             if (OnShip && Ship.Hull.Holes > 0) { Prompt = "[E] Plug a hole (" + Ship.Hull.Holes + " letting water in)"; return; }
             if (OnShip && Ship.Hull.Level > 0.02f) { Prompt = "[E] Bail water (" + Mathf.RoundToInt(Ship.Hull.Level * 100f) + "% full)"; return; }
@@ -383,7 +396,7 @@ namespace OdinsCoin
             }
             if (Carrying == null)
             {
-                var chest = TreasureChest.NearestFree(transform.position + Vector3.up * 0.5f, InteractRange);
+                var chest = TreasureChest.NearestFree(ReachPoint(), InteractRange);
                 if (chest != null)
                 {
                     chest.PickUp(transform);

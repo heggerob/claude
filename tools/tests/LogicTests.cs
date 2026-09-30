@@ -129,6 +129,9 @@ public static class LogicTests
         var fromBehind = CameraRig.HurtEdges(180f);
         Check(fromRight.y > 0.95f && fromRight.w < 0.3f && fromBehind.z > 0.95f && fromBehind.x < 0.3f,
             "a blow from the right reddens the right edge most; one from behind, the bottom edge");
+        var reachAhead = Viking.ReachPoint(Vector3.zero, Vector3.forward);
+        Check(reachAhead.z > 0.5f && Vector3.Distance(reachAhead, new Vector3(0f, 0.5f, 1.5f)) < Vector3.Distance(reachAhead, new Vector3(0f, 0.5f, -1.5f)) - 1f,
+            "in first person you reach for the chest in front of you, not the one behind");
         var facer = new Locomotion();
         facer.Reset(Vector2.zero, 0f);
         for (int i = 0; i < 30; i++) { facer.Face(90f); facer.Step(new Vector2(1f, 0f), Viking.WalkSpeed, 1f / 60f); facer.Face(90f); }
