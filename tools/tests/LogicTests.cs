@@ -677,6 +677,14 @@ public static class LogicTests
 
     static void DrawnTextureTests()
     {
+        // Cast shadows darken the tone into the hatched range; in the sun nothing changes.
+        Check(InkStyle.Shadowed(0.9f, 1f) == 0.9f && InkStyle.Shadowed(0.9f, 0f) <= 0.25f && InkStyle.Shadowed(0.1f, 0f) == 0.1f,
+            "a cast shadow darkens a lit surface into hatching, and never lightens a dark one");
+        {
+            float lit = 0f, shaded = 0f;
+            for (int x = 0; x < 40; x++) for (int y = 0; y < 40; y++) { lit += InkStyle.Hatch(0.9f, x, y); shaded += InkStyle.Hatch(InkStyle.Shadowed(0.9f, 0f), x, y); }
+            Check(shaded < lit - 1f, "and so it gets pencil strokes (" + shaded + " vs " + lit + ")");
+        }
         int n = DrawnTextures.Size;
         foreach (SurfaceKind kind in Enum.GetValues(typeof(SurfaceKind)))
         {

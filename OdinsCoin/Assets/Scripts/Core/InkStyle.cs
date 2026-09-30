@@ -30,6 +30,12 @@ namespace OdinsCoin
             return Mathf.Clamp01((Vector3.Dot(normal, toSun) + 0.35f) / 1.35f);
         }
 
+        /// <summary>
+        /// The tone under a cast shadow: <paramref name="lit"/> 1 is in the sun, 0 fully shaded, which darkens it to
+        /// that of a surface turned away (so shadows on the ground get hatched like everything else).
+        /// </summary>
+        public static float Shadowed(float tone, float lit) { return Mathf.Lerp(Mathf.Min(tone, 0.25f), tone, Mathf.Clamp01(lit)); }
+
         /// <summary>Colour multiplier for a tone: 0.55 in full shadow up to 1.1 in full sun.</summary>
         public static float Shade(float tone) { return 0.55f + 0.55f * tone; }
 
