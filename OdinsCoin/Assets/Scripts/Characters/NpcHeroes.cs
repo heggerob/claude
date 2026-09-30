@@ -99,6 +99,35 @@ namespace OdinsCoin
     public static class HeroPose
     {
         /// <summary>
+        /// How much the elbow bends (degrees, negative = forearm forward) for an upper arm swung by
+        /// <paramref name="armPitch"/>: always a little, and more as the arm swings forward, like a relaxed walk.
+        /// </summary>
+        public static float WalkElbow(float armPitch) { return -10f - Mathf.Max(0f, -armPitch) * 0.6f; }
+
+        /// <summary>
+        /// The elbow through a chop, <paramref name="t"/> 0..1: folded tight during the wind-up, snapping straight
+        /// as the blow lands, easing back after.
+        /// </summary>
+        public static float ChopElbow(float t)
+        {
+            t = Mathf.Clamp01(t);
+            if (t < 0.35f) return Mathf.Lerp(-10f, -95f, t / 0.35f);
+            if (t < 0.55f) return Mathf.Lerp(-95f, 0f, (t - 0.35f) / 0.2f);
+            return Mathf.Lerp(0f, -10f, (t - 0.55f) / 0.45f);
+        }
+
+        /// <summary>A slow breath: the body rocks forward and back by a degree or two, about every four seconds.</summary>
+        public static float Breath(float time) { return Mathf.Sin(time * 1.6f) * 1.4f; }
+
+        /// <summary>Set both elbows (only storybook heroes have them).</summary>
+        public static void Elbows(VikingBuilder.Parts parts, float left, float right)
+        {
+            if (parts == null || parts.leftForearm == null) return;
+            parts.leftForearm.localRotation = Quaternion.Euler(left, 0f, 0f);
+            parts.rightForearm.localRotation = Quaternion.Euler(right, 0f, 0f);
+        }
+
+        /// <summary>
         /// Bring the shield up (<paramref name="amount"/> 0 = down, 1 = raised). Heroes lift the shield arm at the
         /// shoulder and elbow; the old models slide the shield from their back to the front.
         /// </summary>

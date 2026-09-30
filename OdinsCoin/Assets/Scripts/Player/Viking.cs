@@ -368,21 +368,25 @@ namespace OdinsCoin
                 float heave = Mathf.Sin(bailAnim / 0.35f * Mathf.PI) * 110f;
                 parts.leftArm.localRotation = Quaternion.Euler(-heave, 0f, 10f);
                 parts.rightArm.localRotation = Quaternion.Euler(-heave, 0f, -10f);
+                HeroPose.Elbows(parts, -30f, -30f);
             }
             else if (Carrying != null)
             {
                 // Both arms out front, hugging the chest.
                 parts.leftArm.localRotation = Quaternion.Euler(-70f, 0f, 8f);
                 parts.rightArm.localRotation = Quaternion.Euler(-70f, 0f, -8f);
+                HeroPose.Elbows(parts, -45f, -45f);
             }
             else
             {
                 parts.leftArm.localRotation = Quaternion.Euler(-swing * 0.8f, 0f, 0f);
                 parts.rightArm.localRotation = Quaternion.Euler(AtHelm ? -60f : swing * 0.8f, 0f, 0f);
+                // Stick arms bend at the elbow as they swing; the helm hand reaches for the oar.
+                HeroPose.Elbows(parts, HeroPose.WalkElbow(-swing * 0.8f), AtHelm ? -30f : HeroPose.WalkElbow(swing * 0.8f));
             }
             if (parts.axe != null) parts.axe.gameObject.SetActive(Carrying == null);
-            // Lean into the swim.
-            parts.body.localRotation = Quaternion.Euler(Swimming ? 60f : 0f, 0f, 0f);
+            // Lean into the swim; standing, a slow breath.
+            parts.body.localRotation = Quaternion.Euler(Swimming ? 60f : HeroPose.Breath(Time.time), 0f, 0f);
         }
     }
 

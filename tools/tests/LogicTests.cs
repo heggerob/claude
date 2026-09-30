@@ -33,6 +33,7 @@ public static class LogicTests
         DrawnTextureTests();
         HeroChoiceTests();
         NpcHeroTests();
+        StickAnimTests();
         CombatTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
@@ -793,6 +794,18 @@ public static class LogicTests
             Check(usesPalette, spec.outfit + " NPC wears its own colours");
         }
         Check(NpcHeroes.DanishRaider(1).weapon == WeaponId.Bow && NpcHeroes.Gunnar().offHand == OffHandId.Map && NpcHeroes.Bjorn().weapon == WeaponId.None, "NPCs carry the right things");
+    }
+
+    static void StickAnimTests()
+    {
+        Check(HeroPose.WalkElbow(0f) < 0f && HeroPose.WalkElbow(0f) > -20f, "a hanging arm keeps a slight bend");
+        Check(HeroPose.WalkElbow(-30f) < HeroPose.WalkElbow(0f) && HeroPose.WalkElbow(30f) == HeroPose.WalkElbow(0f), "the elbow bends more as the arm swings forward");
+        Check(HeroPose.ChopElbow(0.35f) < -80f, "the wind-up folds the elbow tight");
+        Check(Math.Abs(HeroPose.ChopElbow(0.55f)) < 0.01f, "the blow lands with a straight arm");
+        Check(Math.Abs(HeroPose.ChopElbow(0f) - HeroPose.ChopElbow(1f)) < 0.01f, "the chop ends where it began");
+        float lo = 99f, hi = -99f;
+        for (float t = 0f; t < 10f; t += 0.05f) { float b = HeroPose.Breath(t); lo = Math.Min(lo, b); hi = Math.Max(hi, b); }
+        Check(hi > 1f && lo < -1f && hi < 3f && lo > -3f, "breathing rocks the body a degree or two");
     }
 
     static float Avg(float tone) { float s = 0f; for (int y = 0; y < 40; y++) for (int x = 0; x < 40; x++) s += InkStyle.Hatch(tone, x, y); return s / 1600f; }

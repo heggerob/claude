@@ -58,11 +58,11 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
   - [x] Papirkorn: papirteksturen ligger fast på skjermen over alt i InkToon (og i forhåndsvisningen).
   - [ ] Skygger som faller på ting med InkToon (i dag kaster de skygge, men viser ikke skygger fra andre).
 - [x] **10b. Tegnede teksturer:** (`DrawnTextures.cs`, se `docs/textures.png`; hver del får type fra palettfargen) stoff, pels, lær, tre og mønsterkanter lages i kode med penselstrøk og streker, slik at alt ser tegnet ut som på bildet.
-- [ ] **11. I spillet:** velg figur i menyen, bruk figurene som spiller og NPC-er, og la animasjonene passe pinne-lemmene (pust, gange, sving).
+- [x] **11. I spillet:** velg figur i menyen, bruk figurene som spiller og NPC-er, og la animasjonene passe pinne-lemmene (pust, gange, sving).
   - [x] Velg helt: tittelmenyen har «Your hero». Der velger du antrekk (med evnene vist), kjønn, høyde, bygning, våpen og hva du har i den andre handa. Spilleren bygges om med én gang, og valget lagres for seg (`HeroChoice`), så det overlever en ny seilas.
   - [x] Spilleren er en storybook-helt (`HeroBuilder`). Blokkering løfter skjoldarmen med albue i stedet for å flytte skjoldet.
   - [x] Saksere, danske raidere, Bjørn og Gunnar er helter (`NpcHeroes`): antrekk med egne farger og kropp fra et frø, så ingen er like. De er med nederst i `docs/heroes.png`.
-  - [ ] Animasjoner laget for pinnelemmer: albuer i gange, pust og sving.
+  - [x] Animasjoner for pinnelemmer (`HeroPose`): albuene bøyer seg når armene svinger i gange, knyttes stramt i opptrekket til et hugg og strekkes når slaget treffer. Albuene bøyes også når figuren bærer kister og øser vann, og alle puster sakte når de står.
 - [ ] **12. Skins:** fargesett og varianter for hver figur, kjøpt for gull i methallen, med en figur som snurrer rundt i butikken.
 - [ ] **13. Detaljer:** runer og mønstre på stoff, nagler og ringer, kapper som blafrer i vinden, og flere ansiktsuttrykk.
 - [ ] **14. Flere skins:** nye sett (vinter, draugr, gull-jarl, havfolk) og sjeldne skins fra kister.

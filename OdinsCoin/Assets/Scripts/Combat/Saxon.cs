@@ -163,6 +163,13 @@ namespace OdinsCoin
                 armAngle = t < Windup ? Mathf.Lerp(0f, -160f, t / Windup) : Mathf.Lerp(-160f, 40f, Mathf.Clamp01((t - Windup) / 0.15f));
             }
             parts.rightArm.localRotation = Quaternion.Euler(armAngle, 0f, 0f);
+            if (parts.rightForearm != null)
+            {
+                float elbow = HeroPose.WalkElbow(armAngle);
+                if (attackStart > 0f) elbow = HeroPose.ChopElbow((Time.time - attackStart) / (Windup + 0.15f));
+                parts.rightForearm.localRotation = Quaternion.Euler(elbow, 0f, 0f);
+            }
+            parts.body.localRotation = Quaternion.Euler(HeroPose.Breath(Time.time + home.x), 0f, 0f);
             // They keep their shield up while waiting to strike.
             Blocking = attackStart < 0f && speed < 0.5f;
             HeroPose.Block(parts, Blocking ? 1f : 0f);
