@@ -49,6 +49,8 @@ namespace OdinsCoin
         }
 
         public Frame pose;
+        /// <summary>0..1 through the crouch before a jump (set by whoever jumps): knees bend, arms swing back.</summary>
+        public float crouch;
 
         readonly Damped bodyPitch = new Damped(), bodyRoll = new Damped(), bodyYaw = new Damped(), lift = new Damped();
         readonly Damped headPitch = new Damped(), headYaw = new Damped();
@@ -113,7 +115,9 @@ namespace OdinsCoin
             float aHipL = -6f * rising + 58f * tuck + 32f * falling, aKneeL = 6f * rising + 100f * tuck + 34f * falling;
             float aHipR = 12f * rising + 30f * tuck + 14f * falling, aKneeR = 30f * rising + 72f * tuck + 22f * falling;
             // Landing: both knees give and the hips fold, deeper the harder the fall.
-            float sHip = squash * 42f, sKnee = squash * 80f;
+            // (The crouch before a jump bends the same way, arms thrown back to swing up into the leap.)
+            float dip = Mathf.Sin(crouch * Mathf.PI * 0.5f);
+            float sHip = squash * 42f + dip * 45f, sKnee = squash * 80f + dip * 85f;
             if (swimming) { hipL = Mathf.Sin(time * 4f) * 25f; hipR = -hipL; kneeL = 20f + 15f * Mathf.Sin(time * 4f + 1f); kneeR = 20f - 15f * Mathf.Sin(time * 4f + 1f); }
             float wl = Mathf.Lerp(hipL, aHipL, air.value) + sHip, wr = Mathf.Lerp(hipR, aHipR, air.value) + sHip;
             float kl = Mathf.Lerp(kneeL, aKneeL, air.value) + sKnee, kr = Mathf.Lerp(kneeR, aKneeR, air.value) + sKnee;
@@ -135,8 +139,8 @@ namespace OdinsCoin
             // and out for balance in the air.
             float armSwing = -swing * Mathf.Lerp(0.8f, 1.3f, g);
             float airArm = Mathf.Lerp(-55f, -95f, falling);
-            float al = Mathf.Lerp(-armSwing, airArm, air.value) + squash * 10f;
-            float ar = Mathf.Lerp(armSwing, airArm * 0.8f, air.value) + squash * 10f;
+            float al = Mathf.Lerp(-armSwing, airArm, air.value) + squash * 10f + dip * 45f;
+            float ar = Mathf.Lerp(armSwing, airArm * 0.8f, air.value) + squash * 10f + dip * 45f;
             pose.leftArm = new Vector3(armL.Step(al, dt, 0.06f), 0f, 0f);
             pose.rightArm = new Vector3(armR.Step(ar, dt, 0.06f), 0f, 0f);
             float outward = armOut.Step(Mathf.Lerp(4f + 4f * g, 28f, air.value) + squash * 12f, dt, 0.08f);
@@ -150,7 +154,7 @@ namespace OdinsCoin
             // Body: leans into its speed (and harder while speeding up), banks into turns, twists a little
             // against the stride, bobs twice a stride, breathes when still, folds over a hard landing.
             float lean = swimming ? 60f : Mathf.Lerp(0f, 10f, g) + Mathf.Clamp(loco.acceleration * 1.1f, -7f, 9f)
-                         + (g < 0.05f ? HeroPose.Breath(time) : 0f) + squash * 16f - air.value * 4f;
+                         + (g < 0.05f ? HeroPose.Breath(time) : 0f) + squash * 16f + dip * 18f - air.value * 4f;
             float bank = -Mathf.Clamp(loco.turnRate * 0.05f * (0.3f + g), -12f, 12f)
                          // ...and the weight rolls over onto each foot in turn (most at a walk).
                          - Mathf.Sin(a) * Mathf.Lerp(3.5f, 1.5f, run) * reach;

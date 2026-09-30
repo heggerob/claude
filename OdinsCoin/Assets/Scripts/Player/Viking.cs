@@ -38,6 +38,9 @@ namespace OdinsCoin
         /// <summary>Speed, turning and footsteps: turning takes steps, speed builds up and dies down.</summary>
         readonly Locomotion loco = new Locomotion { sprintSpeed = RunSpeed };
         readonly HeroAnimator animator = new HeroAnimator();
+        /// <summary>How long the crouch before a jump lasts (s), and how much of it is left.</summary>
+        public const float JumpCrouch = 0.1f;
+        float jumpCrouch;
         bool locoStarted;
 
         /// <summary>The Viking's walking and turning, for animation.</summary>
@@ -176,7 +179,13 @@ namespace OdinsCoin
             else if (controller.isGrounded)
             {
                 verticalSpeed = -2f;
-                if (GameInput.Pressed(Key.Jump) && Carrying == null) verticalSpeed = JumpSpeed;
+                // A jump starts with a quick crouch (a tenth of a second) and springs off from it.
+                if (GameInput.Pressed(Key.Jump) && Carrying == null && jumpCrouch <= 0f) jumpCrouch = JumpCrouch;
+                if (jumpCrouch > 0f)
+                {
+                    jumpCrouch -= dt;
+                    if (jumpCrouch <= 0f) { jumpCrouch = 0f; verticalSpeed = JumpSpeed; }
+                }
             }
             else
             {
@@ -379,6 +388,7 @@ namespace OdinsCoin
             if (parts == null) return;
             // Walking, sprinting, turning, jumping and landing, all smoothed: see HeroAnimator.
             bool grounded = controller == null || !controller.enabled || controller.isGrounded || AtHelm;
+            animator.crouch = jumpCrouch > 0f ? 1f - jumpCrouch / JumpCrouch : 0f;
             animator.Step(dt, loco, grounded, verticalSpeed, Swimming, Time.time);
             animator.Apply(parts);
             bailAnim = Mathf.Max(0f, bailAnim - dt);

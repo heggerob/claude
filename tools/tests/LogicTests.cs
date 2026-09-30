@@ -1153,6 +1153,13 @@ public static class LogicTests
         Check(bank < -2f, "the body banks into a turn (" + bank + ")");
         Check(look > 10f, "the head looks where it's going before the body gets there (" + look + ")");
 
+        // The crouch before a jump bends the knees and swings the arms back.
+        {
+            var cl = Walker(); var ca = new HeroAnimator(); float ct = 0f;
+            Animate(cl, ca, Vector2.zero, walk, 0.5f, true, 0f, ref ct);
+            for (int i = 0; i < 6; i++) { ca.crouch = i / 6f; Animate(cl, ca, Vector2.zero, walk, 1f / 60f, true, 0f, ref ct); }
+            Check(ca.pose.leftKnee > 35f && ca.pose.leftArm.x > 15f && ca.pose.lift < -0.03f, "crouching to jump bends the knees, drops the hips and swings the arms back");
+        }
         // A jump: tucked up in the air, a squash on landing, and never a jolt.
         l = Walker(); an = new HeroAnimator(); lastDelta = null;
         float jolt = Animate(l, an, new Vector2(0f, 1f), sprint, 1.5f, true, 0f, ref time);

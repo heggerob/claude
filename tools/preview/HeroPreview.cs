@@ -261,9 +261,9 @@ public static class HeroPreview
         var springs = new Dictionary<string, SwingSpring>();
         foreach (var sw in model.Swings) springs[sw.joint] = SwingSpring.For(sw.kind);
         var frames = new List<Shot>();
-        var captures = new[] { 0.2f, 1.30f, 1.39f, 1.48f, 1.57f, 2.40f, 2.47f, 2.54f, 2.61f, 2.9f, 3.2f, 3.38f, 3.56f, 3.66f, 3.76f, 4.9f };
+        var captures = new[] { 0.2f, 1.30f, 1.39f, 1.48f, 1.57f, 2.40f, 2.47f, 2.54f, 2.61f, 2.9f, 3.14f, 3.2f, 3.38f, 3.56f, 3.66f, 3.76f, 4.9f };
         var names = new[] { "Standing", "Walk 1", "Walk 2", "Walk 3", "Walk 4", "Run 1", "Run 2", "Run 3", "Run 4", "Banking into a turn",
-            "Jump: push-off", "Tucked at the top", "Reaching down", "Landing", "Soaking it up", "Stopping" };
+            "Crouch to jump", "Jump: push-off", "Tucked at the top", "Reaching down", "Landing", "Soaking it up", "Stopping" };
         var loco = new Locomotion { sprintSpeed = 6.5f };
         loco.Reset(Vector2.zero, 0f);
         var anim = new HeroAnimator();
@@ -277,6 +277,8 @@ public static class HeroPreview
             if (t > 2.6f && t < 3.0f) wish = new Vector2(1f, 1f);
             // Walk frames are a real stroll (Ctrl), the run frames a sprint (Shift).
             float maxSpeed = t > 1.6f ? 6.5f : 1.7f;
+            // The crouch first (as in the game), then the leap.
+            anim.crouch = t >= 3.05f && t < 3.15f ? (t - 3.05f) / 0.1f : 0f;
             if (!jumped && t >= 3.15f) { jumped = true; vy = 5.5f; }
             bool grounded = y <= 0f && vy <= 0f;
             if (grounded) loco.Step(wish, maxSpeed, dt); else loco.Air(wish, dt);
