@@ -103,7 +103,7 @@ namespace OdinsCoin
                     Garments.RaiderBelt(d, 2);
                     Garments.Apron(d, 0.3f);
                     Garments.ScrollCase(d);
-                    Garments.SideCloak(d, 0.56f, 0.7f);
+                    Garments.SideCloak(d, 0.6f, 0.82f);
                     // Over the cloak's shoulders, so the fur shows on top as in the concept art.
                     Garments.ShoulderPelt(d, 1.3f, 0f, 0.65f, 2.2f, 1.1f);
                     Garments.Bandana(d);
