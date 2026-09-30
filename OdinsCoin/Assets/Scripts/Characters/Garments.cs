@@ -805,7 +805,7 @@ namespace OdinsCoin
         {
             var f = d.fit;
             float s = d.S;
-            d.Add(Joints.Body, d.pal.fur, CharacterKit.FurRing(new Vector3(0f, f.shoulderY + 0.025f * s, -0.01f * s), f.chestR * 1.3f, f.depth + 0.12f, 0.1f * s, 40, 0.09f * s, d.seed + 57, 0.55f, 0.5f));
+            d.Add(Joints.Body, d.pal.fur, CharacterKit.FurRing(new Vector3(0f, f.shoulderY + 0.025f * s, -0.01f * s), f.chestR * 1.45f, f.depth + 0.12f, 0.11f * s, 44, 0.09f * s, d.seed + 57, 0.55f, 0.5f));
         }
 
         /// <summary>An under-skirt in the accent colour peeking out below the skirt, its hem trimmed with fur tufts.</summary>
