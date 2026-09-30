@@ -1251,8 +1251,9 @@ namespace OdinsCoin
                 d.Add(Joints.Body, d.pal.ink, MeshData.Ellipsoid(front + new Vector3(Mathf.Cos(a) * 0.04f * s, Mathf.Sin(a) * 0.04f * s, 0.011f * s), Vector3.one * 0.0045f * s, 4, 3), false);
             }
             // The bundle at the right hip, hanging out in front of the robe.
-            // Just inside the edge of the open cloak, so it isn't lost among the feathers.
-            float ang = 0.45f;
+            // Out at the side, clear of the braids and the hand, just inside the edge of the open cloak so it
+            // isn't lost among the feathers.
+            float ang = 0.95f;
             var hip = new Vector3(Mathf.Sin(ang) * r, y - 0.01f * s, Mathf.Cos(ang) * r * depth + 0.03f * s);
             var bone = d.pal.parchment;
             // Thongs down to each charm: (x offset, drop, z offset).
@@ -1264,10 +1265,10 @@ namespace OdinsCoin
             }
             // The skull: a rounded cranium, a snout, dark eye holes, looking out.
             var skull = hip + new Vector3(-0.02f, -0.15f, 0.045f) * s;
-            d.Add(Joints.Body, bone, MeshData.Ellipsoid(skull, new Vector3(0.045f, 0.04f, 0.042f) * s, 9, 6));
-            d.Add(Joints.Body, bone, MeshData.Ellipsoid(skull + new Vector3(0f, -0.036f, 0.022f) * s, new Vector3(0.028f, 0.03f, 0.024f) * s, 7, 5));
+            d.Add(Joints.Body, bone, MeshData.Ellipsoid(skull, new Vector3(0.055f, 0.05f, 0.05f) * s, 9, 6));
+            d.Add(Joints.Body, bone, MeshData.Ellipsoid(skull + new Vector3(0f, -0.044f, 0.026f) * s, new Vector3(0.034f, 0.036f, 0.028f) * s, 7, 5));
             foreach (float ex in new[] { -1f, 1f })
-                d.Add(Joints.Body, d.pal.ink, MeshData.Ellipsoid(skull + new Vector3(ex * 0.018f, -0.005f, 0.036f) * s, new Vector3(0.011f, 0.01f, 0.006f) * s, 5, 3), false);
+                d.Add(Joints.Body, d.pal.ink, MeshData.Ellipsoid(skull + new Vector3(ex * 0.022f, -0.006f, 0.044f) * s, new Vector3(0.013f, 0.012f, 0.007f) * s, 5, 3), false);
             // The rune pendant: a long wooden drop with a rune cut in it.
             var pend = hip + new Vector3(0.015f, -0.3f, 0.03f) * s;
             d.Add(Joints.Body, d.pal.leather, MeshData.Ellipsoid(pend, new Vector3(0.028f, 0.045f, 0.008f) * s, 10, 6));
