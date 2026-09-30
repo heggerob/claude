@@ -1242,19 +1242,19 @@ namespace OdinsCoin
                     Charm(d, hang, (0.1f + 0.08f * (k % 2)) * s, k, rng);
                 }
             }
-            // Long strings of charms hanging from the bar close beside the hood, down past the chin:
-            // a rune disc, a bead, another disc, a tooth.
+            // One long string of charms each side, hanging from the bar clear of the hood down past the shoulder:
+            // a rune disc, a bead, another disc, a tooth. (Kept away from the face, which stays clear.)
             foreach (float x in new[] { -1f, 1f })
-                foreach (float spread in new[] { 1.2f, 1.55f })
+                foreach (float spread in new[] { 1.75f })
                 {
-                    var top = new Vector3(x * r * spread, barY - 0.02f * s, r * 0.5f);
-                    float len = (spread < 1.4f ? 0.36f : 0.28f) * s;
+                    var top = new Vector3(x * r * spread, barY - 0.02f * s, r * 0.2f);
+                    float len = 0.46f * s;
                     var bottom = top + new Vector3(0f, -len, 0.02f * s);
                     d.Add(Joints.Head, d.pal.leatherDark, MeshData.Tube(new[] { top, bottom }, new[] { 0.0025f * s, 0.0025f * s }, 4), false);
                     for (int k = 0; k < 4; k++)
                     {
                         var at = Vector3.Lerp(top, bottom, 0.3f + k * 0.22f) + new Vector3(0f, 0f, 0.006f * s);
-                        if (k % 2 == 0) RuneDisc(d, Joints.Head, at, 0.034f * s, Quaternion.Euler(90f, 0f, 0f));
+                        if (k % 2 == 0) RuneDisc(d, Joints.Head, at, 0.042f * s, Quaternion.Euler(90f, 0f, 0f));
                         else if (k == 1) d.Add(Joints.Head, d.pal.parchment, MeshData.Ellipsoid(at, Vector3.one * 0.01f * s, 6, 4), false);
                         else d.Add(Joints.Head, d.pal.parchment, MeshData.Tube(new[] { at + new Vector3(0f, 0.015f, 0f) * s, at - new Vector3(0f, 0.025f, 0f) * s }, new[] { 0.008f * s, 0.001f }, 5), false);
                     }
@@ -1263,7 +1263,7 @@ namespace OdinsCoin
             for (int k = 0; k < 6; k++)
             {
                 float x = Mathf.Lerp(-half * 0.95f, half * 0.95f, k / 5f);
-                if (Mathf.Abs(x) < r * 0.6f) continue; // not in front of the face
+                if (Mathf.Abs(x) < r * 1.3f) continue; // not round the face
                 Charm(d, new Vector3(x, barY - 0.02f * s, barZ + 0.02f * s), (0.1f + 0.06f * (k % 3)) * s, k + 3, rng);
             }
         }
