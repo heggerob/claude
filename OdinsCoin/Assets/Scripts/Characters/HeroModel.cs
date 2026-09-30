@@ -170,6 +170,15 @@ namespace OdinsCoin
             return new Vector2(0.8f + 0.13f * v * v, -0.035f - 0.185f * v);
         }
 
+        /// <summary>A darker, wider copy of a painted band, pushed back behind it so it shows as an outline.</summary>
+        static MeshData KnotEdge(Vector3[] path, float radius, float back)
+        {
+            var p = new Vector3[path.Length];
+            var r = new float[path.Length];
+            for (int i = 0; i < path.Length; i++) { p[i] = path[i] - new Vector3(0f, 0f, back); r[i] = radius; }
+            return MeshData.Tube(p, r, 6);
+        }
+
         static Vector3[] ToPath(System.Collections.Generic.List<Vector2> pts, float x, float s, int count)
         {
             var p = new Vector3[count];
@@ -419,14 +428,15 @@ namespace OdinsCoin
                         var kRim = new Vector3[33];
                         var kRr = new float[33];
                         for (int i = 0; i < kRim.Length; i++) { float a = i / 32f * Mathf.PI * 2f; kRim[i] = at + new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * rad; kRr[i] = 0.02f * s; }
-                        d.Add(Joints.OffHand, VikingModel.Shade(d.pal.metal, 0.75f), MeshData.Tube(kRim, kRr, 6));
+                        // Old iron, browned with rust.
+                        d.Add(Joints.OffHand, Color.Lerp(VikingModel.Shade(d.pal.metal, 0.8f), d.pal.leatherDark, 0.45f), MeshData.Tube(kRim, kRr, 6), true, SurfaceKind.Metal);
                         // Rivets holding the rim on.
                         for (int i = 0; i < 14; i++)
                         {
                             float a = (i + 0.5f) / 14f * Mathf.PI * 2f;
                             d.Add(Joints.OffHand, d.pal.metal, MeshData.Ellipsoid(at + new Vector3(Mathf.Cos(a) * rad * 0.9f, Mathf.Sin(a) * rad * 0.9f, 0.016f * s), Vector3.one * 0.009f * s, 5, 3), false);
                         }
-                        d.Add(Joints.OffHand, d.pal.metal, MeshData.Dome(Vector3.zero, new Vector3(0.065f, 0.055f, 0.065f) * s, 12, 4).Transformed(at + new Vector3(0f, 0f, 0.012f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one));
+                        d.Add(Joints.OffHand, d.pal.metal, MeshData.Dome(Vector3.zero, new Vector3(0.08f, 0.065f, 0.08f) * s, 14, 5).Transformed(at + new Vector3(0f, 0f, 0.012f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one));
                         // The triquetra: three pointed lobes (vesicas) meeting at the boss, woven with a circle.
                         for (int k = 0; k < 3; k++)
                         {
@@ -441,14 +451,17 @@ namespace OdinsCoin
                                 float t = i / (float)(lobe.Length - 1) * 2f;
                                 float u = t <= 1f ? t : 2f - t, side = t <= 1f ? 1f : -1f;
                                 lobe[i] = at + new Vector3(0f, 0f, 0.017f * s) + dir * (0.08f + u * 0.78f) * rad + perp * side * Mathf.Sin(u * Mathf.PI) * 0.3f * rad;
-                                lr[i] = 0.011f * s;
+                                lr[i] = 0.015f * s;
                             }
-                            d.Add(Joints.OffHand, d.pal.emblem, MeshData.Tube(lobe, lr, 4), false);
+                            // Broad painted bands with a dark edge, like the concept art's knot.
+                            d.Add(Joints.OffHand, d.pal.emblem, MeshData.Tube(lobe, lr, 6), false);
+                            d.Add(Joints.OffHand, VikingModel.Shade(d.pal.accent, 0.45f), KnotEdge(lobe, 0.021f * s, 0.006f * s), false);
                         }
                         var circle = new Vector3[25];
                         var cr = new float[25];
-                        for (int i = 0; i < circle.Length; i++) { float a = i / 24f * Mathf.PI * 2f; circle[i] = at + new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * rad * 0.52f + new Vector3(0f, 0f, 0.018f * s); cr[i] = 0.009f * s; }
-                        d.Add(Joints.OffHand, d.pal.emblem, MeshData.Tube(circle, cr, 4), false);
+                        for (int i = 0; i < circle.Length; i++) { float a = i / 24f * Mathf.PI * 2f; circle[i] = at + new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0f) * rad * 0.52f + new Vector3(0f, 0f, 0.018f * s); cr[i] = 0.013f * s; }
+                        d.Add(Joints.OffHand, d.pal.emblem, MeshData.Tube(circle, cr, 6), false);
+                        d.Add(Joints.OffHand, VikingModel.Shade(d.pal.accent, 0.45f), KnotEdge(circle, 0.019f * s, 0.006f * s), false);
                     }
                     break;
                 case OffHandId.Map:
