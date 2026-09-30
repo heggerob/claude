@@ -40,7 +40,11 @@ namespace OdinsCoin
         /// How flat a surface is lit: faces are nearly flat, like the round, evenly coloured faces of the concept
         /// art; everything else gets the full light.
         /// </summary>
-        public static float Flatness(SurfaceKind surface) { return surface == SurfaceKind.Skin ? 0.85f : 0f; }
+        public static float Flatness(SurfaceKind surface)
+        {
+            // Faces are nearly flat; fur keeps its brightness (the strands are drawn into its texture already).
+            return surface == SurfaceKind.Skin ? 0.85f : surface == SurfaceKind.Fur ? 0.4f : 0f;
+        }
 
         /// <summary>
         /// Hatching multiplier at a screen pixel: 1 where lit, pencil strokes (↗) below tone 0.55, crossed (↖)
@@ -67,6 +71,7 @@ namespace OdinsCoin
             {
                 case SurfaceKind.Skin: return 0f;
                 case SurfaceKind.Metal: return 0.6f;
+                case SurfaceKind.Fur: return 0.45f;
                 default: return 1f;
             }
         }
