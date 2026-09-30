@@ -78,6 +78,56 @@ public static class LogicTests
         var small = map.ToWorld(63.43f, 10.40f);
         Check(Math.Abs(small.z - nidaros.z * 0.1f) < 1f && Math.Abs(h(61.64f, 8.31f) - fullHeight * 0.1f) < 0.5f, "the world scale shrinks distances and heights alike");
         WorldMap.Scale = 1f;
+        // The streamed land: chunks load nearest first, all round the player, and neighbours meet exactly.
+        var around = WorldTerrain.Wanted(new Vector2Int(10, -3), WorldTerrain.Radius);
+        Check(around[0] == new Vector2Int(10, -3) && around.Count > 40, "the player's own chunk loads first, and a ring around it (" + around.Count + ")");
+        Check(WorldTerrain.ChunkOf(-0.5, 1999.9, 1000f) == new Vector2Int(-1, 1), "positions fall in the right chunk, negative ones too");
+        var bergenChunk = WorldTerrain.ChunkOf(bergen.x, bergen.z, 1000f);
+        double cx = bergenChunk.x * 1000.0, cz = bergenChunk.y * 1000.0;
+        var west = TerrainPatch.Build(map, cx, cz, 1000f, 10);
+        var east = TerrainPatch.Build(map, cx + 1000.0, cz, 1000f, 10);
+        Check(Math.Abs(TerrainDetail.Height(map, cx + 1000.0, cz + 300.0) - TerrainDetail.Height(map, cx + 1000.0, cz + 300.0)) < 1e-4f && west.Vertices.Count == east.Vertices.Count && west.Vertices.Count == 10 * 10 * 6,
+            "terrain chunks are flat-shaded (six vertices a square) and heights are the same from either side");
+        int kinds = 0;
+        var mix = TerrainPatch.Build(map, cx - 10000.0, cz - 10000.0, 20000f, 40);
+        foreach (var list in mix.Triangles) if (list.Count > 0) kinds++;
+        Check(kinds >= 3, "the land round Bergen has sea, shore, grass and rock (" + kinds + " kinds)");
+        bool sheet = true;
+        foreach (int i in mix.Triangles[(int)Ground.Seabed]) if (Math.Abs(mix.Vertices[i].y - TerrainPatch.SeaSheet) > 1e-3f) sheet = false;
+        Check(sheet, "under the sea the terrain is a flat sheet just below the waterline");
+        // The detail keeps the real shape: it only nudges the land, never raises a sea into mountains.
+        float worst = 0f;
+        for (int k = 0; k < 200; k++)
+        {
+            double px = bergen.x + (k % 20) * 731.0, pz = bergen.z + (k / 20) * 977.0;
+            worst = Math.Max(worst, Math.Abs(TerrainDetail.Height(map, px, pz) - map.GroundHeight((float)px, (float)pz)));
+        }
+        Check(worst < 80f, "made-up detail stays within tens of metres of the real land (" + worst + ")");
+        Check(TerrainDetail.Kind(2000f, 0.1f) == Ground.Snow && TerrainDetail.Kind(-10f, 0f) == Ground.Seabed && TerrainDetail.Kind(1f, 0.1f) == Ground.Sand && TerrainDetail.Kind(200f, 1.5f) == Ground.Rock,
+            "peaks are snow, the sea floor seabed, beaches sand and cliffs rock");
+
+        // The floating origin: shifting keeps global positions and brings the player home.
+        WorldOrigin.OffsetX = WorldOrigin.OffsetZ = 0.0;
+        Vector3 shift;
+        Check(!WorldOrigin.NeedsShift(new Vector3(100f, 0f, 100f), out shift) && WorldOrigin.NeedsShift(new Vector3(2500f, 0f, 0f), out shift), "the origin only moves when the player strays kilometres away");
+        WorldOrigin.OffsetX = 5.0e6; WorldOrigin.OffsetZ = -1.2e6;
+        var scene = WorldOrigin.ToScene(5.0e6 + 12.5, -1.2e6 - 3.25, 7f);
+        Check(Math.Abs(scene.x - 12.5f) < 1e-4f && Math.Abs(scene.z + 3.25f) < 1e-4f && scene.y == 7f, "far from the world's centre, positions near the player stay exact");
+        WorldOrigin.OffsetX = WorldOrigin.OffsetZ = 0.0;
+
+        // The fine coast layer, if built: it covers the Norwegian coast and agrees with the 1 km map.
+        var coastPath = "OdinsCoin/Assets/Resources/World/coast.bytes";
+        if (System.IO.File.Exists(coastPath))
+        {
+            var detail = WorldDetail.FromBytes(System.IO.File.ReadAllBytes(coastPath));
+            Check(detail.BlockCount > 500 && detail.Covers(bergen.x, bergen.z) && detail.Covers(nidaros.x, nidaros.z), "the fine coast layer covers Bergen and Nidaros (" + detail.BlockCount + " blocks)");
+            var mid = map.ToWorld(64f, -18f);
+            Check(!detail.Covers(mid.x, mid.z), "inland Iceland has no coast blocks");
+            map.Detail = detail;
+            Check(h(61.64f, 8.31f) > 1500f && h(57f, 3f) < -20f, "with the coast layer, mountains and sea are still where they were");
+            map.Detail = null;
+        }
+
         // Bad files are refused rather than read as nonsense.
         bool refused = false;
         try { WorldMap.FromBytes(new byte[] { 1, 2, 3, 4, 5 }); } catch (System.IO.InvalidDataException) { refused = true; } catch (System.IO.EndOfStreamException) { refused = true; }

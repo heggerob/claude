@@ -33,6 +33,9 @@ namespace OdinsCoin
 
         short[] heights;
 
+        /// <summary>The fine coast layer (200 m, where there is coast), or null.</summary>
+        public WorldDetail Detail { get; set; }
+
         static WorldMap current;
 
         /// <summary>The game's map, loaded from Resources the first time it's asked for (null if it's missing).</summary>
@@ -43,7 +46,12 @@ namespace OdinsCoin
                 if (current == null)
                 {
                     var asset = Resources.Load<TextAsset>("World/north");
-                    if (asset != null && asset.bytes != null && asset.bytes.Length > 0) current = FromBytes(asset.bytes);
+                    if (asset != null && asset.bytes != null && asset.bytes.Length > 0)
+                    {
+                        current = FromBytes(asset.bytes);
+                        var coast = Resources.Load<TextAsset>("World/coast");
+                        if (coast != null && coast.bytes != null && coast.bytes.Length > 0) current.Detail = WorldDetail.FromBytes(coast.bytes);
+                    }
                 }
                 return current;
             }
@@ -117,17 +125,33 @@ namespace OdinsCoin
 
         // ---------------------------------------------------------------- heights
 
-        /// <summary>The height of the ground (negative: the sea floor) at a game position, in game units, smoothly interpolated.</summary>
+        /// <summary>
+        /// The height of the ground (negative: the sea floor) at a game position, in game units: from the fine
+        /// coast layer where there is one, otherwise smoothly (bicubic) from the 1 km map.
+        /// </summary>
         public float GroundHeight(float x, float z)
         {
-            float gx = (x / Scale - OriginX) / Cell, gz = (z / Scale - OriginZ) / Cell;
-            gx = Mathf.Clamp(gx, 0f, Width - 1.001f);
-            gz = Mathf.Clamp(gz, 0f, Height - 1.001f);
+            float rx = x / Scale, rz = z / Scale, fine;
+            if (Detail != null && Detail.TryHeight(rx, rz, out fine)) return fine * Scale;
+            return Coarse(rx, rz) * Scale;
+        }
+
+        /// <summary>The 1 km map alone at a real position (metres), bicubic so it has no creases.</summary>
+        public float Coarse(float rx, float rz)
+        {
+            float gx = Mathf.Clamp((rx - OriginX) / Cell, 0f, Width - 1.001f);
+            float gz = Mathf.Clamp((rz - OriginZ) / Cell, 0f, Height - 1.001f);
             int ix = (int)gx, iz = (int)gz;
             float ax = gx - ix, az = gz - iz;
-            float h00 = At(ix, iz), h10 = At(ix + 1, iz), h01 = At(ix, iz + 1), h11 = At(ix + 1, iz + 1);
-            float h = Mathf.Lerp(Mathf.Lerp(h00, h10, ax), Mathf.Lerp(h01, h11, ax), az);
-            return h * Scale;
+            var rows = new float[4];
+            for (int j = -1; j <= 2; j++)
+                rows[j + 1] = CatmullRom(At(ix - 1, iz + j), At(ix, iz + j), At(ix + 1, iz + j), At(ix + 2, iz + j), ax);
+            return CatmullRom(rows[0], rows[1], rows[2], rows[3], az);
+        }
+
+        static float CatmullRom(float p0, float p1, float p2, float p3, float t)
+        {
+            return 0.5f * (2f * p1 + (p2 - p0) * t + (2f * p0 - 5f * p1 + 4f * p2 - p3) * t * t + (3f * p1 - p0 - 3f * p2 + p3) * t * t * t);
         }
 
         /// <summary>The raw height of grid cell (ix, iz), in real metres.</summary>
@@ -143,5 +167,117 @@ namespace OdinsCoin
 
         /// <summary>The world's extent in game units: min corner (x, z) and size.</summary>
         public Rect Bounds { get { return new Rect(OriginX * Scale, OriginZ * Scale, (Width - 1) * Cell * Scale, (Height - 1) * Cell * Scale); } }
+    }
+}
+
+namespace OdinsCoin
+{
+    /// <summary>
+    /// The fine coast layer: 25 km blocks at 200 m wherever there is coast (built by tools/world/build_detail.py
+    /// into Resources/World/coast.bytes), so the fjords, sounds and skerry belts are there. Each block is
+    /// compressed on its own and unpacked only when the ship comes near; a few are kept unpacked.
+    /// </summary>
+    public class WorldDetail
+    {
+        public float BlockSize { get; private set; }
+        public float Cell { get; private set; }
+        public int Points { get; private set; }
+        public float OriginX { get; private set; }
+        public float OriginZ { get; private set; }
+        public int BlockCount { get { return index.Count; } }
+
+        /// <summary>How many unpacked blocks are kept (each ~32 KB).</summary>
+        public const int Keep = 48;
+
+        byte[] data;
+        int dataStart;
+        readonly System.Collections.Generic.Dictionary<long, int[]> index = new System.Collections.Generic.Dictionary<long, int[]>();
+        readonly System.Collections.Generic.Dictionary<long, short[]> unpacked = new System.Collections.Generic.Dictionary<long, short[]>();
+        readonly System.Collections.Generic.LinkedList<long> recent = new System.Collections.Generic.LinkedList<long>();
+
+        static long Key(int i, int j) { return ((long)i << 32) ^ (uint)j; }
+
+        public static WorldDetail FromBytes(byte[] bytes)
+        {
+            using (var ms = new System.IO.MemoryStream(bytes))
+            using (var r = new System.IO.BinaryReader(ms))
+            {
+                var magic = r.ReadBytes(4);
+                if (magic.Length != 4 || magic[0] != 'O' || magic[1] != 'C' || magic[2] != 'W' || magic[3] != 'D') throw new System.IO.InvalidDataException("not an Odin's Coin coast layer");
+                if (r.ReadInt32() != 1) throw new System.IO.InvalidDataException("unknown coast layer version");
+                var d = new WorldDetail();
+                d.BlockSize = r.ReadSingle();
+                d.Cell = r.ReadSingle();
+                d.Points = r.ReadInt32();
+                d.OriginX = r.ReadSingle();
+                d.OriginZ = r.ReadSingle();
+                int count = r.ReadInt32();
+                for (int k = 0; k < count; k++)
+                {
+                    int bi = r.ReadInt32(), bj = r.ReadInt32(), off = r.ReadInt32(), len = r.ReadInt32();
+                    d.index[Key(bi, bj)] = new[] { off, len };
+                }
+                d.data = bytes;
+                d.dataStart = (int)ms.Position;
+                return d;
+            }
+        }
+
+        /// <summary>Is there a fine block at this real position (metres)?</summary>
+        public bool Covers(float rx, float rz)
+        {
+            int bi = (int)System.Math.Floor((rx - OriginX) / BlockSize), bj = (int)System.Math.Floor((rz - OriginZ) / BlockSize);
+            return index.ContainsKey(Key(bi, bj));
+        }
+
+        /// <summary>The fine height at a real position (metres), if a block covers it.</summary>
+        public bool TryHeight(float rx, float rz, out float height)
+        {
+            height = 0f;
+            float lx = rx - OriginX, lz = rz - OriginZ;
+            int bi = (int)System.Math.Floor(lx / BlockSize), bj = (int)System.Math.Floor(lz / BlockSize);
+            var block = Block(bi, bj);
+            if (block == null) return false;
+            float gx = Mathf.Clamp((lx - bi * BlockSize) / Cell, 0f, Points - 1.001f);
+            float gz = Mathf.Clamp((lz - bj * BlockSize) / Cell, 0f, Points - 1.001f);
+            int ix = (int)gx, iz = (int)gz;
+            float ax = gx - ix, az = gz - iz;
+            int n = Points;
+            float h00 = block[iz * n + ix], h10 = block[iz * n + ix + 1], h01 = block[(iz + 1) * n + ix], h11 = block[(iz + 1) * n + ix + 1];
+            height = Mathf.Lerp(Mathf.Lerp(h00, h10, ax), Mathf.Lerp(h01, h11, ax), az);
+            return true;
+        }
+
+        short[] Block(int bi, int bj)
+        {
+            long key = Key(bi, bj);
+            short[] block;
+            if (unpacked.TryGetValue(key, out block))
+            {
+                recent.Remove(key);
+                recent.AddFirst(key);
+                return block;
+            }
+            int[] at;
+            if (!index.TryGetValue(key, out at)) return null;
+            block = new short[Points * Points];
+            using (var ms = new System.IO.MemoryStream(data, dataStart + at[0], at[1]))
+            using (var gz = new System.IO.Compression.GZipStream(ms, System.IO.Compression.CompressionMode.Decompress))
+            {
+                var raw = new byte[block.Length * 2];
+                int got = 0;
+                while (got < raw.Length)
+                {
+                    int k = gz.Read(raw, got, raw.Length - got);
+                    if (k <= 0) throw new System.IO.InvalidDataException("coast block is cut short");
+                    got += k;
+                }
+                System.Buffer.BlockCopy(raw, 0, block, 0, raw.Length);
+            }
+            unpacked[key] = block;
+            recent.AddFirst(key);
+            while (recent.Count > Keep) { unpacked.Remove(recent.Last.Value); recent.RemoveLast(); }
+            return block;
+        }
     }
 }

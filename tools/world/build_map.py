@@ -69,6 +69,32 @@ def fetch(zoom, x, y, cache):
     return rgb[..., 0] * 256.0 + rgb[..., 1] + rgb[..., 2] / 256.0 - 32768.0
 
 
+def water(mosaic, pixel_m):
+    """
+    Water surfaces (fjords, sounds, the sea near land) come in as exactly 0 m, with no depth. Mark them as sea
+    and give them a depth that grows with the distance from land (4 m at the shore, about 3 m more per 100 m,
+    down to 80 m), so fjords are navigable and bilinear sampling puts the coast between land and water.
+    Real bathymetry (anything already below 0) is kept.
+    """
+    flat = mosaic == 0
+    land = mosaic > 0
+    out = np.where(flat, -4.0, mosaic).astype(np.float32)
+    reach = land.copy()
+    steps = int(2500 / pixel_m)
+    for k in range(1, steps + 1):
+        grown = reach.copy()
+        grown[1:, :] |= reach[:-1, :]
+        grown[:-1, :] |= reach[1:, :]
+        grown[:, 1:] |= reach[:, :-1]
+        grown[:, :-1] |= reach[:, 1:]
+        ring = flat & grown & ~reach
+        out[ring] = -min(4.0 + k * pixel_m * 0.03, 80.0)
+        reach = grown
+    far = flat & ~reach
+    out[far] = -80.0
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--cell", type=float, default=1000.0, help="grid spacing in metres")
@@ -97,6 +123,7 @@ def main():
         for i in range(nx):
             mosaic[j * 256:(j + 1) * 256, i * 256:(i + 1) * 256] = fetch(args.zoom, tx0 + i, ty0 + j, cache)
         print(f"  row {j + 1}/{ny}", flush=True)
+    mosaic = water(mosaic, 40075000.0 / (256 * 2 ** args.zoom) * math.cos(math.radians(LAT0)))
 
     # Sample the mosaic at every grid cell (bilinear), row 0 = south.
     gx = x0 + np.arange(w) * args.cell
