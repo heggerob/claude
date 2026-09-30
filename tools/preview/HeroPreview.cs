@@ -69,10 +69,10 @@ public static class HeroPreview
         stand.rot[Joints.LeftArm] = Quaternion.Euler(12f, 0f, -20f);
         stand.rot[Joints.LeftForearm] = Quaternion.Euler(-10f, 0f, 6f);
         stand.worldRot[Joints.OffHand] = Quaternion.Euler(0f, 55f, 0f);
-        stand.rot[Joints.LeftLeg] = Quaternion.Euler(0f, 0f, -4f);
-        stand.rot[Joints.RightLeg] = Quaternion.Euler(0f, 0f, 5f);
-        shots.Add(new Shot { label = "The Jarl", model = jarlModel, pose = stand, yaw = 188f });
-        shots.Add(new Shot { label = "The Raider", model = model, pose = carry, yaw = 188f });
+        stand.rot[Joints.LeftLeg] = Quaternion.Euler(0f, -18f, -7f);
+        stand.rot[Joints.RightLeg] = Quaternion.Euler(0f, 20f, 7f);
+        shots.Add(new Shot { label = "The Jarl", model = jarlModel, pose = stand, yaw = 202f });
+        shots.Add(new Shot { label = "The Raider", model = model, pose = carry, yaw = 202f });
         // The Navigator: holding up a chart in both hands, head tilted towards it.
         var nav = CharacterSpec.Default(OutfitId.Navigator);
         nav.body = new BodyShape { height = 1.57f, width = 0.9f, gender = Gender.Female };
@@ -90,9 +90,9 @@ public static class HeroPreview
         reading.worldRot[Joints.RightForearm] = Quaternion.FromToRotation(Vector3.down, rFist - rElbow);
         reading.worldRot[Joints.OffHand] = Quaternion.Euler(-12f, 18f, 0f);
         reading.rot[Joints.Head] = Quaternion.Euler(6f, -8f, 0f);
-        reading.rot[Joints.LeftLeg] = Quaternion.Euler(0f, 0f, -3f);
-        reading.rot[Joints.RightLeg] = Quaternion.Euler(0f, 0f, 3f);
-        shots.Add(new Shot { label = "The Navigator", model = navModel, pose = reading, yaw = 188f });
+        reading.rot[Joints.LeftLeg] = Quaternion.Euler(0f, -16f, -5f);
+        reading.rot[Joints.RightLeg] = Quaternion.Euler(0f, 18f, 5f);
+        shots.Add(new Shot { label = "The Navigator", model = navModel, pose = reading, yaw = 202f });
         // The Spear Guard: spear upright in the right fist, the big shield held in front on the left.
         var guard = CharacterSpec.Default(OutfitId.SpearGuard);
         guard.body = new BodyShape { height = 1.62f, width = 1f, gender = Gender.Male };
@@ -112,7 +112,7 @@ public static class HeroPreview
         guarding.worldRot[Joints.OffHand] = Quaternion.Euler(4f, -38f, 6f);
         guarding.rot[Joints.LeftLeg] = Quaternion.Euler(0f, -16f, -9f);
         guarding.rot[Joints.RightLeg] = Quaternion.Euler(0f, 18f, 9f);
-        shots.Add(new Shot { label = "The Spear Guard", model = guardModel, pose = guarding, yaw = 188f });
+        shots.Add(new Shot { label = "The Spear Guard", model = guardModel, pose = guarding, yaw = 202f });
         // The Old Seer: the rune staff upright in her left hand, the right hand at her charms.
         var seer = CharacterSpec.Default(OutfitId.Seer);
         seer.body = new BodyShape { height = 1.6f, width = 0.95f, gender = Gender.Female };
@@ -129,7 +129,7 @@ public static class HeroPreview
         augur.worldRot[Joints.RightArm] = Quaternion.FromToRotation(Vector3.down, srElbow - sr);
         augur.worldRot[Joints.RightForearm] = Quaternion.FromToRotation(Vector3.down, srFist - srElbow);
         augur.worldRot[Joints.OffHand] = Quaternion.LookRotation(Vector3.up, new Vector3(1f, 0f, 0.3f));
-        shots.Add(new Shot { label = "The Old Seer", model = seerModel, pose = augur, yaw = 188f });
+        shots.Add(new Shot { label = "The Old Seer", model = seerModel, pose = augur, yaw = 202f });
         // The Scout: bow held low and slanting in the right hand, left arm loose.
         var scout = CharacterSpec.Default(OutfitId.Scout);
         scout.body = new BodyShape { height = 1.45f, width = 0.85f, gender = Gender.Female };
@@ -146,7 +146,7 @@ public static class HeroPreview
         ready.rot[Joints.RightForearm] = Quaternion.Euler(-25f, 0f, 0f);
         ready.rot[Joints.LeftLeg] = Quaternion.Euler(0f, -16f, -9f);
         ready.rot[Joints.RightLeg] = Quaternion.Euler(0f, 18f, 9f);
-        shots.Add(new Shot { label = "The Scout", model = scoutModel, pose = ready, yaw = 188f });
+        shots.Add(new Shot { label = "The Scout", model = scoutModel, pose = ready, yaw = 202f });
         shots.Add(new Shot { label = "Jarl, three-quarter", model = jarlModel, pose = stand, yaw = 215f });
         shots.Add(new Shot { label = "Navigator, three-quarter", model = navModel, pose = reading, yaw = 150f });
         // Same outfit on other bodies: the player chooses height, build and gender.
