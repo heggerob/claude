@@ -57,7 +57,7 @@ namespace OdinsCoin
             { OutfitId.Jarl, new Outfit {
                 id = OutfitId.Jarl, title = "The Jarl",
                 palette = () => new Palette {
-                    cloth = new Color(0.19f, 0.19f, 0.2f), clothDark = new Color(0.11f, 0.11f, 0.12f),
+                    cloth = new Color(0.27f, 0.27f, 0.29f), clothDark = new Color(0.15f, 0.15f, 0.17f),
                     accent = new Color(0.62f, 0.16f, 0.11f), fur = new Color(0.9f, 0.84f, 0.7f), furShadow = new Color(0.6f, 0.5f, 0.38f),
                     brass = new Color(0.82f, 0.62f, 0.26f), hair = new Color(0.74f, 0.3f, 0.12f) },
                 defaultHair = HairStyle.WrappedBraids, suggestedWeapon = WeaponId.Sword, suggestedOffHand = OffHandId.RoundShield,
