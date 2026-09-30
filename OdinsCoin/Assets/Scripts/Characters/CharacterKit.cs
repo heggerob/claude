@@ -211,6 +211,43 @@ namespace OdinsCoin
         }
 
         /// <summary>A zig-zag line (embroidery) through a list of points, alternating up and down by <paramref name="amplitude"/>.</summary>
+        /// <summary>Rune shapes as strokes (x1, y1, x2, y2 in a unit box: x -0.5..0.5, y -1..1).</summary>
+        public static readonly float[][] RuneGlyphs = {
+            new[] { 0f, -1f, 0f, 1f, 0f, 0.2f, 0.7f, 0.8f, 0f, -0.3f, 0.7f, 0.3f },   // ᚠ fehu
+            new[] { 0f, -1f, 0f, 1f, -0.6f, 0.3f, 0.6f, -0.3f },                      // a stave with a slash
+            new[] { -0.5f, 0.2f, 0f, 1f, 0f, 1f, 0.5f, 0.2f, 0f, -1f, 0f, 1f },       // ᛏ tiwaz
+            new[] { 0f, -1f, 0f, 1f, 0f, 1f, 0.6f, 0.4f, 0.6f, 0.4f, 0f, -0.2f },     // ᚦ thurisaz-ish
+            new[] { -0.5f, 1f, 0.5f, -1f, -0.5f, -1f, 0.5f, 1f },                     // ᚷ gebo
+            new[] { -0.4f, -1f, -0.4f, 1f, 0.4f, -1f, 0.4f, 1f, -0.4f, 0.5f, 0.4f, 0f }, // ᚺ hagalaz
+        };
+
+        /// <summary>
+        /// A band of runes along <paramref name="along"/>: one glyph per point (skipping the ends), standing upright,
+        /// facing out along <paramref name="normalAt"/>, <paramref name="size"/> tall, cut with strokes of
+        /// <paramref name="stroke"/> radius. The glyphs are picked from a seed so every band reads differently.
+        /// </summary>
+        public static MeshData RuneBand(Vector3[] along, System.Func<Vector3, Vector3> normalAt, float size, float stroke, int seed)
+        {
+            var m = new MeshData();
+            var rng = new System.Random(seed);
+            for (int i = 1; i < along.Length - 1; i++)
+            {
+                Vector3 p = along[i], tangent = (along[i + 1] - along[i - 1]).normalized;
+                Vector3 n = normalAt(p);
+                Vector3 up = Vector3.Cross(n, tangent).normalized;
+                if (Vector3.Dot(up, Vector3.up) < 0f) up = -up;
+                Vector3 right = Vector3.Cross(up, n).normalized;
+                var g = RuneGlyphs[rng.Next(RuneGlyphs.Length)];
+                for (int k = 0; k + 3 < g.Length; k += 4)
+                {
+                    Vector3 a = p + (right * g[k] + up * g[k + 1]) * size * 0.5f + n * stroke;
+                    Vector3 b = p + (right * g[k + 2] + up * g[k + 3]) * size * 0.5f + n * stroke;
+                    m.Append(MeshData.Tube(new[] { a, b }, new[] { stroke, stroke }, 4));
+                }
+            }
+            return m;
+        }
+
         public static MeshData ZigZag(Vector3[] along, Vector3 up, float amplitude, float radius)
         {
             var pts = new Vector3[along.Length];

@@ -67,8 +67,8 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
   - Hvert antrekk har sine klassiske farger gratis og to skins å kjøpe (250–700 gull). Til sammen er det 12 skins, og de endrer bare fargene, ikke evnene.
   - Methallen har fått fanen «Colours»: du kan prøve et skin på den snurrende figuren ved døra, kjøpe det og ta det på. Heltemenyen lar deg bytte mellom skinsene du eier.
   - Det du har kjøpt, lagres for seg (`SkinLocker`) og blir med til nye seilaser.
-- [ ] **13. Detaljer:** runer og mønstre på stoff, nagler og ringer, kapper som blafrer i vinden, og flere ansiktsuttrykk.
+- [x] **13. Detaljer:** runer og mønstre på stoff, nagler og ringer, kapper som blafrer i vinden, og flere ansiktsuttrykk.
   - [x] Kapper, bannere og fletter tar vinden (`ClothWind`): spranget regnes mot lufta, så vind bakfra blåser kappa fram. Et blafr med vindkast vokser med vindstyrken, er forskjellig for hver ting og holder seg innenfor fjærens grenser.
-  - [ ] Runer og mønstre på stoff, flere nagler og ringer.
+  - [x] Runer og mønstre på stoff: `CharacterKit.RuneBand` setter en rad med runer langs en kant. Den er brukt på Jarlens gullkant og mellom sikksakkene på Navigatørens kappe. Nagler og ringer fantes fra før (Jarlens remmer og belte, Spydvaktens vest og Raiderens hjelm).
   - [x] Ansiktsuttrykk (`Face`): strekøynene blunker hvert 2.–5. sekund. De blir til ^ ^ når du vinner på mynten eller selger en kiste (Gunnar smiler også), og til > < når noen blir truffet eller mynten viser slangen. Se de to siste figurene i `docs/heroes.png`.
 - [ ] **14. Flere skins:** nye sett (vinter, draugr, gull-jarl, havfolk) og sjeldne skins fra kister.

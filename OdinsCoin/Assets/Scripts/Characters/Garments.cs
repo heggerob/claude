@@ -332,6 +332,15 @@ namespace OdinsCoin
             d.Add(Joints.Body, d.pal.cloth, CharacterKit.RaggedSkirt(d.skirtTop, d.skirtTopR, d.skirtBottom, d.skirtBottomR, d.skirtDepth, 22, 0.012f * s, d.seed + 31));
             // Gold border along the hem.
             d.Add(Joints.Body, d.pal.brass, CharacterKit.Band(hem + 0.03f * s, 0.032f * s, d.SkirtRadius(hem + 0.03f * s) + 0.004f, d.skirtDepth, 22), false);
+            // Runes worked into the gold border, round the front and sides.
+            var runeRow = new Vector3[16];
+            for (int i = 0; i < runeRow.Length; i++)
+            {
+                float a = Mathf.Lerp(-1.9f, 1.9f, i / (float)(runeRow.Length - 1));
+                float ry = hem + 0.03f * s, rr = d.SkirtRadius(ry) + 0.012f;
+                runeRow[i] = new Vector3(Mathf.Sin(a) * rr, ry, Mathf.Cos(a) * rr * d.skirtDepth);
+            }
+            d.Add(Joints.Body, d.pal.clothDark, CharacterKit.RuneBand(runeRow, p => new Vector3(p.x, 0f, p.z).normalized, 0.024f * s, 0.0028f * s, d.seed + 33), false);
             // Front panel: darker cloth edged in gold, over the coat.
             const int rows = 7;
             var grid = new Vector3[rows, 3];
@@ -595,6 +604,9 @@ namespace OdinsCoin
             d.Add(cape, d.pal.emblem, CharacterKit.ZigZag(row, Vector3.up, 0.018f * s, 0.004f * s), false);
             for (int i = 0; i < row.Length; i++) row[i] += Vector3.down * 0.05f * s;
             d.Add(cape, d.pal.emblem, CharacterKit.ZigZag(row, Vector3.up, 0.012f * s, 0.0035f * s), false);
+            // A line of runes between the two zig-zags.
+            for (int i = 0; i < row.Length; i++) row[i] += Vector3.up * 0.026f * s;
+            d.Add(cape, d.pal.emblem, CharacterKit.RuneBand(row, p => Vector3.back, 0.022f * s, 0.0026f * s, d.seed + 55), false);
 
             // The long drape over the right shoulder, falling down the front and side.
             const int rows = 9, cols = 4;
