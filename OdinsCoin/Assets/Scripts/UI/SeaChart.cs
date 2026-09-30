@@ -149,8 +149,14 @@ namespace OdinsCoin
                 bool raided = PlaceLife.Raided.Contains(place.name);
                 string mark = PlaceLife.HasMarket(place) ? "◆" : place.kind == PlaceKind.Monastery ? "✚" : "●";
                 string name = raided ? "<color=#7a6a55>" + place.name + " (plundered)</color>" : "<b>" + place.name + "</b>";
+                // Bjorn's commission stands out in red.
+                if (place.name == Upgrades.Current.Commission) { mark = "⚑"; name = "<color=#9a1c10><b>" + place.name + " (Bjorn's commission)</b></color>"; }
                 GUI.Label(new Rect(p.x - 5f, p.y - 9f, 220f, 18f), mark + " " + name, label);
             }
+            // Home.
+            var home = HomeHarbour.HomeCentre + HomeHarbour.Drift;
+            var hp = ToScreen(view, screen, WorldOrigin.GlobalX(home), WorldOrigin.GlobalZ(home));
+            if (screen.Contains(hp)) GUI.Label(new Rect(hp.x - 6f, hp.y - 9f, 160f, 18f), "⌂ <b>Home</b>", label);
             // Your ship and her heading.
             var s = ToScreen(view, screen, shipX, shipZ);
             var head = boot.Ship.Heading * Mathf.Deg2Rad;
