@@ -30,7 +30,7 @@ Sea of Thieves med vikinger og Zelda-utforsking, enkelt og artig. Gamblingen er 
   brygga. Færre taster og menyer.
 - [ ] **15. Verdensskala** (du bestemmer): krympet verden, eller full størrelse som nå.
 - [x] **16. Landemerker (`World/Landmarks.cs`, se [docs/buildings.png](docs/buildings.png)):** hvert sted får noe høyt eller lyst som synes langt unna. Byer og festninger har et 22 m vardetårn med bål på toppen, klostre et klokketårn, jarlens hall en kjempestor ask, og landingsplasser en runestein som lyser blått. Det står på det høyeste tørre stedet i nærheten, klar av hus og åkrer.
-- [ ] **17. Utsiktspunkter:** klatre opp og få området tegnet inn på sjøkartet.
+- [x] **17. Utsiktspunkter (`UI/ChartReveal.cs`):** sjøkartet starter som blankt pergament, bortsett fra hjemmefarvannet. Mens du seiler, tegnes kysten rundt skipet inn (6 km). Står du ved et landemerke og trykker E, klatrer du opp i vardetårnet, klokketårnet eller asken, eller leser runesteinens kart, og området i 25 km rundt tegnes inn. Det som er kartlagt, lagres.
 - [ ] **18. Runesteiner:** små gåter eller kamper som gir runer (helse, utholdenhet, bedre odds).
 - [ ] **19. Klatring og utholdenhet.**
 - [ ] **20. Hemmeligheter:** grotter, skattekart og en ravn som leder deg.

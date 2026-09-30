@@ -38,6 +38,7 @@ namespace OdinsCoin
             Line(sb, "sailing", u.Sailing);
             Line(sb, "clock", u.ClockDay.ToString(CultureInfo.InvariantCulture) + "," + u.ClockHours.ToString("R", CultureInfo.InvariantCulture));
             if (u.Raided.Count > 0) Line(sb, "raided", string.Join(",", u.Raided.ToArray()));
+            if (!string.IsNullOrEmpty(u.Seen)) Line(sb, "seen", u.Seen);
             if (!string.IsNullOrEmpty(u.Commission))
                 Line(sb, "commission", u.Commission + "," + u.CommissionReward.ToString(CultureInfo.InvariantCulture));
             if (u.AtSea)
@@ -82,6 +83,7 @@ namespace OdinsCoin
                         foreach (var name in value.Split(','))
                             if (Places.Find(name.Trim()) != null && !u.Raided.Contains(name.Trim())) u.Raided.Add(name.Trim());
                         break;
+                    case "seen": u.Seen = value.Length <= 200000 ? value : ""; break;
                     case "commission":
                         var cparts = value.Split(',');
                         int reward;
@@ -160,6 +162,7 @@ namespace OdinsCoin
             if (SkyClock.Instance != null) { u.ClockDay = SkyClock.Day; u.ClockHours = SkyClock.Hours; }
             u.Raided.Clear();
             u.Raided.AddRange(PlaceLife.Raided);
+            u.Seen = ChartReveal.Serialize();
             var boot = GameBootstrap.Instance;
             u.AtSea = false;
             if (boot == null || boot.Ship == null || !RealWorld.Active) return;

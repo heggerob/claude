@@ -286,6 +286,8 @@ namespace OdinsCoin
             if (AtHelm) { Prompt = "[E] Leave the steering oar"; return; }
             if (OnShip && Carrying == null && Vector3.Distance(transform.position, Ship.Parts.helm.position) < InteractRange) { Prompt = "[E] Take the steering oar"; return; }
             if (OnShip && NearAltar()) { Prompt = AltarPrompt(); if (Prompt != null) return; }
+            Transform mark; Place markPlace;
+            if (!OnShip && Carrying == null && Landmarks.Near(transform.position, out mark, out markPlace)) { Prompt = "[E] " + Landmarks.SurveyVerb(Landmarks.KindFor(markPlace)); return; }
             var home = HomeHarbour.Instance;
             if (home != null && home.NearKeeper(transform.position))
             {
@@ -335,6 +337,14 @@ namespace OdinsCoin
                 return;
             }
             if (OnShip && NearAltar() && StakeAtAltar()) return;
+            Transform survey; Place surveyPlace;
+            if (!OnShip && Carrying == null && Landmarks.Near(transform.position, out survey, out surveyPlace))
+            {
+                // Like Zelda's towers: the land for miles around goes onto the chart.
+                ChartReveal.Reveal((float)WorldOrigin.GlobalX(survey.position), (float)WorldOrigin.GlobalZ(survey.position), ChartReveal.SurveyRadius);
+                CombatHud.Banner("THE LAND LIES OPEN", "From " + surveyPlace.name + " you can see for miles. It's all on your chart now (M).");
+                return;
+            }
             var home = HomeHarbour.Instance;
             if (home != null && home.NearKeeper(transform.position))
             {

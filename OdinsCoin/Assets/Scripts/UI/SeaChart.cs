@@ -44,9 +44,16 @@ namespace OdinsCoin
         /// Paint the chart (w × h pixels, row 0 at the south) from the map: tints, hatching on the mountains,
         /// and an ink line wherever land meets sea.
         /// </summary>
-        public static Color[] Paint(WorldMap map, int w, int h)
+        public static Color[] Paint(WorldMap map, int w, int h) { return Paint(map, w, h, null); }
+
+        /// <summary>
+        /// ...leaving what <paramref name="seen"/> says hasn't been charted (global x, z) as blank parchment, the
+        /// sea just a wash of blue, so exploring fills the chart in.
+        /// </summary>
+        public static Color[] Paint(WorldMap map, int w, int h, System.Func<double, double, bool> seen)
         {
             var px = new Color[w * h];
+            var world = map.Bounds;
             float sx = (map.Width - 1) / (float)Mathf.Max(1, w - 1), sz = (map.Height - 1) / (float)Mathf.Max(1, h - 1);
             System.Func<int, int, float> at = (x, y) => map.At(Mathf.Clamp(Mathf.RoundToInt(x * sx), 0, map.Width - 1), Mathf.Clamp(Mathf.RoundToInt(y * sz), 0, map.Height - 1));
             // Beyond the map's region the data is a flat -2000 m: leave that parchment, unexplored, with no coast.
@@ -56,6 +63,12 @@ namespace OdinsCoin
                 {
                     float hgt = at(x, y);
                     if (blank(x, y)) { px[y * w + x] = Parchment; continue; }
+                    if (seen != null && !seen(world.xMin + x / (float)Mathf.Max(1, w - 1) * world.width, world.yMin + y / (float)Mathf.Max(1, h - 1) * world.height))
+                    {
+                        // Uncharted: parchment, with only a hint of whether it's land or sea.
+                        px[y * w + x] = Color.Lerp(Parchment, Tint(at(x, y)), 0.12f);
+                        continue;
+                    }
                     var c = Tint(hgt);
                     // Pen hatching on high ground, denser the higher it is.
                     if (hgt > 500f && ((x + y) % Mathf.Max(2, 7 - Mathf.FloorToInt(hgt / 400f)) == 0)) c = Color.Lerp(c, Ink, 0.35f);
@@ -89,8 +102,17 @@ namespace OdinsCoin
 
         // ---- In the game ----
 
+        int paintedVersion = -1;
+
         void Update()
         {
+            // Chart the coast round the ship as she sails.
+            var boot = GameBootstrap.Instance;
+            if (boot != null && boot.Ship != null && RealWorld.Active)
+            {
+                var p = boot.Ship.transform.position;
+                ChartReveal.Sail((float)WorldOrigin.GlobalX(p), (float)WorldOrigin.GlobalZ(p));
+            }
             if (GameMenu.Blocking) { open = false; return; }
             if (GameInput.Pressed(Key.Chart)) open = !open && WorldMap.Current != null && RealWorld.Active;
             if (!open) return;
@@ -101,11 +123,13 @@ namespace OdinsCoin
 
         void Build(WorldMap map)
         {
+            if (chart != null) Destroy(chart);
             int w = Mathf.Min(1024, map.Width), h = Mathf.Max(2, Mathf.RoundToInt(w * (map.Height / (float)map.Width)));
             chart = new Texture2D(w, h, TextureFormat.RGBA32, false);
             chart.wrapMode = TextureWrapMode.Clamp;
             chart.filterMode = FilterMode.Bilinear;
-            var px = Paint(map, w, h);
+            var px = Paint(map, w, h, ChartReveal.Seen);
+            paintedVersion = ChartReveal.Version;
             for (int y = 0; y < h; y++)
                 for (int x = 0; x < w; x++) chart.SetPixel(x, y, px[y * w + x]);
             chart.Apply();
@@ -117,7 +141,8 @@ namespace OdinsCoin
             var map = WorldMap.Current;
             var boot = GameBootstrap.Instance;
             if (map == null || boot == null || boot.Ship == null) return;
-            if (chart == null) Build(map);
+            if (ChartReveal.Circles.Count > 0 && chart != null && paintedVersion != ChartReveal.Version) Build(map);
+            if (chart == null) { ChartReveal.UseGrid(map.Bounds); Build(map); }
             if (label == null)
             {
                 label = new GUIStyle(GUI.skin.label) { fontSize = 12, richText = true };

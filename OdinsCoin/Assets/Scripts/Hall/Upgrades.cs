@@ -55,6 +55,8 @@ namespace OdinsCoin
 
         /// <summary>The raid Bjorn has commissioned (a place's name, or null) and what it pays.</summary>
         public string Commission;
+        /// <summary>How much of the sea chart has been charted (<see cref="ChartReveal.Serialize"/>).</summary>
+        public string Seen = "";
         public int CommissionReward;
 
         /// <summary>The ships you own (design ids), and the one moored at the jetty for you to sail.</summary>

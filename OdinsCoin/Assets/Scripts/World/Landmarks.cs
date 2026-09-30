@@ -13,6 +13,41 @@ namespace OdinsCoin
     /// </summary>
     public static class Landmarks
     {
+        /// <summary>Every landmark standing now, and the place it belongs to.</summary>
+        public static readonly List<KeyValuePair<Transform, Place>> Built = new List<KeyValuePair<Transform, Place>>();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() { Built.Clear(); }
+
+        /// <summary>How close to a landmark you must stand to survey the land from it (m).</summary>
+        public const float SurveyRange = 6f;
+
+        /// <summary>The landmark you're standing at, if any (to survey the land from it).</summary>
+        public static bool Near(Vector3 scenePos, out Transform landmark, out Place place)
+        {
+            Built.RemoveAll(kv => kv.Key == null);
+            foreach (var kv in Built)
+            {
+                var d = kv.Key.position - scenePos;
+                d.y = 0f;
+                if (d.magnitude < SurveyRange + (KindFor(kv.Value) == LandmarkKind.GreatAsh ? 1.5f : 2.5f)) { landmark = kv.Key; place = kv.Value; return true; }
+            }
+            landmark = null; place = null;
+            return false;
+        }
+
+        /// <summary>What surveying from a landmark is called, by its kind.</summary>
+        public static string SurveyVerb(LandmarkKind kind)
+        {
+            switch (kind)
+            {
+                case LandmarkKind.BeaconTower: return "Climb the beacon tower and look out";
+                case LandmarkKind.BellTower: return "Climb the bell tower and look out";
+                case LandmarkKind.GreatAsh: return "Climb the great ash and look out";
+                default: return "Read the runestone's map of the land";
+            }
+        }
+
         /// <summary>How far round the place's main building its landmark may stand (m).</summary>
         public const float SearchRadius = 260f;
 
@@ -142,6 +177,7 @@ namespace OdinsCoin
             t.SetParent(parent, false);
             t.position = WorldOrigin.ToScene(global.x, global.z, global.y - 0.3f);
             ModelView.Show(Model(kind), t);
+            Built.Add(new KeyValuePair<Transform, Place>(t, place));
             var col = t.gameObject.AddComponent<CapsuleCollider>();
             col.radius = kind == LandmarkKind.GreatAsh ? 1.6f : kind == LandmarkKind.RuneStone ? 1f : 2.4f;
             col.height = Height(kind);

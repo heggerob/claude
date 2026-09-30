@@ -84,6 +84,8 @@ namespace OdinsCoin
             WorldTerrain.Create(null, map, focus);
             // Trees, rocks and grass on the land round you, clear of the home harbour's buildings.
             Scenery.Clearings.Add(new Vector3(home.x, home.z, HomeClearing));
+            // You know your home waters: the chart shows them from the start.
+            ChartReveal.Reveal(home.x, home.z, ChartReveal.SurveyRadius);
             SceneryField.Create(null, map, focus);
             var sites = world.gameObject.AddComponent<PlaceSites>();
             sites.Setup(map, world, focus);

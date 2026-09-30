@@ -310,6 +310,39 @@ public static class LogicTests
             }
         }
 
+        // The chart fills in as you explore.
+        {
+            ChartReveal.Clear();
+            Check(!ChartReveal.Seen(1000, 1000), "the chart starts blank");
+            ChartReveal.Sail(0f, 0f);
+            Check(ChartReveal.Seen(0, 0) && ChartReveal.Seen(ChartReveal.ShipSight - 100f, 0) && !ChartReveal.Seen(ChartReveal.ShipSight + 500f, 0), "sailing charts the coast round the ship");
+            int before = ChartReveal.Circles.Count;
+            ChartReveal.Sail(500f, 0f);
+            Check(ChartReveal.Circles.Count == before, "a band isn't charted again for every step the ship takes");
+            ChartReveal.Sail(ChartReveal.TrailStep + 10f, 0f);
+            Check(ChartReveal.Circles.Count == before + 1, "sailing on charts on");
+            ChartReveal.Reveal(50000f, 50000f, ChartReveal.SurveyRadius);
+            Check(ChartReveal.Seen(50000 + 20000, 50000), "a landmark shows you the land for miles round it");
+            int n = ChartReveal.Circles.Count;
+            ChartReveal.Reveal(50000f, 50000f, 1000f);
+            Check(ChartReveal.Circles.Count == n, "what's already charted isn't added twice");
+            var saved = ChartReveal.Serialize();
+            ChartReveal.Clear();
+            ChartReveal.Deserialize(saved);
+            Check(ChartReveal.Circles.Count == n && ChartReveal.Seen(50000 + 20000, 50000), "the chart survives a save");
+            ChartReveal.Deserialize("garbage;1:2;3:4:-5;x:y:z");
+            Check(ChartReveal.Circles.Count == 0, "a bad saved chart is ignored");
+            ChartReveal.Deserialize(saved);
+            ChartReveal.UseGrid(new Rect(-100000f, -100000f, 300000f, 300000f));
+            Check(ChartReveal.Seen(50000 + 20000, 50000) && ChartReveal.Seen(0, 0) && !ChartReveal.Seen(-60000, -60000), "the chart's grid agrees with the circles");
+            var chartSave = new Upgrades { Seen = saved };
+            Fortune cf; Upgrades cu;
+            SaveGame.Deserialize(SaveGame.Serialize(new Fortune(), chartSave), out cf, out cu);
+            Check(cu.Seen == saved, "the charted land is in the save file");
+            Check(Landmarks.SurveyVerb(LandmarkKind.BeaconTower).Contains("beacon") && Landmarks.SurveyVerb(LandmarkKind.RuneStone).Contains("runestone"), "each landmark is surveyed its own way");
+            ChartReveal.Clear();
+        }
+
         // Faster time on a quiet passage, never with danger about.
         string why;
         Check(TimeWarp.Allowed(true, 5000f, false, 0f, false, out why) && why == null, "a quiet passage can run fast");

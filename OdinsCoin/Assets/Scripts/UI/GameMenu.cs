@@ -88,6 +88,13 @@ namespace OdinsCoin
             SkyClock.Set(u.ClockDay, u.ClockHours);
             PlaceLife.Raided.Clear();
             foreach (var name in u.Raided) PlaceLife.Raided.Add(name);
+            ChartReveal.Deserialize(u.Seen);
+            // Your home waters are always on the chart.
+            if (RealWorld.Active)
+            {
+                var home = HomeHarbour.HomeCentre + HomeHarbour.Drift;
+                ChartReveal.Reveal((float)WorldOrigin.GlobalX(home), (float)WorldOrigin.GlobalZ(home), ChartReveal.SurveyRadius);
+            }
             if (load && u.AtSea && GameBootstrap.Instance != null) GameBootstrap.Instance.ResumeAt(u.SeaX, u.SeaZ, u.SeaHeading);
             state = State.Playing;
             autosave = 0f;
