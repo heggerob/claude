@@ -258,16 +258,27 @@ namespace OdinsCoin
                         }
                         d.Add(Joints.Weapon, d.pal.leather, MeshData.Tube(path, radii, 7));
                         var fork = path[path.Length - 1];
+                        // The branches wrap round the stone and carry on well above it, splitting like antler tines.
                         foreach (float side in new[] { -1f, 1f })
                         {
-                            var branch = new[] { fork, fork + new Vector3(0f, side * 0.07f, 0.08f) * s, fork + new Vector3(0f, side * 0.08f, 0.24f) * s, fork + new Vector3(0f, side * 0.03f, 0.34f) * s };
-                            d.Add(Joints.Weapon, d.pal.leather, MeshData.Tube(branch, new[] { 0.02f * s, 0.015f * s, 0.012f * s, 0.005f * s }, 6));
-                            var twig = new[] { branch[2], branch[2] + new Vector3(0.01f, side * 0.06f, 0.08f) * s };
-                            d.Add(Joints.Weapon, d.pal.leather, MeshData.Tube(twig, new[] { 0.008f * s, 0.003f * s }, 5));
+                            var branch = new[] { fork, fork + new Vector3(0f, side * 0.1f, 0.08f) * s, fork + new Vector3(0f, side * 0.11f, 0.24f) * s,
+                                fork + new Vector3(0f, side * 0.06f, 0.4f) * s, fork + new Vector3(0f, side * 0.1f, 0.52f) * s };
+                            d.Add(Joints.Weapon, d.pal.leather, MeshData.Tube(branch, new[] { 0.022f * s, 0.017f * s, 0.014f * s, 0.01f * s, 0.004f * s }, 6));
+                            foreach (var tw in new[] { new[] { 2f, 0.07f, 0.1f }, new[] { 3f, -0.05f, 0.12f }, new[] { 3f, 0.08f, 0.06f } })
+                            {
+                                var root = branch[(int)tw[0]];
+                                var twig = new[] { root, root + new Vector3(0.01f, side * tw[1], tw[2]) * s };
+                                d.Add(Joints.Weapon, d.pal.leather, MeshData.Tube(twig, new[] { 0.008f * s, 0.003f * s }, 5));
+                            }
                         }
                         // The rune stone, lashed between the forks: grey slab, glowing blue rune on its face (+X).
                         var stone = fork + new Vector3(0f, 0f, 0.16f * s);
-                        d.Add(Joints.Weapon, new Color(0.5f, 0.52f, 0.55f), MeshData.Ellipsoid(stone, new Vector3(0.03f, 0.1f, 0.13f) * s, 12, 8));
+                        d.Add(Joints.Weapon, new Color(0.5f, 0.52f, 0.55f), MeshData.Ellipsoid(stone, new Vector3(0.03f, 0.1f, 0.11f) * s, 12, 8));
+                        // A wooden ring bound round the stone's edge.
+                        var rim = new Vector3[17];
+                        var rimR = new float[17];
+                        for (int i = 0; i < rim.Length; i++) { float a = i / 16f * Mathf.PI * 2f; rim[i] = stone + new Vector3(0f, Mathf.Cos(a) * 0.105f, Mathf.Sin(a) * 0.115f) * s; rimR[i] = 0.011f * s; }
+                        d.Add(Joints.Weapon, d.pal.leatherDark, MeshData.Tube(rim, rimR, 5));
                         // The rune (like Raidho): a stem, a bowl and a leg, glowing on the face.
                         var glyph = new[] {
                             new[] { new Vector2(-0.035f, -0.08f), new Vector2(-0.035f, 0.08f) },
@@ -281,10 +292,13 @@ namespace OdinsCoin
                         // Charms hanging from the forks.
                         foreach (float side in new[] { -1f, 1f })
                         {
-                            var hang = fork + new Vector3(0f, side * 0.08f, 0.2f) * s;
-                            var end = hang + new Vector3(0.0f, side * 0.01f, -0.14f) * s;
-                            d.Add(Joints.Weapon, d.pal.leatherDark, MeshData.Tube(new[] { hang, end }, new[] { 0.0025f * s, 0.0025f * s }, 4), false);
-                            Garments.RuneDisc(d, Joints.Weapon, end + new Vector3(0f, 0f, -0.025f * s), 0.024f * s, Quaternion.Euler(0f, 0f, -90f));
+                            foreach (var h in new[] { new Vector2(0.4f, 0.16f), new Vector2(0.28f, 0.2f) })
+                            {
+                                var hang = fork + new Vector3(0f, side * 0.1f, h.x) * s;
+                                var end = hang + new Vector3(0.0f, side * 0.015f, -h.y) * s;
+                                d.Add(Joints.Weapon, d.pal.leatherDark, MeshData.Tube(new[] { hang, end }, new[] { 0.0025f * s, 0.0025f * s }, 4), false);
+                                Garments.RuneDisc(d, Joints.Weapon, end + new Vector3(0f, 0f, -0.03f * s), 0.032f * s, Quaternion.Euler(0f, 0f, -90f));
+                            }
                         }
                     }
                     break;
