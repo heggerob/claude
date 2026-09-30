@@ -33,7 +33,12 @@ namespace OdinsCoin
         float verticalSpeed;
         float bailAnim;
         float facing;
-        float walkCycle;
+        /// <summary>Speed, turning and footsteps: turning takes steps, speed builds up and dies down.</summary>
+        readonly Locomotion loco = new Locomotion { sprintSpeed = RunSpeed };
+        bool locoStarted;
+
+        /// <summary>The Viking's walking and turning, for animation.</summary>
+        public Locomotion Motion { get { return loco; } }
         // Where we stand in the ship's own coordinates, and which way we face relative to the ship.
         Vector3 shipLocal;
         float shipLocalYaw;
@@ -109,10 +114,14 @@ namespace OdinsCoin
             var ship = Ship.transform;
 
             // 1. Ride along: put us back where we were on the (moved) ship.
+            if (!locoStarted) { loco.Reset(Vector2.zero, facing); locoStarted = true; }
             if (OnShip)
             {
                 Teleport(ship.TransformPoint(shipLocal));
+                float was = facing;
                 facing = ship.eulerAngles.y + shipLocalYaw;
+                // The ship turned under us: so did we.
+                loco.Rotate(Mathf.DeltaAngle(was, facing));
             }
 
             if (combat == null) combat = GetComponent<VikingCombat>();
@@ -121,7 +130,8 @@ namespace OdinsCoin
             {
                 Prompt = null;
                 controller.Move(Vector3.down * 2f * dt);
-                Animate(0f, dt);
+                loco.Step(Vector2.zero, 0f, dt);
+                Animate(dt);
                 return;
             }
 
@@ -135,7 +145,9 @@ namespace OdinsCoin
                 shipLocalYaw = 0f;
                 Teleport(ship.TransformPoint(shipLocal));
                 transform.rotation = Quaternion.Euler(0f, ship.eulerAngles.y, 0f);
-                Animate(0f, dt);
+                facing = ship.eulerAngles.y;
+                loco.Reset(Vector2.zero, facing);
+                Animate(dt);
                 return;
             }
 
@@ -149,11 +161,6 @@ namespace OdinsCoin
             if (Carrying != null) speed = Swimming ? CarrySwimSpeed : CarrySpeed;
             if (combat != null && combat.Blocking) speed *= 0.5f;
 
-            if (move.sqrMagnitude > 0.01f)
-            {
-                float target = Mathf.Atan2(move.x, move.z) * Mathf.Rad2Deg;
-                facing = Mathf.MoveTowardsAngle(facing, target, 720f * dt);
-            }
 
             // 3. Gravity, jumping and swimming.
             float water = Waves.Height(transform.position.x, transform.position.z);
@@ -173,7 +180,12 @@ namespace OdinsCoin
                 verticalSpeed -= Gravity * dt;
             }
 
-            controller.Move((move * speed + Vector3.up * verticalSpeed) * dt);
+            // Walking, turning and stepping: the body turns by planting its feet, so it never spins on the spot.
+            bool footing = Swimming || controller.isGrounded;
+            if (footing) loco.Step(new Vector2(move.x, move.z), speed, dt);
+            else loco.Air(new Vector2(move.x, move.z), dt);
+            facing = loco.heading;
+            controller.Move((loco.Velocity + Vector3.up * verticalSpeed) * dt);
             transform.rotation = Quaternion.Euler(0f, facing, 0f);
 
             // 4. Are we standing on the ship? Then remember where, in ship space.
@@ -202,7 +214,7 @@ namespace OdinsCoin
                 }
             }
 
-            Animate(move.magnitude * speed, dt);
+            Animate(dt);
         }
 
         void UpdatePrompt()
@@ -359,11 +371,12 @@ namespace OdinsCoin
             return Mathf.Sqrt(outside * outside + past * past);
         }
 
-        void Animate(float speed, float dt)
+        void Animate(float dt)
         {
             if (parts == null) return;
-            walkCycle += dt * (speed > 0.1f ? 2f + speed * 1.4f : 0f);
-            float swing = speed > 0.1f ? Mathf.Sin(walkCycle) * Mathf.Clamp(speed * 8f, 0f, 38f) : 0f;
+            // The legs swing with the footsteps: one stride is left then right.
+            float reach = loco.Stepping ? Mathf.Max(14f, Mathf.Clamp(loco.speed * 8f, 0f, 38f)) : 0f;
+            float swing = Mathf.Sin(loco.Stride * Mathf.PI * 2f) * reach;
             if (Swimming) swing = Mathf.Sin(Time.time * 4f) * 40f;
             parts.leftLeg.localRotation = HeroPose.Leg(swing);
             parts.rightLeg.localRotation = HeroPose.Leg(-swing);

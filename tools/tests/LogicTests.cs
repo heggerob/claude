@@ -34,6 +34,7 @@ public static class LogicTests
         HeroChoiceTests();
         NpcHeroTests();
         StickAnimTests();
+        LocomotionTests();
         ClothWindTests();
         FaceTests();
         RestTests();
@@ -911,6 +912,116 @@ public static class LogicTests
         int happy = 0, hurt = 0;
         foreach (var p in m.Pieces) { if (p.joint == Joints.EyesHappy) happy++; if (p.joint == Joints.EyesHurt) hurt++; }
         Check(happy > 0 && hurt > 0, "happy and hurt eyes are built");
+    }
+
+    static Locomotion Walker()
+    {
+        var l = new Locomotion();
+        l.Reset(Vector2.zero, 0f);
+        return l;
+    }
+
+    /// <summary>Run a walker with a fixed wish for a while; returns it.</summary>
+    static Locomotion Run(Locomotion l, Vector2 wish, float maxSpeed, float seconds, float dt)
+    {
+        for (float t = 0f; t < seconds; t += dt) l.Step(wish, maxSpeed, dt);
+        return l;
+    }
+
+    static void LocomotionTests()
+    {
+        const float walk = 4.2f, sprint = 6.5f, dt = 1f / 60f;
+        // Speed builds up and dies down; it never jumps.
+        var l = Run(Walker(), new Vector2(0f, 1f), walk, 0.1f, dt);
+        Check(l.speed > 0.3f && l.speed < walk * 0.5f, "a hero speeds up gradually (" + l.speed + " after 0.1 s)");
+        Run(l, new Vector2(0f, 1f), walk, 1f, dt);
+        Check(Mathf.Abs(l.speed - walk) < 0.05f, "and reaches walking speed within a second");
+        Run(l, Vector2.zero, walk, 0.1f, dt);
+        Check(l.speed > 0.5f && l.speed < walk, "letting go slows down, not stops dead");
+        Run(l, Vector2.zero, walk, 1.5f, dt);
+        Check(l.speed == 0f && !l.Stepping, "and comes to rest, feet still");
+
+        // A 90 degree turn while walking takes several steps, each turning at most its share, along an arc.
+        l = Run(Walker(), new Vector2(0f, 1f), walk, 1.5f, dt);
+        var startPos = l.position;
+        float last = l.heading, worst = 0f;
+        int before = l.stepsTaken;
+        var turnAt = new System.Collections.Generic.List<float>();
+        for (float t = 0f; t < 2f; t += dt)
+        {
+            float allow = l.TurnPerStep;
+            int steps = l.stepsTaken;
+            l.Step(new Vector2(1f, 0f), walk, dt);
+            if (l.stepsTaken != steps) { worst = Mathf.Max(worst, Mathf.Abs(Mathf.DeltaAngle(last, l.heading)) - allow); last = l.heading; turnAt.Add(t); }
+            if (t < 0.1f + dt * 0.5f && t > 0.1f - dt * 0.5f) Check(l.heading < 30f, "turning isn't instant (" + l.heading + " degrees after 0.1 s)");
+        }
+        Check(worst <= 0.5f, "no step turns more than it may (" + worst + " over)");
+        Check(Mathf.Abs(Mathf.DeltaAngle(l.heading, 90f)) < 1f, "the turn is finished within two seconds");
+        Check(l.stepsTaken - before >= 3, "a walking 90 degree turn takes a few steps (" + (l.stepsTaken - before) + ")");
+        Check(l.position.y - startPos.y > 0.4f, "it curves round rather than turning on the spot");
+
+        // A U-turn at a sprint: brake first, pivot, then push off the other way.
+        l = Run(Walker(), new Vector2(0f, 1f), sprint, 2f, dt);
+        bool brakedBeforeSide = true;
+        for (float t = 0f; t < 3f; t += dt)
+        {
+            l.Step(new Vector2(0f, -1f), sprint, dt);
+            if (Mathf.Abs(Mathf.DeltaAngle(0f, l.heading)) > 90f && l.speed > sprint * 0.35f && t < 0.6f) brakedBeforeSide = false;
+        }
+        Check(brakedBeforeSide, "a sprinting U-turn brakes before it swings round");
+        Check(Mathf.Abs(Mathf.DeltaAngle(l.heading, 180f)) < 1f && l.speed > sprint * 0.9f, "and then runs off the other way (" + l.heading + ", " + l.speed + ")");
+
+        // Standing still, a turn is made in small steps on the spot.
+        l = Walker();
+        int s0 = l.stepsTaken;
+        Run(l, new Vector2(-1f, 0f), walk, 0.05f, dt);
+        Check(l.Pivoting, "turning while standing pivots on the spot");
+        float moved = 0f;
+        for (float t = 0f; t < 1f && Mathf.Abs(Mathf.DeltaAngle(l.heading, -90f)) > 5f; t += dt) { l.Step(new Vector2(-1f, 0f), walk, dt); moved = Mathf.Abs(l.position.y); }
+        Check(moved < 0.35f, "it comes round nearly on the spot, not in a wide arc (" + moved + " m off the new line)");
+        Check(l.stepsTaken - s0 >= 1, "a standing turn takes steps (" + (l.stepsTaken - s0) + ")");
+
+        // Footsteps alternate, one on each side, and stride out further when running.
+        l = Run(Walker(), new Vector2(0f, 1f), walk, 1.5f, dt);
+        bool alternates = true;
+        var prevFoot = l.planted;
+        float walkStride = 0f, sprintStride = 0f;
+        int n = 0;
+        for (float t = 0f; t < 2f; t += dt)
+        {
+            int steps = l.stepsTaken;
+            l.Step(new Vector2(0f, 1f), walk, dt);
+            if (l.stepsTaken != steps)
+            {
+                if (l.planted.left == prevFoot.left) alternates = false;
+                if (l.planted.left != (l.planted.at.x < l.position.x)) alternates = false;
+                walkStride += Vector2.Distance(l.planted.at, prevFoot.at); n++;
+                prevFoot = l.planted;
+            }
+        }
+        walkStride /= Mathf.Max(1, n);
+        Check(alternates, "footsteps alternate left and right, on their own sides");
+        Run(l, new Vector2(0f, 1f), sprint, 2f, dt);
+        prevFoot = l.planted; n = 0;
+        for (float t = 0f; t < 2f; t += dt)
+        {
+            int steps = l.stepsTaken;
+            l.Step(new Vector2(0f, 1f), sprint, dt);
+            if (l.stepsTaken != steps) { sprintStride += Vector2.Distance(l.planted.at, prevFoot.at); n++; prevFoot = l.planted; }
+        }
+        sprintStride /= Mathf.Max(1, n);
+        Check(sprintStride > walkStride * 1.15f, "sprinting takes longer strides (" + walkStride + " vs " + sprintStride + ")");
+        Check(l.next.left == l.leftSwinging, "the next planned footstep is the swinging foot's");
+
+        // The same walk at 30 and at 144 frames a second ends up in much the same place.
+        var slow = Walker(); var fast = Walker();
+        foreach (var w in new[] { new Vector2(0f, 1f), new Vector2(1f, 0.3f), new Vector2(-0.4f, -1f) })
+        {
+            Run(slow, w, walk, 1.2f, 1f / 30f);
+            Run(fast, w, walk, 1.2f, 1f / 144f);
+        }
+        Check(Vector2.Distance(slow.position, fast.position) < 0.35f && Mathf.Abs(Mathf.DeltaAngle(slow.heading, fast.heading)) < 8f,
+            "movement doesn't depend on the frame rate (" + Vector2.Distance(slow.position, fast.position) + " m apart)");
     }
 
     static void StickAnimTests()

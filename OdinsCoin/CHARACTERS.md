@@ -111,3 +111,12 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
 - [x] **14. Flere skins:** nye sett (vinter, draugr, gull-jarl, havfolk) og sjeldne skins fra kister. (se [docs/skins.png](docs/skins.png))
   - Fire sett kler alle seks antrekkene. Winterborn (600 gull) og Sea-Folk (800 gull) kjøpes i methallen. Draugr (med gråblek hud og grønne runer) og Gold Jarl er sjeldne og kan ikke kjøpes.
   - Hver kiste du selger hjemme, har 10 % sjanse for et sjeldent skin du ikke har ennå. Sjansen står i methallen. Du får aldri samme skin to ganger, og når du har alle, kommer det ikke flere.
+- [x] **15. Ansikt, hud og holdning:** øynene er to runde prikker over hverandre som henger sammen (en høy pille), som i bildet. Huden er fersken som i bildet, og du kan velge mellom sju hudfarger i heltemenyen. Figurene står rakt med brystet fram og haka litt opp.
+- [ ] **16. Levende bevegelse:** alt skal være mykt og uten hopp mellom stillinger.
+  - [x] Fotsteg og svinger (`Player/Locomotion.cs`): farten bygges opp og dør ut gradvis. Hvert steg planlegger hvor neste fot lander og kan bare snu kroppen et visst antall grader (mye når du står, lite i full sprint), så en sving går i en bue over flere steg. En skarp vending bremser først, snur deretter på stedet med små steg og setter så av gårde. I lufta beholder du farten og kan bare styre litt.
+  - [ ] Gange og sprint: beina følger fotstegene. Armene pendler og bøyer seg ved albuen, kroppen hopper litt og lener seg fram når den setter av. Den heller inn i svingene, og hodet ser dit du skal før kroppen snur.
+  - [ ] Hopp: den krøker seg før satsen, har en egen stilling i lufta og tar av for landingen. Kapper, fletter og skjørt flagrer opp når figuren faller og slår ned når den lander.
+  - [ ] Våpen: myke slag med sverd og øks, stikk med spyd, spenning og skudd med bue og kast med stav. Hvert slag har oppladning, slag og tilbaketrekning.
+  - [ ] Alle ledd går gjennom dempede fjærer, så overganger aldri hopper.
+  - [ ] NPC-er (saksere, raidere, Bjørn og Gunnar) bruker samme system.
+  - [ ] Forhåndsvisning: fotsporene i en sving sett ovenfra, og ruter av gange, sprint, hopp og slag.
