@@ -35,33 +35,80 @@ namespace OdinsCoin
             var h = new float[quads + 1, quads + 1];
             for (int j = 0; j <= quads; j++)
                 for (int i = 0; i <= quads; i++)
-                    h[i, j] = TerrainDetail.Height(map, x0 + i * step, z0 + j * step);
+                    h[i, j] = TerrainDetail.HeightUncarved(map, x0 + i * step, z0 + j * step);
             for (int j = 0; j < quads; j++)
                 for (int i = 0; i < quads; i++)
                 {
+                    // A cave dug in here: draw this square finely, so its chamber shows (not in the far land).
+                    if (step <= MaxRefined && Caves.Touches(x0 + i * step, z0 + j * step, x0 + (i + 1) * step, z0 + (j + 1) * step))
+                    {
+                        p.Refine(map, x0, z0, i, j, step, h, sink);
+                        continue;
+                    }
                     bool flip = ((i + j) & 1) == 0;
                     var a = new Vector2Int(i, j); var b = new Vector2Int(i, j + 1); var c = new Vector2Int(i + 1, j + 1); var d = new Vector2Int(i + 1, j);
                     var tris = flip ? new[] { a, b, c, a, c, d } : new[] { a, b, d, b, c, d };
                     for (int t = 0; t < 6; t += 3)
                     {
                         float ha = h[tris[t].x, tris[t].y], hb = h[tris[t + 1].x, tris[t + 1].y], hc = h[tris[t + 2].x, tris[t + 2].y];
-                        float mean = (ha + hb + hc) / 3f;
-                        float slope = (Mathf.Max(ha, Mathf.Max(hb, hc)) - Mathf.Min(ha, Mathf.Min(hb, hc))) / step;
-                        var kind = TerrainDetail.Kind(mean / s, slope);
-                        var list = p.Triangles[(int)kind];
-                        for (int k = 0; k < 3; k++)
-                        {
-                            var g = tris[t + k];
-                            float y = h[g.x, g.y];
-                            // Under the sea: a flat sheet just below the waterline.
-                            if (kind == Ground.Seabed) y = SeaSheet * s;
-                            else y = Mathf.Max(y, SeaSheet * s * 0.5f);
-                            list.Add(p.Vertices.Count);
-                            p.Vertices.Add(new Vector3(g.x * step, y - sink, g.y * step));
-                        }
+                        p.Add(new Vector3(tris[t].x * step, ha, tris[t].y * step), new Vector3(tris[t + 1].x * step, hb, tris[t + 1].y * step),
+                            new Vector3(tris[t + 2].x * step, hc, tris[t + 2].y * step), step, sink);
                     }
                 }
             return p;
+        }
+
+        /// <summary>One triangle (patch-local x/z, heights in y), filed under its kind of ground.</summary>
+        void Add(Vector3 a, Vector3 b, Vector3 c, float step, float sink)
+        {
+            float s = WorldMap.Scale;
+            float mean = (a.y + b.y + c.y) / 3f;
+            float slope = (Mathf.Max(a.y, Mathf.Max(b.y, c.y)) - Mathf.Min(a.y, Mathf.Min(b.y, c.y))) / step;
+            var kind = TerrainDetail.Kind(mean / s, slope);
+            var list = Triangles[(int)kind];
+            foreach (var v in new[] { a, b, c })
+            {
+                // Under the sea: a flat sheet just below the waterline.
+                float y = kind == Ground.Seabed ? SeaSheet * s : Mathf.Max(v.y, SeaSheet * s * 0.5f);
+                list.Add(Vertices.Count);
+                Vertices.Add(new Vector3(v.x, y - sink, v.z));
+            }
+        }
+
+        /// <summary>How fine the land is drawn round a cave (m), and the coarsest squares that are refined for one.</summary>
+        public const float FineStep = 1f, MaxRefined = 100f;
+
+        /// <summary>
+        /// Square (i, j) drawn in fine squares, with any cave chamber dug out. Its edges keep the coarse squares'
+        /// straight lines (so it meets its neighbours without a crack) and blend into the real, detailed ground
+        /// a few metres in.
+        /// </summary>
+        void Refine(WorldMap map, double x0, double z0, int i, int j, float step, float[,] h, float sink)
+        {
+            int n = Mathf.Max(1, Mathf.CeilToInt(step / FineStep));
+            float fine = step / n, blend = 4f;
+            var g = new float[n + 1, n + 1];
+            for (int b = 0; b <= n; b++)
+                for (int a = 0; a <= n; a++)
+                {
+                    float u = a / (float)n, v = b / (float)n;
+                    double x = x0 + (i + u) * step, z = z0 + (j + v) * step;
+                    float coarse = Mathf.Lerp(Mathf.Lerp(h[i, j], h[i + 1, j], u), Mathf.Lerp(h[i, j + 1], h[i + 1, j + 1], u), v);
+                    float edge = Mathf.Min(Mathf.Min(a, n - a), Mathf.Min(b, n - b)) * fine;
+                    float y = Mathf.Lerp(coarse, TerrainDetail.HeightUncarved(map, x, z), Mathf.Clamp01(edge / blend));
+                    g[a, b] = Caves.Hollow(x, z, y);
+                }
+            for (int b = 0; b < n; b++)
+                for (int a = 0; a < n; a++)
+                {
+                    float xa = i * step + a * fine, za = j * step + b * fine;
+                    var p00 = new Vector3(xa, g[a, b], za);
+                    var p01 = new Vector3(xa, g[a, b + 1], za + fine);
+                    var p11 = new Vector3(xa + fine, g[a + 1, b + 1], za + fine);
+                    var p10 = new Vector3(xa + fine, g[a + 1, b], za);
+                    Add(p00, p01, p11, fine, sink);
+                    Add(p00, p11, p10, fine, sink);
+                }
         }
 
         /// <summary>The colour of each kind of ground, in the storybook palette.</summary>

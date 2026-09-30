@@ -666,6 +666,36 @@ public static class LogicTests
             worst = Math.Max(worst, Math.Abs(TerrainDetail.Height(map, px, pz) - map.GroundHeight((float)px, (float)pz)));
         }
         Check(worst < 80f, "made-up detail stays within tens of metres of the real land (" + worst + ")");
+        // A cave dug into a hillside shows in the land's mesh, though the chunk's squares are far wider than it.
+        Vector3 hill = Vector3.zero;
+        for (int k = 0; k < 400 && hill == Vector3.zero; k++)
+        {
+            double px = bergen.x + 3000.0 + (k % 20) * 250.0 + 12.3, pz = bergen.z + (k / 20) * 250.0 + 7.1;
+            float ph = TerrainDetail.HeightUncarved(map, px, pz);
+            if (ph > 40f) hill = new Vector3((float)px, ph, (float)pz);
+        }
+        if (hill != Vector3.zero)
+        {
+            var hillChunk = WorldTerrain.ChunkOf(hill.x, hill.z, 1000f);
+            double hx0 = hillChunk.x * 1000.0, hz0 = hillChunk.y * 1000.0;
+            var plain = TerrainPatch.Build(map, hx0, hz0, 1000f, WorldTerrain.ChunkQuads);
+            Caves.Hollows.Clear();
+            Caves.Hollows.Add(new Vector4(hill.x, 30f, hill.z, hill.y));
+            var dug = TerrainPatch.Build(map, hx0, hz0, 1000f, WorldTerrain.ChunkQuads);
+            var far = TerrainPatch.Build(map, hx0 - 60000.0, hz0 - 60000.0, 128000f, WorldTerrain.FarQuads);
+            Caves.Hollows.Clear();
+            var inside = Quaternion.Euler(0f, 30f, 0f) * new Vector3(0f, 0f, -Caves.Depth / 2f);
+            bool floorShows = false;
+            foreach (var v in dug.Vertices)
+            {
+                float gx = (float)(hx0 + v.x) - hill.x - inside.x, gz = (float)(hz0 + v.z) - hill.z - inside.z;
+                if (gx * gx + gz * gz < 4f && v.y <= hill.y - 0.2f) floorShows = true;
+            }
+            Check(floorShows && dug.Vertices.Count > plain.Vertices.Count && dug.Vertices.Count < plain.Vertices.Count + 4 * 2500 * 6,
+                "a cave's chamber is dug out of the drawn land: the squares round it are drawn finely (" + plain.Vertices.Count + " -> " + dug.Vertices.Count + ")");
+            Check(far.Vertices.Count == WorldTerrain.FarQuads * WorldTerrain.FarQuads * 6, "the far land is never refined for a cave");
+        }
+        else Check(false, "found a hillside near Bergen for the cave test");
         Check(TerrainDetail.Kind(2000f, 0.1f) == Ground.Snow && TerrainDetail.Kind(-10f, 0f) == Ground.Seabed && TerrainDetail.Kind(0.1f, 0.1f) == Ground.Sand && TerrainDetail.Kind(2f, 0.1f) == Ground.Grass && TerrainDetail.Kind(200f, 1.5f) == Ground.Rock,
             "peaks are snow, the sea floor seabed, beaches sand and cliffs rock");
 

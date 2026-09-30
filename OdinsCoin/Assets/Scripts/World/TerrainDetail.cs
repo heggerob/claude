@@ -17,6 +17,12 @@ namespace OdinsCoin
         /// <summary>The height of the ground at a global game position (with detail).</summary>
         public static float Height(WorldMap map, double x, double z)
         {
+            return Caves.Hollow(x, z, HeightUncarved(map, x, z));
+        }
+
+        /// <summary>The ground height without the cave chambers dug out of it.</summary>
+        public static float HeightUncarved(WorldMap map, double x, double z)
+        {
             float s = WorldMap.Scale;
             float baseH = map.GroundHeight((float)x, (float)z);
             double rx = x / s, rz = z / s;
@@ -31,7 +37,7 @@ namespace OdinsCoin
             // Out at sea, the detail fades so the sea floor stays smooth.
             float sea = real < -25f ? Mathf.Clamp01(1f + (real + 25f) / 60f) : 1f;
             // The rivers and sounds too narrow for the map's grid, carved in.
-            return Caves.Hollow(x, z, Channels.Carve(map, x, z, baseH + (hills * sea + skerries) * s));
+            return Channels.Carve(map, x, z, baseH + (hills * sea + skerries) * s);
         }
 
         /// <summary>What the ground is: sand on the shore, grass on the lower slopes, rock on steep and high ground, snow on the peaks.</summary>

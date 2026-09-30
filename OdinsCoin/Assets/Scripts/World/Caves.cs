@@ -33,6 +33,18 @@ namespace OdinsCoin
             return h;
         }
 
+        /// <summary>How far round a chamber the land is drawn finely enough to show it (m).</summary>
+        public const float Margin = 2f;
+
+        /// <summary>Does any chamber (with <see cref="Margin"/>) reach into the global rectangle (x0, z0)–(x1, z1)?</summary>
+        public static bool Touches(double x0, double z0, double x1, double z1)
+        {
+            float reach = Mathf.Sqrt((HalfWidth + 0.5f) * (HalfWidth + 0.5f) + (Depth + 0.5f) * (Depth + 0.5f)) + Margin;
+            foreach (var c in Hollows)
+                if (c.x + reach > x0 && c.x - reach < x1 && c.z + reach > z0 && c.z - reach < z1) return true;
+            return false;
+        }
+
         /// <summary>
         /// Where a place's cave is (global, ground height) and which way its mouth faces (yaw, downhill): the steepest
         /// dry slope found between <see cref="MinDistance"/> and <see cref="MaxDistance"/>, clear of the buildings.
