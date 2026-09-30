@@ -151,7 +151,9 @@ namespace OdinsCoin
             // against the stride, bobs twice a stride, breathes when still, folds over a hard landing.
             float lean = swimming ? 60f : Mathf.Lerp(0f, 10f, g) + Mathf.Clamp(loco.acceleration * 1.1f, -7f, 9f)
                          + (g < 0.05f ? HeroPose.Breath(time) : 0f) + squash * 16f - air.value * 4f;
-            float bank = -Mathf.Clamp(loco.turnRate * 0.05f * (0.3f + g), -12f, 12f);
+            float bank = -Mathf.Clamp(loco.turnRate * 0.05f * (0.3f + g), -12f, 12f)
+                         // ...and the weight rolls over onto each foot in turn (most at a walk).
+                         - Mathf.Sin(a) * Mathf.Lerp(3.5f, 1.5f, run) * reach;
             float twist = Mathf.Sin(a) * Mathf.Lerp(2f, 7f, g) * reach;
             pose.body = new Vector3(bodyPitch.Step(lean, dt, 0.12f), bodyYaw.Step(twist, dt, 0.06f), bodyRoll.Step(bank, dt, 0.15f));
             // The body rides on its legs: it sits as low as the longer of them lets it (so it bobs twice a stride
