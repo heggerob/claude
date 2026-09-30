@@ -29,6 +29,8 @@ namespace OdinsCoin
             // Everything below the knees (shins, boots, trouser legs) moves to the shins, so the knees bend.
             d.model.SplitJoint(Joints.LeftLeg, Joints.LeftShin, fit.knee - fit.hip);
             d.model.SplitJoint(Joints.RightLeg, Joints.RightShin, fit.knee - fit.hip);
+            d.model.SplitJoint(Joints.LeftShin, Joints.LeftFoot, Fit.AnkleHeight(fit) - fit.knee);
+            d.model.SplitJoint(Joints.RightShin, Joints.RightFoot, Fit.AnkleHeight(fit) - fit.knee);
             d.model.AddOutlines(OutlineWidth * fit.s, d.pal.ink);
             return d.model;
         }

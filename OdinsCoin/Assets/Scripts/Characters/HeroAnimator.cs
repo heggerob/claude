@@ -42,6 +42,8 @@ namespace OdinsCoin
             public float leftElbow, rightElbow;
             /// <summary>Knee bend, degrees (the shin swings back).</summary>
             public float leftKnee, rightKnee;
+            /// <summary>Ankle, degrees: + points the toes down, - pulls them up.</summary>
+            public float leftAnkle, rightAnkle;
             /// <summary>How far the whole body is lifted (m): the bob of each step, the dip of a landing.</summary>
             public float lift;
         }
@@ -54,7 +56,7 @@ namespace OdinsCoin
         readonly Damped armL = new Damped(), armR = new Damped(), armOut = new Damped();
         readonly Damped elbowL = new Damped(), elbowR = new Damped();
         readonly Damped air = new Damped(), stride = new Damped(), fall = new Damped(), rise = new Damped();
-        readonly Damped kneeLd = new Damped(), kneeRd = new Damped();
+        readonly Damped kneeLd = new Damped(), kneeRd = new Damped(), ankleLd = new Damped(), ankleRd = new Damped();
         float landing, landingHard, airTime;
         bool wasGrounded = true;
 
@@ -94,10 +96,10 @@ namespace OdinsCoin
             float reach = stride.Step(strideTarget, dt, 0.1f);
             float run = Mathf.Clamp01((g - 0.62f) / 0.3f);
             float cycleL = Frac(loco.Stride + 0.5f), cycleR = Frac(loco.Stride);
-            float hipL, kneeL, hipR, kneeR;
-            Gait.Sample(cycleL, run, out hipL, out kneeL);
-            Gait.Sample(cycleR, run, out hipR, out kneeR);
-            hipL *= reach; kneeL *= reach; hipR *= reach; kneeR *= reach;
+            float hipL, kneeL, hipR, kneeR, ankL, ankR;
+            Gait.Sample(cycleL, run, out hipL, out kneeL, out ankL);
+            Gait.Sample(cycleR, run, out hipR, out kneeR, out ankR);
+            hipL *= reach; kneeL *= reach; hipR *= reach; kneeR *= reach; ankL *= reach; ankR *= reach;
             // In the air: legs push off straight, tuck up at the top, and reach down for the ground as it falls.
             float falling = fall.Step(Mathf.Clamp01(-verticalSpeed / 6f), dt, 0.1f);
             float rising = rise.Step(Mathf.Clamp01(verticalSpeed / 4.5f), dt, 0.06f);
@@ -116,6 +118,11 @@ namespace OdinsCoin
             pose.rightKnee = kneeRd.Step(Mathf.Max(0f, kr), dt, 0.04f);
             float splay = legSplay.Step(air.value * 7f + squash * 8f, dt, 0.08f);
             pose.leftLeg.z = -splay; pose.rightLeg.z = splay;
+            // Ankles: rolling heel to toe on the ground; toes pointed in the push-off and the air, flexed up to land.
+            float airAnkle = 22f * rising + 12f * tuck + 6f * falling;
+            float landAnkle = -squash * 18f;
+            pose.leftAnkle = ankleLd.Step(Mathf.Lerp(ankL, airAnkle, air.value) + landAnkle, dt, 0.04f);
+            pose.rightAnkle = ankleRd.Step(Mathf.Lerp(ankR, airAnkle * 0.8f, air.value) + landAnkle, dt, 0.04f);
             float swing = -(pose.leftLeg.x - pose.rightLeg.x) * 0.5f;
 
             // Arms: against the legs, swinging wider when running; pumping with bent elbows at a sprint; thrown up
@@ -164,6 +171,8 @@ namespace OdinsCoin
             parts.leftLeg.localRotation = Quaternion.Euler(pose.leftLeg.x - HeroPose.Lean, 0f, pose.leftLeg.z);
             if (parts.leftShin != null) parts.leftShin.localRotation = Quaternion.Euler(pose.leftKnee, 0f, 0f);
             if (parts.rightShin != null) parts.rightShin.localRotation = Quaternion.Euler(pose.rightKnee, 0f, 0f);
+            if (parts.leftFoot != null) parts.leftFoot.localRotation = Quaternion.Euler(pose.leftAnkle, 0f, 0f);
+            if (parts.rightFoot != null) parts.rightFoot.localRotation = Quaternion.Euler(pose.rightAnkle, 0f, 0f);
             parts.rightLeg.localRotation = Quaternion.Euler(pose.rightLeg.x - HeroPose.Lean, 0f, pose.rightLeg.z);
             parts.leftArm.localRotation = Quaternion.Euler(pose.leftArm);
             parts.rightArm.localRotation = Quaternion.Euler(pose.rightArm);
@@ -186,7 +195,10 @@ namespace OdinsCoin
         static readonly float[] walkT = { 0f, 12f, 30f, 50f, 60f, 73f, 87f, 100f };
         static readonly float[] walkHip = { 25f, 22f, 8f, -10f, -2f, 18f, 28f, 25f };
         static readonly float[] walkKnee = { 4f, 18f, 8f, 6f, 36f, 62f, 28f, 4f };
+        // Ankle: + plantarflexion (toes down), - dorsiflexion (toes up).
+        static readonly float[] walkAnkle = { -2f, 6f, -10f, -4f, 16f, 6f, 0f, -2f };
         static readonly float[] runT = { 0f, 14f, 38f, 55f, 72f, 88f, 100f };
+        static readonly float[] runAnkle = { -4f, -18f, 24f, 10f, -2f, -6f, -4f };
         static readonly float[] runHip = { 32f, 14f, -16f, 0f, 42f, 50f, 32f };
         static readonly float[] runKnee = { 22f, 42f, 18f, 88f, 110f, 55f, 22f };
 
@@ -196,10 +208,18 @@ namespace OdinsCoin
         /// </summary>
         public static void Sample(float cycle, float run, out float hip, out float knee)
         {
+            float ankle;
+            Sample(cycle, run, out hip, out knee, out ankle);
+        }
+
+        /// <summary>...and the ankle.</summary>
+        public static void Sample(float cycle, float run, out float hip, out float knee, out float ankle)
+        {
             // Our stride spends half its time on each foot; map that onto each gait's real stance/swing split.
             float wPct = Map(cycle, 60f), rPct = Map(cycle, 38f);
             hip = Mathf.Lerp(Curve(walkT, walkHip, wPct), Curve(runT, runHip, rPct), run);
             knee = Mathf.Lerp(Curve(walkT, walkKnee, wPct), Curve(runT, runKnee, rPct), run);
+            ankle = Mathf.Lerp(Curve(walkT, walkAnkle, wPct), Curve(runT, runAnkle, rPct), run);
         }
 
         static float Map(float cycle, float stance)

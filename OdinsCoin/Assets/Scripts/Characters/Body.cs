@@ -62,6 +62,9 @@ namespace OdinsCoin
             return f;
         }
 
+        /// <summary>How high the ankle is above the sole.</summary>
+        public static float AnkleHeight(Fit f) { return 0.065f * f.s; }
+
         /// <summary>Radius of the torso (x; multiply by depth for z) at a height between the waist and shoulders.</summary>
         public float TorsoRadius(float y)
         {
@@ -85,6 +88,8 @@ namespace OdinsCoin
         public const string Eyes = "Eyes", EyesHappy = "Eyes Happy", EyesHurt = "Eyes Hurt";
         /// <summary>The lower legs, from the knee down (boots and all), so the knees bend.</summary>
         public const string LeftShin = "Left Shin", RightShin = "Right Shin";
+        /// <summary>The feet, from the ankle down (the foot of the boot), so they roll heel to toe.</summary>
+        public const string LeftFoot = "Left Foot", RightFoot = "Right Foot";
 
         public static void Build(VikingModel m, Fit f)
         {
@@ -97,6 +102,8 @@ namespace OdinsCoin
             m.AddJoint(RightForearm, RightArm, new Vector3(0f, -f.upperArm, 0f));
             m.AddJoint(LeftShin, LeftLeg, new Vector3(0f, f.knee - f.hip, 0f));
             m.AddJoint(RightShin, RightLeg, new Vector3(0f, f.knee - f.hip, 0f));
+            m.AddJoint(LeftFoot, LeftShin, new Vector3(0f, Fit.AnkleHeight(f) - f.knee, 0f));
+            m.AddJoint(RightFoot, RightShin, new Vector3(0f, Fit.AnkleHeight(f) - f.knee, 0f));
             m.AddJoint(Head, Body, new Vector3(0f, f.neckY, 0f));
             m.AddJoint(Weapon, RightForearm, new Vector3(0f, -f.foreArm - 0.035f * f.s, 0.01f));
             m.AddJoint(OffHand, LeftForearm, new Vector3(0f, -f.foreArm - 0.035f * f.s, 0.01f));

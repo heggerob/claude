@@ -246,6 +246,8 @@ public static class HeroPreview
         pose.rot[Joints.RightForearm] = Quaternion.Euler(f.rightElbow, 0f, 0f);
         pose.rot[Joints.LeftShin] = Quaternion.Euler(f.leftKnee, 0f, 0f);
         pose.rot[Joints.RightShin] = Quaternion.Euler(f.rightKnee, 0f, 0f);
+        pose.rot[Joints.LeftFoot] = Quaternion.Euler(f.leftAnkle, 0f, 0f);
+        pose.rot[Joints.RightFoot] = Quaternion.Euler(f.rightAnkle, 0f, 0f);
         return pose;
     }
 
