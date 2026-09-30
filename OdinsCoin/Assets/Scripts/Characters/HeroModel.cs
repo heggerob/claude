@@ -407,6 +407,7 @@ namespace OdinsCoin
         public static void BuildOffHand(Dresser d, OffHandId id)
         {
             float s = d.S;
+            int before = d.model.Pieces.Count;
             switch (id)
             {
                 case OffHandId.RoundShield:
@@ -537,6 +538,9 @@ namespace OdinsCoin
                         var p = Vector3.Lerp(new Vector3(0.02f, 0.09f, 0.054f), new Vector3(0.14f, 0.06f, 0.054f), i / 5f) * s + new Vector3(0f, Mathf.Sin(i * 1.3f) * 0.008f * s, 0f);
                         d.Add(Joints.OffHand, d.pal.ink, MeshData.Ellipsoid(p, Vector3.one * 0.0035f * s, 4, 3), false);
                     }
+                    // A big chart, as in the concept art: everything drawn above, scaled up about the fist.
+                    for (int i = before; i < d.model.Pieces.Count; i++)
+                        d.model.Pieces[i].mesh = d.model.Pieces[i].mesh.Transformed(Vector3.zero, Quaternion.identity, Vector3.one * 1.4f);
                     break;
             }
         }
