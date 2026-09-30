@@ -141,6 +141,8 @@ namespace OdinsCoin
             float airArm = Mathf.Lerp(-55f, -95f, falling);
             float al = Mathf.Lerp(-armSwing, airArm, air.value) + squash * 10f + dip * 45f;
             float ar = Mathf.Lerp(armSwing, airArm * 0.8f, air.value) + squash * 10f + dip * 45f;
+            // Swimming: an easy front crawl, each arm reaching forward over the head and pulling back in turn.
+            if (swimming) { al = -100f - 80f * Mathf.Cos(time * 2.6f); ar = -100f + 80f * Mathf.Cos(time * 2.6f); }
             pose.leftArm = new Vector3(armL.Step(al, dt, 0.06f), 0f, 0f);
             pose.rightArm = new Vector3(armR.Step(ar, dt, 0.06f), 0f, 0f);
             float outward = armOut.Step(Mathf.Lerp(4f + 4f * g, 28f, air.value) + squash * 12f, dt, 0.08f);
