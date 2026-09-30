@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 namespace OdinsCoin
 {
-    public enum Key { Up, Down, Left, Right, Jump, Interact, Sprint, Coin, Pause, SailUp, SailDown, Walk, Anchor }
+    public enum Key { Up, Down, Left, Right, Jump, Interact, Sprint, Coin, Pause, SailUp, SailDown, Walk, Anchor, TimeWarp }
 
     /// <summary>Keyboard + mouse that works with both the old Input Manager and the new Input System.</summary>
     public static class GameInput
@@ -35,6 +35,7 @@ namespace OdinsCoin
                 case Key.SailUp: return k.rKey;
                 case Key.SailDown: return k.qKey;
                 case Key.Anchor: return k.gKey;
+                case Key.TimeWarp: return k.tKey;
                 default: return null;
             }
         }
@@ -87,6 +88,7 @@ namespace OdinsCoin
                 case Key.SailUp: return KeyCode.R;
                 case Key.SailDown: return KeyCode.Q;
                 case Key.Anchor: return KeyCode.G;
+                case Key.TimeWarp: return KeyCode.T;
                 default: return KeyCode.None;
             }
         }

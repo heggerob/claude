@@ -65,6 +65,21 @@ public static class LogicTests
         float reefed = Mathf.Abs(ShipPhysics.HeelAngle(wolf, ShipPhysics.Total(wolf, 4f, 0f, 0f, beamGale, new ShipPhysics.Controls { sail = 0.25f }, 0f).heel));
         Check(Wind.Knots <= 28.1f && 6f + Wind.MaxStrength * 22f > 40f && full > reefed * 3f && full > 10f, "a storm blows a full gale, and full sail heels her " + full.ToString("0") + "° where reefed she heels " + reefed.ToString("0") + "°");
 
+        // Faster time on a quiet passage, never with danger about.
+        string why;
+        Check(TimeWarp.Allowed(true, 5000f, false, 0f, false, out why) && why == null, "a quiet passage can run fast");
+        Check(!TimeWarp.Allowed(true, 300f, false, 0f, false, out why) && why.Contains("raiders"), "raiders close by stop fast time");
+        Check(!TimeWarp.Allowed(false, 5000f, false, 0f, false, out why) && !TimeWarp.Allowed(true, 5000f, true, 0f, false, out why)
+            && !TimeWarp.Allowed(true, 5000f, false, 0.5f, false, out why) && !TimeWarp.Allowed(true, 5000f, false, 0f, true, out why),
+            "off the ship, the serpent, a storm or running aground all stop fast time");
+        int lvl = 1, steps = 0;
+        do { lvl = TimeWarp.Next(lvl); steps++; } while (lvl != 1 && steps < 10);
+        Check(steps == TimeWarp.Levels.Length && TimeWarp.Next(1) == 2 && TimeWarp.Next(16) == 1, "T steps 1x, 2x, 4x, 8x, 16x and back to real time");
+        var kau = Places.Find("Kaupang"); var hed = Places.Find("Hedeby");
+        double dLat = (hed.latitude - kau.latitude) * Math.PI / 180.0, dLon = (hed.longitude - kau.longitude) * Math.PI / 180.0 * Math.Cos(56.8 * Math.PI / 180.0);
+        float hours = (float)(6371000.0 * Math.Sqrt(dLat * dLat + dLon * dLon)) / (8f * 0.514f) / 3600f;
+        Check(hours > 20f && hours / 16f < 2.5f, "Kaupang to Hedeby at 8 knots: " + hours.ToString("0") + " h, about " + (hours * 60f / 16f).ToString("0") + " min at 16x");
+
         // Pointing: a lateen-rigged ship sails closer to the wind than a square-rigger, and nobody sails straight into it.
         float wolfPoint = Seamanship.ClosestToWind(wolf, 16f), cutterPoint = Seamanship.ClosestToWind(ShipDesign.Skerrycutter, 16f);
         Check(wolfPoint >= 35f && wolfPoint < cutterPoint && cutterPoint <= 85f, "the Wavewolf points " + wolfPoint + "° off the wind, the square-rigged Skerrycutter only " + cutterPoint + "°");

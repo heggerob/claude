@@ -117,6 +117,12 @@ med ror, seil i vinden og årer.
   - Vakter, stormen, sjøormen og piler følger med når origo flyttes.
   - Husene er solide, og brygga har et dekk du kan gå ut på til skipet.
   - Kister og vakter står alltid på tørt land og utenfor husene. Det er testet for alle stedene.
+- [ ] **11. Lange overfarter:** i full størrelse er Kaupang–Hedeby 500 km, 34 timer i 8 knop.
+  - Ferdig (`Core/TimeWarp.cs`): T ved roret gir 1×, 2×, 4×, 8× eller 16× tid på en rolig overfart. Tiden går
+    tilbake til normal hvis raidere kommer innen 600 m, sjøormen dukker opp, det blir storm, skipet går på grunn,
+    eller du forlater skipet. HUD-en viser «TIME ×8».
+  - Gjenstår: en egen overfartsmodus for enda raskere tid, der skipet seiler på den samme fysikken i 2D med
+    større tidssteg (`ShipPhysics.Step`) i stedet for full 3D-fysikk, og et sjøkart (M) med posisjonen din og stedene.
 
 ## Merk
 
