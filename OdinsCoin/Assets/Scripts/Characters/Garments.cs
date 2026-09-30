@@ -670,9 +670,35 @@ namespace OdinsCoin
                 trim[i] = Vector3.Lerp(grid[rows - 2, c0], grid[rows - 2, c0 + 1], t - c0);
                 trim[i] += new Vector3(trim[i].x, 0f, trim[i].z).normalized * 0.014f * s;
             }
-            d.Add(Joints.Body, d.pal.emblem, CharacterKit.ZigZag(trim, Vector3.up, 0.02f * s, 0.004f * s), false);
-            // A pale border running down both long edges of the drape, like the woven trim in the concept art.
-            foreach (int c in new[] { 0, cols - 1 })
+            // Broad pale woven borders, down the front edge and across the hem, patterned in the cloak's own dark
+            // blue, like the concept art.
+            var pattern = VikingModel.Shade(d.pal.accent, 0.55f);
+            float border = 0.05f * s;
+            var hemBand = new Vector3[trim.Length, 2];
+            var hemMid = new Vector3[trim.Length];
+            for (int i = 0; i < trim.Length; i++)
+            {
+                hemBand[i, 0] = trim[i] + Vector3.down * 0.01f * s;
+                hemBand[i, 1] = trim[i] + Vector3.up * border;
+                hemMid[i] = trim[i] + Vector3.up * border * 0.45f + new Vector3(trim[i].x, 0f, trim[i].z).normalized * 0.006f * s;
+            }
+            d.Add(Joints.Body, d.pal.emblem, CharacterKit.Sheet(hemBand, new Vector3(1f, 0f, 0.6f), 0.004f * s), false);
+            d.Add(Joints.Body, pattern, CharacterKit.ZigZag(hemMid, Vector3.up, 0.03f * s, 0.004f * s), false);
+            var frontBand = new Vector3[rows - 1, 2];
+            var frontMid = new Vector3[rows - 1];
+            for (int r = 0; r < rows - 1; r++)
+            {
+                var p = grid[r, 0];
+                var lift = new Vector3(p.x, 0f, p.z).normalized * 0.012f * s;
+                var into = (grid[r, 1] - p).normalized;
+                frontBand[r, 0] = p + lift;
+                frontBand[r, 1] = p + into * border + lift;
+                frontMid[r] = p + into * border * 0.5f + lift * 1.5f;
+            }
+            d.Add(Joints.Body, d.pal.emblem, CharacterKit.Sheet(frontBand, new Vector3(1f, 0f, 0.6f), 0.004f * s), false);
+            d.Add(Joints.Body, pattern, CharacterKit.ZigZag(frontMid, new Vector3(1f, 0f, 0.6f).normalized, 0.03f * s, 0.004f * s), false);
+            // A thin pale line down the far edge too.
+            foreach (int c in new[] { cols - 1 })
             {
                 var edge = new Vector3[rows - 2];
                 for (int r = 1; r < rows - 1; r++)
