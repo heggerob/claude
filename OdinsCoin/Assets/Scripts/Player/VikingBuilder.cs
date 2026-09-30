@@ -16,6 +16,8 @@ namespace OdinsCoin
             public Transform leftForearm, rightForearm;
             /// <summary>The lower legs (heroes only): the knees bend.</summary>
             public Transform leftShin, rightShin, leftFoot, rightFoot;
+            /// <summary>A bow's string (null without a bow), drawn back by the bow's attacks.</summary>
+            public Transform bowString;
             /// <summary>Where the weapon sits in the fist at rest, and the body's size (heroes only).</summary>
             public Vector3 axeRest;
             public float scale = 1f;

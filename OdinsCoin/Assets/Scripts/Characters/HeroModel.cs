@@ -363,7 +363,11 @@ namespace OdinsCoin
                         d.Add(Joints.Weapon, d.pal.leatherDark, MeshData.Tube(new[] { limb[5], limb[7] }, new[] { 0.024f * s, 0.024f * s }, 6));
                         d.Add(Joints.Weapon, d.pal.parchment, MeshData.Tube(new[] { limb[0], limb[0] + new Vector3(0f, -0.01f, -0.02f) * s }, new[] { 0.01f * s, 0.004f * s }, 5), false);
                         d.Add(Joints.Weapon, d.pal.parchment, MeshData.Tube(new[] { limb[12], limb[12] + new Vector3(0f, -0.01f, 0.02f) * s }, new[] { 0.01f * s, 0.004f * s }, 5), false);
-                        d.Add(Joints.Weapon, d.pal.parchment, MeshData.Tube(new[] { limb[0], limb[12] }, new[] { 0.0025f * s, 0.0025f * s }, 4), false);
+                        // The string, from nock to nock through many points so it can be drawn back into a V.
+                        d.model.AddJoint(Joints.BowString, Joints.Weapon, Vector3.zero);
+                        var cord = new Vector3[9];
+                        for (int i = 0; i < cord.Length; i++) cord[i] = Vector3.Lerp(limb[0], limb[12], i / (float)(cord.Length - 1));
+                        d.Add(Joints.BowString, d.pal.parchment, MeshData.Tube(cord, Radii(cord.Length, 0.0025f * s), 4), false);
                     }
                     break;
                 case WeaponId.Sword:

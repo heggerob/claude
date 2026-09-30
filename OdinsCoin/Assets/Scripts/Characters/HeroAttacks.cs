@@ -28,6 +28,8 @@ namespace OdinsCoin
         public float slide;
         /// <summary>How hard it hits, against the weapon's basic blow (a combo's last swing hits hardest).</summary>
         public float power = 1f;
+        /// <summary>A bow's: when (0..1) the drawing hand takes the string (it's held until the loose, at <see cref="hitAt"/>).</summary>
+        public float drawFrom;
         public Key[] keys;
 
         /// <summary>The move's pose at <paramref name="t"/> (0..1).</summary>
@@ -195,7 +197,7 @@ namespace OdinsCoin
         {
             var ready = Bow().keys[0];
             return new AttackMove {
-                name = "Snap shot", weapon = WeaponId.Bow, duration = 0.55f, hitAt = 0.5f, twoHanded = true, power = 0.8f,
+                name = "Snap shot", weapon = WeaponId.Bow, duration = 0.55f, hitAt = 0.5f, twoHanded = true, power = 0.8f, drawFrom = 0.22f,
                 keys = new[] {
                     ready,
                     K(0.25f, -70f, 0f, -10f, -65f, 10f, -60f, new Vector3(0f, 1f, 0.2f), 0f, -15f, 2f, 0f),
@@ -306,7 +308,7 @@ namespace OdinsCoin
         {
             var ready = K(0f, -30f, 8f, -40f, -20f, -8f, -40f, new Vector3(0.3f, 0.8f, -0.3f), 0f, 0f, 0f, 0f);
             return new AttackMove {
-                name = "Draw and loose", weapon = WeaponId.Bow, duration = 0.9f, hitAt = 0.66f, twoHanded = true,
+                name = "Draw and loose", weapon = WeaponId.Bow, duration = 0.9f, hitAt = 0.66f, twoHanded = true, drawFrom = 0.28f,
                 keys = new[] {
                     ready,
                     K(0.3f, -88f, 0f, -5f, -80f, 15f, -60f, new Vector3(0f, 1f, 0.12f), 0f, -20f, 0f, 0f),
@@ -381,6 +383,88 @@ namespace OdinsCoin
             }
             parts.body.localRotation = parts.body.localRotation * Quaternion.Euler(v[(int)AttackMove.Ch.Pitch] * w, v[(int)AttackMove.Ch.Yaw] * w, 0f);
             parts.body.localPosition += new Vector3(0f, 0f, v[(int)AttackMove.Ch.Lunge] * w);
+            // A bow's string follows the drawing hand back until the loose.
+            if (parts.bowString != null && parts.leftForearm != null)
+            {
+                var str = parts.bowString.GetComponent<BowString>();
+                Vector3 hand = parts.leftForearm.TransformPoint(new Vector3(0f, -0.22f * parts.scale, 0f));
+                if (str != null) str.Pull(BowDraw.Pull(parts.bowString.InverseTransformPoint(hand), parts.scale, BowDraw.Held(move, t)));
+            }
         }
+    }
+
+    /// <summary>
+    /// Drawing a bow: the string's middle is pulled back to the drawing hand and the string runs straight from each
+    /// nock to it, a V. Pure maths, shared by the game (<see cref="BowString"/>) and the preview.
+    /// </summary>
+    public static class BowDraw
+    {
+        /// <summary>The middle of the string at rest, in the bow's space, for a hero of scale <paramref name="s"/>.</summary>
+        public static Vector3 Mid(float s) { return new Vector3(0f, -0.05f * s, 0f); }
+
+        /// <summary>How far each nock is from the middle of the string.</summary>
+        public static float HalfLength(float s) { return 0.62f * s; }
+
+        /// <summary>The longest draw.</summary>
+        public static float MaxDraw(float s) { return 0.75f * s; }
+
+        /// <summary>A point of the string at rest, with its middle pulled by <paramref name="pull"/>: the nocks stay put.</summary>
+        public static Vector3 Apply(Vector3 rest, float halfLength, Vector3 pull)
+        {
+            float w = halfLength > 1e-5f ? 1f - Mathf.Clamp01(Mathf.Abs(rest.z) / halfLength) : 0f;
+            return rest + pull * w;
+        }
+
+        /// <summary>How much the hand holds the string at <paramref name="t"/> (0..1) of a move: taken up as the hand reaches it, let go at the loose.</summary>
+        public static float Held(AttackMove move, float t)
+        {
+            if (move == null || move.weapon != WeaponId.Bow || t >= move.hitAt) return 0f;
+            return Mathf.SmoothStep(0f, 1f, (t - move.drawFrom) / 0.06f);
+        }
+
+        /// <summary>The pull on the string's middle for the drawing hand at <paramref name="handInBow"/> (bow space).</summary>
+        public static Vector3 Pull(Vector3 handInBow, float s, float held)
+        {
+            if (held <= 0f) return Vector3.zero;
+            return Vector3.ClampMagnitude(handInBow - Mid(s), MaxDraw(s)) * held;
+        }
+    }
+
+    /// <summary>A bow's string in the scene: bent back to the drawing hand while an attack holds it, straight otherwise.</summary>
+    public class BowString : MonoBehaviour
+    {
+        Mesh mesh;
+        Vector3[] rest, verts;
+        float half;
+        int pulledFrame = -1;
+        bool drawn;
+
+        public void Init(float halfLength)
+        {
+            half = halfLength;
+            var mf = GetComponentInChildren<MeshFilter>();
+            if (mf == null || mf.sharedMesh == null) return;
+            mesh = mf.sharedMesh;
+            rest = mesh.vertices;
+            verts = new Vector3[rest.Length];
+        }
+
+        public void Pull(Vector3 pull)
+        {
+            pulledFrame = Time.frameCount;
+            Bend(pull);
+        }
+
+        void Bend(Vector3 pull)
+        {
+            if (mesh == null || rest == null) return;
+            for (int i = 0; i < rest.Length; i++) verts[i] = BowDraw.Apply(rest[i], half, pull);
+            mesh.vertices = verts;
+            mesh.RecalculateBounds();
+            drawn = pull.sqrMagnitude > 1e-8f;
+        }
+
+        // No attack held it this frame: it snaps back straight.
+        void LateUpdate() { if (drawn && pulledFrame != Time.frameCount) Bend(Vector3.zero); }
     }
 }

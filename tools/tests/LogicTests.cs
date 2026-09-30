@@ -284,6 +284,24 @@ public static class LogicTests
         Check(curves, "further down swings further, with no kinks");
         Check(ClothBend.Apply(hem, len, 0f, 0f) == hem, "an unswung cape keeps its shape");
 
+        // Drawing a bow: the string's middle comes back to the hand, the nocks stay on the bow, and it lets go at the loose.
+        var nock = new Vector3(0f, -0.05f, 0.62f);
+        var pullBack = new Vector3(0f, -0.5f, 0f);
+        Check(BowDraw.Apply(nock, 0.62f, pullBack) == nock && BowDraw.Apply(-nock, 0.62f, pullBack) == -nock, "a drawn string stays on its nocks");
+        Check(Vector3.Distance(BowDraw.Apply(BowDraw.Mid(1f), 0.62f, pullBack), BowDraw.Mid(1f) + pullBack) < 1e-5f, "its middle comes all the way back to the hand");
+        var draw = HeroAttacks.For(WeaponId.Bow);
+        Check(BowDraw.Held(draw, 0f) == 0f && BowDraw.Held(draw, draw.hitAt - 0.02f) > 0.99f && BowDraw.Held(draw, draw.hitAt + 0.01f) == 0f, "the hand takes the string, holds it at full draw and lets go at the loose");
+        Check(BowDraw.Held(HeroAttacks.For(WeaponId.Sword), 0.3f) == 0f, "only a bow has a string to draw");
+        Check(BowDraw.Pull(new Vector3(0f, -9f, 0f), 1f, 1f).magnitude <= BowDraw.MaxDraw(1f) + 1e-5f, "no draw longer than the bow allows");
+        var bowSpec = CharacterSpec.Default(OutfitId.Scout);
+        bowSpec.weapon = WeaponId.Bow;
+        var bowModel = HeroModel.BuildWeapon(bowSpec);
+        bool stringOnJoint = bowModel.Find(Joints.BowString) != null && bowModel.Find(Joints.BowString).parent == Joints.Weapon;
+        float reach = 0f;
+        foreach (var p in bowModel.Pieces) if (p.joint == Joints.BowString) foreach (var v in p.mesh.Vertices) reach = Math.Max(reach, Math.Abs(v.z));
+        float s0 = Fit.Of(bowSpec.body).s;
+        Check(stringOnJoint && Math.Abs(reach - BowDraw.HalfLength(s0)) < 0.01f * s0, "the bow's string is its own joint, reaching nock to nock (" + reach + ")");
+
         // Heroes get swinging joints where they have capes, banners and braids.
         var jarl = HeroModel.Build(CharacterSpec.Default(OutfitId.Jarl));
         var raider = HeroModel.Build(CharacterSpec.Default(OutfitId.Raider));

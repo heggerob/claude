@@ -91,6 +91,8 @@ namespace OdinsCoin
         public const string LeftShin = "Left Shin", RightShin = "Right Shin";
         /// <summary>The feet, from the ankle down (the foot of the boot), so they roll heel to toe.</summary>
         public const string LeftFoot = "Left Foot", RightFoot = "Right Foot";
+        /// <summary>A bow's string, on its own joint on the bow so it can be drawn back to the hand.</summary>
+        public const string BowString = "Bow String";
 
         public static void Build(VikingModel m, Fit f)
         {

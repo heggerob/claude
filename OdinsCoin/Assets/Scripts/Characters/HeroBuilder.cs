@@ -64,11 +64,31 @@ namespace OdinsCoin
                 rightFoot = joints[Joints.RightFoot],
                 axeRest = joints[Joints.Weapon].localPosition,
                 scale = Fit.Of(spec.body).s,
+                bowString = BowStringOf(joints, Fit.Of(spec.body).s),
             };
+        }
+
+        static Transform BowStringOf(Dictionary<string, Transform> joints, float s)
+        {
+            Transform t;
+            if (!joints.TryGetValue(Joints.BowString, out t)) return null;
+            t.gameObject.AddComponent<BowString>().Init(BowDraw.HalfLength(s));
+            return t;
         }
 
         static void AddPieces(VikingModel model, Dictionary<string, Transform> joints)
         {
+            // Joints the add-on brings of its own (a bow's string), hung from the joints already built.
+            foreach (var j in model.Joints)
+            {
+                Transform parent;
+                if (joints.ContainsKey(j.name) || j.parent == null || !joints.TryGetValue(j.parent, out parent)) continue;
+                var t = new GameObject(j.name).transform;
+                t.SetParent(parent, false);
+                t.localPosition = j.localPosition;
+                t.localRotation = Quaternion.Euler(j.restEuler);
+                joints[j.name] = t;
+            }
             foreach (var piece in model.Pieces)
             {
                 Transform parent;

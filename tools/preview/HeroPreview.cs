@@ -18,6 +18,8 @@ public static class HeroPreview
         public Dictionary<string, Quaternion> worldRot = new Dictionary<string, Quaternion>();
         /// <summary>Capes and braids bent by a swing (pitch, roll in degrees), as the game's ClothSway bends them.</summary>
         public Dictionary<string, Vector2> bend = new Dictionary<string, Vector2>();
+        /// <summary>A bow's string drawn back: the pull on its middle, in the string joint's space (as BowString does).</summary>
+        public Dictionary<string, Vector3> pull = new Dictionary<string, Vector3>();
     }
 
     public class Shot
@@ -390,7 +392,10 @@ public static class HeroPreview
                 // Each swing of the combo: its wind-up, then its blow.
                 if (c / 2 >= combo.Length) { labels.Add(""); continue; }
                 var move = combo[c / 2];
-                float t = c % 2 == 0 ? move.keys[1].t : move.hitAt, wgt = move.Weight(t);
+                // The wind-up is the last key before the hit: the most drawn-back moment (a bow at full draw).
+                float windUp = move.keys[1].t;
+                foreach (var k in move.keys) if (k.t < move.hitAt && k.t > 0f) windUp = k.t;
+                float t = c % 2 == 0 ? windUp : move.hitAt, wgt = move.Weight(t);
                 var v = move.Sample(t);
                 var pose = new Pose();
                 // Under the move: the weapon carried as when walking (or plain rest).
@@ -413,6 +418,16 @@ public static class HeroPreview
                 pose.pos[Joints.Body] = new Vector3(0f, 0f, v[(int)AttackMove.Ch.Lunge] * wgt);
                 pose.rot[Joints.LeftLeg] = Quaternion.Euler(-12f * wgt, 0f, -6f);
                 pose.rot[Joints.RightLeg] = Quaternion.Euler(10f * wgt, 0f, 6f);
+                // A bow's string drawn back to the hand, as the game does it.
+                if (model.Find(Joints.BowString) != null)
+                {
+                    float sc = Fit.Of(spec.body).s;
+                    Vector3 fp, bp; Quaternion fr, br;
+                    World(model, pose, Joints.LeftForearm, out fp, out fr);
+                    World(model, pose, Joints.BowString, out bp, out br);
+                    var hand = fp + fr * new Vector3(0f, -Fit.Of(spec.body).foreArm, 0f);
+                    pose.pull[Joints.BowString] = BowDraw.Pull(Quaternion.Inverse(br) * (hand - bp), sc, BowDraw.Held(move, t));
+                }
                 Render(row, w, cellH, c * cellW, cellW, cellH, new Shot { model = model, pose = pose, yaw = 235f, zoom = 0.66f });
                 labels.Add((c / 2 + 1) + ". " + move.name + (c % 2 == 0 ? ": wind-up" : ": blow"));
             }
@@ -520,8 +535,13 @@ public static class HeroPreview
     /// <summary>For pictures only: hang the separately built weapon on the character's weapon hand.</summary>
     static VikingModel WithWeapon(VikingModel character, VikingModel weapon, string hand)
     {
+        // The add-on's own root joint becomes the hand; any joints of its own (a bow's string) hang from it.
+        string root = weapon.Joints.Count > 0 ? weapon.Joints[0].name : hand;
+        foreach (var j in weapon.Joints)
+            if (j.name != root && character.Find(j.name) == null)
+                character.Joints.Add(new VikingModel.Joint { name = j.name, parent = j.parent == root ? hand : j.parent, localPosition = j.localPosition, restEuler = j.restEuler });
         foreach (var p in weapon.Pieces)
-            character.Pieces.Add(new VikingModel.Piece { joint = hand, color = p.color, mesh = p.mesh, outline = p.outline, ink = p.ink, surface = p.surface });
+            character.Pieces.Add(new VikingModel.Piece { joint = p.joint == root ? hand : p.joint, color = p.color, mesh = p.mesh, outline = p.outline, ink = p.ink, surface = p.surface });
         return character;
     }
 
@@ -583,8 +603,17 @@ public static class HeroPreview
             var normal = new Vector3[n];
             Vector2 bend;
             bool bent = shot.pose.bend.TryGetValue(piece.joint, out bend);
+            Vector3 pull;
+            bool drawn = shot.pose.pull.TryGetValue(piece.joint, out pull);
+            float half = 0f;
+            if (drawn) foreach (var v in mesh.Vertices) half = Mathf.Max(half, Mathf.Abs(v.z));
             for (int i = 0; i < n; i++)
-                world[i] = jp + jr * (bent ? ClothBend.Apply(mesh.Vertices[i], bendLength[piece.joint], bend.x, bend.y) : mesh.Vertices[i]);
+            {
+                var v = mesh.Vertices[i];
+                if (bent) v = ClothBend.Apply(v, bendLength[piece.joint], bend.x, bend.y);
+                if (drawn) v = BowDraw.Apply(v, half, pull);
+                world[i] = jp + jr * v;
+            }
             for (int t = 0; t < mesh.Triangles.Count; t += 3)
             {
                 int a = mesh.Triangles[t], b = mesh.Triangles[t + 1], c = mesh.Triangles[t + 2];
