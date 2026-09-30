@@ -362,7 +362,7 @@ namespace OdinsCoin
                     float z = d.SkirtRadius(y) * d.skirtDepth + 0.01f;
                     grid[r, c] = new Vector3(u * Mathf.Lerp(0.06f, 0.1f, v) * s * f.width, y, z);
                 }
-            d.Add(Joints.Body, d.pal.clothDark, CharacterKit.Sheet(grid, Vector3.forward, 0.01f * s));
+            d.Add(Joints.Body, VikingModel.Shade(d.pal.cloth, 0.8f), CharacterKit.Sheet(grid, Vector3.forward, 0.01f * s), true, SurfaceKind.Cloth);
             foreach (int c in new[] { 0, 2 })
             {
                 var edge = new Vector3[rows];
