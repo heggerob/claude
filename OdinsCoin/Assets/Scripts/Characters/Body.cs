@@ -81,6 +81,8 @@ namespace OdinsCoin
         public const string Weapon = VikingModel.Weapon, OffHand = "Off Hand", Back = VikingModel.Shield;
         // Swinging joints, made by the garments that need them.
         public const string Cape = "Cape", Tabard = "Tabard", LeftBraid = "Left Braid", RightBraid = "Right Braid";
+        /// <summary>The eyes, one joint per expression (only one is shown at a time).</summary>
+        public const string Eyes = "Eyes", EyesHappy = "Eyes Happy", EyesHurt = "Eyes Hurt";
 
         public static void Build(VikingModel m, Fit f)
         {

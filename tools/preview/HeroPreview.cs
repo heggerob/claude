@@ -24,6 +24,7 @@ public static class HeroPreview
         public VikingModel model;
         public Pose pose = new Pose();
         public float yaw = 200f;
+        public Expression face = Expression.Neutral;
     }
 
     static readonly Color Paper = new Color(0.965f, 0.945f, 0.9f);
@@ -162,6 +163,9 @@ public static class HeroPreview
         shots.Add(new Shot { label = "Danish raider", model = Full(NpcHeroes.DanishRaider(5)), yaw = 195f });
         shots.Add(new Shot { label = "Bjorn the mead-keeper", model = Full(NpcHeroes.Bjorn()), yaw = 195f });
         shots.Add(new Shot { label = "Gunnar the trader", model = Full(NpcHeroes.Gunnar()), yaw = 195f });
+        // Faces: the dash eyes turn to ^ ^ when happy and > < when hurt.
+        shots.Add(new Shot { label = "Happy (heads!)", model = HeroModel.Build(CharacterSpec.Default(OutfitId.Scout)), yaw = 182f, face = Expression.Happy });
+        shots.Add(new Shot { label = "Hurt", model = HeroModel.Build(CharacterSpec.Default(OutfitId.Navigator)), yaw = 182f, face = Expression.Hurt });
 
         const int cellW = 680, cellH = 1080; // 2x supersampled
         int w = cellW * shots.Count, h = cellH;
@@ -279,6 +283,15 @@ public static class HeroPreview
         File.WriteAllLines(labelPath, labels.ToArray());
     }
 
+    /// <summary>Whether a piece is drawn: hidden joints are skipped, except the eyes of the shot's expression.</summary>
+    static bool Visible(Shot shot, string joint)
+    {
+        if (joint == Joints.Eyes) return shot.face == Expression.Neutral;
+        if (joint == Joints.EyesHappy) return shot.face == Expression.Happy;
+        if (joint == Joints.EyesHurt) return shot.face == Expression.Hurt;
+        return !shot.model.Hidden(joint);
+    }
+
     /// <summary>A character with its weapon and off-hand item in its hands.</summary>
     static VikingModel Full(CharacterSpec spec)
     {
@@ -332,6 +345,7 @@ public static class HeroPreview
 
         foreach (var piece in shot.model.Pieces)
         {
+            if (!Visible(shot, piece.joint)) continue;
             Vector3 jp; Quaternion jr;
             World(shot.model, shot.pose, piece.joint, out jp, out jr);
             var mesh = piece.mesh;

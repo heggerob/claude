@@ -28,6 +28,7 @@ namespace OdinsCoin
             Health.IsPlayer = true;
             Health.BaseMax = 100f;
             Health.Damaged += (amount, from) => Sfx.At(SfxId.Hurt, transform.position + Vector3.up, 0.8f, 0.1f);
+            Health.Damaged += (amount, from) => Face.On(this, Expression.Hurt, 0.7f);
             Health.Damaged += (amount, from) => CombatHud.Number(transform.position + Vector3.up * 2.2f, "-" + Mathf.RoundToInt(amount), new Color(1f, 0.35f, 0.3f));
             Health.Died += OnDied;
         }

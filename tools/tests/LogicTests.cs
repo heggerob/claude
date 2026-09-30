@@ -35,6 +35,7 @@ public static class LogicTests
         NpcHeroTests();
         StickAnimTests();
         ClothWindTests();
+        FaceTests();
         SkinTests();
         CombatTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
@@ -815,6 +816,18 @@ public static class LogicTests
         var cape = SwingSpring.For(SwingKind.Cape);
         for (int i = 0; i < 2000; i++) cape.Step(0.016f, new Vector3(3f, 0f, -6f), Vector3.zero, ClothWind.Flutter(10f, i * 0.016f, 0f), ClothWind.Flutter(10f, i * 0.016f, 1.7f));
         Check(cape.pitch >= cape.minPitch - 0.01f && cape.pitch <= cape.maxPitch + 0.01f && Math.Abs(cape.roll) <= cape.maxRoll + 0.01f, "flutter stays within the cape's limits");
+    }
+
+    static void FaceTests()
+    {
+        Check(Face.BlinkScale(-1f) == 1f && Face.BlinkScale(Face.BlinkTime) == 1f, "eyes are open outside a blink");
+        Check(Face.BlinkScale(Face.BlinkTime * 0.5f) < 0.15f, "halfway through a blink the eyes are shut");
+        Check(Face.NextBlinkGap(0) >= 2f && Face.NextBlinkGap(1) <= 5f, "blinks come every two to five seconds");
+        var m = HeroModel.Build(CharacterSpec.Default(OutfitId.Scout));
+        Check(m.Find(Joints.Eyes) != null && !m.Hidden(Joints.Eyes) && m.Hidden(Joints.EyesHappy) && m.Hidden(Joints.EyesHurt), "plain eyes show, the other faces start hidden");
+        int happy = 0, hurt = 0;
+        foreach (var p in m.Pieces) { if (p.joint == Joints.EyesHappy) happy++; if (p.joint == Joints.EyesHurt) hurt++; }
+        Check(happy > 0 && hurt > 0, "happy and hurt eyes are built");
     }
 
     static void StickAnimTests()

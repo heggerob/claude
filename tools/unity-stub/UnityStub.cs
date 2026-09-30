@@ -33,7 +33,7 @@ namespace UnityEngine {
   public static class RenderSettings { public static bool fog; public static FogMode fogMode; public static Color fogColor, ambientLight, ambientSkyColor, ambientEquatorColor, ambientGroundColor; public static float fogStartDistance, fogEndDistance, fogDensity; public static UnityEngine.Rendering.AmbientMode ambientMode; public static Material skybox; }
   public class LineRenderer : Renderer { public int positionCount; public float startWidth, endWidth; public Color startColor, endColor; public bool useWorldSpace; public void SetPosition(int i,Vector3 p){} }
   public class TrailRenderer : Renderer { public float time, startWidth, endWidth; }
-  public class Component : Object { public GameObject gameObject; public Transform transform; public T GetComponent<T>(){return default(T);} public T[] GetComponentsInChildren<T>(bool inactive=false){return new T[0];} public T GetComponentInParent<T>(){return default(T);} }
+  public class Component : Object { public GameObject gameObject; public Transform transform; public T GetComponent<T>(){return default(T);} public T[] GetComponentsInChildren<T>(bool inactive=false){return new T[0];} public T GetComponentInChildren<T>(){return default(T);} public T GetComponentInParent<T>(){return default(T);} }
   public class Behaviour : Component { public bool enabled; }
   public class MonoBehaviour : Behaviour {}
   public class ScriptableObject : Object { public static T CreateInstance<T>() where T: ScriptableObject, new() { return new T(); } }

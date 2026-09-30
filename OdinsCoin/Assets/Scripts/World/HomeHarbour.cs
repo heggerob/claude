@@ -187,6 +187,8 @@ namespace OdinsCoin
             int gold = chest.Value;
             Fortune.Current.Gold += gold;
             Fortune.Current.ChestsSold++;
+            Face.On(GameBootstrap.Instance != null ? GameBootstrap.Instance.Player : null, Expression.Happy, 2f);
+            Face.On(Trader, Expression.Happy, 2f);
             Fortune.Current.GoldPlundered += gold;
             Fortune.Current.AddFavour(Ravens.FavourPerChest);
             chest.Sold = true;

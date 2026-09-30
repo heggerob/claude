@@ -47,6 +47,9 @@ namespace OdinsCoin
         {
             result = r;
             state = State.Result;
+            // Heads lights up the Viking's face; tails makes them wince.
+            var player = GameBootstrap.Instance != null ? GameBootstrap.Instance.Player : null;
+            Face.On(player, r.heads ? Expression.Happy : Expression.Hurt, r.heads ? 2.5f : 1.2f);
         }
 
         void Update()

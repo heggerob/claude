@@ -336,6 +336,16 @@ namespace OdinsCoin
         {
             public string name, parent;
             public Vector3 localPosition;
+            /// <summary>Built but switched off at the start (alternative faces, for example).</summary>
+            public bool hidden;
+        }
+
+        /// <summary>Whether a joint, or any joint it hangs from, starts switched off.</summary>
+        public bool Hidden(string joint)
+        {
+            for (var j = Find(joint); j != null; j = j.parent == null ? null : Find(j.parent))
+                if (j.hidden) return true;
+            return false;
         }
 
         public class Piece

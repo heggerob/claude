@@ -44,6 +44,7 @@ namespace OdinsCoin
             s.parts = HeroBuilder.Build(go.transform, NpcHeroes.Saxon(All.Count + Mathf.RoundToInt(position.x * 7f + position.z * 13f)));
             s.Health = go.AddComponent<Health>();
             s.Health.BaseMax = 60f;
+            s.Health.Damaged += (amount, from) => OdinsCoin.Face.On(s, Expression.Hurt, 0.7f);
             s.Health.Damaged += (amount, from) => CombatHud.Number(go.transform.position + Vector3.up * 2.2f, Mathf.RoundToInt(amount).ToString(), new Color(1f, 0.9f, 0.4f));
             s.Health.Died += s.OnDied;
             All.Add(s);

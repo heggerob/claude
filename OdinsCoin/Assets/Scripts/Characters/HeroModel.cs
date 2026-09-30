@@ -74,12 +74,39 @@ namespace OdinsCoin
             // The face: a big round head with two tall dash eyes a little below the middle. No nose, no mouth.
             float cy = HeadCentre(f), r = f.headR;
             d.Add(Joints.Head, d.pal.skin, MeshData.Ellipsoid(new Vector3(0f, cy, 0f), new Vector3(r * 1.02f, r, r * 0.98f), 20, 14));
-            float eyeX = 0.33f * r;
+            // The eyes hang on joints of their own at eye height, so they can blink (squash) and swap for other
+            // expressions: ^ ^ when happy, > < when hurt.
+            float eyeX = 0.33f * r, eyeY = cy - 0.34f * r;
+            var pivot = new Vector3(0f, eyeY, 0f);
+            d.model.AddJoint(Joints.Eyes, Joints.Head, pivot);
+            d.model.AddJoint(Joints.EyesHappy, Joints.Head, pivot);
+            d.model.AddJoint(Joints.EyesHurt, Joints.Head, pivot);
+            d.model.Find(Joints.EyesHappy).hidden = true;
+            d.model.Find(Joints.EyesHurt).hidden = true;
             foreach (float x in new[] { -eyeX, eyeX })
             {
                 float z = Mathf.Sqrt(Mathf.Max(0f, r * r * 0.96f - x * x)) - 0.005f * s;
+                var face = Quaternion.Euler(0f, Mathf.Atan2(x, z) * Mathf.Rad2Deg, 0f);
+                var at = new Vector3(x, eyeY, z) - pivot;
                 var eye = MeshData.Ellipsoid(Vector3.zero, new Vector3(0.078f * r, 0.23f * r, 0.06f * r), 8, 6);
-                d.Add(Joints.Head, ink, eye.Transformed(new Vector3(x, cy - 0.34f * r, z), Quaternion.Euler(0f, Mathf.Atan2(x, z) * Mathf.Rad2Deg, 0f), Vector3.one), false);
+                d.Add(Joints.Eyes, ink, eye.Transformed(at, face, Vector3.one), false);
+                // Happy: a little arch, like a smile turned into an eye.
+                var arch = new Vector3[7];
+                var ar = new float[7];
+                for (int i = 0; i < arch.Length; i++)
+                {
+                    float a = Mathf.Lerp(Mathf.PI * 0.95f, Mathf.PI * 0.05f, i / 6f);
+                    arch[i] = at + face * new Vector3(Mathf.Cos(a) * 0.11f * r, Mathf.Sin(a) * 0.12f * r - 0.04f * r, 0.012f * r);
+                    ar[i] = 0.036f * r;
+                }
+                d.Add(Joints.EyesHappy, ink, MeshData.Tube(arch, ar, 6), false);
+                // Hurt: chevrons squeezed shut, pointing in towards the nose.
+                float inward = x < 0f ? 1f : -1f;
+                var chev = new[] {
+                    at + face * new Vector3(-inward * 0.08f * r, 0.11f * r, 0.012f * r),
+                    at + face * new Vector3(inward * 0.07f * r, 0f, 0.012f * r),
+                    at + face * new Vector3(-inward * 0.08f * r, -0.11f * r, 0.012f * r) };
+                d.Add(Joints.EyesHurt, ink, MeshData.Tube(chev, new[] { 0.034f * r, 0.036f * r, 0.034f * r }, 6), false);
             }
         }
 

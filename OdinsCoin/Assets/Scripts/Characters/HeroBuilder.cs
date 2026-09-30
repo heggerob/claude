@@ -25,6 +25,16 @@ namespace OdinsCoin
                 joints[j.name] = t;
             }
             AddPieces(model, joints);
+            // Alternative faces start hidden; the Face component swaps them and blinks.
+            foreach (var j in model.Joints) if (j.hidden) joints[j.name].gameObject.SetActive(false);
+            Transform eyes;
+            if (joints.TryGetValue(Joints.Eyes, out eyes))
+            {
+                var face = root.gameObject.AddComponent<Face>();
+                face.neutral = eyes;
+                face.happy = joints[Joints.EyesHappy];
+                face.hurt = joints[Joints.EyesHurt];
+            }
             if (spec.weapon != WeaponId.None) AddPieces(HeroModel.BuildWeapon(spec), joints);
             if (spec.offHand != OffHandId.None) AddPieces(HeroModel.BuildOffHand(spec), joints);
 
