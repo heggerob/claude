@@ -490,49 +490,50 @@ namespace OdinsCoin
         {
             var f = d.fit;
             float r = f.headR, cy = HeroModel.HeadCentre(f), s = d.S;
-            float brim = cy + 0.12f * r;
+            // Low on the brow, just above the eyes, like the concept art's crown-helm.
+            float brim = cy + 0.02f * r;
             var black = d.pal.clothDark;
-            // A low crown that flares out wide towards the top, like an upturned bell.
-            var scale = new Vector3(1.04f, 1f, 0.92f);
+            var scale = new Vector3(1.06f, 1f, 0.96f);
             var offset = new Vector3(0f, 0f, -0.02f * r);
+            // A rounded black helm-crown: straight sides, then a full dome.
             d.Add(Joints.Head, black, MeshData.Lathe(new[] {
-                new Vector2(r * 1.13f, brim - 0.1f * r), new Vector2(r * 1.15f, brim + 0.2f * r), new Vector2(r * 1.28f, brim + 0.5f * r),
-                new Vector2(r * 1.36f, brim + 0.78f * r), new Vector2(r * 1.22f, brim + 0.84f * r), new Vector2(0.01f, brim + 0.76f * r) }, 24)
+                new Vector2(r * 1.12f, brim - 0.08f * r), new Vector2(r * 1.16f, brim + 0.2f * r), new Vector2(r * 1.14f, brim + 0.5f * r),
+                new Vector2(r * 0.98f, brim + 0.82f * r), new Vector2(r * 0.62f, brim + 1.04f * r), new Vector2(0.01f, brim + 1.12f * r) }, 24)
                 .Transformed(offset, Quaternion.identity, scale));
-            // Gold bands at the brim and around the flared rim, with studs.
-            d.Add(Joints.Head, d.pal.brass, CharacterKit.Band(brim - 0.03f * r, 0.03f * s, r * 1.19f, 0.97f, 24).Transformed(offset, Quaternion.identity, scale));
-            d.Add(Joints.Head, d.pal.brass, CharacterKit.Band(brim + 0.76f * r, 0.024f * s, r * 1.38f, 0.97f, 24).Transformed(offset, Quaternion.identity, scale));
+            // A broad gold band round the brow, studded, and a thin one higher up.
+            d.Add(Joints.Head, d.pal.brass, CharacterKit.Band(brim, 0.045f * s, r * 1.18f, 0.98f, 24).Transformed(offset, Quaternion.identity, scale));
+            d.Add(Joints.Head, d.pal.brass, CharacterKit.Band(brim + 0.62f * r, 0.018f * s, r * 1.1f, 0.98f, 24).Transformed(offset, Quaternion.identity, scale));
             for (int i = -4; i <= 4; i++)
             {
-                float a = i * 0.36f;
-                d.Add(Joints.Head, d.pal.brass, MeshData.Ellipsoid(offset + Vector3.Scale(new Vector3(Mathf.Sin(a) * r * 1.34f, brim + 0.45f * r, Mathf.Cos(a) * r * 1.34f), scale), Vector3.one * 0.009f * s, 5, 3), false);
+                float a = i * 0.34f;
+                d.Add(Joints.Head, black, MeshData.Ellipsoid(offset + Vector3.Scale(new Vector3(Mathf.Sin(a) * r * 1.21f, brim, Mathf.Cos(a) * r * 1.21f), scale), Vector3.one * 0.008f * s, 5, 3), false);
             }
-            // Big curved horns sweeping out and up from the rim: two at the sides, two smaller at the back,
-            // black with gold edges.
-            // Spikes round the rim like a crown's points: short ones at the front, big curved ones at the sides,
-            // middling ones at the back.
-            foreach (var a in new[] { -0.45f, 0.45f, -1.05f, 1.05f, -2.35f, 2.35f })
+            // Four curved horns rising from the dome, black with gold edges: big ones at the sides curving out,
+            // smaller ones at the front.
+            foreach (var h in new[] { new Vector2(-1.25f, 1.2f), new Vector2(1.25f, 1.2f), new Vector2(-0.5f, 0.75f), new Vector2(0.5f, 0.75f) })
             {
-                float len = Mathf.Abs(a) < 0.6f ? 0.6f : Mathf.Abs(a) < 2f ? 1.1f : 0.75f;
+                float a = h.x, len = h.y;
                 var dir = new Vector3(Mathf.Sin(a) * scale.x, 0f, Mathf.Cos(a) * scale.z);
-                var root = offset + new Vector3(0f, brim + 0.72f * r, 0f) + dir * r * 1.24f;
+                var root = offset + new Vector3(0f, brim + 0.55f * r, 0f) + dir * r * 1.06f;
                 var path = new[] {
-                    root, root + dir * r * 0.3f * len + Vector3.up * r * 0.3f * len,
-                    root + dir * r * 0.42f * len + Vector3.up * r * 0.7f * len, root + dir * r * 0.36f * len + Vector3.up * r * 1.0f * len + Vector3.forward * 0.06f * r };
-                d.Add(Joints.Head, black, MeshData.Tube(path, new[] { 0.04f * s, 0.032f * s, 0.018f * s, 0.003f * s }, 7));
+                    root, root + dir * r * 0.32f * len + Vector3.up * r * 0.22f * len,
+                    root + dir * r * 0.46f * len + Vector3.up * r * 0.6f * len, root + dir * r * 0.36f * len + Vector3.up * r * 0.95f * len };
+                d.Add(Joints.Head, black, MeshData.Tube(path, new[] { 0.045f * s, 0.034f * s, 0.02f * s, 0.003f * s }, 7));
                 var edge = new Vector3[path.Length - 1];
-                for (int k = 1; k < path.Length; k++) edge[k - 1] = path[k] + dir * 0.014f * s * (1f - k * 0.25f) + Vector3.up * 0.004f * s;
-                d.Add(Joints.Head, d.pal.brass, MeshData.Tube(edge, new[] { 0.009f * s, 0.006f * s, 0.002f * s }, 5), false);
+                for (int k = 1; k < path.Length; k++) edge[k - 1] = path[k] + dir * 0.016f * s * (1f - k * 0.25f) + Vector3.up * 0.004f * s;
+                d.Add(Joints.Head, d.pal.brass, MeshData.Tube(edge, new[] { 0.01f * s, 0.007f * s, 0.002f * s }, 5), false);
             }
-            // A tall crenellated gold crest on the front, rising above the rim, with a rune.
-            float pz = r * 1.2f * scale.z + 0.012f * s;
+            // A tall gold crest on the front, rising from the band, with a rune.
+            float pz = r * 1.18f * scale.z + 0.012f * s;
             var plate = new[] {
-                new Vector2(-0.065f, 0.0f), new Vector2(0.065f, 0.0f), new Vector2(0.07f, 0.13f), new Vector2(0.045f, 0.16f),
-                new Vector2(0.025f, 0.13f), new Vector2(0f, 0.19f), new Vector2(-0.025f, 0.13f), new Vector2(-0.045f, 0.16f), new Vector2(-0.07f, 0.13f) };
-            d.Add(Joints.Head, d.pal.brass, MeshData.Extrude(plate, 0.018f).Transformed(new Vector3(0f, brim + 0.05f * r, pz), Quaternion.Euler(-8f, 90f, 0f), Vector3.one * s));
-            d.Add(Joints.Head, black, MeshData.Box(new Vector3(0f, brim + 0.05f * r + 0.075f * s, pz + 0.012f * s), new Vector3(0.009f, 0.08f, 0.004f) * s), false);
-            d.Add(Joints.Head, black, MeshData.Box(new Vector3(0.017f * s, brim + 0.05f * r + 0.095f * s, pz + 0.012f * s), new Vector3(0.034f, 0.008f, 0.004f) * s), false);
-            d.Add(Joints.Head, black, MeshData.Box(new Vector3(-0.012f * s, brim + 0.05f * r + 0.055f * s, pz + 0.012f * s), new Vector3(0.026f, 0.008f, 0.004f) * s), false);
+                new Vector2(-0.06f, 0.0f), new Vector2(0.06f, 0.0f), new Vector2(0.065f, 0.13f), new Vector2(0.04f, 0.17f),
+                new Vector2(0.02f, 0.14f), new Vector2(0f, 0.21f), new Vector2(-0.02f, 0.14f), new Vector2(-0.04f, 0.17f), new Vector2(-0.065f, 0.13f) };
+            d.Add(Joints.Head, d.pal.brass, MeshData.Extrude(plate, 0.018f).Transformed(new Vector3(0f, brim + 0.02f * r, pz), Quaternion.Euler(-14f, 90f, 0f), Vector3.one * s));
+            var rz = pz + 0.014f * s;
+            float ry = brim + 0.02f * r;
+            d.Add(Joints.Head, black, MeshData.Box(new Vector3(0f, ry + 0.085f * s, rz), new Vector3(0.009f, 0.09f, 0.004f) * s), false);
+            d.Add(Joints.Head, black, MeshData.Box(new Vector3(0.017f * s, ry + 0.11f * s, rz), new Vector3(0.034f, 0.008f, 0.004f) * s), false);
+            d.Add(Joints.Head, black, MeshData.Box(new Vector3(-0.012f * s, ry + 0.065f * s, rz), new Vector3(0.026f, 0.008f, 0.004f) * s), false);
         }
 
         // ---------------------------------------------------------------- the navigator
