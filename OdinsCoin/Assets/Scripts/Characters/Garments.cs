@@ -1562,8 +1562,8 @@ namespace OdinsCoin
             var paths = new[] {
                 // Right (+X): over the shoulder, out past the arm, hanging free.
                 new[] { new Vector3(r * 0.9f, cy - r * 0.15f, -r * 0.35f), new Vector3(r * 1.08f, cy - r * 0.7f, -r * 0.05f),
-                        new Vector3(f.shoulderX + 0.04f * s, sy + 0.05f * s, r * 0.15f), new Vector3(f.shoulderX + 0.11f * s, sy - 0.06f * s, r * 0.05f),
-                        new Vector3(f.shoulderX + 0.13f * s, sy - length * s, -r * 0.3f) },
+                        new Vector3(f.shoulderX + 0.05f * s, sy + 0.05f * s, r * 0.15f), new Vector3(f.shoulderX + 0.14f * s, sy - 0.05f * s, r * 0.05f),
+                        new Vector3(f.shoulderX + 0.19f * s, sy - length * s, -r * 0.3f) },
                 // Left (-X): back behind the shoulder, down the shoulder blade.
                 new[] { new Vector3(-r * 0.9f, cy - r * 0.15f, -r * 0.35f), new Vector3(-r * 0.95f, cy - r * 0.7f, -r * 0.6f),
                         new Vector3(-f.shoulderX * 0.6f, sy + 0.03f * s, back), new Vector3(-f.shoulderX * 0.55f, sy - length * 0.8f * s, back - 0.01f * s) } };
