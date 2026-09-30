@@ -184,17 +184,97 @@ namespace OdinsCoin
         static void Rigging(VikingModel m, ShipDesign d, ShipLook look, bool sails)
         {
             float deckY = d.freeboard - 0.5f;
+            bool big = d.length >= 25f;
+            var rope = new Color(0.17f, 0.13f, 0.1f);
+            // The tallest mast carries the lookout's nest; the foremost takes the forestay out to the bowsprit.
+            SailPlan main = null, fore = null;
+            foreach (var s in d.sails) { if (main == null || s.height > main.height) main = s; if (fore == null || s.x > fore.x) fore = s; }
             foreach (var s in d.sails)
             {
                 float height = s.height * 1.75f;
+                // A topmast above the yard on the big ships: tall rigs, like the great ships of the far seas.
+                float top = height + (big ? 0.12f * d.length : 0f);
                 float r = 0.12f + s.height * 0.012f;
                 m.Add(Joint, look.strake, MeshData.Tube(new[] { new Vector3(0f, deckY, s.x), new Vector3(0f, height, s.x) }, new[] { r, r * 0.6f }, 8), true, SurfaceKind.Wood);
+                if (big) m.Add(Joint, look.strake, MeshData.Tube(new[] { new Vector3(0f, height - 0.5f, s.x), new Vector3(0f, top, s.x) }, new[] { r * 0.55f, r * 0.3f }, 6), true, SurfaceKind.Wood);
                 if (sails && s.rig == Rig.Square) SquareSail(m, m, s, deckY, height, look);
                 else if (sails) LateenSail(m, m, s, deckY, height, look);
                 // Stays down to the rail, fore and aft.
                 m.Add(Joint, look.iron, MeshData.Tube(new[] { new Vector3(0f, height, s.x), new Vector3(0f, d.freeboard, s.x + height * 0.5f) }, new[] { 0.03f, 0.03f }, 4), false);
                 m.Add(Joint, look.iron, MeshData.Tube(new[] { new Vector3(0f, height, s.x), new Vector3(0f, d.freeboard, s.x - height * 0.45f) }, new[] { 0.03f, 0.03f }, 4), false);
+                if (big) Shrouds(m, d, s, height, rope);
+                if (big) Pennant(m, d, s, top, look);
+                if (big && s == main) CrowsNest(m, s, height, r, look);
             }
+            if (big && fore != null) Bowsprit(m, d, fore, fore.height * 1.75f + 0.12f * d.length, look, rope);
+        }
+
+        /// <summary>The shrouds: a fan of tarred ropes from each rail up to the masthead, laddered with ratlines to climb by.</summary>
+        static void Shrouds(VikingModel m, ShipDesign d, SailPlan s, float height, Color rope)
+        {
+            float k, g, hb;
+            Section(d, Mathf.Clamp(2f * s.x / d.length, -0.95f, 0.95f), out k, out g, out hb);
+            const int lines = 4;
+            float head = height * 0.9f;
+            foreach (float side in new[] { -1f, 1f })
+            {
+                var feet = new Vector3[lines];
+                var tops = new Vector3[lines];
+                for (int i = 0; i < lines; i++)
+                {
+                    feet[i] = new Vector3(side * hb * 0.97f, g, s.x + (i - (lines - 1) / 2f) * 0.9f - 0.8f);
+                    tops[i] = new Vector3(side * 0.18f, head, s.x);
+                    m.Add(Joint, rope, MeshData.Tube(new[] { feet[i], tops[i] }, new[] { 0.028f, 0.02f }, 4), false);
+                }
+                // Ratlines across the shrouds every half metre or so.
+                float span = Vector3.Distance(feet[0], tops[0]);
+                int rungs = Mathf.Clamp(Mathf.FloorToInt(span / 0.55f), 3, 30);
+                for (int j = 1; j < rungs - 2; j++)
+                {
+                    float t = j / (float)rungs;
+                    m.Add(Joint, rope, MeshData.Tube(new[] { Vector3.Lerp(feet[0], tops[0], t), Vector3.Lerp(feet[lines - 1], tops[lines - 1], t) }, new[] { 0.016f, 0.016f }, 3), false);
+                }
+            }
+        }
+
+        /// <summary>A long forked pennant streaming aft from the masthead in the house colours.</summary>
+        static void Pennant(VikingModel m, ShipDesign d, SailPlan s, float top, ShipLook look)
+        {
+            float length = 0.14f * d.length, width = 0.5f + 0.012f * d.length;
+            const int rows = 8;
+            var grid = new Vector3[rows, 2];
+            for (int i = 0; i < rows; i++)
+            {
+                float t = i / (float)(rows - 1);
+                float wave = Mathf.Sin(t * Mathf.PI * 2.2f) * 0.35f * t;
+                float half = width * (1f - 0.85f * t) / 2f;
+                var c = new Vector3(wave, top - 0.1f - width / 2f - t * 0.6f, s.x - t * length);
+                grid[i, 0] = c + new Vector3(0f, half, 0f);
+                grid[i, 1] = c - new Vector3(0f, half, 0f);
+            }
+            m.Add(Joint, look.sail, CharacterKit.Sheet(grid, Vector3.right, 0.02f), false, SurfaceKind.Cloth);
+            m.Add(Joint, look.gold, MeshData.Ellipsoid(new Vector3(0f, top + 0.12f, s.x), Vector3.one * 0.16f, 8, 5), false, SurfaceKind.Metal);
+        }
+
+        /// <summary>The lookout's nest: a round wooden tub high on the main mast, with an iron band.</summary>
+        static void CrowsNest(VikingModel m, SailPlan s, float height, float mastR, ShipLook look)
+        {
+            float y = height * 0.94f, rr = 0.55f + mastR;
+            m.Add(Joint, look.strake, MeshData.Lathe(new[] { new Vector2(mastR * 0.9f, y - 0.35f), new Vector2(rr * 0.85f, y - 0.3f), new Vector2(rr, y + 0.5f), new Vector2(rr * 0.92f, y + 0.55f), new Vector2(mastR * 1.1f, y + 0.2f) }, 14).Transformed(new Vector3(0f, 0f, s.x), Quaternion.identity, Vector3.one), true, SurfaceKind.Wood);
+            m.Add(Joint, look.iron, MeshData.Lathe(new[] { new Vector2(rr * 1.02f, y + 0.3f), new Vector2(rr * 1.02f, y + 0.42f) }, 14).Transformed(new Vector3(0f, 0f, s.x), Quaternion.identity, Vector3.one), false, SurfaceKind.Metal);
+        }
+
+        /// <summary>A bowsprit angled up from the stem, with the forestay run from its tip to the foremast head.</summary>
+        static void Bowsprit(VikingModel m, ShipDesign d, SailPlan fore, float foreTop, ShipLook look, Color rope)
+        {
+            float k, g, hb;
+            Section(d, 0.97f, out k, out g, out hb);
+            var root = new Vector3(0f, g * 0.9f, d.length / 2f * 0.9f);
+            var tip = root + new Vector3(0f, Mathf.Sin(22f * Mathf.Deg2Rad), Mathf.Cos(22f * Mathf.Deg2Rad)) * (0.2f * d.length);
+            m.Add(Joint, look.strake, MeshData.Tube(new[] { root, tip }, new[] { 0.16f + 0.003f * d.length, 0.08f }, 6), true, SurfaceKind.Wood);
+            m.Add(Joint, rope, MeshData.Tube(new[] { tip, new Vector3(0f, foreTop * 0.95f, fore.x) }, new[] { 0.03f, 0.03f }, 4), false);
+            // The bobstay from the tip down to the stem at the waterline.
+            m.Add(Joint, look.iron, MeshData.Tube(new[] { tip, new Vector3(0f, 0.3f, d.length / 2f) }, new[] { 0.03f, 0.03f }, 4), false);
         }
 
         /// <summary>A striped square sail hung from a yard across the mast, bellied forward, with a rune sewn on the middle.</summary>

@@ -64,6 +64,11 @@ med ror, seil i vinden og årer.
   - Modellene (`Ship/ShipModel.cs`, se [docs/ships.png](docs/ships.png)): klinkbygd, tjæret skrog med stigende
     ripe og gullstriper, dragehode med horn og tenner i baugen, halekrøll akter, rød-svart stripete råseil med stor
     rune, svarte latinseil, akterkastell med lykter på de store, skjoldrader langs ripa, årerekker og et hengslet ror.
+  - Riggen på skipene fra 25 m og oppover har fått mer av de store havseilernes stil (uten å bli piratskip):
+    - toppmaster over råa med lange, kløftede vimpler i husets farge og en gullknapp;
+    - vanter i en vifte fra ripa til mastetoppen, med ratliner å klatre i, og en utkikkstønne på stormasta;
+    - et baugspryd med forstag til formasta og vaterstag ned til stevnen.
+  - Seilplanen er den samme, så fysikken er uendret.
     Flaggskipet har en hall på dekket. Målene kommer fra designet, så utseende og fysikk stemmer overens.
 - [x] **7. Ekte skipsfysikk:** oppdrift fra skrogets form, motstand i vannet, sideveis grep fra kjølen,
   seil som gir kraft etter vinkelen mot den tilsynelatende vinden, ror som bare virker når skipet har fart,
