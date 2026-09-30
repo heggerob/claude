@@ -221,10 +221,11 @@ namespace OdinsCoin
             var f = d.fit;
             float s = d.S;
             float y = f.waist, r = f.waistR * 1.06f;
-            d.Add(Joints.Body, d.pal.leatherDark, CharacterKit.Band(y, 0.055f * s, r, f.depth + 0.05f));
+            // A broad belt with a big square brass buckle, as in the concept art.
+            d.Add(Joints.Body, d.pal.leatherDark, CharacterKit.Band(y, 0.07f * s, r, f.depth + 0.05f));
             float front = r * (f.depth + 0.05f);
-            d.Add(Joints.Body, d.pal.brass, MeshData.Box(new Vector3(0f, y, front + 0.004f), new Vector3(0.075f, 0.065f, 0.014f) * s));
-            d.Add(Joints.Body, d.pal.leatherDark, MeshData.Box(new Vector3(0f, y, front + 0.011f), new Vector3(0.042f, 0.034f, 0.008f) * s), false);
+            d.Add(Joints.Body, d.pal.brass, MeshData.Box(new Vector3(0f, y, front + 0.005f), new Vector3(0.09f, 0.078f, 0.016f) * s));
+            d.Add(Joints.Body, d.pal.leatherDark, MeshData.Box(new Vector3(0f, y, front + 0.013f), new Vector3(0.05f, 0.04f, 0.008f) * s), false);
             // A second, thinner hip belt slung lower and askew.
             d.Add(Joints.Body, d.pal.leather, CharacterKit.Band(0f, 0.03f * s, d.SkirtRadius(y - 0.075f * s) * 1.03f, (d.hasSkirt ? d.skirtDepth : f.depth) + 0.02f)
                 .Transformed(new Vector3(0f, y - 0.075f * s, 0f), Quaternion.Euler(0f, 0f, -7f), Vector3.one));
