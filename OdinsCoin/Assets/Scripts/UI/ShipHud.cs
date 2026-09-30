@@ -35,6 +35,12 @@ namespace OdinsCoin
             DrawDangers();
 
             // Nearest land.
+            // A current setting the ship.
+            if (Ship != null && Ship.Stream.magnitude > 0.25f)
+            {
+                float set = Mathf.Repeat(Mathf.Atan2(Ship.Stream.x, Ship.Stream.z) * Mathf.Rad2Deg, 360f);
+                GUI.Label(new Rect(20f, Screen.height - 82f, 560f, 22f), string.Format("<color=#9fd0ff>Current:</color> {0:0.0} kn setting {1:000}°", Ship.Stream.magnitude * 1.9438f, set), style);
+            }
             // Bjorn's commission: where it is from here.
             var commission = Upgrades.Current.Commission;
             if (!string.IsNullOrEmpty(commission) && RealWorld.Active && WorldMap.Current != null && Places.Find(commission) != null && Ship != null)

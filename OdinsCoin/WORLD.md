@@ -172,6 +172,13 @@ med ror, seil i vinden og årer.
 - [x] **17. Le for vinden (`World/WindShelter.cs`):** landet tar vinden. I le av en øy eller en fjellside dør
   brisen ut, omtrent tolv ganger landets høyde nedover, som i fjordene. I Bergen havn faller østavinden fra fjellene
   til 15 %, mens vestavinden fra havet blåser fullt. Skipet merker det, og HUD-en viser «in the lee of the land».
+- [x] **18. Strømmer (`World/Currents.cs`):** vannet beveger seg.
+  - De store tidevannsstrømmene går hardt og snur med tidevannet hver 12,42 time: Saltstraumen opptil rundt 10 knop,
+    Moskstraumen utenfor Lofoten, Pentland Firth og Corryvreckan.
+  - Den norske kyststrømmen setter nordover langs kysten.
+  - Skroget arbeider gjennom vannet og seilene får vinden over grunnen, så en motstrøm kan holde deg igjen og en
+    medstrøm kan bære deg. Strømmen tar også skipet med på lange overfarter.
+  - HUD-en viser strømmen og retningen den setter når den er merkbar.
 
 ## Merk
 

@@ -95,6 +95,14 @@ namespace OdinsCoin
             float draught = Design.draught;
             bool stopped;
             passage = Passage.Advance(Design, passage, c, wind, PassageCourse, seconds, p => DepthAt(new Vector3(p.x, 0f, p.y)) < draught + Passage.ShoalMargin, out stopped);
+            // The water carries her too: the coastal current or a tidal race sets her over the ground.
+            var cmap = RealWorld.Active ? WorldMap.Current : null;
+            if (cmap != null && !stopped)
+            {
+                var here = new Vector3(passage.position.x, 0f, passage.position.y);
+                var drift = Currents.At(cmap, new Vector3((float)WorldOrigin.GlobalX(here), 0f, (float)WorldOrigin.GlobalZ(here)), Currents.Now);
+                passage.position += drift * seconds;
+            }
             var at = new Vector3(passage.position.x, 0f, passage.position.y);
             at.y = Waves.Height(at.x, at.z) * 0.5f;
             transform.position = at;
@@ -274,6 +282,9 @@ namespace OdinsCoin
             if (Abilities.Has("rally")) oars *= Abilities.RallyOars;
         }
 
+        /// <summary>The water's own movement where she is (m/s, world): a tidal race or the coastal current.</summary>
+        public Vector3 Stream { get; private set; }
+
         /// <summary>How much of the wind reaches her here (1 in open water, less in the lee of the land), updated twice a second.</summary>
         public float Lee { get; private set; } = 1f;
         float nextLee;
@@ -449,10 +460,19 @@ namespace OdinsCoin
             HoldFast(dt);
             ShipWater(dt);
 
-            // Water, wind, sails, oars and rudder, in the ship's own frame.
-            Vector3 vel = t.InverseTransformDirection(Compat.Velocity(Body));
+            // Water, wind, sails, oars and rudder, in the ship's own frame. The hull works through the water, which
+            // may itself be running (a tidal race, the coastal current); the sails feel the wind over the ground.
+            Vector3 stream = Vector3.zero;
+            var cmap = RealWorld.Active ? WorldMap.Current : null;
+            if (cmap != null)
+            {
+                var c = Currents.At(cmap, new Vector3((float)WorldOrigin.GlobalX(t.position), 0f, (float)WorldOrigin.GlobalZ(t.position)), Currents.Now);
+                stream = new Vector3(c.x, 0f, c.y);
+            }
+            Stream = stream;
+            Vector3 vel = t.InverseTransformDirection(Compat.Velocity(Body) - stream);
             Vector3 ang = t.InverseTransformDirection(Body.angularVelocity);
-            Vector3 wind = t.InverseTransformDirection(Wind.Direction * Wind.Knots * 0.514f * Lee);
+            Vector3 wind = t.InverseTransformDirection(Wind.Direction * Wind.Knots * 0.514f * Lee - stream);
             float sails, oars;
             Drive(out sails, out oars);
             var driven = Actual;

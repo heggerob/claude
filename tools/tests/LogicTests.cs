@@ -445,6 +445,16 @@ public static class LogicTests
             "in Bergen's harbour an east wind off the mountains drops to " + WindShelter.Factor(map, vagen, Vector3.left).ToString("0.00") + ", a west wind off the sea blows full");
         map.Detail = null;
 
+        // The water moves: Saltstraumen runs at five knots and more on the flood, turns, and runs back on the ebb;
+        // the coastal current sets north off Norway; the open North Sea is still.
+        var salt = map.ToWorld(67.235f, 14.62f);
+        double flood = Currents.TidePeriod / 4.0, ebb = Currents.TidePeriod * 0.75, slack = Currents.TidePeriod / 2.0;
+        Check(Currents.At(map, salt, flood).magnitude > 4.5f && Vector2.Dot(Currents.At(map, salt, flood), Currents.At(map, salt, ebb)) < 0f && Currents.At(map, salt, slack).magnitude < 0.5f,
+            "Saltstraumen runs " + (Currents.At(map, salt, flood).magnitude * 1.94f).ToString("0") + " knots on the flood, turns with the ebb, and goes slack between");
+        Check(Currents.At(map, map.ToWorld(57f, 3f), flood).magnitude < 0.01f, "the open North Sea has no current");
+        var offStad = Currents.At(map, map.ToWorld(62.2f, 4.9f), slack);
+        Check(offStad.y > 0.2f && offStad.magnitude < 0.5f, "off Stad the coastal current sets north at about half a knot (" + (offStad.magnitude * 1.94f).ToString("0.0") + " kn)");
+
         // Merchants sail for one of the market towns near where they're met.
         var nearBergen = MerchantTraffic.PickPort(map, map.ToWorld(60.3f, 4.9f));
         Check(nearBergen != null && PlaceLife.HasMarket(nearBergen) && Vector3.Distance(Places.Position(map, nearBergen), map.ToWorld(60.3f, 4.9f)) < 700000f,
