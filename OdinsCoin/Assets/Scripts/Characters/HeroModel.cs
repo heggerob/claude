@@ -373,13 +373,14 @@ namespace OdinsCoin
                     d.Add(Joints.Weapon, d.pal.brass, MeshData.Ellipsoid(new Vector3(0f, 0f, -0.095f * s), new Vector3(0.03f, 0.03f, 0.025f) * s, 8, 5));
                     d.Add(Joints.Weapon, d.pal.brass, MeshData.Tube(new[] { new Vector3(-0.11f * s, 0f, 0.1f * s), new Vector3(0f, 0f, 0.08f * s), new Vector3(0.11f * s, 0f, 0.1f * s) }, new[] { 0.012f * s, 0.016f * s, 0.012f * s }, 6));
                     // The blade tapers gently to a point.
-                    var steel = new Color(0.78f, 0.8f, 0.82f);
+                    // A broad, pale blade, as in the concept art.
+                    var steel = new Color(0.88f, 0.88f, 0.86f);
                     d.Add(Joints.Weapon, steel, MeshData.Extrude(new[] {
-                        new Vector2(0.09f, 0.045f), new Vector2(0.5f, 0.042f), new Vector2(0.8f, 0.032f), new Vector2(0.93f, 0f),
-                        new Vector2(0.8f, -0.032f), new Vector2(0.5f, -0.042f), new Vector2(0.09f, -0.045f) }, 0.014f)
+                        new Vector2(0.09f, 0.058f), new Vector2(0.5f, 0.056f), new Vector2(0.8f, 0.044f), new Vector2(0.95f, 0f),
+                        new Vector2(0.8f, -0.044f), new Vector2(0.5f, -0.056f), new Vector2(0.09f, -0.058f) }, 0.014f)
                         .Transformed(Vector3.zero, Quaternion.Euler(0f, 0f, 90f), Vector3.one * s));
                     // A darker fuller down the middle, with runes cut into it (on both faces).
-                    d.Add(Joints.Weapon, VikingModel.Shade(steel, 0.78f), MeshData.Box(new Vector3(0f, 0f, 0.43f * s), new Vector3(0.018f, 0.0155f, 0.62f) * s), false);
+                    d.Add(Joints.Weapon, VikingModel.Shade(steel, 0.86f), MeshData.Box(new Vector3(0f, 0f, 0.43f * s), new Vector3(0.018f, 0.0155f, 0.62f) * s), false);
                     var glyphs = new[] {
                         new[] { 0f, -1f, 0f, 1f, 0f, 0.2f, 0.7f, 0.8f },            // ᚠ-ish
                         new[] { 0f, -1f, 0f, 1f, -0.7f, 0.3f, 0.7f, -0.3f },        // a slash through a stave
