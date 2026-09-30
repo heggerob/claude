@@ -138,7 +138,7 @@ namespace OdinsCoin
                 case HairStyle.WrappedBraids: Garments.LongBraids(d, 0.22f, true); break;
                 case HairStyle.SideBraid: Garments.SideBraid(d, 0.36f); break;
                 case HairStyle.ShortLocks: Garments.ShortLocks(d); break;
-                case HairStyle.VeryLongBraids: Garments.LongBraids(d, 0.85f); break;
+                case HairStyle.VeryLongBraids: Garments.LongBraids(d, 0.62f); break;
                 case HairStyle.LowBraid: Garments.LowBraid(d); break;
                 case HairStyle.SwungBraids: Garments.SwungBraids(d, 0.3f); break;
             }
