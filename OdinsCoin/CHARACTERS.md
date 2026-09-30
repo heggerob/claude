@@ -103,6 +103,14 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
     - **Spydvakt:** knuten på skjoldet er malt med brede, lyse bånd med mørk kant, og pelskragen er bredere.
     - **Seer:** slankere og høyere, kjortelen faller rett ned, og fargen er skifergrå.
     - **Speider:** den grønne kappa er bredere over skuldrene, og pilene har smale, spisse fjær.
+  - Runde 12 (ferdig):
+    - **Alle:** et lite stykke tynn hals synes mellom hodet og kragen.
+    - **Jarl:** remmene over brystet ligger utenpå frakken og møtes i én gullring.
+    - **Raider:** kortere flette som henger bak skulderen, og den ledige armen holdes litt ut fra kroppen.
+    - **Navigatør:** runen på bandanaen sitter på stoffet (den lå gjemt), tykkere flette, og korte bandanaender som stikker ut bak knuten.
+    - **Spydvakt:** det lange skjerfet krysser brystet på skrå, og skjoldbulen er større.
+    - **Seer:** geviret sprer seg bredt ut til sidene med takker som står opp, og runeanhengene henger fra gevirgreinene (ingen tverrstang).
+    - **Speider:** pilkoggerremmen går over kappa, pelsen over høyre skulder er større, og kragen sitter lavere.
 - [x] **9. Bevegelse i plaggene:** (se [docs/motion.png](docs/motion.png)) kapper, skjørt, fletter, pels og vimpler svinger og henger etter når figuren går, snur og hugger (enkel fysikk med fjærer). Kapper og fletter bøyer seg i stedet for å svinge som en stiv planke: toppen blir liggende på skuldrene (eller ved hodet), og jo lenger ned, jo mer blafrer de (`ClothBend`).
 - [x] **10. Tegneserie-look på alt:** tusj-kanter på skipet, øyene, trærne, husene og havet, skravur med blyant eller tusj i skyggene, og papirkorn over hele bildet.
   - [x] Skravur i skyggene: shaderen `OdinsCoin/InkToon` (i `Resources/Shaders`) gir myk tegnet belysning med kalde skygger, enkle blyantstreker på skyggesiden og kryss-skravur i de mørkeste delene. Ansiktene får ingen skravur, så de holder seg rene. Den brukes på alt som ikke er blankt (havet beholder Lit). `InkStyle.cs` har samme matte, og forhåndsvisningen bruker den.
