@@ -602,6 +602,12 @@ public static class HeroPreview
                 bendLength.TryGetValue(piece.joint, out l);
                 bendLength[piece.joint] = Mathf.Max(l, ClothBend.Length(piece.mesh.Vertices));
             }
+        // Skirts and coats follow the legs, as the game's SkirtFlexer bends them.
+        var leftLegJ = shot.model.Find(Joints.LeftLeg);
+        float hipY = leftLegJ != null ? leftLegJ.localPosition.y : 0f, hipX = leftLegJ != null ? -leftLegJ.localPosition.x : 0f;
+        float leftSwing = shot.pose.rot.ContainsKey(Joints.LeftLeg) ? SkirtFlex.LegPitch(shot.pose.rot[Joints.LeftLeg]) : 0f;
+        float rightSwing = shot.pose.rot.ContainsKey(Joints.RightLeg) ? SkirtFlex.LegPitch(shot.pose.rot[Joints.RightLeg]) : 0f;
+        bool flex = leftLegJ != null && (Mathf.Abs(leftSwing) > 0.2f || Mathf.Abs(rightSwing) > 0.2f);
         foreach (var piece in shot.model.Pieces)
         {
             if (!Visible(shot, piece.joint)) continue;
@@ -624,6 +630,7 @@ public static class HeroPreview
                 var v = mesh.Vertices[i];
                 if (bent) v = ClothBend.Apply(v, bendLength[piece.joint], bend.x, bend.y);
                 if (drawn) v = BowDraw.Apply(v, half, pull);
+                if (flex && piece.joint == Joints.Body) v = SkirtFlex.Apply(v, hipY, hipX, leftSwing, rightSwing);
                 world[i] = jp + jr * v;
             }
             for (int t = 0; t < mesh.Triangles.Count; t += 3)

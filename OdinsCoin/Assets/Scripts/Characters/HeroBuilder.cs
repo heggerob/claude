@@ -39,6 +39,10 @@ namespace OdinsCoin
             if (spec.weapon != WeaponId.None) AddPieces(HeroModel.BuildWeapon(spec), joints);
             if (spec.offHand != OffHandId.None) AddPieces(HeroModel.BuildOffHand(spec), joints);
 
+            // Skirts and coats follow the legs.
+            var fit = Fit.Of(spec.body);
+            root.gameObject.AddComponent<SkirtFlexer>().Init(joints[Joints.Body], joints[Joints.LeftLeg], joints[Joints.RightLeg], fit.hip, fit.hipX);
+
             if (model.Swings.Count > 0)
             {
                 var sway = root.gameObject.AddComponent<ClothSway>();

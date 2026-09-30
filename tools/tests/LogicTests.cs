@@ -307,6 +307,17 @@ public static class LogicTests
         Check(Vector3.Distance(arrowNock, BowDraw.Mid(1f) + pullBack) < 1e-5f && Vector3.Dot(arrowDir, toGrip) > 0.999f, "the nocked arrow sits on the drawn string and points through the grip");
         Check(bowModel.Hidden(Joints.NockedArrow), "the arrow only shows while the bow is drawn");
 
+        // Skirts follow the legs: a thigh swung forward pushes the cloth over it forward; above the hips nothing moves.
+        float hipY = 0.9f, hipX = 0.07f;
+        var chest = new Vector3(0.05f, 1.2f, 0.1f);
+        Check(SkirtFlex.Apply(chest, hipY, hipX, 40f, -30f) == chest, "the body above the hips stays put");
+        var leftHem = new Vector3(-0.12f, 0.45f, 0.1f);
+        var rightHem = new Vector3(0.12f, 0.45f, 0.1f);
+        Check(SkirtFlex.Apply(leftHem, hipY, hipX, 40f, -30f).z > leftHem.z + 0.1f, "a leg striding forward pushes its side of the skirt forward");
+        Check(SkirtFlex.Apply(rightHem, hipY, hipX, 40f, -30f).z < rightHem.z - 0.1f, "the leg behind takes its side back");
+        Check(SkirtFlex.Apply(leftHem, hipY, hipX, 0f, 0f) == leftHem, "standing, the skirt hangs as made");
+        Check(Math.Abs(SkirtFlex.Swing(Quaternion.Euler(-HeroPose.Lean, 0f, 0f))) < 1e-3f && SkirtFlex.Swing(Quaternion.Euler(-30f - HeroPose.Lean, 0f, 0f)) > 25f, "a leg's swing is measured from standing, forward positive");
+
         // Heroes get swinging joints where they have capes, banners and braids.
         var jarl = HeroModel.Build(CharacterSpec.Default(OutfitId.Jarl));
         var raider = HeroModel.Build(CharacterSpec.Default(OutfitId.Raider));
