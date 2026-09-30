@@ -65,6 +65,8 @@ namespace OdinsCoin
                     // Strands: lots of short strokes running down (v), a little wavy, darker at the roots.
                     Mottle(t, rng, 4, 0.1f);
                     Hatch(t, rng, 260, 90f, 16f, 8f, 18f, 1.3f, 0.34f);
+                    // Darker tips: a second, sparser layer of short, strong strokes.
+                    Hatch(t, rng, 90, 90f, 20f, 4f, 9f, 1.1f, 0.42f);
                     break;
                 case SurfaceKind.Leather:
                     Mottle(t, rng, 8, 0.12f);

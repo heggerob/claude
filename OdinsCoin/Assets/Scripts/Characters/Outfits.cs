@@ -58,7 +58,7 @@ namespace OdinsCoin
                 id = OutfitId.Jarl, title = "The Jarl",
                 palette = () => new Palette {
                     cloth = new Color(0.19f, 0.19f, 0.2f), clothDark = new Color(0.11f, 0.11f, 0.12f),
-                    accent = new Color(0.62f, 0.16f, 0.11f), fur = new Color(0.84f, 0.8f, 0.72f), furShadow = new Color(0.58f, 0.53f, 0.46f),
+                    accent = new Color(0.62f, 0.16f, 0.11f), fur = new Color(0.9f, 0.84f, 0.7f), furShadow = new Color(0.6f, 0.5f, 0.38f),
                     brass = new Color(0.82f, 0.62f, 0.26f), hair = new Color(0.74f, 0.3f, 0.12f) },
                 defaultHair = HairStyle.WrappedBraids, suggestedWeapon = WeaponId.Sword, suggestedOffHand = OffHandId.RoundShield,
                 abilities = new[] {
@@ -157,7 +157,7 @@ namespace OdinsCoin
                 palette = () => new Palette {
                     cloth = new Color(0.3f, 0.23f, 0.17f), clothDark = new Color(0.19f, 0.15f, 0.12f),
                     accent = new Color(0.34f, 0.4f, 0.28f), emblem = new Color(0.8f, 0.66f, 0.36f),
-                    fur = new Color(0.82f, 0.76f, 0.64f), hair = new Color(0.42f, 0.28f, 0.17f) },
+                    fur = new Color(0.84f, 0.74f, 0.56f), furShadow = new Color(0.5f, 0.38f, 0.26f), hair = new Color(0.42f, 0.28f, 0.17f) },
                 defaultHair = HairStyle.LowBraid, suggestedWeapon = WeaponId.Bow,
                 abilities = new[] {
                     new Ability { id = "keen", name = "Keen Eyes", description = "Spot treasure and enemies from much further away." },

@@ -20,8 +20,8 @@ namespace OdinsCoin
         public Color accent = new Color(0.62f, 0.17f, 0.12f);
         /// <summary>Embroidery and symbols on the accent cloth.</summary>
         public Color emblem = new Color(0.9f, 0.84f, 0.7f);
-        public Color fur = new Color(0.8f, 0.74f, 0.62f);
-        public Color furShadow = new Color(0.52f, 0.46f, 0.38f);
+        public Color fur = new Color(0.86f, 0.77f, 0.6f);
+        public Color furShadow = new Color(0.56f, 0.43f, 0.3f);
         public Color leather = new Color(0.46f, 0.3f, 0.17f);
         public Color leatherDark = new Color(0.23f, 0.15f, 0.1f);
         /// <summary>Buckles, rings, trims.</summary>
