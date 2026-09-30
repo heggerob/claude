@@ -81,6 +81,13 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
     - **Spydvakt:** større skjold med mørk jernkant og nagler.
     - **Seer:** kortere stav, så runesteinen sitter ved ansiktet.
     - **Speider:** bred grønn kappekrage over begge skuldrene, med pelsen oppå.
+  - Runde 9 (ferdig):
+    - **Jarl:** kronen har gullribber med nagler over kuppelen og fire tydelige horn. Det runde skjoldet er laget av rødbeisede planker.
+    - **Raider:** øksebladet er en halvmåne med buet egg og krokete skjegg. Store punger henger lavt på hoftene.
+    - **Navigatør:** brede, lyse vevde kanter med mørkt sikksakkmønster på kappa.
+    - **Spydvakt:** brede, lyse lærkanter ned forsiden og rundt kanten av vesten. Knuteskjoldet har bredere bånd og rustbrun jernkant.
+    - **Seer:** fjærkappa er åpen foran. Beltet har en runemedaljong, og ved hofta henger en bunt med hodeskalle og runeanheng.
+    - **Speider:** lys pelslue med mørkt tøybånd, halsen synes over kragen, og en kort flette går over i bølgete lokker.
 - [x] **9. Bevegelse i plaggene:** (se [docs/motion.png](docs/motion.png)) kapper, skjørt, fletter, pels og vimpler svinger og henger etter når figuren går, snur og hugger (enkel fysikk med fjærer).
 - [ ] **10. Tegneserie-look på alt:** tusj-kanter på skipet, øyene, trærne, husene og havet, skravur med blyant eller tusj i skyggene, og papirkorn over hele bildet.
   - [x] Skravur i skyggene: shaderen `OdinsCoin/InkToon` (i `Resources/Shaders`) gir myk tegnet belysning med kalde skygger, enkle blyantstreker på skyggesiden og kryss-skravur i de mørkeste delene. Ansiktene får ingen skravur, så de holder seg rene. Den brukes på alt som ikke er blankt (havet beholder Lit). `InkStyle.cs` har samme matte, og forhåndsvisningen bruker den.
