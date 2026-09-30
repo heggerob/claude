@@ -26,6 +26,7 @@ namespace OdinsCoin
 
         Longship target;
         readonly List<Transform> archers = new List<Transform>();
+        readonly Dictionary<Transform, HeroIdle> crew = new Dictionary<Transform, HeroIdle>();
         float nextVolley, modeTimer, sinkTime, lastRamHit = -10f;
 
         public static Raider Spawn(Transform parent, Vector3 position, float heading, Longship target)
@@ -43,7 +44,8 @@ namespace OdinsCoin
                 var a = new GameObject("Archer").transform;
                 a.SetParent(ship.transform, false);
                 a.localPosition = new Vector3(i % 2 == 0 ? -1f : 1f, LongshipBuilder.DeckHeight + 0.05f, -4.5f + i * 2.6f);
-                HeroBuilder.Build(a, NpcHeroes.DanishRaider(i + 31 * (All.Count + 1)));
+                var dane = NpcHeroes.DanishRaider(i + 31 * (All.Count + 1));
+                r.crew[a] = HeroIdle.Add(a, HeroBuilder.Build(a, dane), dane.weapon);
                 r.archers.Add(a);
             }
             return r;
@@ -75,9 +77,8 @@ namespace OdinsCoin
             // The crew face the enemy.
             foreach (var a in archers)
             {
-                Vector3 look = them - a.position;
-                look.y = 0f;
-                if (look.sqrMagnitude > 0.1f) a.rotation = Quaternion.LookRotation(look);
+                // Turning to them in steps, not snapping round.
+                crew[a].FaceTowards(them - a.position);
             }
 
             if (!Ramming && dist < ArrowRange && Time.time >= nextVolley)
@@ -103,6 +104,7 @@ namespace OdinsCoin
                     ? player.transform.position + Vector3.up * 1.2f + Random.insideUnitSphere * 1.2f
                     : target.transform.TransformPoint(local);
                 Arrow.Shoot(transform.parent, a.position + Vector3.up * 1.6f, aim, target);
+                crew[a].Attack();
             }
         }
 

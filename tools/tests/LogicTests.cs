@@ -1193,6 +1193,14 @@ public static class LogicTests
         var up = axe.Sample(0.3f);
         Check(up[(int)AttackMove.Ch.ArmRX] < -150f && up[(int)AttackMove.Ch.HaftZ] < -0.5f, "the axe is raised high behind the head before the chop");
         Check(axe.Sample(axe.hitAt)[(int)AttackMove.Ch.Pitch] > 15f, "and the whole body comes down with it");
+        // Saxon guards: the slash's blow lines up with the moment their damage lands, after the long tell.
+        {
+            var slash = HeroAttacks.For(WeaponId.Sword);
+            bool rising = true; float prev = -1f;
+            for (float e = 0f; e < 1.5f; e += 0.01f) { float p = Saxon.SlashPhase(e); if (p < prev) rising = false; prev = p; }
+            Check(rising && Mathf.Abs(Saxon.SlashPhase(0.6f) - slash.hitAt) < 0.001f && Saxon.SlashPhase(1.3f) == 1f,
+                "a guard's slash lands its blow exactly when the damage does, and finishes with the recovery");
+        }
         var bow = HeroAttacks.For(WeaponId.Bow);
         Check(bow.Sample(0.62f)[(int)AttackMove.Ch.ElbowL] < -120f && bow.Sample(0.75f)[(int)AttackMove.Ch.ElbowL] > -100f, "the bow is drawn to the cheek, then loosed");
     }

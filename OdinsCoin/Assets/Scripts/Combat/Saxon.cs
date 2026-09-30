@@ -25,8 +25,12 @@ namespace OdinsCoin
         VikingBuilder.Parts parts;
         Vector3 home;
         Vector3 wanderTarget;
-        float nextWander, attackStart = -10f, staggerUntil, verticalSpeed, walkCycle, deathTime;
+        float nextWander, attackStart = -10f, staggerUntil, verticalSpeed, deathTime;
         bool attackLanded;
+        // Guards move like the player's hero: turning takes steps, speed builds up, every joint eases.
+        readonly Locomotion loco = new Locomotion { sprintSpeed = Speed };
+        readonly HeroAnimator animator = new HeroAnimator();
+        static AttackMove Slash { get { return HeroAttacks.For(WeaponId.Sword); } }
 
         public static Saxon Create(Transform parent, Vector3 position)
         {
@@ -41,6 +45,7 @@ namespace OdinsCoin
             s.controller = cc;
             s.home = position;
             s.wanderTarget = position;
+            s.loco.Reset(Vector2.zero, Random.Range(0f, 360f));
             s.parts = HeroBuilder.Build(go.transform, NpcHeroes.Saxon(All.Count + Mathf.RoundToInt(position.x * 7f + position.z * 13f)));
             s.Health = go.AddComponent<Health>();
             s.Health.BaseMax = 60f;
@@ -86,6 +91,9 @@ namespace OdinsCoin
             var combat = player != null ? player.GetComponent<VikingCombat>() : null;
             Vector3 move = Vector3.zero;
             float dt = Time.deltaTime;
+            // Where they want to go (on the ground), how hard, and at what top speed.
+            Vector2 wish = Vector2.zero;
+            float pace = Speed;
 
             bool playerAlive = combat != null && !combat.Health.Dead;
             float toPlayer = playerAlive ? Vector3.Distance(transform.position, player.transform.position) : float.MaxValue;
@@ -110,9 +118,16 @@ namespace OdinsCoin
             }
             else if (engaged)
             {
-                Face(player.transform.position, dt);
-                if (toPlayer <= AttackRange) { attackStart = Time.time; attackLanded = false; }
-                else move = (player.transform.position - transform.position).normalized * Speed;
+                Vector3 to = player.transform.position - transform.position;
+                to.y = 0f;
+                // Close enough: turn to face them (stepping round on the spot), and swing once facing them.
+                if (toPlayer <= AttackRange)
+                {
+                    wish = new Vector2(to.x, to.z).normalized * 0.2f;
+                    pace = 0f;
+                    if (Vector3.Angle(transform.forward, to) < 30f) { attackStart = Time.time; attackLanded = false; }
+                }
+                else wish = new Vector2(to.x, to.z).normalized;
             }
             else
             {
@@ -124,13 +139,17 @@ namespace OdinsCoin
                 }
                 Vector3 to = wanderTarget - transform.position;
                 to.y = 0f;
-                if (to.magnitude > 1f) { Face(wanderTarget, dt); move = to.normalized * Speed * 0.4f; }
+                if (to.magnitude > 1f) { wish = new Vector2(to.x, to.z).normalized; pace = Speed * 0.4f; }
             }
 
-            move.y = 0f;
+            // Walking and turning in steps, like the hero.
+            if (attackStart > 0f || Time.time < staggerUntil) wish = Vector2.zero;
+            loco.Step(wish, pace, dt);
+            transform.rotation = Quaternion.Euler(0f, loco.heading, 0f);
+            move = loco.Velocity;
             verticalSpeed = controller.isGrounded ? -2f : verticalSpeed - 18f * dt;
             controller.Move((move + Vector3.up * verticalSpeed) * dt);
-            Animate(move.magnitude, dt);
+            Animate(dt);
         }
 
         bool CanSee(Vector3 target)
@@ -142,37 +161,28 @@ namespace OdinsCoin
             return hit.collider != null && hit.collider.GetComponent<Viking>() != null;
         }
 
-        void Face(Vector3 target, float dt)
+        /// <summary>
+        /// Where in the slash they are, for <paramref name="elapsed"/> seconds since it began: the move's wind-up is
+        /// stretched over the guard's long, readable tell, the blow lands when the damage does, and the recovery
+        /// takes the rest.
+        /// </summary>
+        public static float SlashPhase(float elapsed)
         {
-            Vector3 to = target - transform.position;
-            to.y = 0f;
-            if (to.sqrMagnitude < 0.01f) return;
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(to), dt * 8f);
+            var m = Slash;
+            if (elapsed < Windup) return elapsed / Windup * m.hitAt;
+            return Mathf.Min(1f, m.hitAt + (elapsed - Windup) / Recover * (1f - m.hitAt));
         }
 
-        void Animate(float speed, float dt)
+        void Animate(float dt)
         {
-            walkCycle += dt * (speed > 0.1f ? 2f + speed * 1.4f : 0f);
-            float swing = speed > 0.1f ? Mathf.Sin(walkCycle) * Mathf.Clamp(speed * 8f, 0f, 35f) : 0f;
-            parts.leftLeg.localRotation = HeroPose.Leg(swing);
-            parts.rightLeg.localRotation = HeroPose.Leg(-swing);
-            // Sword raised high during the windup (the tell), then brought down.
-            float armAngle = swing * 0.8f;
-            if (attackStart > 0f)
-            {
-                float t = Time.time - attackStart;
-                armAngle = t < Windup ? Mathf.Lerp(0f, -160f, t / Windup) : Mathf.Lerp(-160f, 40f, Mathf.Clamp01((t - Windup) / 0.15f));
-            }
-            parts.rightArm.localRotation = Quaternion.Euler(armAngle, 0f, 0f);
-            if (parts.rightForearm != null)
-            {
-                float elbow = HeroPose.WalkElbow(armAngle);
-                if (attackStart > 0f) elbow = HeroPose.ChopElbow((Time.time - attackStart) / (Windup + 0.15f));
-                parts.rightForearm.localRotation = Quaternion.Euler(elbow, 0f, 0f);
-            }
-            parts.body.localRotation = HeroPose.Torso(HeroPose.Breath(Time.time + home.x));
+            animator.Step(dt, loco, controller.isGrounded, verticalSpeed, false, Time.time + home.x);
+            animator.Apply(parts);
+            var carry = HeroPose.CarryFor(WeaponId.Sword);
+            if (carry.set) HeroPose.Carry(parts, WeaponId.Sword, 1f);
+            // The slash: the sword raised high during the wind-up (the tell), then cut down.
+            if (attackStart > 0f) HeroAttacks.Apply(parts, Slash, SlashPhase(Time.time - attackStart));
             // They keep their shield up while waiting to strike.
-            Blocking = attackStart < 0f && speed < 0.5f;
+            Blocking = attackStart < 0f && loco.speed < 0.5f;
             HeroPose.Block(parts, Blocking ? 1f : 0f);
         }
     }
