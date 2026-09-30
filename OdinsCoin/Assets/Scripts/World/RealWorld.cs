@@ -257,6 +257,23 @@ namespace OdinsCoin
             // Nothing grows on the plots.
             foreach (var plot in plots)
                 if (plot.kind != BuildingKind.Jetty) Scenery.Clearings.Add(new Vector3(plot.at.x, plot.at.z, Scenery.PlotClearing(plot.kind)));
+            // Fenced fields by the houses.
+            System.Func<float, float, float> ground = (x, z) => TerrainDetail.Height(map, x, z);
+            foreach (var field in Fields.Layout(plots, ground, place.kind == PlaceKind.Town ? 3 : 2, place.name.GetHashCode()))
+            {
+                Scenery.Clearings.Add(Fields.Clearing(field));
+                var f = new GameObject("Field").transform;
+                f.SetParent(root, false);
+                f.position = WorldOrigin.ToScene(field.centre.x, field.centre.z, ground(field.centre.x, field.centre.z));
+                f.rotation = Quaternion.Euler(0f, field.yaw, 0f);
+                ModelView.Show(Fields.Model(field, ground), f);
+                foreach (var wall in Fields.FenceWalls(field))
+                {
+                    var col = f.gameObject.AddComponent<BoxCollider>();
+                    col.center = wall.center;
+                    col.size = wall.size;
+                }
+            }
             foreach (var plot in plots)
             {
                 var b = new GameObject(plot.kind.ToString()).transform;

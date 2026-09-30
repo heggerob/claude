@@ -198,6 +198,34 @@ public static class LogicTests
             Check(Scenery.PlotClearing(BuildingKind.GreatHall) > Buildings.Footprint(BuildingKind.GreatHall).z, "no tree grows through the end of a great hall");
         }
 
+        // Fenced fields by the farms.
+        {
+            var farm = new List<Plot> {
+                new Plot { kind = BuildingKind.Longhouse, at = new Vector3(0f, 2f, 0f), yaw = 20f },
+                new Plot { kind = BuildingKind.Longhouse, at = new Vector3(60f, 2f, 10f), yaw = -10f } };
+            var fieldList = Fields.Layout(farm, (x, z) => 3f, 3, 42);
+            bool clearOfHouses = fieldList.Count == 2;
+            foreach (var f in fieldList)
+                foreach (var p in Fields.Corners(f, 0f, 6))
+                    foreach (var plot in farm) clearOfHouses &= !PlaceLife.InsideBuilding(plot, p, 1f);
+            Check(clearOfHouses, "each longhouse gets a field, and no field runs into a house");
+            Check(Fields.Layout(farm, (x, z) => 0.2f, 3, 42).Count == 0, "no field on the shore flats");
+            Check(Fields.Layout(farm, (x, z) => 3f + x * 0.4f, 3, 42).Count == 0, "no field on a steep hillside");
+            var one = fieldList[0];
+            var gatePosts = Fields.Posts(one);
+            bool gap = true;
+            foreach (var p in gatePosts) if (Mathf.Abs(p.z - one.halfZ) < 0.01f && Mathf.Abs(p.x) < 1.4f) gap = false;
+            Check(gap && gatePosts.Count > 10, "the fence has a gate you can walk through");
+            var clearing = Fields.Clearing(one);
+            bool covered = true;
+            foreach (var p in Fields.Corners(one, 0f, 2)) covered &= new Vector2(p.x - clearing.x, p.z - clearing.y).magnitude <= clearing.z;
+            Check(covered, "no tree grows in a field");
+            Check(Fields.Inside(one, one.centre) && !Fields.Inside(one, one.centre + new Vector3(100f, 0f, 0f)), "the middle of a field is inside its fence");
+            int wallsAlongGate = 0;
+            foreach (var w in Fields.FenceWalls(one)) if (Mathf.Abs(w.center.z - one.halfZ) < 0.01f) wallsAlongGate++;
+            Check(wallsAlongGate == 2, "the gate side's fence is two pieces with the gap between");
+        }
+
         // Faster time on a quiet passage, never with danger about.
         string why;
         Check(TimeWarp.Allowed(true, 5000f, false, 0f, false, out why) && why == null, "a quiet passage can run fast");

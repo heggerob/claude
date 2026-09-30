@@ -500,6 +500,15 @@ public static class HeroPreview
         Scenery.Clearings.Clear();
         foreach (var plot in plots)
             if (plot.kind != BuildingKind.Jetty) Scenery.Clearings.Add(new Vector3(plot.at.x, plot.at.z, Scenery.PlotClearing(plot.kind)));
+        // The fields by the houses, as the game lays them out.
+        System.Func<float, float, float> groundAt = (x, z) => TerrainDetail.Height(map, x, z);
+        foreach (var field in Fields.Layout(plots, groundAt, place.kind == PlaceKind.Town ? 3 : 2, place.name.GetHashCode()))
+        {
+            Scenery.Clearings.Add(Fields.Clearing(field));
+            var fat = new Vector3(field.centre.x - centre.x, groundAt(field.centre.x, field.centre.z), field.centre.z - centre.z);
+            foreach (var piece in Fields.Model(field, groundAt).Pieces)
+                m.Pieces.Add(new VikingModel.Piece { joint = J, color = piece.color, mesh = piece.mesh.Transformed(fat, Quaternion.Euler(0f, field.yaw, 0f), Vector3.one), surface = piece.surface, outline = piece.outline, ink = piece.ink });
+        }
         var t0 = WorldTerrain.ChunkOf(centre.x - half, centre.z - half, Scenery.TileSize);
         var t1 = WorldTerrain.ChunkOf(centre.x + half, centre.z + half, Scenery.TileSize);
         int propCount = 0;
