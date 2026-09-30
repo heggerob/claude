@@ -34,7 +34,14 @@ namespace OdinsCoin
             DrawDangers();
 
             // Nearest land.
-            if (Player != null)
+            if (Player != null && RealWorld.Active)
+            {
+                float dist, bearing;
+                var place = RealWorld.Nearest(Player.transform.position, out dist, out bearing);
+                if (place != null)
+                    GUI.Label(new Rect(20, 134, 380, 22), string.Format("Nearest port: <b>{0}</b> ({1}) {2}, bearing {3:000}°", place.name, place.modern, Distance(dist), bearing), style);
+            }
+            else if (Player != null)
             {
                 float dist;
                 var island = WorldGen.Nearest(Player.transform.position, out dist);
@@ -160,6 +167,14 @@ namespace OdinsCoin
             if (a < 35f) return "tailwind: full speed";
             if (a < 120f) return "wind from the side";
             return "headwind: take the sail down and row";
+        }
+
+        /// <summary>A distance for the HUD: metres close in, kilometres and then sea miles further out.</summary>
+        public static string Distance(float metres)
+        {
+            if (metres < 1000f) return string.Format("{0:0} m", metres);
+            if (metres < 20000f) return string.Format("{0:0.0} km", metres / 1000f);
+            return string.Format("{0:0} km ({1:0} nm)", metres / 1000f, metres / 1852f);
         }
     }
 }

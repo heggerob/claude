@@ -48,7 +48,7 @@ namespace OdinsCoin
             {
                 nextStorm -= dt;
                 // Never brew one over the home fjord.
-                if (nextStorm <= 0f && Vector2.Distance(new Vector2(shipPos.x, shipPos.z), HomeHarbour.Spec.centre) > 140f)
+                if (nextStorm <= 0f && Vector2.Distance(new Vector2(shipPos.x, shipPos.z), HomeHarbour.CentreNow) > 140f)
                 {
                     Brew(shipPos, Radius + 80f);
                     nextStorm = Random.Range(240f, 420f);

@@ -48,12 +48,34 @@ namespace OdinsCoin
                 var w = Set[i];
                 Vector2 d = w.direction.normalized;
                 float k = 2f * Mathf.PI / w.length;
-                float phase = k * (d.x * x + d.y * z) - w.speed * k * t;
+                float phase = k * (d.x * x + d.y * z) + Origin(i, k, d) - w.speed * k * t;
                 // Sharpen crests a little: sin shifted towards peaks.
                 float s = Mathf.Sin(phase);
                 h += w.amplitude * (s + 0.25f * s * s - 0.125f);
             }
             return h * Roughness;
+        }
+
+        // The waves are fixed to the whole world, not the scene: when the floating origin shifts, each wave's
+        // phase takes up the offset (worked out in double, wrapped to one wavelength) so the sea doesn't jump.
+        static double phaseX = double.NaN, phaseZ = double.NaN;
+        static readonly float[] originPhase = new float[8];
+
+        static float Origin(int i, float k, Vector2 d)
+        {
+            if (WorldOrigin.OffsetX != phaseX || WorldOrigin.OffsetZ != phaseZ)
+            {
+                phaseX = WorldOrigin.OffsetX;
+                phaseZ = WorldOrigin.OffsetZ;
+                for (int j = 0; j < Set.Length; j++)
+                {
+                    var dj = Set[j].direction.normalized;
+                    double along = dj.x * phaseX + dj.y * phaseZ, length = Set[j].length;
+                    double wrapped = along - System.Math.Floor(along / length) * length;
+                    originPhase[j] = (float)(wrapped * 2.0 * System.Math.PI / length);
+                }
+            }
+            return originPhase[i];
         }
 
         /// <summary>Surface normal from the height field (finite differences).</summary>

@@ -41,6 +41,15 @@ namespace OdinsCoin
         }
 
         void Awake() { Instance = this; }
+        void OnEnable() { WorldOrigin.Shifted += OnShift; }
+        void OnDisable() { WorldOrigin.Shifted -= OnShift; }
+
+        /// <summary>The floating origin moved everything back: move the camera and its aim with it.</summary>
+        void OnShift(Vector3 shift)
+        {
+            smoothedTarget -= shift;
+            transform.position -= shift;
+        }
 
         void LateUpdate()
         {

@@ -32,7 +32,9 @@ namespace OdinsCoin
         public Viking Player { get; private set; }
         public Light Sun { get; private set; }
         public static readonly Color AmbientColor = new Color(0.42f, 0.48f, 0.53f);
-        public const float SunIntensity = 1.15f, FogStart = 40f, FogEnd = 220f;
+        public const float SunIntensity = 1.15f;
+        /// <summary>Where the fog starts and ends (m); the real North sees much further.</summary>
+        public static float FogStart = 40f, FogEnd = 220f;
 
         void Update()
         {
@@ -55,7 +57,9 @@ namespace OdinsCoin
             Sun = SetupLighting();
 
             Ocean = Ocean.Create(transform);
-            WorldGen.Build(transform);
+            // The real North (streamed from the real map) when it's there; else the storybook isles.
+            bool real = RealWorld.Enabled && WorldMap.Current != null;
+            if (!real) WorldGen.Build(transform);
             HomeHarbour.Build(transform);
 
             // The voyage starts moored at the home jetty, sail furled.
@@ -80,6 +84,7 @@ namespace OdinsCoin
             hud.Ship = Ship;
             hud.Player = Player;
             Focus = Player.transform;
+            if (real) RealWorld.Setup(transform, Focus, cam, HomeHarbour.HomeCentre);
 
             // A few barrels drifting around the harbour mouth, to show the swell.
             for (int i = 0; i < 8; i++)

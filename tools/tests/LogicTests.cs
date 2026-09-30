@@ -212,6 +212,12 @@ public static class LogicTests
         WorldOrigin.OffsetX = 5.0e6; WorldOrigin.OffsetZ = -1.2e6;
         var scene = WorldOrigin.ToScene(5.0e6 + 12.5, -1.2e6 - 3.25, 7f);
         Check(Math.Abs(scene.x - 12.5f) < 1e-4f && Math.Abs(scene.z + 3.25f) < 1e-4f && scene.y == 7f, "far from the world's centre, positions near the player stay exact");
+        // The sea is fixed to the world: after a shift the same water is at the same height under the ship.
+        float before = Waves.Height(1990f, -1432f, 37.5f);
+        WorldOrigin.NeedsShift(new Vector3(1990f, 0f, -1432f), out shift);
+        WorldOrigin.OffsetX += shift.x; WorldOrigin.OffsetZ += shift.z;
+        float after = Waves.Height(1990f - shift.x, -1432f - shift.z, 37.5f);
+        Check(Math.Abs(before - after) < 0.01f && shift.x % WorldOrigin.ShiftStep == 0f, "the waves don't jump when the origin shifts (" + before + " vs " + after + ")");
         WorldOrigin.OffsetX = WorldOrigin.OffsetZ = 0.0;
 
         // The fine coast layer, if built: it covers the Norwegian coast and agrees with the 1 km map.
@@ -243,6 +249,14 @@ public static class LogicTests
             bool found = Places.Harbour(map, place, out harbour);
             float away = Vector3.Distance(harbour, Places.Position(map, place)) / 1000f;
             Check(found && Places.Depth(map, harbour) >= Places.HarbourDepth && away <= place.harbourReach, place.name + " has a harbour " + away.ToString("0.0") + " km off, " + Places.Depth(map, harbour).ToString("0") + " m deep");
+        }
+        // Home: a stretch of open water off Kaupang, big enough for the home island and its harbour.
+        if (haveCoast)
+        {
+            Vector3 home;
+            bool open = RealWorld.FindHomeWater(map, Places.Find(RealWorld.HomePlace), out home);
+            float off = Vector3.Distance(home, Places.Position(map, Places.Find(RealWorld.HomePlace))) / 1000f;
+            Check(open && RealWorld.OpenWater(map, home, RealWorld.HomeWater) && off < 20f, "the home island sits in open water " + off.ToString("0.0") + " km off Kaupang");
         }
         Check(Places.All.Length >= 20 && halls >= 5 && monasteries >= 2, "there are halls to base at and monasteries to raid (" + halls + ", " + monasteries + ")");
         // Each place's settlement stands on its real land: a jetty to the water, buildings on dry ground, none overlapping.

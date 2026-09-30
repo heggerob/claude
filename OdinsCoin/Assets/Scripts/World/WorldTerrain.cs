@@ -159,7 +159,7 @@ namespace OdinsCoin
                 if (chunks.ContainsKey(c)) continue;
                 if (built++ >= BuildsPerFrame) break;
                 var patch = TerrainPatch.Build(map, c.x * (double)size, c.y * (double)size, size, ChunkQuads);
-                chunks[c] = Show(patch, "Chunk " + c.x + "," + c.y);
+                chunks[c] = Show(patch, "Chunk " + c.x + "," + c.y, true);
             }
             // Drop what's fallen well behind.
             var drop = new List<Vector2Int>();
@@ -175,20 +175,33 @@ namespace OdinsCoin
                 farX = System.Math.Round(gx / size) * size;
                 farZ = System.Math.Round(gz / size) * size;
                 var patch = TerrainPatch.Build(map, farX - farHalf, farZ - farHalf, farHalf * 2f, FarQuads, 25f * WorldMap.Scale);
-                far = Show(patch, "Far Land");
+                far = Show(patch, "Far Land", false);
             }
 
-            // Keep everything where it belongs in the scene as the origin floats.
+            Place();
+        }
+
+        void OnEnable() { WorldOrigin.Shifted += OnShift; }
+        void OnDisable() { WorldOrigin.Shifted -= OnShift; }
+        void OnShift(Vector3 shift) { Place(); }
+
+        /// <summary>Keep everything where it belongs in the scene as the origin floats.</summary>
+        void Place()
+        {
+            float size = ChunkSize * WorldMap.Scale, farHalf = FarHalf * WorldMap.Scale;
             foreach (var kv in chunks) kv.Value.position = WorldOrigin.ToScene(kv.Key.x * (double)size, kv.Key.y * (double)size, 0f);
             if (far != null) far.position = WorldOrigin.ToScene(farX - farHalf, farZ - farHalf, 0f);
         }
 
-        Transform Show(TerrainPatch patch, string name)
+        Transform Show(TerrainPatch patch, string name, bool solid)
         {
             var go = new GameObject(name);
             go.transform.SetParent(transform, false);
-            go.AddComponent<MeshFilter>().sharedMesh = patch.ToMesh(name);
+            var mesh = patch.ToMesh(name);
+            go.AddComponent<MeshFilter>().sharedMesh = mesh;
             go.AddComponent<MeshRenderer>().sharedMaterials = materials;
+            // The near land is solid: ships ground on it and you can walk ashore.
+            if (solid) go.AddComponent<MeshCollider>().sharedMesh = mesh;
             return go.transform;
         }
     }

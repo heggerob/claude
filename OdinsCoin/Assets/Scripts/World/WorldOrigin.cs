@@ -13,10 +13,19 @@ namespace OdinsCoin
         public static double OffsetX, OffsetZ;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() { OffsetX = OffsetZ = 0.0; Roots.Clear(); }
+        static void ResetStatics() { OffsetX = OffsetZ = 0.0; Roots.Clear(); Containers.Clear(); Shifted = null; }
 
         /// <summary>Scene roots that move when the origin shifts (the world, ships, the player...).</summary>
         public static readonly List<Transform> Roots = new List<Transform>();
+
+        /// <summary>Scene objects whose every child moves when the origin shifts (the game's world root).</summary>
+        public static readonly List<Transform> Containers = new List<Transform>();
+
+        /// <summary>Told after each shift, with how far everything moved back, so anything keeping scene positions can follow.</summary>
+        public static event System.Action<Vector3> Shifted;
+
+        /// <summary>Shifts are whole multiples of this (m), so grid-snapped things (the sea mesh) stay on their grid.</summary>
+        public const float ShiftStep = 16f;
 
         /// <summary>How far from the origin the player may get before the world is shifted back under them.</summary>
         public const float ShiftDistance = 2000f;
@@ -30,8 +39,8 @@ namespace OdinsCoin
         /// <summary>Should the origin move for someone at this scene position? If so, by how much (x, z).</summary>
         public static bool NeedsShift(Vector3 scene, out Vector3 shift)
         {
-            shift = new Vector3(scene.x, 0f, scene.z);
-            return shift.sqrMagnitude > ShiftDistance * ShiftDistance;
+            shift = new Vector3(Mathf.Round(scene.x / ShiftStep) * ShiftStep, 0f, Mathf.Round(scene.z / ShiftStep) * ShiftStep);
+            return scene.x * scene.x + scene.z * scene.z > ShiftDistance * ShiftDistance;
         }
 
         /// <summary>Move the origin by <paramref name="shift"/>: everything in the scene moves back by it, and the offset takes it up.</summary>
@@ -44,10 +53,26 @@ namespace OdinsCoin
             {
                 var t = Roots[i];
                 if (t == null) { Roots.RemoveAt(i); continue; }
-                var body = t.GetComponent<Rigidbody>();
-                t.position -= shift;
-                if (body != null) body.position = t.position;
+                Move(t, shift);
             }
+            for (int i = Containers.Count - 1; i >= 0; i--)
+            {
+                var c = Containers[i];
+                if (c == null) { Containers.RemoveAt(i); continue; }
+                for (int j = 0; j < c.childCount; j++)
+                {
+                    var t = c.GetChild(j);
+                    if (!Roots.Contains(t)) Move(t, shift);
+                }
+            }
+            if (Shifted != null) Shifted(shift);
+        }
+
+        static void Move(Transform t, Vector3 shift)
+        {
+            var body = t.GetComponent<Rigidbody>();
+            t.position -= shift;
+            if (body != null) body.position = t.position;
         }
     }
 

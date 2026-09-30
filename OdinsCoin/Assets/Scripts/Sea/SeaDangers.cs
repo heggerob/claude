@@ -17,7 +17,7 @@ namespace OdinsCoin
 
         public static bool InSafeWaters(Vector3 p)
         {
-            return Vector2.Distance(new Vector2(p.x, p.z), HomeHarbour.Spec.centre) < SafeRadius + HomeHarbour.Spec.radius * 0.5f;
+            return Vector2.Distance(new Vector2(p.x, p.z), HomeHarbour.CentreNow) < SafeRadius + HomeHarbour.Spec.radius * 0.5f;
         }
 
         /// <summary>A spot this far from <paramref name="near"/> that's open water, or null if none found.</summary>
@@ -28,7 +28,15 @@ namespace OdinsCoin
                 float a = random() * Mathf.PI * 2f;
                 var p = near + new Vector3(Mathf.Cos(a), 0f, Mathf.Sin(a)) * distance;
                 bool clear = !InSafeWaters(p);
-                foreach (var s in WorldGen.Specs) if (Island.Height(s, p.x, p.z) > -3f || Vector2.Distance(s.centre, new Vector2(p.x, p.z)) < s.radius * 1.3f + 10f) clear = false;
+                if (RealWorld.Active)
+                {
+                    // The real coast: deep water well clear of any shore.
+                    var map = WorldMap.Current;
+                    double gx = WorldOrigin.GlobalX(p), gz = WorldOrigin.GlobalZ(p);
+                    if (map == null || !RealWorld.OpenWater(map, new Vector3((float)gx, 0f, (float)gz), 40f)) clear = false;
+                }
+                else
+                    foreach (var s in WorldGen.Specs) if (Island.Height(s, p.x, p.z) > -3f || Vector2.Distance(s.centre, new Vector2(p.x, p.z)) < s.radius * 1.3f + 10f) clear = false;
                 if (clear) return new Vector3(p.x, 0.2f, p.z);
             }
             return null;
@@ -73,7 +81,7 @@ namespace OdinsCoin
                 if (nextSerpentCheck <= 0f)
                 {
                     nextSerpentCheck = 60f;
-                    float fromHome = Vector2.Distance(new Vector2(pos.x, pos.z), HomeHarbour.Spec.centre);
+                    float fromHome = Vector2.Distance(new Vector2(pos.x, pos.z), HomeHarbour.CentreNow);
                     if (fromHome > DeepSeaDistance && Random.value < 0.1f) Serpent.Spawn(boot.transform, ship);
                 }
             }
@@ -106,7 +114,7 @@ namespace OdinsCoin
             if (Serpent.Instance != null) Destroy(Serpent.Instance.gameObject);
             ship.Hull.Reset();
             Sfx.Play(SfxId.Splash, 1f);
-            ship.Relocate(HomeHarbour.ShipStart, HomeHarbour.ShipStartHeading);
+            ship.Relocate(HomeHarbour.ShipStartNow, HomeHarbour.ShipStartHeading);
             if (boot.Player != null) boot.Player.ReturnToShip();
             nextRaider = 180f;
             CombatHud.Banner("RÁN TAKES YOUR SHIP", lost > 0

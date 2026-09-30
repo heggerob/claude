@@ -29,13 +29,19 @@ med ror, seil i vinden og årer.
     - Se [docs/coast-bergen.png](docs/coast-bergen.png), [docs/coast-lofoten.png](docs/coast-lofoten.png) og
       [docs/coast-oslofjord.png](docs/coast-oslofjord.png).
   - Ikke koblet inn i selve spillet ennå (se punkt 4).
-- [ ] **4. Ekte steder og baser:** vikingtidens byer og handelssteder på riktig sted (Kaupang, Nidaros,
+- [x] **4. Ekte steder og baser:** vikingtidens byer og handelssteder på riktig sted (Kaupang, Nidaros,
   Bjørgvin, Avaldsnes, Borg i Lofoten, Hedeby, Ribe, Roskilde, Birka, Sigtuna, Uppsala, Visby, Lindisfarne,
   Jorvik, Dublin, Kirkwall, Reykjavík, Lundenwic, Novgorod med flere), med havn, brygger og hus.
   - Ferdig (`World/Places.cs`): 26 steder på ekte koordinater (byer, haller, klostre, Jomsborg). Alle har en
     havn som er minst 2,5 m dyp, funnet på det ekte kartet.
-  - Gjenstår: bygge stedene i spillet og starte spillet i den ekte verdenen.
-- [ ] **5. Hytter og hus:** langhus, naust, stabbur, gammer, vakttårn, palisader og brygger, tegnet i samme
+  - Ferdig (`World/Settlements.cs`, `World/RealWorld.cs`): hvert sted får en brygge ut til havna og husene
+    sine på tørt, flatt land, vendt mot sjøen. Stedene bygges når skipet kommer innen 25 km, og tas ned bak
+    deg. Spillet starter nå i den ekte verdenen: hjemmeøya ligger i åpent vann 3 km utenfor Kaupang.
+    Terrenget har kollidere, så skipet kan gå på grunn og du kan gå i land.
+  - Det flytende origoet flytter hele spillverdenen, kameraet og bølgene sammen, så havet ikke hopper.
+  - HUD-en viser nærmeste havn, med avstand og kurs.
+  - Ikke testet i selve Unity ennå.
+- [x] **5. Hytter og hus:** langhus, naust, stabbur, gammer, vakttårn, palisader og brygger, tegnet i samme
   stil som figurene.
   - Ferdig (`World/Buildings.cs`, se [docs/buildings.png](docs/buildings.png)), i ekte størrelser:
     - **Langhus:** buede vegger og torvtak.
@@ -46,7 +52,7 @@ med ror, seil i vinden og årer.
     - **Palisade:** med spisse stokker.
     - **Brygge:** på påler.
     - **Kirke:** liten, i stein, med klokkegavl, til klostrene.
-  - Gjenstår: plassere dem ved de ekte stedene.
+  - Plassert ved de ekte stedene (se punkt 4).
 - [ ] **6. Nye skip:** egne, oppdiktede skipsklasser som er større enn langskip, med flere master, høy
   akterkastell, dragehoder og tunge årerekker. Hvert skip er en design (lengde, bredde, dypgang, vekt, master,
   seil, årer, ror).

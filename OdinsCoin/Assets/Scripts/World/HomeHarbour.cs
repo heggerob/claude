@@ -22,6 +22,29 @@ namespace OdinsCoin
             terraces = new[] { new Vector4(-14f, -91f, 12f, 7f) },
         };
 
+        /// <summary>
+        /// How far the home harbour has moved in the scene since it was built (the floating origin shifts it as
+        /// you sail the real North). The constants here are where things were built; add this for where they are now.
+        /// </summary>
+        public static Vector3 Drift
+        {
+            get
+            {
+                if (Instance == null) return Vector3.zero;
+                var p = Instance.transform.position;
+                return new Vector3(p.x, 0f, p.z);
+            }
+        }
+
+        /// <summary>The home island's centre (x, z) in the scene now.</summary>
+        public static Vector2 CentreNow { get { var d = Drift; return Spec.centre + new Vector2(d.x, d.z); } }
+
+        /// <summary>The ship's berth in the scene now.</summary>
+        public static Vector3 ShipStartNow { get { return ShipStart + Drift; } }
+
+        /// <summary>The home island's centre as built (y = 0).</summary>
+        public static Vector3 HomeCentre { get { return new Vector3(Spec.centre.x, 0f, Spec.centre.y); } }
+
         /// <summary>The mead hall stands up the hill from the jetty, its door facing the water.</summary>
         public static readonly Vector2 HallPosition = new Vector2(-14f, -92f);
         public const float HallYaw = 190f;
