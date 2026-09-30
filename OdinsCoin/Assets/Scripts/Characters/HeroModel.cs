@@ -296,9 +296,9 @@ namespace OdinsCoin
                         {
                             float t = i / (float)(path.Length - 1);
                             // A crooked branch: wandering, with knots where it thickens.
-                            path[i] = new Vector3(Mathf.Sin(t * 13f) * 0.018f * s + ((float)rng.NextDouble() - 0.5f) * 0.02f * s,
-                                Mathf.Cos(t * 9f) * 0.014f * s + ((float)rng.NextDouble() - 0.5f) * 0.02f * s, Mathf.Lerp(-1.22f, 0.24f, t) * s);
-                            radii[i] = (Mathf.Lerp(0.02f, 0.025f, t) + (i % 4 == 0 ? 0.008f : 0f)) * s;
+                            path[i] = new Vector3(Mathf.Sin(t * 13f) * 0.03f * s + ((float)rng.NextDouble() - 0.5f) * 0.028f * s,
+                                Mathf.Cos(t * 9f) * 0.026f * s + ((float)rng.NextDouble() - 0.5f) * 0.028f * s, Mathf.Lerp(-1.22f, 0.24f, t) * s);
+                            radii[i] = (Mathf.Lerp(0.02f, 0.026f, t) + (i % 4 == 0 ? 0.012f : i % 4 == 2 ? 0.004f : 0f)) * s;
                         }
                         d.Add(Joints.Weapon, d.pal.leather, MeshData.Tube(path, radii, 7));
                         var fork = path[path.Length - 1];
