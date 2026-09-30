@@ -210,7 +210,7 @@ namespace OdinsCoin
             if (speed < 0.05f || cadence <= 0f) return 1f;
             float travel = speed / cadence;
             float needed = 2f * Mathf.Asin(Mathf.Clamp(travel * 0.5f / (Thigh + Shin), 0f, 0.9f)) * Mathf.Rad2Deg;
-            return Mathf.Clamp(needed / Mathf.Lerp(WalkSweep, RunSweep, run), 0.6f, 1.8f);
+            return Mathf.Clamp(needed / Mathf.Lerp(WalkSweep, RunSweep, run), 0.6f, 1.35f);
         }
 
         // Percent of the gait cycle, and the angle there.

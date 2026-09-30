@@ -275,7 +275,8 @@ public static class HeroPreview
             // The script: walk, sprint, swing right, jump, keep running, let go.
             Vector2 wish = t < 0.3f ? Vector2.zero : t < 4.3f ? new Vector2(0f, 1f) : Vector2.zero;
             if (t > 2.6f && t < 3.0f) wish = new Vector2(1f, 1f);
-            float maxSpeed = t > 1.6f ? 6.5f : 4.2f;
+            // Walk frames are a real stroll (Ctrl), the run frames a sprint (Shift).
+            float maxSpeed = t > 1.6f ? 6.5f : 1.7f;
             if (!jumped && t >= 3.15f) { jumped = true; vy = 5.5f; }
             bool grounded = y <= 0f && vy <= 0f;
             if (grounded) loco.Step(wish, maxSpeed, dt); else loco.Air(wish, dt);

@@ -11,6 +11,8 @@ namespace OdinsCoin
     public class Viking : MonoBehaviour
     {
         public const float WalkSpeed = 4.2f, RunSpeed = 6.5f, SwimSpeed = 2.4f, JumpSpeed = 5.5f;
+        /// <summary>Holding Ctrl: a real, unhurried walk (the default pace is a brisk jog).</summary>
+        public const float StrollSpeed = 1.7f;
         /// <summary>A chest full of gold is heavy: no running, no jumping, slow swimming.</summary>
         public const float CarrySpeed = 3f, CarrySwimSpeed = 1.5f;
         const float Gravity = 18f;
@@ -158,7 +160,7 @@ namespace OdinsCoin
             Vector3 forward = rig != null ? rig.FlatForward : Vector3.forward;
             Vector3 right = new Vector3(forward.z, 0f, -forward.x);
             Vector3 move = forward * input.y + right * input.x;
-            float speed = Swimming ? SwimSpeed : GameInput.Held(Key.Sprint) ? RunSpeed : WalkSpeed;
+            float speed = Swimming ? SwimSpeed : GameInput.Held(Key.Sprint) ? RunSpeed : GameInput.Held(Key.Walk) ? StrollSpeed : WalkSpeed;
             if (Carrying != null) speed = Swimming ? CarrySwimSpeed : CarrySpeed;
             if (combat != null && combat.Blocking) speed *= 0.5f;
 

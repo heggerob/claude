@@ -30,7 +30,7 @@ namespace OdinsCoin
         /// <summary>Steps per second when turning on the spot.</summary>
         public float pivotCadence = 3.8f;
         /// <summary>Stride of one step at a slow walk and at a sprint (m).</summary>
-        public float shortStep = 0.6f, longStep = 1.35f;
+        public float shortStep = 0.6f, longStep = 1.15f;
         /// <summary>Half the gap between the feet (m).</summary>
         public float footSpacing = 0.1f;
 
@@ -143,7 +143,7 @@ namespace OdinsCoin
                 // Turn with the step: slow off the planted foot, quickest mid-swing, easing into the landing. The body
                 // follows that curve at a limited rate, so a plan changed mid-step never snaps it round.
                 float along = stepFrom + Mathf.DeltaAngle(stepFrom, stepTo) * Smooth(Mathf.Clamp01(phase));
-                heading = Mathf.MoveTowardsAngle(heading, along, allow * cadence * 1.6f * dt);
+                heading = Mathf.MoveTowardsAngle(heading, along, allow * cadence * 1.4f * dt);
                 if (phase >= 1f)
                 {
                     // The swinging foot lands; the other one starts its swing, planned from where the body now faces.
