@@ -273,6 +273,21 @@ public static class LogicTests
         }
         Check(!Wreck.At.HasValue && Wreck.Left == 0, "no wreck until a ship goes down");
 
+        // The helm's simple orders: W for more way, S for less.
+        {
+            int order = HelmOrders.Stop;
+            order = HelmOrders.Step(order, 1); order = HelmOrders.Step(order, 1); order = HelmOrders.Step(order, 1); order = HelmOrders.Step(order, 1);
+            Check(order == HelmOrders.FullSail && HelmOrders.Step(HelmOrders.Stop, -1) == HelmOrders.Stop, "W steps up to full sail and no further; S stops at stop");
+            Check(HelmOrders.SailFor(HelmOrders.FullSail) == 1f && HelmOrders.SailFor(HelmOrders.HalfSail) == 0.5f && HelmOrders.SailFor(HelmOrders.Row) == 0f, "full sail, half sail, and the sail furled to row");
+            Check(HelmOrders.RowFor(HelmOrders.Row, false) && !HelmOrders.RowFor(HelmOrders.FullSail, false) && HelmOrders.RowFor(HelmOrders.FullSail, true) && !HelmOrders.RowFor(HelmOrders.Stop, true),
+                "the crew rows when told to, or when the wind is too far ahead to sail, never when stopped");
+            Check(HelmOrders.ShouldMakeFast(HelmOrders.Stop, 0.2f, false) && !HelmOrders.ShouldMakeFast(HelmOrders.Stop, 3f, false) && !HelmOrders.ShouldMakeFast(HelmOrders.Row, 0f, false) && !HelmOrders.ShouldMakeFast(HelmOrders.Stop, 0f, true),
+                "stopped and still, she makes fast by herself (not while moving, not twice)");
+            Check(HelmOrders.ShouldCastOff(HelmOrders.Row, true) && !HelmOrders.ShouldCastOff(HelmOrders.Stop, true), "given way, she casts off");
+            Check(HelmOrders.FromState(1f, false) == HelmOrders.FullSail && HelmOrders.FromState(0f, true) == HelmOrders.Row && HelmOrders.FromState(0f, false) == HelmOrders.Stop,
+                "taking the helm keeps her sailing as she was");
+        }
+
         // Faster time on a quiet passage, never with danger about.
         string why;
         Check(TimeWarp.Allowed(true, 5000f, false, 0f, false, out why) && why == null, "a quiet passage can run fast");

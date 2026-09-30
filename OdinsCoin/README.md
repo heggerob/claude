@@ -22,7 +22,7 @@ Et 3D vikingspill i Unity: seil langskipet, raid øyer og kast **Odins mynt** om
 | V | bytte mellom førsteperson og tredjeperson (i tredjeperson zoomer scroll) |
 | Venstre / høyre mus | øks / skjold |
 | E | bruke: ta roret, alteret, plukke opp og sette ned kister, selge, øse og tette hull, klatre om bord |
-| Ved roret | A/D styre, R heise seil, Q fire seil, W ro (med seilet nede) |
+| Ved roret | A/D styre, W mer fart og S mindre: stopp, ro, halvt seil, fullt seil. Stoppet fortøyer eller ankrer hun selv. Ligger vinden rett imot, ror mannskapet. |
 | E ved alteret om bord | sats kista du bærer (dobbelt eller ingenting), eller trykk to ganger for å satse alt på dekk |
 | Esc | meny (pause, innstillinger, lagre og avslutte) |
 

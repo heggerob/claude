@@ -23,7 +23,7 @@ namespace OdinsCoin
                 "<b>{0:0.0} knots</b>   heading {1:000}°   <size=13>day {8}, {9}</size>\nSail {2:0}%{3}\nWind {4:0} kn  {5} ({6})\n\n<size=12>{7}</size>",
                 Ship.SpeedKnots, Ship.Heading, Ship.SailAmount * 100f, (Ship.Rowing ? "   ROWING" : Ship.Moored ? "   MOORED" : Ship.Anchored ? "   AT ANCHOR" : "") + (TimeWarp.OnPassage ? "   <color=#ffd060>PASSAGE, course " + Ship.PassageCourse.ToString("000") + "°</color>" : TimeWarp.Factor > 1 ? "   <color=#ffd060>TIME x" + TimeWarp.Factor + "</color>" : ""), Wind.Knots * Ship.Lee, arrow, WindWord(relWind) + (Ship.Lee < 0.75f ? ", in the lee of the land" : ""),
                 Player != null && Player.AtHelm
-                    ? "At the helm: A/D steer · R raise sail · Q lower / reef sail · W row (sail down) · G anchor / make fast · T faster time · M chart · E let go"
+                    ? "At the helm: A/D steer · W more way · S less (stop, row, half sail, full sail; she makes fast when stopped) · T faster time · M chart · E let go"
                     : Player != null && Player.Carrying != null
                         ? "Carrying a chest: put it down on deck (E) to stow it, sell it to Gunnar in the Home Fjord"
                         : "WASD move · mouse look · Shift run · Ctrl walk · Space jump · LMB attack (again for a combo) · RMB shield · E use / pick up / bail · V first / third person · Esc menu",

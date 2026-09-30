@@ -577,18 +577,76 @@ namespace OdinsCoin
     public class ShipKeyboardHelm : MonoBehaviour
     {
         Longship ship;
+        /// <summary>The order the helm is giving (<see cref="HelmOrders"/>): stop, row, half sail or full sail.</summary>
+        public int Order { get; private set; }
+        bool triedFast;
 
         void Awake() { ship = GetComponent<Longship>(); }
+
+        void OnEnable()
+        {
+            if (ship == null) ship = GetComponent<Longship>();
+            Order = HelmOrders.FromState(ship.SailTarget, ship.Rowing);
+        }
 
         void Update()
         {
             ship.RudderInput = GameInput.Move().x;
             // On a passage the helm holds a course: A/D swing it round.
             if (ship.OnPassage) ship.PassageCourse = Mathf.Repeat(ship.PassageCourse + ship.RudderInput * 30f * Time.unscaledDeltaTime, 360f);
-            if (GameInput.Pressed(Key.SailUp)) ship.SailTarget = Mathf.Min(1f, ship.SailTarget + 0.25f);
-            if (GameInput.Pressed(Key.SailDown)) ship.SailTarget = Mathf.Max(0f, ship.SailTarget - 0.25f);
-            ship.Rowing = GameInput.Held(Key.Up) && ship.SailTarget < 0.15f;
+            // W for more way, S for less: stop, row, half sail, full sail. (R and Q do the same.)
+            int was = Order;
+            if (GameInput.Pressed(Key.Up) || GameInput.Pressed(Key.SailUp)) Order = HelmOrders.Step(Order, 1);
+            if (GameInput.Pressed(Key.Down) || GameInput.Pressed(Key.SailDown)) Order = HelmOrders.Step(Order, -1);
+            if (Order != was) triedFast = false;
+            bool fast = ship.Moored || ship.Anchored;
+            // Getting under way casts off the lines or weighs the anchor; stopped, she makes fast by herself (once:
+            // too deep to anchor and nothing to moor to, she just lies stopped).
+            if (HelmOrders.ShouldCastOff(Order, fast)) CombatHud.Banner("UNDER WAY", ship.AnchorOrMoor());
+            else if (!triedFast && HelmOrders.ShouldMakeFast(Order, ship.SpeedKnots, fast)) { triedFast = true; CombatHud.Banner("HOLDING FAST", ship.AnchorOrMoor()); }
+            ship.SailTarget = HelmOrders.SailFor(Order);
+            // With the wind too far ahead to sail, the crew rows instead.
+            float fromWind = 180f - Mathf.Abs(Mathf.DeltaAngle(ship.Heading, Wind.Angle));
+            bool inIrons = ship.Design != null && fromWind < Seamanship.ClosestToWind(ship.Design, Wind.Knots) + 5f;
+            ship.Rowing = HelmOrders.RowFor(Order, inIrons);
             if (GameInput.Pressed(Key.Anchor)) CombatHud.Banner(ship.Moored || ship.Anchored ? "UNDER WAY" : "HOLDING FAST", ship.AnchorOrMoor());
+        }
+    }
+
+    /// <summary>
+    /// The helm's orders, kept simple: W for more way, S for less. Stop, row, half sail, full sail. Stopped, she
+    /// makes fast by herself (moored at a jetty, or at anchor); given way, she casts off. With the wind too far ahead
+    /// for the sail, the crew rows.
+    /// </summary>
+    public static class HelmOrders
+    {
+        public const int Stop = 0, Row = 1, HalfSail = 2, FullSail = 3;
+        /// <summary>Below this speed (knots) with the order at stop, she makes fast.</summary>
+        public const float StoppedKnots = 0.6f;
+
+        public static int Step(int order, int dir) { return Mathf.Clamp(order + dir, Stop, FullSail); }
+        public static float SailFor(int order) { return order >= FullSail ? 1f : order == HalfSail ? 0.5f : 0f; }
+        public static bool RowFor(int order, bool inIrons) { return order == Row || (order >= HalfSail && inIrons); }
+        public static bool ShouldMakeFast(int order, float knots, bool fast) { return order == Stop && !fast && Mathf.Abs(knots) < StoppedKnots; }
+        public static bool ShouldCastOff(int order, bool fast) { return order > Stop && fast; }
+
+        /// <summary>The order that matches how she's already being sailed (taking the helm doesn't change anything).</summary>
+        public static int FromState(float sail, bool rowing)
+        {
+            if (sail > 0.75f) return FullSail;
+            if (sail > 0.1f) return HalfSail;
+            return rowing ? Row : Stop;
+        }
+
+        public static string Name(int order)
+        {
+            switch (order)
+            {
+                case Row: return "ROWING";
+                case HalfSail: return "HALF SAIL";
+                case FullSail: return "FULL SAIL";
+                default: return "STOP";
+            }
         }
     }
 }
