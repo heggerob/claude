@@ -1358,8 +1358,8 @@ namespace OdinsCoin
             for (int i = 0; i < 6; i++)
             {
                 var off = new Vector3((i - 2.5f) * 0.016f, 0f, (i % 2) * 0.016f) * s;
-                var fan = Quaternion.Euler(0f, 0f, (i - 2.5f) * 4f);
-                var shaftTop = at + tilt * (off + fan * new Vector3(0f, (0.4f + 0.03f * (i % 3)) * s, 0f));
+                var fan = Quaternion.Euler(0f, 0f, (i - 2.5f) * 9f);
+                var shaftTop = at + tilt * (off + fan * new Vector3(0f, (0.46f + 0.03f * (i % 3)) * s, 0f));
                 d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(new[] { at + tilt * (off + new Vector3(0f, 0.1f * s, 0f)), shaftTop }, new[] { 0.005f * s, 0.005f * s }, 4), false);
                 // Fletching: two red vanes.
                 foreach (float side in new[] { -1f, 1f })
