@@ -267,7 +267,7 @@ namespace OdinsCoin
             var f = d.fit;
             float s = d.S;
             // Hanging from just under the belt, so the buckle shows above it.
-            float top = f.waist - 0.036f * s;
+            float top = f.waist - 0.05f * s;
             const int rows = 9, cols = 3;
             var grid = new Vector3[rows, cols];
             for (int r = 0; r < rows; r++)
@@ -1414,7 +1414,7 @@ namespace OdinsCoin
             // ragged point at the front of the chest.
             float capeBottom = f.shoulderY - 0.19f * s;
             d.Add(Joints.Body, d.pal.accent, CharacterKit.RaggedSkirt(f.neckY - 0.025f * s, f.chestR * 0.72f, capeBottom, f.shoulderX + 0.06f * s, 0.85f, 24, 0.06f * s, d.seed + 83,
-                a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return -0.07f * s * c * c * c * c; }, a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return Mathf.Lerp(1f, 0.6f, c * c); }));
+                a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return -0.02f * s * c * c * c * c; }, a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return Mathf.Lerp(1f, 0.6f, c * c); }));
             // The hood, down, bunched low behind the neck so it doesn't frame the neck like a collar from the front.
             d.Add(Joints.Body, VikingModel.Shade(d.pal.accent, 0.85f), MeshData.Ellipsoid(new Vector3(0f, f.neckY - 0.03f * s, -f.chestR * 0.85f), new Vector3(0.1f, 0.07f, 0.07f) * s, 12, 7));
         }
@@ -1424,11 +1424,13 @@ namespace OdinsCoin
         {
             var f = d.fit;
             float s = d.S;
-            float y = f.waist - 0.06f * s, z = d.SkirtRadius(y) * (d.hasSkirt ? d.skirtDepth : f.depth) + 0.035f * s;
-            var rot = Quaternion.Euler(0f, 0f, -12f);
-            d.Add(Joints.Body, d.pal.leather, MeshData.Box(Vector3.zero, new Vector3(0.2f, 0.028f, 0.02f) * s).Transformed(new Vector3(0.05f * s, y, z), rot, Vector3.one));
-            d.Add(Joints.Body, d.pal.metal, MeshData.Box(Vector3.zero, new Vector3(0.012f, 0.04f, 0.024f) * s).Transformed(new Vector3(-0.06f * s, y + 0.023f * s, z), rot, Vector3.one));
-            d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(new[] { new Vector3(-0.07f * s, y + 0.025f * s, z), new Vector3(-0.15f * s, y + 0.04f * s, z) }, new[] { 0.011f * s, 0.01f * s }, 6));
+            // Slung low on the hip at a slant, below the belt, so the buckle shows, as in the concept art.
+            float y = f.waist - 0.11f * s, z = d.SkirtRadius(y) * (d.hasSkirt ? d.skirtDepth : f.depth) + 0.035f * s;
+            var rot = Quaternion.Euler(0f, 0f, -24f);
+            var at = new Vector3(0.1f * s, y, z);
+            d.Add(Joints.Body, d.pal.leather, MeshData.Box(Vector3.zero, new Vector3(0.2f, 0.028f, 0.02f) * s).Transformed(at, rot, Vector3.one));
+            d.Add(Joints.Body, d.pal.metal, MeshData.Box(Vector3.zero, new Vector3(0.012f, 0.04f, 0.024f) * s).Transformed(at + rot * new Vector3(-0.11f * s, 0.023f * s, 0f), rot, Vector3.one));
+            d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(new[] { at + rot * new Vector3(-0.12f * s, 0.025f * s, 0f), at + rot * new Vector3(-0.2f * s, 0.04f * s, 0f) }, new[] { 0.011f * s, 0.01f * s }, 6));
         }
 
         /// <summary>A leather quiver slung across the back, full of red-fletched arrows, with its strap across the chest.</summary>
