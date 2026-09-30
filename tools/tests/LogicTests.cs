@@ -831,6 +831,11 @@ public static class LogicTests
         }
         Check((Quaternion.Euler(Weapons.RestEuler(WeaponId.Spear)) * Vector3.forward).y > 0.95f, "a spear rests upright");
         Check((Quaternion.Euler(Weapons.RestEuler(WeaponId.Sword)) * Vector3.forward).y < -0.9f, "a sword rests point-down");
+        // The axe carry puts the haft up and back across the shoulders, whatever the arm angles are.
+        Vector3 haft = Quaternion.Euler(HeroPose.AxeCarryArm) * Quaternion.Euler(HeroPose.AxeCarryForearm) * HeroPose.AxeCarryWeapon * Vector3.forward;
+        Check(haft.y > 0.2f && haft.z < -0.3f && haft.x < -0.7f, "the carried axe lies up and back over the shoulder (" + haft + ")");
+        Vector3 fist = Quaternion.Euler(HeroPose.AxeCarryArm) * (Vector3.down + Quaternion.Euler(HeroPose.AxeCarryForearm) * Vector3.down);
+        Check(fist.y > -0.6f, "the carrying fist comes up towards the shoulder (" + fist + ")");
     }
 
     static void FaceTests()

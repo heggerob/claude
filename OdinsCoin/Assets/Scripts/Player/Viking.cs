@@ -59,6 +59,11 @@ namespace OdinsCoin
 
         void Awake() { if (controller == null) controller = GetComponent<CharacterController>(); }
 
+        void RestWeapon()
+        {
+            if (parts.axe != null && Hero != null) parts.axe.localRotation = Quaternion.Euler(Weapons.RestEuler(Hero.weapon));
+        }
+
         /// <summary>The hero this Viking is drawn as.</summary>
         public CharacterSpec Hero { get; private set; }
 
@@ -383,6 +388,9 @@ namespace OdinsCoin
                 parts.rightArm.localRotation = Quaternion.Euler(AtHelm ? -60f : swing * 0.8f, 0f, 0f);
                 // Stick arms bend at the elbow as they swing; the helm hand reaches for the oar.
                 HeroPose.Elbows(parts, HeroPose.WalkElbow(-swing * 0.8f), AtHelm ? -30f : HeroPose.WalkElbow(swing * 0.8f));
+                // A big axe rides on the shoulder, like the raider on the concept sheet.
+                if (!AtHelm && !Swimming && Hero != null && Hero.weapon == WeaponId.TwoHandAxe) HeroPose.AxeCarry(parts, 1f);
+                else RestWeapon();
             }
             if (parts.axe != null) parts.axe.gameObject.SetActive(Carrying == null);
             // Lean into the swim; standing, a slow breath.

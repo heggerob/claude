@@ -163,6 +163,12 @@ public static class HeroPreview
         shots.Add(new Shot { label = "Danish raider", model = Full(NpcHeroes.DanishRaider(5)), yaw = 195f });
         shots.Add(new Shot { label = "Bjorn the mead-keeper", model = Full(NpcHeroes.Bjorn()), yaw = 195f });
         shots.Add(new Shot { label = "Gunnar the trader", model = Full(NpcHeroes.Gunnar()), yaw = 195f });
+        // The in-game axe carry (HeroPose.AxeCarry), built from local joint rotations like the game does.
+        var carryGame = new Pose();
+        carryGame.rot[Joints.RightArm] = Quaternion.Euler(HeroPose.AxeCarryArm);
+        carryGame.rot[Joints.RightForearm] = Quaternion.Euler(HeroPose.AxeCarryForearm);
+        carryGame.rot[Joints.Weapon] = HeroPose.AxeCarryWeapon;
+        shots.Add(new Shot { label = "Axe carry (in game)", model = Full(CharacterSpec.Default(OutfitId.Raider)), pose = carryGame, yaw = 200f });
         // Faces: the dash eyes turn to ^ ^ when happy and > < when hurt.
         shots.Add(new Shot { label = "Happy (heads!)", model = HeroModel.Build(CharacterSpec.Default(OutfitId.Scout)), yaw = 182f, face = Expression.Happy });
         shots.Add(new Shot { label = "Hurt", model = HeroModel.Build(CharacterSpec.Default(OutfitId.Navigator)), yaw = 182f, face = Expression.Hurt });

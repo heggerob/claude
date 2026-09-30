@@ -119,6 +119,35 @@ namespace OdinsCoin
         /// <summary>A slow breath: the body rocks forward and back by a degree or two, about every four seconds.</summary>
         public static float Breath(float time) { return Mathf.Sin(time * 1.6f) * 1.4f; }
 
+        /// <summary>Local rotations for carrying a big axe over the right shoulder: arm out, elbow folded, haft back.</summary>
+        public static readonly Vector3 AxeCarryArm = new Vector3(-10f, 0f, 55f);
+        public static readonly Vector3 AxeCarryForearm = new Vector3(-150f, 0f, 0f);
+        /// <summary>
+        /// The axe's local rotation in the fist for the carry: worked out from where the haft should lie in the body's
+        /// space (up and back across the shoulders towards the left, the blade facing forward), whatever the arm does.
+        /// </summary>
+        public static Quaternion AxeCarryWeapon
+        {
+            get
+            {
+                Vector3 haft = new Vector3(-1f, 0.3f, -0.55f).normalized;
+                Quaternion inBody = Quaternion.LookRotation(haft, Vector3.Cross(Vector3.forward, haft));
+                return Quaternion.Inverse(Quaternion.Euler(AxeCarryArm) * Quaternion.Euler(AxeCarryForearm)) * inBody;
+            }
+        }
+
+        /// <summary>
+        /// Carry a big axe over the shoulder (by <paramref name="amount"/> 0..1): the right arm swings out and folds up
+        /// so the fist sits by the shoulder, and the haft lies back across it with the head behind.
+        /// </summary>
+        public static void AxeCarry(VikingBuilder.Parts parts, float amount)
+        {
+            if (parts == null || parts.rightForearm == null || amount <= 0.001f) return;
+            parts.rightArm.localRotation = Quaternion.Slerp(parts.rightArm.localRotation, Quaternion.Euler(AxeCarryArm), amount);
+            parts.rightForearm.localRotation = Quaternion.Slerp(parts.rightForearm.localRotation, Quaternion.Euler(AxeCarryForearm), amount);
+            if (parts.axe != null) parts.axe.localRotation = Quaternion.Slerp(parts.axe.localRotation, AxeCarryWeapon, amount);
+        }
+
         /// <summary>Set both elbows (only storybook heroes have them).</summary>
         public static void Elbows(VikingBuilder.Parts parts, float left, float right)
         {

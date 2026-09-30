@@ -100,6 +100,8 @@ namespace OdinsCoin
                 float angle = t < 0.35f ? Mathf.Lerp(0f, -150f, t / 0.35f) : Mathf.Lerp(-150f, 50f, (t - 0.35f) / 0.65f);
                 parts.rightArm.localRotation = Quaternion.Euler(angle, 0f, -10f);
                 if (parts.rightForearm != null) parts.rightForearm.localRotation = Quaternion.Euler(HeroPose.ChopElbow(t), 0f, 0f);
+                // Mid-swing the weapon points along the arm, off the shoulder.
+                if (parts.axe != null) parts.axe.localRotation = Quaternion.identity;
             }
             // Shield: slides from the back to the front arm while blocking.
             block = Mathf.MoveTowards(block, Blocking ? 1f : 0f, Time.deltaTime * 6f);

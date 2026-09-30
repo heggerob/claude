@@ -65,7 +65,7 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
   - Til runde 7:
     - Seeren og Spydvakten trenger flere runeskiver og kjeder over hele kroppen.
     - [x] Sjekk hver figur fra flere vinkler: `docs/turnaround.png` viser alle forfra, på skrå, fra siden og bakfra. Den avslørte at våpnene stakk rett fram i hvilestilling. Nå har hvert våpen sin egen hvilevinkel (`Weapons.RestEuler`).
-    - Øksa bør hvile på skulderen, og det trenger en egen armstilling i spillet.
+    - [x] Øksa hviler på skulderen i spillet (`HeroPose.AxeCarry`): armen går ut, albuen bøyes opp, og vinkelen på skaftet regnes ut fra armen. Øksa tas ned når figuren hugger. Se «Axe carry (in game)» i `docs/heroes.png`.
 - [x] **9. Bevegelse i plaggene:** (se [docs/motion.png](docs/motion.png)) kapper, skjørt, fletter, pels og vimpler svinger og henger etter når figuren går, snur og hugger (enkel fysikk med fjærer).
 - [ ] **10. Tegneserie-look på alt:** tusj-kanter på skipet, øyene, trærne, husene og havet, skravur med blyant eller tusj i skyggene, og papirkorn over hele bildet.
   - [x] Skravur i skyggene: shaderen `OdinsCoin/InkToon` (i `Resources/Shaders`) gir myk tegnet belysning med kalde skygger, enkle blyantstreker på skyggesiden og kryss-skravur i de mørkeste delene. Ansiktene får ingen skravur, så de holder seg rene. Den brukes på alt som ikke er blankt (havet beholder Lit). `InkStyle.cs` har samme matte, og forhåndsvisningen bruker den.
