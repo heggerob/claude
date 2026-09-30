@@ -945,10 +945,14 @@ namespace OdinsCoin
             var at = new Vector3(0f, y, r * depth + 0.006f);
             d.Add(Joints.Body, d.pal.metal, MeshData.Lathe(new[] { new Vector2(0.034f * s, -0.007f * s), new Vector2(0.036f * s, 0f), new Vector2(0.034f * s, 0.007f * s), new Vector2(0.02f * s, 0.007f * s), new Vector2(0.02f * s, -0.007f * s) }, 16)
                 .Transformed(at, Quaternion.Euler(90f, 0f, 0f), Vector3.one));
-            float px = f.waistR * 0.95f, py = y - 0.1f * s;
-            var pouch = new Vector3(px, py, d.SkirtRadius(py) * d.skirtDepth * 0.6f + 0.03f * s);
-            d.Add(Joints.Body, d.pal.leather, MeshData.Box(pouch, new Vector3(0.06f, 0.085f, 0.045f) * s));
-            d.Add(Joints.Body, d.pal.leatherDark, MeshData.Box(pouch + new Vector3(0f, 0.03f * s, 0.024f * s), new Vector3(0.064f, 0.03f, 0.008f) * s), false);
+            // A big leather pouch hanging on the hip, out on the skirt's surface where it shows (as in the concept art).
+            float py = y - 0.11f * s, pr = d.SkirtRadius(py), pa = 0.95f;
+            float px = Mathf.Sin(pa) * pr;
+            var pouch = new Vector3(px, py, Mathf.Cos(pa) * pr * (d.hasSkirt ? d.skirtDepth : f.depth) + 0.03f * s);
+            var turn = Quaternion.Euler(0f, pa * Mathf.Rad2Deg * 0.7f, 0f);
+            d.Add(Joints.Body, VikingModel.Shade(d.pal.leather, 1.3f), MeshData.Box(Vector3.zero, new Vector3(0.075f, 0.1f, 0.05f) * s).Transformed(pouch, turn, Vector3.one));
+            d.Add(Joints.Body, d.pal.leatherDark, MeshData.Box(Vector3.zero, new Vector3(0.08f, 0.035f, 0.01f) * s).Transformed(pouch + turn * new Vector3(0f, 0.035f * s, 0.027f * s), turn, Vector3.one), false);
+            d.Add(Joints.Body, d.pal.brass, MeshData.Ellipsoid(pouch + turn * new Vector3(0f, 0.02f * s, 0.033f * s), Vector3.one * 0.008f * s, 5, 3), false);
             d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(new[] { new Vector3(px, y, f.waistR * depth * 0.7f), pouch + new Vector3(0f, 0.04f * s, 0f) }, new[] { 0.007f * s, 0.007f * s }, 4), false);
         }
 
