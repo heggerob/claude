@@ -46,6 +46,9 @@ namespace OdinsCoin
         public bool AtSea;
         public double SeaX, SeaZ;
         public float SeaHeading;
+        /// <summary>The voyage's clock: days since it began, and the time of day (h).</summary>
+        public int ClockDay;
+        public float ClockHours = SkyClock.StartHour;
 
         /// <summary>The ships you own (design ids), and the one moored at the jetty for you to sail.</summary>
         public readonly List<string> Fleet = new List<string> { Shipwright.Starter.id };

@@ -84,6 +84,7 @@ namespace OdinsCoin
             if (GameBootstrap.Instance != null) GameBootstrap.Instance.SwapShip(Upgrades.Current.SailingDesign);
             // And she's where the voyage was left, if that was out at sea.
             var u = Upgrades.Current;
+            SkyClock.Set(u.ClockDay, u.ClockHours);
             if (load && u.AtSea && GameBootstrap.Instance != null) GameBootstrap.Instance.ResumeAt(u.SeaX, u.SeaZ, u.SeaHeading);
             state = State.Playing;
             autosave = 0f;

@@ -65,6 +65,22 @@ public static class LogicTests
         float reefed = Mathf.Abs(ShipPhysics.HeelAngle(wolf, ShipPhysics.Total(wolf, 4f, 0f, 0f, beamGale, new ShipPhysics.Controls { sail = 0.25f }, 0f).heel));
         Check(Wind.Knots <= 28.1f && 6f + Wind.MaxStrength * 22f > 40f && full > reefed * 3f && full > 10f, "a storm blows a full gale, and full sail heels her " + full.ToString("0") + "° where reefed she heels " + reefed.ToString("0") + "°");
 
+        // The sun where it really is: midnight sun in Lofoten at midsummer, a short blue night in Vestfold, polar night in winter.
+        Check(SkyClock.SolarElevation(68.2f, 172, 0f) > 0f, "midsummer midnight in Lofoten: the sun is still up (" + SkyClock.SolarElevation(68.2f, 172, 0f).ToString("0.0") + "°)");
+        float kaupangNoon = SkyClock.SolarElevation(59.03f, 172, 12f), kaupangMidnight = SkyClock.SolarElevation(59.03f, 172, 0f);
+        Check(Mathf.Abs(kaupangNoon - 54.4f) < 1f && kaupangMidnight < 0f && kaupangMidnight > -12f, "midsummer at Kaupang: " + kaupangNoon.ToString("0") + "° at noon, " + kaupangMidnight.ToString("0.0") + "° at midnight (a light night)");
+        Check(SkyClock.SolarElevation(68.2f, 355, 12f) < 0f, "midwinter in Lofoten: the sun never rises");
+        Check(Mathf.Abs(SkyClock.SolarAzimuth(59f, 172, 12f) - 180f) < 1f && Mathf.Abs(SkyClock.SolarAzimuth(59f, 80, 6f) - 90f) < 15f, "the sun stands south at noon and rises in the east at the equinox");
+        Color skyDay, ambDay, skyNight, ambNight; float sunDay, sunNight;
+        SkyClock.Light(40f, out skyDay, out ambDay, out sunDay);
+        SkyClock.Light(-15f, out skyNight, out ambNight, out sunNight);
+        Check(sunNight == 0f && sunDay > 1f && (skyNight.r + skyNight.g + skyNight.b) < (skyDay.r + skyDay.g + skyDay.b) * 0.4f && skyNight.b > skyNight.r, "night is dark blue with no sunlight; day is bright");
+        Check(ShipHud.ClockText(13.5f) == "13:30" && ShipHud.ClockText(24.25f) == "00:15", "the HUD clock reads 13:30 and wraps past midnight");
+        var clocked = new Upgrades { ClockDay = 12, ClockHours = 21.75f };
+        Fortune fg; Upgrades fu;
+        SaveGame.Deserialize(SaveGame.Serialize(new Fortune(), clocked), out fg, out fu);
+        Check(fu.ClockDay == 12 && Mathf.Abs(fu.ClockHours - 21.75f) < 1e-4f, "the voyage's day and hour survive a save");
+
         // Faster time on a quiet passage, never with danger about.
         string why;
         Check(TimeWarp.Allowed(true, 5000f, false, 0f, false, out why) && why == null, "a quiet passage can run fast");

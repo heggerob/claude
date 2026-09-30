@@ -36,6 +36,7 @@ namespace OdinsCoin
             Line(sb, "upgrades", string.Join(",", levels));
             Line(sb, "fleet", string.Join(",", u.Fleet.ToArray()));
             Line(sb, "sailing", u.Sailing);
+            Line(sb, "clock", u.ClockDay.ToString(CultureInfo.InvariantCulture) + "," + u.ClockHours.ToString("R", CultureInfo.InvariantCulture));
             if (u.AtSea)
                 Line(sb, "at", u.SeaX.ToString("R", CultureInfo.InvariantCulture) + "," + u.SeaZ.ToString("R", CultureInfo.InvariantCulture) + "," + u.SeaHeading.ToString("R", CultureInfo.InvariantCulture));
             return sb.ToString();
@@ -74,6 +75,13 @@ namespace OdinsCoin
                     case "flips": if (nums.Length == 2) { f.Flips = nums[0]; f.HeadsCount = nums[1]; } break;
                     case "plunder": if (nums.Length == 2) { f.ChestsSold = nums[0]; f.GoldPlundered = nums[1]; } break;
                     case "dice": if (nums.Length == 2) { f.DiceWon = nums[0]; f.DiceLost = nums[1]; } break;
+                    case "clock":
+                        var clock = value.Split(',');
+                        int cd; float ch;
+                        if (clock.Length == 2 && int.TryParse(clock[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out cd)
+                            && float.TryParse(clock[1], NumberStyles.Float, CultureInfo.InvariantCulture, out ch) && !float.IsNaN(ch))
+                        { u.ClockDay = Mathf.Clamp(cd, 0, 100000); u.ClockHours = Mathf.Repeat(ch, 24f); }
+                        break;
                     case "at":
                         var parts = value.Split(',');
                         double sx, sz; float sh;
@@ -136,6 +144,7 @@ namespace OdinsCoin
         /// <summary>Note where the ship is, if she's out in the real North rather than lying at home.</summary>
         public static void RecordVoyage(Upgrades u)
         {
+            if (SkyClock.Instance != null) { u.ClockDay = SkyClock.Day; u.ClockHours = SkyClock.Hours; }
             var boot = GameBootstrap.Instance;
             u.AtSea = false;
             if (boot == null || boot.Ship == null || !RealWorld.Active) return;

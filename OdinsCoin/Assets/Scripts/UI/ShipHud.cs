@@ -20,13 +20,14 @@ namespace OdinsCoin
             float relWind = Mathf.DeltaAngle(Ship.Heading, Wind.Angle);
             string arrow = Arrow(relWind);
             string text = string.Format(
-                "<b>{0:0.0} knots</b>   heading {1:000}°\nSail {2:0}%{3}\nWind {4:0} kn  {5} ({6})\n\n<size=12>{7}</size>",
+                "<b>{0:0.0} knots</b>   heading {1:000}°   <size=13>day {8}, {9}</size>\nSail {2:0}%{3}\nWind {4:0} kn  {5} ({6})\n\n<size=12>{7}</size>",
                 Ship.SpeedKnots, Ship.Heading, Ship.SailAmount * 100f, (Ship.Rowing ? "   ROWING" : Ship.Moored ? "   MOORED" : Ship.Anchored ? "   AT ANCHOR" : "") + (TimeWarp.OnPassage ? "   <color=#ffd060>PASSAGE, course " + Ship.PassageCourse.ToString("000") + "°</color>" : TimeWarp.Factor > 1 ? "   <color=#ffd060>TIME x" + TimeWarp.Factor + "</color>" : ""), Wind.Knots, arrow, WindWord(relWind),
                 Player != null && Player.AtHelm
                     ? "At the helm: A/D steer · R raise sail · Q lower / reef sail · W row (sail down) · G anchor / make fast · T faster time · M chart · E let go"
                     : Player != null && Player.Carrying != null
                         ? "Carrying a chest: put it down on deck (E) to stow it, sell it to Gunnar in the Home Fjord"
-                        : "WASD move · Shift run · Ctrl walk · Space jump · LMB attack (again for a combo) · RMB shield · E use / pick up / bail · scroll zoom · Esc menu");
+                        : "WASD move · Shift run · Ctrl walk · Space jump · LMB attack (again for a combo) · RMB shield · E use / pick up / bail · scroll zoom · Esc menu",
+                SkyClock.Day + 1, ClockText(SkyClock.Hours));
             GUI.Box(new Rect(10, 10, 380, 120), GUIContent.none);
             GUI.Label(new Rect(20, 16, 370, 110), text, style);
 
@@ -192,6 +193,13 @@ namespace OdinsCoin
             if (a < 35f) return "tailwind: full speed";
             if (a < 120f) return "wind from the side";
             return "headwind: take the sail down and row";
+        }
+
+        /// <summary>The time of day as the HUD shows it (24-hour clock).</summary>
+        public static string ClockText(float hours)
+        {
+            int minutes = Mathf.FloorToInt(Mathf.Repeat(hours, 24f) * 60f);
+            return string.Format("{0:00}:{1:00}", minutes / 60, minutes % 60);
         }
 
         /// <summary>A distance for the HUD: metres close in, kilometres and then sea miles further out.</summary>

@@ -151,6 +151,14 @@ med ror, seil i vinden og årer.
   - En test seiler fra hver havn (og fra hjemmeøya) ut til åpent hav på et rutenett på 50 m.
   - Bilder av stedene ovenfra med husene, brygga, havna, kistene og vaktene: [Kaupang](docs/place-kaupang.png),
     [Lindisfarne](docs/place-lindisfarne.png), [Hedeby](docs/place-hedeby.png).
+- [x] **14. Døgnet og den ekte sola (`Core/SkyClock.cs`):**
+  - Klokka går med skipets egen tid, så rask tid og lange overfarter får døgnene til å gå.
+  - Sola står der den faktisk står for breddegraden der skipet er og årets dag. Sesongen starter i slutten av mai.
+  - Midt på sommeren går sola rundt hele natta i Lofoten. Ved Kaupang står den 54° høyt ved middag og går bare litt
+    under horisonten om natta, så natta blir lys og blå. Om vinteren står den ikke opp i Lofoten.
+  - Himmel, tåke og lys følger sola: blågrått om dagen, varm glød ved horisonten, blå skumring og mørkeblå natt.
+    Stormen mørkner dette ytterligere.
+  - HUD-en viser dag og klokkeslett, og tiden lagres.
 
 ## Merk
 

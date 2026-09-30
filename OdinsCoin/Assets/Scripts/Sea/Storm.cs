@@ -83,7 +83,7 @@ namespace OdinsCoin
             bool heimdall = Fortune.Current.Has(FateEffect.SeeThroughFog, FateKind.Blessing);
             RenderSettings.fogEndDistance = Mathf.Lerp(GameBootstrap.FogEnd, heimdall ? 170f : 55f, i);
             RenderSettings.fogStartDistance = Mathf.Lerp(GameBootstrap.FogStart, heimdall ? 30f : 5f, i);
-            Color gloom = Color.Lerp(GameBootstrap.SkyColor, new Color(0.22f, 0.25f, 0.28f), i);
+            Color gloom = Color.Lerp(SkyClock.Sky, Color.Lerp(new Color(0.22f, 0.25f, 0.28f), SkyClock.Sky * 0.5f, 1f - Mathf.Clamp01(SkyClock.Elevation / 10f + 0.6f)), i);
 
             // Lightning: a white flash now and then in the heart of the storm.
             if (i > 0.55f)
@@ -96,8 +96,8 @@ namespace OdinsCoin
             RenderSettings.fogColor = gloom;
             var cam = Camera.main;
             if (cam != null) cam.backgroundColor = gloom;
-            if (boot.Sun != null) boot.Sun.intensity = Mathf.Lerp(GameBootstrap.SunIntensity, 0.3f, i) + flash * 2.5f;
-            RenderSettings.ambientLight = Color.Lerp(GameBootstrap.AmbientColor, new Color(0.25f, 0.28f, 0.32f), i) + Color.white * flash * 0.4f;
+            if (boot.Sun != null) boot.Sun.intensity = Mathf.Lerp(SkyClock.SunLight, Mathf.Min(0.3f, SkyClock.SunLight), i) + flash * 2.5f;
+            RenderSettings.ambientLight = Color.Lerp(SkyClock.Ambient, SkyClock.Ambient * 0.65f, i) + Color.white * flash * 0.4f;
 
             Rain(cam, i, dt);
         }
