@@ -134,8 +134,10 @@ namespace OdinsCoin
             foreach (var joint in new[] { Joints.LeftArm, Joints.RightArm })
             {
                 float r = 0.052f * s * Mathf.Sqrt(f.width);
-                d.Add(joint, d.pal.cloth, MeshData.Lathe(new[] { new Vector2(r * 0.95f, -0.13f * s), new Vector2(r, -0.04f * s), new Vector2(r * 0.8f, 0.03f * s) }, 10));
-                if (furSleeves) d.Add(joint, d.pal.fur, CharacterKit.FurRing(new Vector3(0f, -0.13f * s, 0f), r * 1.05f, 1f, 0.028f * s, 9, 0.045f * s, d.seed + 5 + joint.Length));
+                // Fur-trimmed sleeves come down nearly to the elbow, with a big shaggy cuff (as the concept's raider).
+                float end = furSleeves ? -0.18f * s : -0.13f * s;
+                d.Add(joint, d.pal.cloth, MeshData.Lathe(new[] { new Vector2(r * 0.95f, end), new Vector2(r, -0.04f * s), new Vector2(r * 0.8f, 0.03f * s) }, 10));
+                if (furSleeves) d.Add(joint, d.pal.fur, CharacterKit.FurRing(new Vector3(0f, end, 0f), r * 1.1f, 1f, 0.034f * s, 11, 0.055f * s, d.seed + 5 + joint.Length));
             }
         }
 
