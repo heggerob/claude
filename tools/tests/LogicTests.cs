@@ -343,6 +343,32 @@ public static class LogicTests
             ChartReveal.Clear();
         }
 
+        // Rune rings: touch the stones in order of their notches.
+        {
+            var puzzle = new RunePuzzle(5, 1234);
+            var counts = new List<int>(puzzle.Notches);
+            counts.Sort();
+            Check(string.Join(",", counts.ConvertAll(x => x.ToString()).ToArray()) == "1,2,3,4,5", "a ring's stones carry 1 to 5 notches, one each");
+            System.Func<int, int> stoneWith = k => System.Array.IndexOf(puzzle.Notches, k);
+            Check(puzzle.Touch(stoneWith(1)) == RunePuzzle.Result.Lit && puzzle.IsLit(stoneWith(1)) && !puzzle.IsLit(stoneWith(2)), "touching the one-notch stone lights it");
+            Check(puzzle.Touch(stoneWith(3)) == RunePuzzle.Result.Wrong && !puzzle.IsLit(stoneWith(1)), "a stone out of turn and they all fall dark");
+            RunePuzzle.Result last = RunePuzzle.Result.Lit;
+            for (int k = 1; k <= 5; k++) last = puzzle.Touch(stoneWith(k));
+            Check(last == RunePuzzle.Result.Solved && puzzle.Solved && puzzle.Touch(0) == RunePuzzle.Result.AlreadySolved, "in order, the ring wakes, and stays awake");
+            Check(new RunePuzzle(5, 1).Notches[0] != new RunePuzzle(5, 99).Notches[0] || new RunePuzzle(5, 1).Notches[1] != new RunePuzzle(5, 99).Notches[1], "rings are laid out differently at different places");
+            Check(Mathf.Abs(RuneShrines.StakeOdds(0) - 0.5f) < 1e-5f && Mathf.Abs(RuneShrines.StakeOdds(2) - 0.54f) < 1e-5f && RuneShrines.StakeOdds(40) == RuneShrines.MaxOdds, "Runes of Luck tilt the altar's odds a little, never past 60%");
+            bool apart = true;
+            for (int i = 0; i < RuneShrines.Stones; i++) for (int j = 0; j < i; j++) apart &= Vector3.Distance(RuneShrines.StoneAt(i), RuneShrines.StoneAt(j)) > 2f * RuneShrines.TouchRange;
+            Check(apart, "the ring's stones stand far enough apart that you only ever touch the one you mean");
+            var giftSave = new Upgrades();
+            giftSave.Shrines.Add("Kaupang");
+            giftSave.Vitality = 2; giftSave.Luck = 1;
+            Fortune gf; Upgrades gu;
+            SaveGame.Deserialize(SaveGame.Serialize(new Fortune(), giftSave), out gf, out gu);
+            Check(gu.Shrines.Contains("Kaupang") && gu.Vitality == 2 && gu.Luck == 1 && gu.Endurance == 0, "woken rings and their gifts survive a save");
+            Check(Mathf.Abs(giftSave.HealthBonus - 2f * RuneShrines.VitalityHealth) < 1e-4f, "each Rune of Vitality adds to your health");
+        }
+
         // Faster time on a quiet passage, never with danger about.
         string why;
         Check(TimeWarp.Allowed(true, 5000f, false, 0f, false, out why) && why == null, "a quiet passage can run fast");

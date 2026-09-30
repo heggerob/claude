@@ -45,10 +45,13 @@ namespace OdinsCoin
             return list;
         }
 
+        /// <summary>The odds now: even, tilted a little your way by each Rune of Luck you've woken.</summary>
+        public static float CurrentOdds { get { return RuneShrines.StakeOdds(Upgrades.Current.Luck); } }
+
         /// <summary>The line shown for a stake: what you have, what you could have, and the odds.</summary>
         public static string Offer(int now, int ifWon)
         {
-            return now + " gold: " + ifWon + " or nothing (" + Mathf.RoundToInt(Odds * 100f) + "%)";
+            return now + " gold: " + ifWon + " or nothing (" + Mathf.RoundToInt(CurrentOdds * 100f) + "%)";
         }
     }
 }

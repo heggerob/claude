@@ -286,6 +286,12 @@ namespace OdinsCoin
             if (AtHelm) { Prompt = "[E] Leave the steering oar"; return; }
             if (OnShip && Carrying == null && Vector3.Distance(transform.position, Ship.Parts.helm.position) < InteractRange) { Prompt = "[E] Take the steering oar"; return; }
             if (OnShip && NearAltar()) { Prompt = AltarPrompt(); if (Prompt != null) return; }
+            ShrineRing ring; int stone;
+            if (!OnShip && Carrying == null && RuneShrines.Near(transform.position, out ring, out stone))
+            {
+                Prompt = ring.Puzzle.Solved ? "The rune ring is awake: its gift is yours" : "[E] Touch the stone cut with " + ring.Puzzle.Notches[stone] + " notch" + (ring.Puzzle.Notches[stone] == 1 ? "" : "es");
+                if (!ring.Puzzle.Solved) return;
+            }
             Transform mark; Place markPlace;
             if (!OnShip && Carrying == null && Landmarks.Near(transform.position, out mark, out markPlace)) { Prompt = "[E] " + Landmarks.SurveyVerb(Landmarks.KindFor(markPlace)); return; }
             var home = HomeHarbour.Instance;
@@ -337,6 +343,27 @@ namespace OdinsCoin
                 return;
             }
             if (OnShip && NearAltar() && StakeAtAltar()) return;
+            ShrineRing touched; int touchedStone;
+            if (!OnShip && Carrying == null && RuneShrines.Near(transform.position, out touched, out touchedStone) && !touched.Puzzle.Solved)
+            {
+                var result = touched.Puzzle.Touch(touchedStone);
+                touched.Show();
+                if (result == RunePuzzle.Result.Wrong) { Sfx.Play(SfxId.Curse, 0.5f); CombatHud.Banner("THE STONES FALL DARK", "Not that one. Count the notches."); }
+                else if (result == RunePuzzle.Result.Lit) Sfx.Play(SfxId.Blessing, 0.4f);
+                else if (result == RunePuzzle.Result.Solved)
+                {
+                    var gift = RuneShrines.GiftOf(touched.Place);
+                    var u = Upgrades.Current;
+                    if (!u.Shrines.Contains(touched.Place.name)) u.Shrines.Add(touched.Place.name);
+                    if (gift == RuneGift.Vitality) u.Vitality++;
+                    else if (gift == RuneGift.Endurance) u.Endurance++;
+                    else u.Luck++;
+                    if (combat != null) combat.Health.Restore();
+                    Sfx.Play(SfxId.Blessing, 1f);
+                    CombatHud.Banner("THE RUNE RING WAKES", "You are given the " + RuneShrines.GiftName(gift) + ".");
+                }
+                return;
+            }
             Transform survey; Place surveyPlace;
             if (!OnShip && Carrying == null && Landmarks.Near(transform.position, out survey, out surveyPlace))
             {
@@ -484,7 +511,7 @@ namespace OdinsCoin
                 var chest = Carrying;
                 Carrying = null;
                 chest.Drop(altar.transform.position + altar.transform.right * 1.1f, altar.transform.eulerAngles.y, world);
-                altar.FlipForStake(Stake.Odds, heads =>
+                altar.FlipForStake(Stake.CurrentOdds, heads =>
                 {
                     if (chest == null) return;
                     if (heads)
@@ -505,7 +532,7 @@ namespace OdinsCoin
             // Everything at once: only on a second press.
             if (Time.time - stakeAllConfirm >= Stake.ConfirmWindow) { stakeAllConfirm = Time.time; return true; }
             stakeAllConfirm = -10f;
-            altar.FlipForStake(Stake.Odds, heads =>
+            altar.FlipForStake(Stake.CurrentOdds, heads =>
             {
                 int total = 0;
                 foreach (var c in deck)

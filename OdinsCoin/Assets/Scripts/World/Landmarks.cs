@@ -20,7 +20,7 @@ namespace OdinsCoin
         static void ResetStatics() { Built.Clear(); }
 
         /// <summary>How close to a landmark you must stand to survey the land from it (m).</summary>
-        public const float SurveyRange = 6f;
+        public const float SurveyRange = 4f;
 
         /// <summary>The landmark you're standing at, if any (to survey the land from it).</summary>
         public static bool Near(Vector3 scenePos, out Transform landmark, out Place place)

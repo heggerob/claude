@@ -31,7 +31,7 @@ Sea of Thieves med vikinger og Zelda-utforsking, enkelt og artig. Gamblingen er 
 - [ ] **15. Verdensskala** (du bestemmer): krympet verden, eller full størrelse som nå.
 - [x] **16. Landemerker (`World/Landmarks.cs`, se [docs/buildings.png](docs/buildings.png)):** hvert sted får noe høyt eller lyst som synes langt unna. Byer og festninger har et 22 m vardetårn med bål på toppen, klostre et klokketårn, jarlens hall en kjempestor ask, og landingsplasser en runestein som lyser blått. Det står på det høyeste tørre stedet i nærheten, klar av hus og åkrer.
 - [x] **17. Utsiktspunkter (`UI/ChartReveal.cs`):** sjøkartet starter som blankt pergament, bortsett fra hjemmefarvannet. Mens du seiler, tegnes kysten rundt skipet inn (6 km). Står du ved et landemerke og trykker E, klatrer du opp i vardetårnet, klokketårnet eller asken, eller leser runesteinens kart, og området i 25 km rundt tegnes inn. Det som er kartlagt, lagres.
-- [ ] **18. Runesteiner:** små gåter eller kamper som gir runer (helse, utholdenhet, bedre odds).
+- [x] **18. Runeringer (`World/RuneShrines.cs`):** rundt hvert landemerke står en ring av fem små steiner hugget med 1 til 5 hakk. Rør dem i rekkefølge etter hakkene, så våkner ringen og gir sin gave. Rører du feil stein, blir alle mørke igjen. Gavene er Vitalitetens rune (+15 helse), Utholdenhetens rune (mer pust til klatring og svømming) og Hellets rune (+2 % bedre odds ved alteret, maks 60 %). Lagres.
 - [ ] **19. Klatring og utholdenhet.**
 - [ ] **20. Hemmeligheter:** grotter, skattekart og en ravn som leder deg.
 - [ ] **21. Tips i stedet for oppdragsliste:** Bjørn og byfolket forteller rykter om hvor skatten er.

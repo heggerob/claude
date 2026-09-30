@@ -265,6 +265,8 @@ namespace OdinsCoin
             // Something high or bright to head for, seen from far out at sea.
             var mark = Landmarks.Spot(plots, fields, ground);
             Landmarks.Build(root, place, mark);
+            // A rune ring round it, with a gift for whoever works it out.
+            ShrineRing.Build(root, place, WorldOrigin.ToScene(mark.x, mark.z, mark.y), p => TerrainDetail.Height(map, WorldOrigin.GlobalX(p), WorldOrigin.GlobalZ(p)));
             Scenery.Clearings.Add(new Vector3(mark.x, mark.z, 8f));
             foreach (var field in fields)
             {

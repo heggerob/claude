@@ -52,6 +52,9 @@ namespace OdinsCoin
 
         /// <summary>The real places stripped this voyage.</summary>
         public readonly List<string> Raided = new List<string>();
+        /// <summary>The places whose rune rings you've woken, and the gifts they gave.</summary>
+        public readonly List<string> Shrines = new List<string>();
+        public int Vitality, Endurance, Luck;
 
         /// <summary>The raid Bjorn has commissioned (a place's name, or null) and what it pays.</summary>
         public string Commission;
@@ -110,7 +113,7 @@ namespace OdinsCoin
         public float OarMultiplier { get { return 1f + 0.25f * Level(UpgradeKind.Oars); } }
         /// <summary>0..1: how much of Rán's Net the hull shrugs off.</summary>
         public float LeakResist { get { return Mathf.Clamp01(0.35f * Level(UpgradeKind.Hull)); } }
-        public float HealthBonus { get { return 25f * Level(UpgradeKind.Mail); } }
+        public float HealthBonus { get { return 25f * Level(UpgradeKind.Mail) + RuneShrines.VitalityHealth * Vitality; } }
         public float AxeMultiplier { get { return 1f + 0.15f * Level(UpgradeKind.Axe); } }
 
         /// <summary>Thrust multiplier from Rán's Net after the hull upgrades.</summary>

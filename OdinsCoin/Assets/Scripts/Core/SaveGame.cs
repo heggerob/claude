@@ -39,6 +39,9 @@ namespace OdinsCoin
             Line(sb, "clock", u.ClockDay.ToString(CultureInfo.InvariantCulture) + "," + u.ClockHours.ToString("R", CultureInfo.InvariantCulture));
             if (u.Raided.Count > 0) Line(sb, "raided", string.Join(",", u.Raided.ToArray()));
             if (!string.IsNullOrEmpty(u.Seen)) Line(sb, "seen", u.Seen);
+            if (u.Shrines.Count > 0) Line(sb, "shrines", string.Join(",", u.Shrines.ToArray()));
+            if (u.Vitality + u.Endurance + u.Luck > 0)
+                Line(sb, "gifts", u.Vitality.ToString(CultureInfo.InvariantCulture) + "," + u.Endurance.ToString(CultureInfo.InvariantCulture) + "," + u.Luck.ToString(CultureInfo.InvariantCulture));
             if (!string.IsNullOrEmpty(u.Commission))
                 Line(sb, "commission", u.Commission + "," + u.CommissionReward.ToString(CultureInfo.InvariantCulture));
             if (u.AtSea)
@@ -82,6 +85,13 @@ namespace OdinsCoin
                     case "raided":
                         foreach (var name in value.Split(','))
                             if (Places.Find(name.Trim()) != null && !u.Raided.Contains(name.Trim())) u.Raided.Add(name.Trim());
+                        break;
+                    case "shrines":
+                        foreach (var name in value.Split(','))
+                            if (Places.Find(name.Trim()) != null && !u.Shrines.Contains(name.Trim())) u.Shrines.Add(name.Trim());
+                        break;
+                    case "gifts":
+                        if (nums.Length == 3) { u.Vitality = Mathf.Clamp(nums[0], 0, 50); u.Endurance = Mathf.Clamp(nums[1], 0, 50); u.Luck = Mathf.Clamp(nums[2], 0, 50); }
                         break;
                     case "seen": u.Seen = value.Length <= 200000 ? value : ""; break;
                     case "commission":
