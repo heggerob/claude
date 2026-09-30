@@ -176,7 +176,9 @@ namespace OdinsCoin
                 string name = raided ? "<color=#7a6a55>" + place.name + " (plundered)</color>" : "<b>" + place.name + "</b>";
                 // Bjorn's commission stands out in red.
                 if (place.name == Upgrades.Current.Commission) { mark = "⚑"; name = "<color=#9a1c10><b>" + place.name + " (Bjorn's commission)</b></color>"; }
-                GUI.Label(new Rect(p.x - 5f, p.y - 9f, 220f, 18f), mark + " " + name, label);
+                // How many of its secrets you've found.
+                name += Secrets.ChartNote(place, Upgrades.Current);
+                GUI.Label(new Rect(p.x - 5f, p.y - 9f, 260f, 18f), mark + " " + name, label);
             }
             // Hoards you hold maps to.
             foreach (var name in Upgrades.Current.Maps)

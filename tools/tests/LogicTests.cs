@@ -834,6 +834,16 @@ public static class LogicTests
                 }
                 if (ok) featherFine++;
             }
+            var secretSave = new Upgrades();
+            var kaupang = Places.Find("Kaupang");
+            if (kaupang != null)
+            {
+                Check(Secrets.ChartNote(kaupang, secretSave) == "", "the chart says nothing of a place's secrets until you've found one");
+                secretSave.Dug.Add("Kaupang"); secretSave.Feathers.Add(Feathers.Key(kaupang, 2));
+                Check(Secrets.Found(kaupang, secretSave) == 2 && Secrets.ChartNote(kaupang, secretSave).Contains("2/6"), "then it counts them");
+                secretSave.Shrines.Add("Kaupang"); secretSave.Caves.Add("Kaupang"); secretSave.Feathers.Add(Feathers.Key(kaupang, 0)); secretSave.Feathers.Add(Feathers.Key(kaupang, 1));
+                Check(Secrets.ChartNote(kaupang, secretSave).Contains("★ 6/6"), "and stars a place whose every secret is found");
+            }
             Check(Feathers.Milestone(10, 78) == 100 && Feathers.Milestone(11, 78) == 0 && Feathers.Milestone(50, 78) == 600 && Feathers.Milestone(78, 78) == 1500, "feather milestones pay at 10, 25, 50 and all");
             var hint = Rumours.FeatherHint(Vector3.zero, new Vector3(200f, 0f, 0f));
             Check(hint.Contains("east") && hint.Contains("a little way") && Rumours.FeatherHint(Vector3.zero, new Vector3(0f, 0f, -50f)).Contains("just to the south"), "townsfolk tell which way a raven feather lies and roughly how far");
