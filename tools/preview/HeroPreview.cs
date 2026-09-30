@@ -435,8 +435,8 @@ public static class HeroPreview
         var names = new List<string> { "Great hall", "Longhouse", "Boathouse", "Storehouse", "Watchtower", "Palisade", "Jetty", "Church" };
         // And the landmarks that mark each place from far out at sea.
         var marks = new[] { LandmarkKind.BeaconTower, LandmarkKind.BellTower, LandmarkKind.GreatAsh, LandmarkKind.RuneStone };
-        names.AddRange(new[] { "Beacon tower (towns)", "Bell tower (monasteries)", "Great ash (halls)", "Runestone (landings)", "Cave", "Hoard cairn" });
-        int w = cellW * (kinds.Length + marks.Length + 2), h = cellH;
+        names.AddRange(new[] { "Beacon tower (towns)", "Bell tower (monasteries)", "Great ash (halls)", "Runestone (landings)", "Cave", "Hoard cairn", "Raven feather" });
+        int w = cellW * (kinds.Length + marks.Length + 3), h = cellH;
         var img = new float[w * h * 3];
         for (int i = 0; i < w * h; i++) { img[i * 3] = Paper.r; img[i * 3 + 1] = Paper.g; img[i * 3 + 2] = Paper.b; }
         for (int k = 0; k < kinds.Length; k++)
@@ -455,6 +455,7 @@ public static class HeroPreview
         }
         Render(img, w, h, (kinds.Length + marks.Length) * cellW, cellW, cellH, new Shot { model = Caves.Model(), pose = new Pose(), yaw = 200f, pitch = 18f, zoom = 0.84f * 2.45f / 13f });
         Render(img, w, h, (kinds.Length + marks.Length + 1) * cellW, cellW, cellH, new Shot { model = Hoards.Model(), pose = new Pose(), yaw = 215f, pitch = 25f, zoom = 0.84f * 2.45f / 3.5f });
+        Render(img, w, h, (kinds.Length + marks.Length + 2) * cellW, cellW, cellH, new Shot { model = Feathers.Model(), pose = new Pose(), yaw = 200f, pitch = 10f, zoom = 0.84f * 2.45f / 1f });
         using (var fs = new BinaryWriter(File.Create(rgbaPath)))
         {
             fs.Write(w); fs.Write(h);

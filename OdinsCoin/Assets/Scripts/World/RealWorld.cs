@@ -274,6 +274,9 @@ namespace OdinsCoin
             // A cave in the steepest hillside nearby, with a draugr guarding its gold.
             Vector3 cave; float caveYaw;
             if (Caves.Spot(place, plots, ground, out cave, out caveYaw)) { Caves.Build(root, place, cave, caveYaw); Scenery.Clearings.Add(new Vector3(cave.x, cave.z, 12f)); }
+            // Raven feathers hidden on the high ground round about.
+            var feathers = Feathers.Spots(place, plots, ground);
+            Feathers.Build(root, place, feathers);
             // A rune ring round it, with a gift for whoever works it out.
             ShrineRing.Build(root, place, WorldOrigin.ToScene(mark.x, mark.z, mark.y), p => TerrainDetail.Height(map, WorldOrigin.GlobalX(p), WorldOrigin.GlobalZ(p)));
             Scenery.Clearings.Add(new Vector3(mark.x, mark.z, 8f));

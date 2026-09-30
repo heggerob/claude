@@ -273,6 +273,9 @@ public static class LogicTests
             stepSave.Steps = 3;
             Fortune stepF; Upgrades stepU;
             SaveGame.Deserialize(SaveGame.Serialize(new Fortune(), stepSave), out stepF, out stepU);
+            stepSave.Feathers.Add("Kaupang#1");
+            SaveGame.Deserialize(SaveGame.Serialize(new Fortune(), stepSave), out stepF, out stepU);
+            Check(stepU.Feathers.Contains("Kaupang#1"), "found raven feathers survive a save");
             Check(stepU.Steps == 3, "how far through the first voyage's hints survives a save");
             // Over many throws of a single chest staked again and again, the average stays what it was: a fair game.
             var rng = new System.Random(11);
@@ -782,6 +785,27 @@ public static class LogicTests
                 if (Caves.Spot(place, cavePlots, (x, z) => TerrainDetail.Height(map, x, z), out at, out yaw)) caves++;
             }
             Check(towns > 20 && caves == towns, caves + " of " + towns + " places have a cave or howe");
+            // And three raven feathers on the high ground round about, on dry land, the same every time.
+            int featherPlaces = 0, featherFine = 0;
+            foreach (var place in Places.All)
+            {
+                var fplots = Settlements.Layout(map, place);
+                if (fplots.Count == 0) continue;
+                Func<float, float, float> fground = (x, z) => TerrainDetail.Height(map, x, z);
+                var a = Feathers.Spots(place, fplots, fground);
+                var b = Feathers.Spots(place, fplots, fground);
+                if (a.Count != Feathers.PerPlace) continue;
+                featherPlaces++;
+                var main = PlaceLife.MainBuilding(fplots).at;
+                bool ok = true;
+                for (int i = 0; i < a.Count; i++)
+                {
+                    float dist = new Vector2(a[i].x - main.x, a[i].z - main.z).magnitude;
+                    ok &= a[i] == b[i] && a[i].y >= 2f && dist > Feathers.MinDistance - 45f && dist < Feathers.MaxDistance + 45f;
+                }
+                if (ok) featherFine++;
+            }
+            Check(featherPlaces >= towns - 2 && featherFine == featherPlaces, featherPlaces + " places have three raven feathers out on the dry high ground");
         }
 
         // Buried hoards: one out beyond every place's houses, on dry land, the same spot every time.

@@ -60,6 +60,8 @@ namespace OdinsCoin
         public readonly List<string> Maps = new List<string>();
         /// <summary>The places whose caves you've emptied.</summary>
         public readonly List<string> Caves = new List<string>();
+        /// <summary>The raven feathers you've found (<see cref="Feathers.Key"/>).</summary>
+        public readonly List<string> Feathers = new List<string>();
         /// <summary>How far through the first voyage's hints (<see cref="FirstSteps.Step"/>).</summary>
         public int Steps;
 
