@@ -457,7 +457,7 @@ namespace OdinsCoin
                         // A big shield of red planks with an iron rim and boss and a pale triple-knot painted on it,
                         // held in front of the body, face forward (+Z).
                         float rad = 0.43f * s;
-                        var at = new Vector3(0f, 0.02f * s, 0.06f * s);
+                        var at = new Vector3(0f, -0.05f * s, 0.06f * s);
                         for (int q = 0; q < 6; q++)
                         {
                             // Vertical planks: slices of the disc, alternating shades.
