@@ -138,10 +138,10 @@ public static class HeroPreview
         var ready = new Pose();
         Vector3 scl = new Vector3(-scFit.shoulderX, scFit.shoulderY, 0f);
         Vector3 sclElbow = scl + new Vector3(-0.08f, -0.2f, 0.0f).normalized * scFit.upperArm;
-        Vector3 sclFist = new Vector3(-scFit.shoulderX - 0.1f, scFit.waist - 0.06f, -0.04f);
+        Vector3 sclFist = new Vector3(-scFit.shoulderX - 0.08f, scFit.waist - 0.14f, -0.02f);
         ready.worldRot[Joints.LeftArm] = Quaternion.FromToRotation(Vector3.down, sclElbow - scl);
         ready.worldRot[Joints.LeftForearm] = Quaternion.FromToRotation(Vector3.down, sclFist - sclElbow);
-        ready.worldRot[Joints.OffHand] = Quaternion.LookRotation(new Vector3(-0.72f, 0.62f, -0.3f), new Vector3(-0.3f, -0.1f, 1f));
+        ready.worldRot[Joints.OffHand] = Quaternion.LookRotation(new Vector3(-0.8f, 0.5f, -0.35f), new Vector3(-0.3f, -0.1f, 1f));
         ready.rot[Joints.RightArm] = Quaternion.Euler(4f, 0f, 12f);
         ready.rot[Joints.RightForearm] = Quaternion.Euler(-25f, 0f, 0f);
         ready.rot[Joints.LeftLeg] = Quaternion.Euler(0f, -16f, -9f);
