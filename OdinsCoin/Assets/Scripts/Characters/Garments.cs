@@ -1386,8 +1386,8 @@ namespace OdinsCoin
             // as in the concept art, with a buckle on the breast.
             float cz = f.chestR * f.depth;
             var strap = new[] {
-                new Vector3(-f.shoulderX * 0.6f, f.shoulderY + 0.03f * s, cz * 0.35f), new Vector3(-f.shoulderX * 0.25f, f.shoulderY - 0.06f * s, cz + 0.05f * s),
-                new Vector3(0.02f * s, f.chest - 0.03f * s, cz + 0.05f * s), new Vector3(f.waistR * 0.95f, f.waist + 0.02f * s, f.waistR * f.depth + 0.035f * s) };
+                new Vector3(-f.shoulderX * 0.6f, f.shoulderY + 0.03f * s, cz * 0.35f), new Vector3(-f.shoulderX * 0.25f, f.shoulderY - 0.06f * s, cz + 0.085f * s),
+                new Vector3(0.02f * s, f.chest - 0.03f * s, cz + 0.08f * s), new Vector3(f.waistR * 0.95f, f.waist + 0.02f * s, f.waistR * f.depth + 0.035f * s) };
             d.Add(Joints.Body, d.pal.leatherDark, MeshData.Tube(strap, new[] { 0.014f * s, 0.016f * s, 0.016f * s, 0.015f * s }, 5), false);
             var buckle = Vector3.Lerp(strap[1], strap[2], 0.5f) + new Vector3(0f, 0f, 0.012f * s);
             d.Add(Joints.Body, d.pal.brass, MeshData.Box(buckle, new Vector3(0.03f, 0.024f, 0.008f) * s), false);
