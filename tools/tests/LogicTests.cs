@@ -260,6 +260,14 @@ public static class LogicTests
                     aboard &= Mathf.Sign(Mathf.Sin(s.Value * Mathf.Deg2Rad)) == -Mathf.Sign(s.Key.x); // facing inboard
                 }
                 Check(aboard, "the " + design.title + "'s crew stand on her deck, clear of the mast and the sides, facing inboard");
+                var fullCrew = Crew.Stations(design, Crew.CountFor(3));
+                bool spaced = fullCrew.Count == 10;
+                for (int i = 0; i < fullCrew.Count; i++)
+                {
+                    spaced &= Mathf.Abs(fullCrew[i].Key.z) < design.length * 0.3f;
+                    for (int j = i + 1; j < fullCrew.Count; j++) spaced &= Vector3.Distance(fullCrew[i].Key, fullCrew[j].Key) > 0.8f;
+                }
+                Check(spaced, "a full crew of ten stands on the " + design.title + "'s deck without treading on each other");
             }
             var tallied = new Fortune();
             Stake.Tally(tallied, true); Stake.Tally(tallied, false);

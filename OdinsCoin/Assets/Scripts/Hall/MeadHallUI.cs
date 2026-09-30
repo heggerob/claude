@@ -162,7 +162,7 @@ namespace OdinsCoin
                 {
                     GUI.enabled = up.CanBuy(d.kind, fortune);
                     if (GUILayout.Button(d.levels[level] + "\n<size=12>" + up.NextCost(d.kind) + " gold</size>", GUILayout.Width(190f), GUILayout.Height(40)))
-                        deferred += () => { if (up.Buy(d.kind, fortune)) { Sfx.Play(SfxId.Purchase); SaveGame.Save(); } if (up.Level(d.kind) > level) CombatHud.Banner(d.levels[level].ToUpper(), "Bjorn's cousin will have it done by the time you're aboard."); };
+                        deferred += () => { if (up.Buy(d.kind, fortune)) { Sfx.Play(SfxId.Purchase); SaveGame.Save(); if (d.kind == UpgradeKind.Oars && Ship != null) Crew.Create(Ship); } if (up.Level(d.kind) > level) CombatHud.Banner(d.levels[level].ToUpper(), "Bjorn's cousin will have it done by the time you're aboard."); };
                 }
                 GUI.enabled = true;
                 GUILayout.EndHorizontal();

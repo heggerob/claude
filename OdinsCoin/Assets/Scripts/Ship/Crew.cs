@@ -9,7 +9,10 @@ namespace OdinsCoin
     /// </summary>
     public class Crew : MonoBehaviour
     {
-        public const int Count = 4;
+        /// <summary>The crew you start with; each level of the Oars upgrade brings two more rowers.</summary>
+        public const int Count = 4, PerOarLevel = 2;
+
+        public static int CountFor(int oarLevel) { return Count + PerOarLevel * Mathf.Max(0, oarLevel); }
         /// <summary>How long a cheer or a groan lasts (s).</summary>
         public const float ReactTime = 2.5f;
 
@@ -22,14 +25,19 @@ namespace OdinsCoin
         /// Where the hands stand (ship space) and which way they face (yaw): alternately to port and starboard, spread
         /// along the waist of the ship, a step in from the side, facing inboard.
         /// </summary>
-        public static List<KeyValuePair<Vector3, float>> Stations(ShipDesign d)
+        public static List<KeyValuePair<Vector3, float>> Stations(ShipDesign d) { return Stations(d, Count); }
+
+        /// <summary>...for a crew of <paramref name="count"/>.</summary>
+        public static List<KeyValuePair<Vector3, float>> Stations(ShipDesign d, int count)
         {
             var list = new List<KeyValuePair<Vector3, float>>();
             float deck = DesignedShipBuilder.DeckY(d);
-            for (int i = 0; i < Count; i++)
+            for (int i = 0; i < count; i++)
             {
                 float side = i % 2 == 0 ? -1f : 1f;
-                float z = Mathf.Lerp(-0.2f, 0.22f, i / (float)(Count - 1)) * d.length;
+                // Pairs, one to port and one to starboard, spread along the waist.
+                int row = i / 2, rows = (count + 1) / 2;
+                float z = Mathf.Lerp(-0.2f, 0.22f, rows > 1 ? row / (float)(rows - 1) : 0.5f) * d.length + (side > 0f ? 0.35f : 0f);
                 list.Add(new KeyValuePair<Vector3, float>(new Vector3(side * d.beam * 0.28f, deck, z), side > 0f ? -90f : 90f));
             }
             return list;
@@ -57,7 +65,7 @@ namespace OdinsCoin
             var crew = go.AddComponent<Crew>();
             crew.ship = ship;
             int n = 0;
-            foreach (var station in Stations(ship.Design))
+            foreach (var station in Stations(ship.Design, CountFor(Upgrades.Current.Level(UpgradeKind.Oars))))
             {
                 var h = new Hand();
                 h.root = new GameObject("Hand").transform;
