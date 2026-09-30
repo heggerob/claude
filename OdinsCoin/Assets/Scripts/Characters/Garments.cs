@@ -1173,12 +1173,12 @@ namespace OdinsCoin
             var f = d.fit;
             float s = d.S;
             d.Add(Joints.Body, d.pal.accent, MeshData.Lathe(new[] {
-                new Vector2(f.chestR * 0.5f, f.neckY - 0.01f * s), new Vector2(f.chestR * 0.7f, f.neckY + 0.04f * s), new Vector2(f.chestR * 0.55f, f.neckY + 0.07f * s) }, 16)
+                new Vector2(f.chestR * 0.5f, f.neckY - 0.01f * s), new Vector2(f.chestR * 0.85f, f.neckY + 0.04f * s), new Vector2(f.chestR * 0.6f, f.neckY + 0.08f * s) }, 16)
                 .Transformed(Vector3.zero, Quaternion.identity, new Vector3(1f, 1f, 0.95f)));
-            // A capelet over both shoulders, falling to a ragged point at the front of the chest.
-            float capeBottom = f.shoulderY - 0.05f * s;
-            d.Add(Joints.Body, d.pal.accent, CharacterKit.RaggedSkirt(f.neckY + 0.01f * s, f.chestR * 0.62f, capeBottom, f.shoulderX + 0.02f * s, 0.85f, 20, 0.04f * s, d.seed + 83,
-                a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return -0.13f * s * c * c * c * c; }, a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return Mathf.Lerp(1f, 0.62f, c * c); }));
+            // A wide capelet over both shoulders, down to the upper arms, falling to a ragged point at the front of the chest.
+            float capeBottom = f.shoulderY - 0.1f * s;
+            d.Add(Joints.Body, d.pal.accent, CharacterKit.RaggedSkirt(f.neckY + 0.01f * s, f.chestR * 0.7f, capeBottom, f.shoulderX + 0.065f * s, 0.85f, 22, 0.045f * s, d.seed + 83,
+                a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return -0.1f * s * c * c * c * c; }, a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return Mathf.Lerp(1f, 0.6f, c * c); }));
             // The hood, down, bunched behind the neck.
             d.Add(Joints.Body, VikingModel.Shade(d.pal.accent, 0.85f), MeshData.Ellipsoid(new Vector3(0f, f.neckY + 0.02f * s, -f.chestR * 0.7f), new Vector3(0.11f, 0.08f, 0.07f) * s, 12, 7));
         }

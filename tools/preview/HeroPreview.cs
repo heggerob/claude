@@ -132,7 +132,7 @@ public static class HeroPreview
         shots.Add(new Shot { label = "The Old Seer", model = seerModel, pose = augur, yaw = 202f });
         // The Scout: bow held low and slanting in the right hand, left arm loose.
         var scout = CharacterSpec.Default(OutfitId.Scout);
-        scout.body = new BodyShape { height = 1.45f, width = 0.85f, gender = Gender.Female };
+        scout.body = new BodyShape { height = 1.56f, width = 0.85f, gender = Gender.Female };
         var scFit = Fit.Of(scout.body);
         var scoutModel = WithWeapon(HeroModel.Build(scout), HeroModel.BuildWeapon(scout), Joints.OffHand);
         var ready = new Pose();

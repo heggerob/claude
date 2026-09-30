@@ -176,8 +176,9 @@ namespace OdinsCoin
                     Garments.Tabard(d, 0.46f, 0.09f);
                     Garments.BeltKnife(d);
                     Garments.Quiver(d);
-                    Garments.ShoulderPelt(d, 1.0f, 1f);
                     Garments.Cowl(d);
+                    // The pelt lies over the cowl on one shoulder.
+                    Garments.ShoulderPelt(d, 1.2f, 1f);
                     Garments.FurCap(d);
                 } } },
         };
