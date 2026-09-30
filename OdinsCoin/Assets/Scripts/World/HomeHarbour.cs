@@ -60,13 +60,13 @@ namespace OdinsCoin
         }
 
         /// <summary>Where the longship starts: alongside the jetty, bow out to sea.</summary>
-        public static readonly Vector3 ShipStart = new Vector3(4.3f, 0.2f, -54f);
+        public static readonly Vector3 ShipStart = new Vector3(4.8f, 0.2f, -50f);
         public const float ShipStartHeading = 0f;
         public const float TradeRange = 3.2f;
         public const float CargoRange = 30f;
         /// <summary>The jetty runs along x = 0 from the beach out past the ship's berth.</summary>
         public const float JettyStart = -77f;
-        public const int JettyPlanks = 16;
+        public const int JettyPlanks = 20;
         public const float JettyTop = 1.2f;
         /// <summary>Gunnar stands at the edge of the jetty, close enough to trade over the ship's side.</summary>
         public static readonly Vector3 TraderPosition = new Vector3(1.1f, JettyTop, -56f);

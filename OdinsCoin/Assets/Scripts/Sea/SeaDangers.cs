@@ -95,12 +95,12 @@ namespace OdinsCoin
         {
             if (bilge == null)
             {
-                bilge = LongshipBuilder.Deco(PrimitiveType.Cube, ship.transform, Vector3.zero, new Vector3(3.6f, 0.02f, 13f), new Color(0.12f, 0.25f, 0.3f));
+                bilge = LongshipBuilder.Deco(PrimitiveType.Cube, ship.transform, Vector3.zero, new Vector3(ship.Beam * 0.78f, 0.02f, ship.HalfLength * 1.45f), new Color(0.12f, 0.25f, 0.3f));
                 bilge.name = "Bilge Water";
             }
             float level = ship.Hull.Level;
             bilge.gameObject.SetActive(level > 0.02f);
-            bilge.localPosition = new Vector3(0f, LongshipBuilder.DeckHeight + 0.06f + level * 0.55f, 0f);
+            bilge.localPosition = new Vector3(0f, ship.DeckY + 0.06f + level * 0.55f, 0f);
         }
 
         /// <summary>The ship fills and goes down. Rán keeps the cargo; the crew wakes up back home.</summary>

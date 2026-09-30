@@ -27,6 +27,8 @@ namespace OdinsCoin
             public Transform altar;     // Odin's coin goes here
             public Transform deck;      // what the crew stands on (the ship root)
             public Vector3[] floatPoints;
+            public Transform[] rigs;    // the new ship classes: each sail's turning rig and its cloth
+            public Transform[] cloths;
         }
 
         /// <summary>Half-width, keel depth and gunwale height at a station s in -1 (stern) .. 1 (bow).</summary>

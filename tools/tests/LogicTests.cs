@@ -857,12 +857,15 @@ public static class LogicTests
     {
         var home = HomeHarbour.Spec;
         Vector3 s = HomeHarbour.ShipStart;
+        // The player's ship (one of the new classes) and its measurements.
+        var design = GameBootstrap.PlayerDesign;
+        float half = design.length / 2f, beam = design.beam, deckY = DesignedShipBuilder.DeckY(design);
         // The berth is deep enough for the keel even in a wave trough, along the whole hull.
         for (float t = -1f; t <= 1f; t += 0.1f)
         {
             float hw, keel, g;
-            LongshipBuilder.Station(t, out hw, out keel, out g);
-            float z = s.z + t * LongshipBuilder.Length / 2f;
+            ShipModel.Section(design, t, out keel, out g, out hw);
+            float z = s.z + t * half;
             foreach (float side in new[] { -1f, 0f, 1f })
             {
                 float bottom = Island.Height(home, s.x + side * hw, z);
@@ -875,9 +878,10 @@ public static class LogicTests
         Check(beach > 0f && beach < HomeHarbour.JettyTop + 0.35f, "jetty starts on the beach (" + beach + ")");
         Check(Island.Height(home, 0f, last) < -2f, "jetty end is over deep water");
         Check(last > s.z, "jetty reaches past the middle of the ship");
-        Check(s.x - LongshipBuilder.Beam / 2f > 1.7f + 0.1f, "moored ship clears the jetty");
+        Check(s.x - beam / 2f > 1.7f + 0.1f, "moored ship clears the jetty");
+        Check(s.z - half > HomeHarbour.JettyStart + 4f, "the moored ship's stern is clear of the beach");
         // Gunnar can trade over the gunwale: the deck edge nearest him is within reach.
-        var deckEdge = new Vector3(s.x - (LongshipBuilder.Beam / 2f - 0.5f), s.y + LongshipBuilder.DeckHeight, HomeHarbour.TraderPosition.z);
+        var deckEdge = new Vector3(s.x - (beam / 2f - 0.5f), s.y + deckY, HomeHarbour.TraderPosition.z);
         Check(Vector3.Distance(deckEdge, HomeHarbour.TraderPosition) < HomeHarbour.TradeRange, "Gunnar is in reach from the deck");
         Check(Vector3.Distance(s, HomeHarbour.TraderPosition) < HomeHarbour.CargoRange, "a moored ship counts for selling cargo");
 

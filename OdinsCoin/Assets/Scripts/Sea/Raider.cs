@@ -95,9 +95,9 @@ namespace OdinsCoin
             foreach (var a in archers)
             {
                 if (Random.value < 0.35f) continue;
-                float z = Random.Range(-6f, 6f);
-                LongshipBuilder.Station(z / (LongshipBuilder.Length / 2f), out hw, out k, out g);
-                Vector3 local = new Vector3(Random.Range(-hw + 0.4f, hw - 0.4f), LongshipBuilder.DeckHeight + 0.2f, z);
+                float z = Random.Range(-0.66f, 0.66f) * target.HalfLength;
+                target.Station(z / target.HalfLength, out hw, out k, out g);
+                Vector3 local = new Vector3(Random.Range(-hw + 0.4f, hw - 0.4f), target.DeckY + 0.2f, z);
                 // Aim at the player when they're on deck, more or less.
                 var player = GameBootstrap.Instance != null ? GameBootstrap.Instance.Player : null;
                 Vector3 aim = player != null && player.OnShip && Random.value < 0.6f
@@ -112,10 +112,10 @@ namespace OdinsCoin
         void CheckRams()
         {
             if (Time.time - lastRamHit < 1.5f) return;
-            float half = LongshipBuilder.Length / 2f - 0.5f;
+            float half = Ship.HalfLength - 0.5f;
             // The player rams us.
-            Vector3 theirBow = target.transform.TransformPoint(new Vector3(0f, 0.3f, half));
-            if (SeaMath.InsideHull(transform.InverseTransformPoint(theirBow)))
+            Vector3 theirBow = target.transform.TransformPoint(new Vector3(0f, 0.3f, target.HalfLength - 0.5f));
+            if (Ship.InsideHull(transform.InverseTransformPoint(theirBow)))
             {
                 float closing = Vector3.Dot(target.Body.GetPointVelocity(theirBow) - Ship.Body.GetPointVelocity(theirBow), target.transform.forward);
                 float dmg = SeaMath.RamDamage(closing, Fortune.Current.MeleeDamageMultiplier);
@@ -130,7 +130,7 @@ namespace OdinsCoin
             }
             // We ram the player.
             Vector3 ourBow = transform.TransformPoint(new Vector3(0f, 0.3f, half));
-            if (SeaMath.InsideHull(target.transform.InverseTransformPoint(ourBow)))
+            if (target.InsideHull(target.transform.InverseTransformPoint(ourBow)))
             {
                 float closing = Vector3.Dot(Ship.Body.GetPointVelocity(ourBow) - target.Body.GetPointVelocity(ourBow), transform.forward);
                 if (SeaMath.RamDamage(closing, 1f) > 0f)
@@ -151,8 +151,8 @@ namespace OdinsCoin
         {
             Vector3 local = transform.InverseTransformPoint(p);
             float hw, k, g;
-            LongshipBuilder.Station(Mathf.Clamp(local.z / (LongshipBuilder.Length / 2f), -1f, 1f), out hw, out k, out g);
-            return Mathf.Abs(local.z) < LongshipBuilder.Length / 2f + reach && Mathf.Abs(local.x) < hw + reach && local.y < g + 2.5f;
+            Ship.Station(Mathf.Clamp(local.z / Ship.HalfLength, -1f, 1f), out hw, out k, out g);
+            return Mathf.Abs(local.z) < Ship.HalfLength + reach && Mathf.Abs(local.x) < hw + reach && local.y < g + 2.5f;
         }
 
         public void TakeDamage(float amount, Vector3 at)

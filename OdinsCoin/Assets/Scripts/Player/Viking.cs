@@ -64,7 +64,7 @@ namespace OdinsCoin
             v.Ship = ship;
             v.Rebuild(HeroChoice.Load());
             // Start on deck, amidships.
-            v.PlaceOnShip(new Vector3(0f, LongshipBuilder.DeckHeight + 0.05f, -1f));
+            v.PlaceOnShip(new Vector3(0f, ship.DeckY + 0.05f, -1f));
             return v;
         }
 
@@ -94,7 +94,7 @@ namespace OdinsCoin
         {
             DropChest();
             if (AtHelm) { AtHelm = false; SetHelm(false); }
-            PlaceOnShip(new Vector3(0f, LongshipBuilder.DeckHeight + 0.05f, -1f));
+            PlaceOnShip(new Vector3(0f, Ship.DeckY + 0.05f, -1f));
         }
 
         void PlaceOnShip(Vector3 local)
@@ -216,8 +216,8 @@ namespace OdinsCoin
                 // must not leave you behind). Past the side, you're overboard.
                 Vector3 local = ship.InverseTransformPoint(transform.position);
                 float hw, k, g;
-                LongshipBuilder.Station(Mathf.Clamp(local.z / (LongshipBuilder.Length / 2f), -1f, 1f), out hw, out k, out g);
-                bool above = Mathf.Abs(local.x) < hw && Mathf.Abs(local.z) < LongshipBuilder.Length / 2f && local.y > -0.3f;
+                Ship.Station(Mathf.Clamp(local.z / Ship.HalfLength, -1f, 1f), out hw, out k, out g);
+                bool above = Mathf.Abs(local.x) < hw && Mathf.Abs(local.z) < Ship.HalfLength && local.y > -0.3f;
                 OnShip = above && !Swimming;
                 if (OnShip)
                 {
@@ -338,8 +338,9 @@ namespace OdinsCoin
                 // Haul yourself over the side nearest to you.
                 Vector3 local = Ship.transform.InverseTransformPoint(transform.position);
                 float hw, k, g;
-                LongshipBuilder.Station(Mathf.Clamp(local.z / (LongshipBuilder.Length / 2f), -0.7f, 0.7f), out hw, out k, out g);
-                PlaceOnShip(new Vector3(Mathf.Sign(local.x) * (hw - 0.8f), LongshipBuilder.DeckHeight + 0.05f, Mathf.Clamp(local.z, -6f, 6f)));
+                Ship.Station(Mathf.Clamp(local.z / Ship.HalfLength, -0.7f, 0.7f), out hw, out k, out g);
+                float along = Ship.HalfLength * 0.66f;
+                PlaceOnShip(new Vector3(Mathf.Sign(local.x) * (hw - 0.8f), Ship.DeckY + 0.05f, Mathf.Clamp(local.z, -along, along)));
             }
         }
 
@@ -377,9 +378,9 @@ namespace OdinsCoin
         {
             Vector3 local = Ship.transform.InverseTransformPoint(transform.position);
             float hw, k, g;
-            LongshipBuilder.Station(Mathf.Clamp(local.z / (LongshipBuilder.Length / 2f), -1f, 1f), out hw, out k, out g);
+            Ship.Station(Mathf.Clamp(local.z / Ship.HalfLength, -1f, 1f), out hw, out k, out g);
             float outside = Mathf.Max(0f, Mathf.Abs(local.x) - hw);
-            float past = Mathf.Max(0f, Mathf.Abs(local.z) - LongshipBuilder.Length / 2f);
+            float past = Mathf.Max(0f, Mathf.Abs(local.z) - Ship.HalfLength);
             return Mathf.Sqrt(outside * outside + past * past);
         }
 

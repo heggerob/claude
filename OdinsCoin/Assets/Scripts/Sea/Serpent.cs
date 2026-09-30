@@ -114,7 +114,7 @@ namespace OdinsCoin
                     break;
                 case SerpentBrain.Phase.Striking:
                 case SerpentBrain.Phase.Stunned:
-                    goal = ship.transform.TransformPoint(new Vector3(side * 1.6f, LongshipBuilder.Freeboard + 0.4f, strikeZ));
+                    goal = ship.transform.TransformPoint(new Vector3(side * ship.Beam * 0.35f, ship.Freeboard + 0.4f, strikeZ));
                     follow = Brain.State == SerpentBrain.Phase.Striking ? 14f : 20f;
                     break;
                 case SerpentBrain.Phase.Diving:
@@ -134,8 +134,8 @@ namespace OdinsCoin
         {
             ship.Hull.Holes += 1;
             ship.Hull.Flood(0.15f);
-            Vector3 impact = ship.transform.TransformPoint(new Vector3(side * 1.2f, LongshipBuilder.DeckHeight, strikeZ));
-            ship.Body.AddForceAtPosition(Vector3.down * ShipTuning.Mass * 2.5f, impact, ForceMode.Impulse);
+            Vector3 impact = ship.transform.TransformPoint(new Vector3(side * ship.Beam * 0.26f, ship.DeckY, strikeZ));
+            ship.Body.AddForceAtPosition(Vector3.down * ship.Body.mass * 2.5f, impact, ForceMode.Impulse);
             var player = GameBootstrap.Instance != null ? GameBootstrap.Instance.Player : null;
             if (player != null && Vector3.Distance(player.transform.position, impact) < StrikeRadius)
             {

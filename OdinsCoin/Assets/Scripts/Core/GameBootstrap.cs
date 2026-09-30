@@ -35,6 +35,8 @@ namespace OdinsCoin
         public const float SunIntensity = 1.15f;
         /// <summary>Where the fog starts and ends (m); the real North sees much further.</summary>
         public static float FogStart = 40f, FogEnd = 220f;
+        /// <summary>The ship the voyage starts with: one of the new classes (null for the classic longship).</summary>
+        public static ShipDesign PlayerDesign = ShipDesign.Wavewolf;
 
         void Update()
         {
@@ -63,7 +65,9 @@ namespace OdinsCoin
             HomeHarbour.Build(transform);
 
             // The voyage starts moored at the home jetty, sail furled.
-            Ship = Longship.Create(transform, HomeHarbour.ShipStart, HomeHarbour.ShipStartHeading);
+            Ship = PlayerDesign != null
+                ? Longship.Create(transform, HomeHarbour.ShipStart, HomeHarbour.ShipStartHeading, PlayerDesign, PlayerLook())
+                : Longship.Create(transform, HomeHarbour.ShipStart, HomeHarbour.ShipStartHeading);
             Ship.Furl();
             Ship.PlayerShip = true;
             // The helm only listens to the keyboard while the Viking holds the steering oar.
@@ -106,6 +110,15 @@ namespace OdinsCoin
             Ocean.Follow(cam.transform);
             // The title screen goes up last, over the live harbour.
             gameObject.AddComponent<GameMenu>();
+        }
+
+        /// <summary>The player's ship in the home colours: the red-and-black sail of the jarl's house.</summary>
+        static ShipLook PlayerLook()
+        {
+            var look = new ShipLook();
+            look.sail = Materials.Sail;
+            look.stripe = Materials.SailStripe;
+            return look;
         }
 
         static Camera SetupCamera()

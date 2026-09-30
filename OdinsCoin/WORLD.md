@@ -53,7 +53,7 @@ med ror, seil i vinden og årer.
     - **Brygge:** på påler.
     - **Kirke:** liten, i stein, med klokkegavl, til klostrene.
   - Plassert ved de ekte stedene (se punkt 4).
-- [ ] **6. Nye skip:** egne, oppdiktede skipsklasser som er større enn langskip, med flere master, høy
+- [x] **6. Nye skip:** egne, oppdiktede skipsklasser som er større enn langskip, med flere master, høy
   akterkastell, dragehoder og tunge årerekker. Hvert skip er en design (lengde, bredde, dypgang, vekt, master,
   seil, årer, ror).
   - Ferdig (`Ship/ShipDesign.cs`): fire klasser.
@@ -76,7 +76,14 @@ med ror, seil i vinden og årer.
       latinseil går høyere enn råseil.
     - **Krenging:** krigsgaleien krenger noen grader i sterk sidevind.
     - **Svinging:** små skip svinger mye raskere enn store.
-  - Gjenstår: koble fysikken til skipene i spillet (oppdrift på bølgene per celle i skroget).
+  - Koblet inn i spillet: du starter nå med en **Wavewolf** (30 m, 94 tonn) i stedet for det gamle langskipet.
+    - Hun flyter på bølgene med oppdrift per celle i bunnen, og vannet, vinden, seilene, årene og roret
+      virker på henne etter de ekte tallene.
+    - Mannskapet svinger roret over på rundt 2 sekunder og setter eller tar ned seilene på rundt 8 sekunder.
+    - Rår brasses rundt mot vinden, så langt riggen tillater, og seilduken samles opp mot råa når seilene tas ned.
+    - Hun har dekk du kan gå på, rekker, ror, alteret til Odins mynt, og kan gå på grunn på den ekte havbunnen.
+    - Ror du mens du legger roret over, drar yttersiden hardere.
+  - Gjenstår: raiderne seiler fortsatt med den gamle, enklere fysikken.
 - [ ] **8. Seiling i praksis:** kryssing mot vinden, rev av seil i storm, ankring, fortøying ved brygga.
 
 ## Merk

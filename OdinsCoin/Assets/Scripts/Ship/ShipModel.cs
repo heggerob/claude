@@ -39,14 +39,17 @@ namespace OdinsCoin
             gunwale = d.freeboard + d.freeboard * rise * Mathf.Pow(a, 3f);
         }
 
-        public static VikingModel Build(ShipDesign d, ShipLook look)
+        public static VikingModel Build(ShipDesign d, ShipLook look) { return Build(d, look, true); }
+
+        /// <summary>The ship; without <paramref name="sails"/> the yards and sails are left off (to be hung on their own, see <see cref="SailParts"/>).</summary>
+        public static VikingModel Build(ShipDesign d, ShipLook look, bool sails)
         {
             var m = new VikingModel();
             m.AddJoint(Joint, null, Vector3.zero);
             Hull(m, d, look);
             Posts(m, d, look);
             if (d.length >= 40f) SternCastle(m, d, look);
-            Rigging(m, d, look);
+            Rigging(m, d, look, sails);
             Oars(m, d, look);
             if (d.length >= 25f) Shields(m, d, look);
             RudderBlade(m, d, look);
@@ -178,7 +181,7 @@ namespace OdinsCoin
             }
         }
 
-        static void Rigging(VikingModel m, ShipDesign d, ShipLook look)
+        static void Rigging(VikingModel m, ShipDesign d, ShipLook look, bool sails)
         {
             float deckY = d.freeboard - 0.5f;
             foreach (var s in d.sails)
@@ -186,8 +189,8 @@ namespace OdinsCoin
                 float height = s.height * 1.75f;
                 float r = 0.12f + s.height * 0.012f;
                 m.Add(Joint, look.strake, MeshData.Tube(new[] { new Vector3(0f, deckY, s.x), new Vector3(0f, height, s.x) }, new[] { r, r * 0.6f }, 8), true, SurfaceKind.Wood);
-                if (s.rig == Rig.Square) SquareSail(m, s, deckY, height, look);
-                else LateenSail(m, s, deckY, height, look);
+                if (sails && s.rig == Rig.Square) SquareSail(m, m, s, deckY, height, look);
+                else if (sails) LateenSail(m, m, s, deckY, height, look);
                 // Stays down to the rail, fore and aft.
                 m.Add(Joint, look.iron, MeshData.Tube(new[] { new Vector3(0f, height, s.x), new Vector3(0f, d.freeboard, s.x + height * 0.5f) }, new[] { 0.03f, 0.03f }, 4), false);
                 m.Add(Joint, look.iron, MeshData.Tube(new[] { new Vector3(0f, height, s.x), new Vector3(0f, d.freeboard, s.x - height * 0.45f) }, new[] { 0.03f, 0.03f }, 4), false);
@@ -195,12 +198,12 @@ namespace OdinsCoin
         }
 
         /// <summary>A striped square sail hung from a yard across the mast, bellied forward, with a rune sewn on the middle.</summary>
-        static void SquareSail(VikingModel m, SailPlan s, float deckY, float mastTop, ShipLook look)
+        static void SquareSail(VikingModel yard, VikingModel m, SailPlan s, float deckY, float mastTop, ShipLook look)
         {
             float top = mastTop * 0.93f;
             float h = Mathf.Sqrt(s.area * 0.85f), w = s.area / h;
             float bottom = top - h;
-            m.Add(Joint, look.strake, MeshData.Tube(new[] { new Vector3(-w * 0.58f, top, s.x + 0.2f), new Vector3(0f, top + 0.15f, s.x + 0.25f), new Vector3(w * 0.58f, top, s.x + 0.2f) }, new[] { 0.1f, 0.14f, 0.1f }, 6), true, SurfaceKind.Wood);
+            yard.Add(Joint, look.strake, MeshData.Tube(new[] { new Vector3(-w * 0.58f, top, s.x + 0.2f), new Vector3(0f, top + 0.15f, s.x + 0.25f), new Vector3(w * 0.58f, top, s.x + 0.2f) }, new[] { 0.1f, 0.14f, 0.1f }, 6), true, SurfaceKind.Wood);
             const int stripes = 6, rows = 6;
             for (int k = 0; k < stripes; k++)
             {
@@ -227,12 +230,12 @@ namespace OdinsCoin
         }
 
         /// <summary>A lateen: a long yard slanting up from low forward to high aft, a triangle of sail beneath it.</summary>
-        static void LateenSail(VikingModel m, SailPlan s, float deckY, float mastTop, ShipLook look)
+        static void LateenSail(VikingModel yard, VikingModel m, SailPlan s, float deckY, float mastTop, ShipLook look)
         {
             float span = Mathf.Sqrt(s.area * 2.6f);
             var fore = new Vector3(0f, deckY + 1.5f, s.x + span * 0.45f);
             var aft = new Vector3(0f, mastTop * 1.05f, s.x - span * 0.55f);
-            m.Add(Joint, look.strake, MeshData.Tube(new[] { fore, aft }, new[] { 0.1f, 0.06f }, 6), true, SurfaceKind.Wood);
+            yard.Add(Joint, look.strake, MeshData.Tube(new[] { fore, aft }, new[] { 0.1f, 0.06f }, 6), true, SurfaceKind.Wood);
             var clew = new Vector3(0f, deckY + 1.2f, s.x - span * 0.35f);
             const int rows = 6;
             var grid = new Vector3[rows, 2];
@@ -246,6 +249,35 @@ namespace OdinsCoin
                 grid[r, 1] = Vector3.Lerp(onYard, foot, 0.98f) + new Vector3(0.12f + belly, 0f, 0f);
             }
             m.Add(Joint, look.stripe, CharacterKit.Sheet(grid, Vector3.right, 0.05f), true, SurfaceKind.Cloth);
+        }
+
+        /// <summary>
+        /// One sail on its own, to hang from the ship so it can brace round and furl: its yard, its cloth, where it
+        /// turns (on the mast, at the yard) and where the cloth gathers when furled (the yard). All in ship space.
+        /// </summary>
+        public static void SailParts(ShipDesign d, int index, ShipLook look, out VikingModel yard, out VikingModel cloth, out Vector3 pivot, out Vector3 gather)
+        {
+            var s = d.sails[index];
+            float deckY = d.freeboard - 0.5f, height = s.height * 1.75f;
+            yard = new VikingModel();
+            yard.AddJoint(Joint, null, Vector3.zero);
+            cloth = new VikingModel();
+            cloth.AddJoint(Joint, null, Vector3.zero);
+            if (s.rig == Rig.Square)
+            {
+                SquareSail(yard, cloth, s, deckY, height, look);
+                pivot = gather = new Vector3(0f, height * 0.93f, s.x);
+            }
+            else
+            {
+                LateenSail(yard, cloth, s, deckY, height, look);
+                float span = Mathf.Sqrt(s.area * 2.6f);
+                pivot = new Vector3(0f, height * 0.7f, s.x);
+                gather = (new Vector3(0f, deckY + 1.5f, s.x + span * 0.45f) + new Vector3(0f, height * 1.05f, s.x - span * 0.55f)) / 2f;
+            }
+            float ink = 0.06f * Mathf.Sqrt(d.length / 20f);
+            yard.AddOutlines(ink, new Color(0.08f, 0.06f, 0.05f));
+            cloth.AddOutlines(ink, new Color(0.08f, 0.06f, 0.05f));
         }
 
         static void Oars(VikingModel m, ShipDesign d, ShipLook look)
