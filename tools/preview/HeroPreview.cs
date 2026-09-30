@@ -564,6 +564,23 @@ public static class HeroPreview
         var berth = jetty.at + jettyTurn * new Vector3(2f + wolf.beam / 2f + 0.5f, 0.2f, 22f) - centre;
         foreach (var piece in ShipModel.Build(wolf, new ShipLook()).Pieces)
             m.Pieces.Add(new VikingModel.Piece { joint = J, color = piece.color, mesh = piece.mesh.Transformed(berth, jettyTurn, Vector3.one), surface = piece.surface, outline = piece.outline, ink = piece.ink });
+        // Her crew on deck, as the game puts them.
+        int hand = 0;
+        foreach (var station in Crew.Stations(wolf))
+        {
+            var mate = Full(NpcHeroes.Townsfolk(wolf.id.GetHashCode() + hand * 13));
+            hand++;
+            var still = new Pose();
+            var at = berth + jettyTurn * station.Key;
+            var turn = jettyTurn * Quaternion.Euler(0f, station.Value, 0f);
+            foreach (var piece in mate.Pieces)
+            {
+                if (!Visible(new Shot { model = mate, pose = still }, piece.joint)) continue;
+                Vector3 jp; Quaternion jr;
+                World(mate, still, piece.joint, out jp, out jr);
+                m.Pieces.Add(new VikingModel.Piece { joint = J, color = piece.color, mesh = piece.mesh.Transformed(jp, jr, Vector3.one).Transformed(at, turn, Vector3.one), surface = piece.surface, outline = piece.outline, ink = piece.ink });
+            }
+        }
 
         const int w = 1800, h = 1000;
         var img = new float[w * h * 3];

@@ -250,6 +250,17 @@ public static class LogicTests
             Check(TreasureChest.TierName(0) == "chest" && TreasureChest.TierName(3) == "Odin's hoard", "the tiers have names");
             Check(TreasureChest.TrimColour(0).r != TreasureChest.TrimColour(1).r && TreasureChest.TrimColour(1).b != TreasureChest.TrimColour(2).b, "a chest's bands show its tier");
             Check(Stake.Offer(200, 400).Contains("400") && Stake.Offer(200, 400).Contains("50%"), "the offer shows what you could win and the odds");
+            foreach (var design in new[] { ShipDesign.Wavewolf, ShipDesign.Skerrycutter })
+            {
+                var st = Crew.Stations(design);
+                bool aboard = st.Count == Crew.Count;
+                foreach (var s in st)
+                {
+                    aboard &= Mathf.Abs(s.Key.x) < design.beam * 0.5f - 0.3f && Mathf.Abs(s.Key.x) > 0.6f && Mathf.Abs(s.Key.z) < design.length * 0.3f && Mathf.Abs(s.Key.y - DesignedShipBuilder.DeckY(design)) < 1e-4f;
+                    aboard &= Mathf.Sign(Mathf.Sin(s.Value * Mathf.Deg2Rad)) == -Mathf.Sign(s.Key.x); // facing inboard
+                }
+                Check(aboard, "the " + design.title + "'s crew stand on her deck, clear of the mast and the sides, facing inboard");
+            }
             var tallied = new Fortune();
             Stake.Tally(tallied, true); Stake.Tally(tallied, false);
             Check(tallied.Flips == 2 && tallied.HeadsCount == 1, "stakes are counted for the boasting board");

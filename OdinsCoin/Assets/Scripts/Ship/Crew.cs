@@ -1,0 +1,110 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace OdinsCoin
+{
+    /// <summary>
+    /// Your crew: a few hands standing along the deck in homespun, watching the sea. They take a stake at Odin's
+    /// altar to heart: they cheer with their arms up when Odin smiles, and hang their heads when he takes it.
+    /// </summary>
+    public class Crew : MonoBehaviour
+    {
+        public const int Count = 4;
+        /// <summary>How long a cheer or a groan lasts (s).</summary>
+        public const float ReactTime = 2.5f;
+
+        public static Crew Instance { get; private set; }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() { Instance = null; }
+
+        /// <summary>
+        /// Where the hands stand (ship space) and which way they face (yaw): alternately to port and starboard, spread
+        /// along the waist of the ship, a step in from the side, facing inboard.
+        /// </summary>
+        public static List<KeyValuePair<Vector3, float>> Stations(ShipDesign d)
+        {
+            var list = new List<KeyValuePair<Vector3, float>>();
+            float deck = DesignedShipBuilder.DeckY(d);
+            for (int i = 0; i < Count; i++)
+            {
+                float side = i % 2 == 0 ? -1f : 1f;
+                float z = Mathf.Lerp(-0.2f, 0.22f, i / (float)(Count - 1)) * d.length;
+                list.Add(new KeyValuePair<Vector3, float>(new Vector3(side * d.beam * 0.28f, deck, z), side > 0f ? -90f : 90f));
+            }
+            return list;
+        }
+
+        class Hand
+        {
+            public Transform root;
+            public VikingBuilder.Parts parts;
+            public readonly HeroAnimator animator = new HeroAnimator();
+            public readonly Locomotion loco = new Locomotion();
+        }
+
+        readonly List<Hand> hands = new List<Hand>();
+        float reactUntil = -1f;
+        bool cheering;
+
+        /// <summary>Put the crew aboard a ship (replacing any crew she had).</summary>
+        public static Crew Create(Longship ship)
+        {
+            if (Instance != null) Destroy(Instance.gameObject);
+            var go = new GameObject("Crew");
+            go.transform.SetParent(ship.transform, false);
+            var crew = go.AddComponent<Crew>();
+            int n = 0;
+            foreach (var station in Stations(ship.Design))
+            {
+                var h = new Hand();
+                h.root = new GameObject("Hand").transform;
+                h.root.SetParent(go.transform, false);
+                h.root.localPosition = station.Key;
+                h.root.localRotation = Quaternion.Euler(0f, station.Value, 0f);
+                h.loco.Reset(Vector2.zero, 0f);
+                h.parts = HeroBuilder.Build(h.root, NpcHeroes.Townsfolk(ship.Design.id.GetHashCode() + n * 13));
+                crew.hands.Add(h);
+                n++;
+            }
+            Instance = crew;
+            return crew;
+        }
+
+        /// <summary>The crew sees how a stake went.</summary>
+        public void React(bool won)
+        {
+            cheering = won;
+            reactUntil = Time.time + ReactTime;
+            foreach (var h in hands) Face.On(h.root, won ? Expression.Happy : Expression.Hurt, ReactTime);
+        }
+
+        void Update()
+        {
+            float dt = Time.deltaTime;
+            bool reacting = Time.time < reactUntil;
+            for (int i = 0; i < hands.Count; i++)
+            {
+                var h = hands[i];
+                if (h.parts == null) continue;
+                h.loco.Step(Vector2.zero, 0f, dt);
+                h.animator.Step(dt, h.loco, true, 0f, false, Time.time + i * 1.7f);
+                h.animator.Apply(h.parts);
+                if (!reacting) continue;
+                if (cheering)
+                {
+                    // Both arms flung up, pumping.
+                    float pump = Mathf.Sin(Time.time * 11f + i) * 15f;
+                    if (h.parts.leftArm != null) h.parts.leftArm.localRotation = Quaternion.Euler(-165f + pump, 0f, -18f);
+                    if (h.parts.rightArm != null) h.parts.rightArm.localRotation = Quaternion.Euler(-165f - pump, 0f, 18f);
+                }
+                else if (h.parts.head != null)
+                {
+                    // Heads down, shoulders slumped.
+                    h.parts.head.localRotation = Quaternion.Euler(28f, 0f, 0f);
+                    if (h.parts.body != null) h.parts.body.localRotation = Quaternion.Euler(10f, 0f, 0f);
+                }
+            }
+        }
+    }
+}

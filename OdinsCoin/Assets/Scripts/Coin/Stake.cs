@@ -92,6 +92,7 @@ namespace OdinsCoin
         public static void Cheer(Transform staker, Vector3 at, bool won)
         {
             Tally(Fortune.Current, won);
+            if (Crew.Instance != null) Crew.Instance.React(won);
             Face.On(staker, won ? Expression.Happy : Expression.Hurt, won ? 3f : 1.5f);
         }
 

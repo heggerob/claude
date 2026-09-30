@@ -77,6 +77,7 @@ namespace OdinsCoin
             Player.gameObject.AddComponent<VikingCombat>();
             gameObject.AddComponent<CombatHud>().Player = Player.GetComponent<VikingCombat>();
             CoinAltar.Create(Ship);
+            Crew.Create(Ship);
             gameObject.AddComponent<Ravens>();
             gameObject.AddComponent<MeadHallUI>().Ship = Ship;
             gameObject.AddComponent<Storm>();
@@ -145,6 +146,7 @@ namespace OdinsCoin
             }
             Ship = ship;
             CoinAltar.Create(ship);
+            Crew.Create(ship);
             if (Player != null)
             {
                 Player.Ship = ship;
