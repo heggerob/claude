@@ -468,7 +468,7 @@ namespace OdinsCoin
                             float a = (i + 0.5f) / 14f * Mathf.PI * 2f;
                             d.Add(Joints.OffHand, d.pal.metal, MeshData.Ellipsoid(at + new Vector3(Mathf.Cos(a) * rad * 0.9f, Mathf.Sin(a) * rad * 0.9f, 0.016f * s), Vector3.one * 0.009f * s, 5, 3), false);
                         }
-                        d.Add(Joints.OffHand, d.pal.metal, MeshData.Dome(Vector3.zero, new Vector3(0.08f, 0.065f, 0.08f) * s, 14, 5).Transformed(at + new Vector3(0f, 0f, 0.012f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one));
+                        d.Add(Joints.OffHand, d.pal.metal, MeshData.Dome(Vector3.zero, new Vector3(0.105f, 0.08f, 0.105f) * s, 14, 5).Transformed(at + new Vector3(0f, 0f, 0.012f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one));
                         // The triquetra: three pointed lobes (vesicas) meeting at the boss, woven with a circle.
                         for (int k = 0; k < 3; k++)
                         {
