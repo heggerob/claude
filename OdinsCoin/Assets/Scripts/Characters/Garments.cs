@@ -212,8 +212,8 @@ namespace OdinsCoin
                 float lump = (0.035f + (float)rng.NextDouble() * 0.03f) * s * size;
                 d.Add(Joints.Body, i % 4 == 0 ? d.pal.furShadow : d.pal.fur, MeshData.Ellipsoid(p, new Vector3(lump * 1.3f, lump * 0.7f, lump), 7, 4));
             }
-            // The pelt rises behind the neck like a mane, framing the head.
-            d.Add(Joints.Body, d.pal.fur, MeshData.Ellipsoid(new Vector3(0f, f.shoulderY + 0.05f * s * size, -f.chestR * f.depth * 0.7f), new Vector3(r * 0.7f, 0.07f * s * size, 0.06f * s), 14, 7));
+            // The pelt rises behind the neck like a mane, framing the head (not when it's slung over one shoulder).
+            if (side == 0f) d.Add(Joints.Body, d.pal.fur, MeshData.Ellipsoid(new Vector3(0f, f.shoulderY + 0.05f * s * size, -f.chestR * f.depth * 0.7f), new Vector3(r * 0.7f, 0.07f * s * size, 0.06f * s), 14, 7));
         }
 
         /// <summary>A wide belt with a big brass buckle, a ring, pouches and a strap across the chest.</summary>
@@ -1340,12 +1340,13 @@ namespace OdinsCoin
         {
             var f = d.fit;
             float s = d.S;
+            // A loose cowl gathered low round the neck, so a little of the thin neck shows above it as in the concept art.
             d.Add(Joints.Body, d.pal.accent, MeshData.Lathe(new[] {
-                new Vector2(f.chestR * 0.5f, f.neckY - 0.03f * s), new Vector2(f.chestR * 0.85f, f.neckY + 0.01f * s), new Vector2(f.chestR * 0.6f, f.neckY + 0.04f * s) }, 16)
+                new Vector2(f.chestR * 0.5f, f.neckY - 0.06f * s), new Vector2(f.chestR * 0.88f, f.neckY - 0.025f * s), new Vector2(f.chestR * 0.68f, f.neckY + 0.005f * s) }, 16)
                 .Transformed(Vector3.zero, Quaternion.identity, new Vector3(1f, 1f, 0.95f)));
             // A wide capelet over both shoulders, down to the upper arms, falling to a ragged point at the front of the chest.
             float capeBottom = f.shoulderY - 0.14f * s;
-            d.Add(Joints.Body, d.pal.accent, CharacterKit.RaggedSkirt(f.neckY + 0.01f * s, f.chestR * 0.7f, capeBottom, f.shoulderX + 0.11f * s, 0.85f, 24, 0.06f * s, d.seed + 83,
+            d.Add(Joints.Body, d.pal.accent, CharacterKit.RaggedSkirt(f.neckY - 0.025f * s, f.chestR * 0.75f, capeBottom, f.shoulderX + 0.11f * s, 0.85f, 24, 0.06f * s, d.seed + 83,
                 a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return -0.12f * s * c * c * c * c; }, a => { float c = Mathf.Max(0f, Mathf.Cos(a)); return Mathf.Lerp(1f, 0.6f, c * c); }));
             // The hood, down, bunched behind the neck.
             d.Add(Joints.Body, VikingModel.Shade(d.pal.accent, 0.85f), MeshData.Ellipsoid(new Vector3(0f, f.neckY + 0.02f * s, -f.chestR * 0.7f), new Vector3(0.11f, 0.08f, 0.07f) * s, 12, 7));
