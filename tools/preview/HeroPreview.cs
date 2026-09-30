@@ -16,6 +16,8 @@ public static class HeroPreview
         public Dictionary<string, Vector3> pos = new Dictionary<string, Vector3>();
         /// <summary>Joints whose world orientation is set directly (props held at an exact angle).</summary>
         public Dictionary<string, Quaternion> worldRot = new Dictionary<string, Quaternion>();
+        /// <summary>Capes bent by a swing (pitch, roll in degrees), as the game's ClothSway bends them.</summary>
+        public Dictionary<string, Vector2> bend = new Dictionary<string, Vector2>();
     }
 
     public class Shot
@@ -260,7 +262,8 @@ public static class HeroPreview
     static void MotionStrip(string rgbaPath, string labelPath, VikingModel model)
     {
         var springs = new Dictionary<string, SwingSpring>();
-        foreach (var sw in model.Swings) springs[sw.joint] = SwingSpring.For(sw.kind);
+        var capes = new HashSet<string>();
+        foreach (var sw in model.Swings) { springs[sw.joint] = SwingSpring.For(sw.kind); if (sw.kind == SwingKind.Cape) capes.Add(sw.joint); }
         var frames = new List<Shot>();
         var captures = new[] { 0.2f, 1.30f, 1.39f, 1.48f, 1.57f, 2.40f, 2.47f, 2.54f, 2.61f, 2.9f, 3.14f, 3.2f, 3.38f, 3.56f, 3.66f, 3.76f, 4.9f };
         var names = new[] { "Standing", "Walk 1", "Walk 2", "Walk 3", "Walk 4", "Run 1", "Run 2", "Run 3", "Run 4", "Banking into a turn",
@@ -297,7 +300,10 @@ public static class HeroPreview
             if (t >= captures[next])
             {
                 var pose = FromAnimator(anim.pose);
-                foreach (var kv in springs) pose.rot[kv.Key] = kv.Value.Rotation;
+                // Capes bend (as in the game), the rest swing stiffly.
+                foreach (var kv in springs)
+                    if (capes.Contains(kv.Key)) pose.bend[kv.Key] = new Vector2(kv.Value.pitch, kv.Value.roll);
+                    else pose.rot[kv.Key] = kv.Value.Rotation;
                 // (The jump is drawn at half height so the whole hero stays in the frame.)
                 pose.pos[Joints.Body] += new Vector3(0f, y * 0.5f, 0f);
                 // Side-on, except the turn, which is seen from the front to show the bank and the head looking round.
@@ -555,6 +561,15 @@ public static class HeroPreview
                 img[i] *= k; img[i + 1] *= k; img[i + 2] *= k;
             }
 
+        // How far each bent cape hangs, over all its pieces (as the game measures it).
+        var bendLength = new Dictionary<string, float>();
+        foreach (var piece in shot.model.Pieces)
+            if (shot.pose.bend.ContainsKey(piece.joint))
+            {
+                float l;
+                bendLength.TryGetValue(piece.joint, out l);
+                bendLength[piece.joint] = Mathf.Max(l, ClothBend.Length(piece.mesh.Vertices));
+            }
         foreach (var piece in shot.model.Pieces)
         {
             if (!Visible(shot, piece.joint)) continue;
@@ -566,7 +581,10 @@ public static class HeroPreview
             int n = mesh.Vertices.Count;
             var world = new Vector3[n];
             var normal = new Vector3[n];
-            for (int i = 0; i < n; i++) world[i] = jp + jr * mesh.Vertices[i];
+            Vector2 bend;
+            bool bent = shot.pose.bend.TryGetValue(piece.joint, out bend);
+            for (int i = 0; i < n; i++)
+                world[i] = jp + jr * (bent ? ClothBend.Apply(mesh.Vertices[i], bendLength[piece.joint], bend.x, bend.y) : mesh.Vertices[i]);
             for (int t = 0; t < mesh.Triangles.Count; t += 3)
             {
                 int a = mesh.Triangles[t], b = mesh.Triangles[t + 1], c = mesh.Triangles[t + 2];

@@ -264,6 +264,26 @@ public static class LogicTests
         for (int i = 0; i < 100; i++) { wild.Step(0.25f, new Vector3(30f, 0f, -30f), new Vector3(500f, 0f, -500f)); if (float.IsNaN(wild.pitch) || Math.Abs(wild.pitch) > 90f || Math.Abs(wild.roll) > 90f) bounded = false; }
         Check(bounded, "huge jolts and slow frames never make it spin or blow up");
 
+        // Capes bend rather than swing as a board: the top stays on the shoulders, the hem takes the whole swing,
+        // and each point further down swings a little further, so the cloth curves smoothly.
+        var top = new Vector3(0f, -0.01f, -0.1f);
+        var hem = new Vector3(0f, -1f, -0.1f);
+        float len = ClothBend.Length(new[] { top, hem, new Vector3(0.2f, -0.5f, -0.1f) });
+        Check(Math.Abs(len - 1f) < 1e-4f, "a cape's length is how far its lowest point hangs");
+        Vector3 bentTop = ClothBend.Apply(top, len, 60f, 0f), bentHem = ClothBend.Apply(hem, len, 60f, 0f);
+        Check(Vector3.Distance(bentTop, top) < 0.01f, "a bent cape stays on the shoulders (" + Vector3.Distance(bentTop, top) + ")");
+        Check(Vector3.Distance(bentHem, Quaternion.Euler(60f, 0f, 0f) * hem) < 1e-4f, "its hem swings as far as the spring says");
+        bool curves = true;
+        float lastShare = 0f;
+        for (int i = 1; i <= 20; i++)
+        {
+            float s = ClothBend.Share(i / 20f);
+            if (s < lastShare || s - lastShare > 0.2f) curves = false;
+            lastShare = s;
+        }
+        Check(curves, "further down swings further, with no kinks");
+        Check(ClothBend.Apply(hem, len, 0f, 0f) == hem, "an unswung cape keeps its shape");
+
         // Heroes get swinging joints where they have capes, banners and braids.
         var jarl = HeroModel.Build(CharacterSpec.Default(OutfitId.Jarl));
         var raider = HeroModel.Build(CharacterSpec.Default(OutfitId.Raider));

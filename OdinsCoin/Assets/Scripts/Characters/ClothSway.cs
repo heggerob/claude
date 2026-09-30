@@ -80,6 +80,34 @@ namespace OdinsCoin
 
     public enum SwingKind { Cape, Banner, Braid }
 
+    /// <summary>
+    /// Bends a hanging cloth instead of swinging it as one stiff board: the part by the pivot follows the body
+    /// and each point further down takes more of the swing, so a cape drapes from the shoulders and flares out
+    /// towards its hem. Pure maths, shared by the game and the preview.
+    /// </summary>
+    public static class ClothBend
+    {
+        /// <summary>How much of the swing a point takes at depth fraction <paramref name="t"/> (0 at the pivot, 1 at the hem).</summary>
+        public static float Share(float t) { return Mathf.Pow(Mathf.Clamp01(t), 0.8f); }
+
+        /// <summary>How far below its pivot (at the origin) a cloth hangs: the depth of its lowest point.</summary>
+        public static float Length(IEnumerable<Vector3> points)
+        {
+            float d = 0f;
+            foreach (var p in points) d = Mathf.Max(d, -p.y);
+            return d;
+        }
+
+        /// <summary>The turn a point at rest position <paramref name="rest"/> takes (angles in degrees, as <see cref="SwingSpring"/>).</summary>
+        public static Quaternion Turn(Vector3 rest, float length, float pitch, float roll)
+        {
+            float k = length > 1e-4f ? Share(-rest.y / length) : 1f;
+            return Quaternion.Euler(pitch * k, 0f, roll * k);
+        }
+
+        public static Vector3 Apply(Vector3 rest, float length, float pitch, float roll) { return Turn(rest, length, pitch, roll) * rest; }
+    }
+
     /// <summary>The air around the characters: how the sea wind reaches capes and braids.</summary>
     public static class ClothWind
     {
@@ -113,6 +141,15 @@ namespace OdinsCoin
             public Vector3 lastPos, lastVel;
             public bool primed;
             public float phase;
+            // A cape's meshes, bent rather than turned (see ClothBend); null for things that swing stiffly.
+            public List<Bendable> bends;
+            public float length;
+        }
+
+        class Bendable
+        {
+            public Mesh mesh;
+            public Vector3[] rest, restNormals, verts, normals;
         }
 
         readonly List<Entry> entries = new List<Entry>();
@@ -121,7 +158,23 @@ namespace OdinsCoin
 
         public void Add(Transform joint, SwingKind kind)
         {
-            entries.Add(new Entry { joint = joint, spring = SwingSpring.For(kind), phase = (made++) * 2.1f + joint.name.Length * 0.37f });
+            var e = new Entry { joint = joint, spring = SwingSpring.For(kind), phase = (made++) * 2.1f + joint.name.Length * 0.37f };
+            // Capes bend: keep each of their meshes' rest shape (in the joint's space: the pieces sit on it untransformed).
+            if (kind == SwingKind.Cape)
+            {
+                e.bends = new List<Bendable>();
+                foreach (var mf in joint.GetComponentsInChildren<MeshFilter>(true))
+                {
+                    var mesh = mf.sharedMesh;
+                    if (mesh == null || mesh.vertices == null) continue;
+                    var b = new Bendable { mesh = mesh, rest = mesh.vertices, restNormals = mesh.normals };
+                    b.verts = new Vector3[b.rest.Length];
+                    if (b.restNormals != null && b.restNormals.Length == b.rest.Length) b.normals = new Vector3[b.rest.Length];
+                    e.bends.Add(b);
+                    e.length = Mathf.Max(e.length, ClothBend.Length(b.rest));
+                }
+            }
+            entries.Add(e);
         }
 
         public int Count { get { return entries.Count; } }
@@ -148,7 +201,19 @@ namespace OdinsCoin
                 float speed = air.magnitude, phase = e.phase;
                 e.spring.Step(dt, toLocal * (vel - air), toLocal * Vector3.ClampMagnitude(acc, 60f),
                     ClothWind.Flutter(speed, Time.time, phase), ClothWind.Flutter(speed, Time.time, phase + 1.7f) * 0.5f);
-                e.joint.localRotation = e.spring.Rotation;
+                if (e.bends == null) { e.joint.localRotation = e.spring.Rotation; continue; }
+                foreach (var b in e.bends)
+                {
+                    for (int i = 0; i < b.rest.Length; i++)
+                    {
+                        var turn = ClothBend.Turn(b.rest[i], e.length, e.spring.pitch, e.spring.roll);
+                        b.verts[i] = turn * b.rest[i];
+                        if (b.normals != null) b.normals[i] = turn * b.restNormals[i];
+                    }
+                    b.mesh.vertices = b.verts;
+                    if (b.normals != null) b.mesh.normals = b.normals;
+                    b.mesh.RecalculateBounds();
+                }
             }
         }
     }
