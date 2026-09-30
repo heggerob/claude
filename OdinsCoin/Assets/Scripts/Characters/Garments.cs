@@ -1025,6 +1025,19 @@ namespace OdinsCoin
                 float len = (0.05f + side * 0.12f + (float)rng.NextDouble() * 0.05f) * s;
                 d.Add(Joints.Head, i % 2 == 0 ? d.pal.clothDark : d.pal.cloth, CharacterKit.Tuft(root, root + outDir * len, 0.022f * s));
             }
+            // The whole hood shaggy with layered feathers, as in the concept art: rows of long pointed feathers
+            // over the crown, sides and back, lying down and flaring out at the bottom.
+            for (int row = 0; row < 3; row++)
+                for (int i = 0; i < 12; i++)
+                {
+                    float a = Mathf.Lerp(-0.1f, Mathf.PI + 0.1f, (i + 0.5f * (row & 1)) / 11f) + ((float)rng.NextDouble() - 0.5f) * 0.15f;
+                    float el = 0.95f - row * 0.38f;
+                    var dir = new Vector3(Mathf.Cos(a) * Mathf.Cos(el), Mathf.Sin(el), -0.35f - 0.3f * Mathf.Sin(a)).normalized;
+                    var root = new Vector3(0f, cy + 0.06f * r, -0.28f * r) + Vector3.Scale(dir, new Vector3(r * 1.22f, r * 1.25f, r * 1.08f));
+                    var fall = (Vector3.down * 1f + new Vector3(dir.x, 0f, dir.z) * (0.5f + 0.25f * row)).normalized;
+                    float len = (0.1f + 0.05f * row + (float)rng.NextDouble() * 0.05f) * s;
+                    d.Add(Joints.Head, (i + row) % 3 == 0 ? d.pal.cloth : d.pal.clothDark, CharacterKit.Tuft(root, root + fall * len, 0.026f * s));
+                }
             // A soft peak at the top of the hood.
             d.Add(Joints.Head, d.pal.clothDark, MeshData.Tube(new[] { new Vector3(0f, cy + r * 1.1f, -0.25f * r), new Vector3(0f, cy + r * 1.45f, -0.45f * r), new Vector3(0f, cy + r * 1.55f, -0.75f * r) },
                 new[] { r * 0.55f, r * 0.25f, 0.004f }, 8));
