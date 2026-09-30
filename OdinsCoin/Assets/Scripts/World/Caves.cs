@@ -115,7 +115,11 @@ namespace OdinsCoin
                 new Bounds(new Vector3(-(HalfWidth + 0.8f), Height / 2f, -Depth / 2f), new Vector3(1.6f, Height, Depth + 1f)),
                 new Bounds(new Vector3(HalfWidth + 0.8f, Height / 2f, -Depth / 2f), new Vector3(1.6f, Height, Depth + 1f)),
                 new Bounds(new Vector3(0f, Height / 2f, -Depth - 0.8f), new Vector3(HalfWidth * 2f + 3f, Height, 1.6f)),
-                new Bounds(new Vector3(0f, Height + 0.6f, -Depth / 2f), new Vector3(HalfWidth * 2f + 3f, 1.2f, Depth + 1.6f)) };
+                new Bounds(new Vector3(0f, Height + 0.6f, -Depth / 2f), new Vector3(HalfWidth * 2f + 3f, 1.2f, Depth + 1.6f)),
+                // The turf knoll round it: its shoulders either side of the mouth and the hump behind.
+                new Bounds(new Vector3(-(HalfWidth + 4.5f), Height * 0.5f, -Depth / 2f), new Vector3(6f, Height * 1.6f, Depth + 4f)),
+                new Bounds(new Vector3(HalfWidth + 4.5f, Height * 0.5f, -Depth / 2f), new Vector3(6f, Height * 1.6f, Depth + 4f)),
+                new Bounds(new Vector3(0f, Height * 0.5f, -Depth - 4.5f), new Vector3(HalfWidth * 2f + 10f, Height * 2f, 6f)) };
         }
 
         /// <summary>Is a point (cave-local) inside the chamber?</summary>

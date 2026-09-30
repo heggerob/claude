@@ -384,6 +384,10 @@ public static class LogicTests
             bool wallsOut = true;
             foreach (var w in Caves.Walls()) wallsOut &= !Caves.Inside(w.center);
             Check(wallsOut, "the cave's walls don't stand in its chamber");
+            bool wayIn = true;
+            for (float z = 4f; z > -Caves.Depth + 1.5f; z -= 0.25f)
+                foreach (var w in Caves.Walls()) wayIn &= !w.Contains(new Vector3(0f, 1f, z)) && !w.Contains(new Vector3(1.2f, 1f, z));
+            Check(wayIn, "nothing solid stands in the way from in front of the mouth to the chest");
             var draugr = NpcHeroes.Draugr(5);
             Check(draugr.weapon == WeaponId.Sword && draugr.palette.cloth.g < 0.4f, "a draugr in grey, with a sword");
             var caveSave = new Upgrades();
