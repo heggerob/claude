@@ -251,9 +251,9 @@ namespace OdinsCoin
                         d.Add(Joints.Weapon, d.pal.leatherDark, MeshData.Lathe(new[] { new Vector2(0.024f * s, 0f), new Vector2(0.024f * s, 0.05f * s) }, 8).Transformed(new Vector3(0f, 0f, z * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one), false);
                     d.Add(Joints.Weapon, d.pal.metal, MeshData.Lathe(new[] { new Vector2(0.024f * s, 0f), new Vector2(0.018f * s, 0.08f * s) }, 8).Transformed(new Vector3(0f, 0f, 0.98f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one));
                     d.Add(Joints.Weapon, d.pal.metal, MeshData.Extrude(new[] {
-                        new Vector2(1.05f, 0.0f), new Vector2(1.12f, 0.055f), new Vector2(1.26f, 0.042f), new Vector2(1.38f, 0.0f), new Vector2(1.26f, -0.042f), new Vector2(1.12f, -0.055f) }, 0.018f)
+                        new Vector2(1.04f, 0.0f), new Vector2(1.13f, 0.068f), new Vector2(1.32f, 0.052f), new Vector2(1.5f, 0.0f), new Vector2(1.32f, -0.052f), new Vector2(1.13f, -0.068f) }, 0.018f)
                         .Transformed(Vector3.zero, Quaternion.identity, Vector3.one * s));
-                    d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 1.35f), MeshData.Box(new Vector3(0f, 0f, 1.21f * s), new Vector3(0.024f, 0.008f, 0.26f) * s), false);
+                    d.Add(Joints.Weapon, VikingModel.Shade(d.pal.metal, 1.35f), MeshData.Box(new Vector3(0f, 0f, 1.26f * s), new Vector3(0.024f, 0.008f, 0.36f) * s), false);
                     {
                         // The pennant: tied at the shaft, flying sideways with two torn tails.
                         const int prow = 4, pcol = 6;
