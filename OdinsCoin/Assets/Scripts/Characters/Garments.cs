@@ -258,7 +258,8 @@ namespace OdinsCoin
         {
             var f = d.fit;
             float s = d.S;
-            float top = f.waist - 0.02f * s;
+            // Hanging from just under the belt, so the buckle shows above it.
+            float top = f.waist - 0.036f * s;
             const int rows = 9, cols = 3;
             var grid = new Vector3[rows, cols];
             for (int r = 0; r < rows; r++)
