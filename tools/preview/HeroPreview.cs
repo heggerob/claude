@@ -16,7 +16,7 @@ public static class HeroPreview
         public Dictionary<string, Vector3> pos = new Dictionary<string, Vector3>();
         /// <summary>Joints whose world orientation is set directly (props held at an exact angle).</summary>
         public Dictionary<string, Quaternion> worldRot = new Dictionary<string, Quaternion>();
-        /// <summary>Capes bent by a swing (pitch, roll in degrees), as the game's ClothSway bends them.</summary>
+        /// <summary>Capes and braids bent by a swing (pitch, roll in degrees), as the game's ClothSway bends them.</summary>
         public Dictionary<string, Vector2> bend = new Dictionary<string, Vector2>();
     }
 
@@ -262,8 +262,8 @@ public static class HeroPreview
     static void MotionStrip(string rgbaPath, string labelPath, VikingModel model)
     {
         var springs = new Dictionary<string, SwingSpring>();
-        var capes = new HashSet<string>();
-        foreach (var sw in model.Swings) { springs[sw.joint] = SwingSpring.For(sw.kind); if (sw.kind == SwingKind.Cape) capes.Add(sw.joint); }
+        var bent = new HashSet<string>();
+        foreach (var sw in model.Swings) { springs[sw.joint] = SwingSpring.For(sw.kind); if (sw.kind != SwingKind.Banner) bent.Add(sw.joint); }
         var frames = new List<Shot>();
         var captures = new[] { 0.2f, 1.30f, 1.39f, 1.48f, 1.57f, 2.40f, 2.47f, 2.54f, 2.61f, 2.9f, 3.14f, 3.2f, 3.38f, 3.56f, 3.66f, 3.76f, 4.9f };
         var names = new[] { "Standing", "Walk 1", "Walk 2", "Walk 3", "Walk 4", "Run 1", "Run 2", "Run 3", "Run 4", "Banking into a turn",
@@ -300,9 +300,9 @@ public static class HeroPreview
             if (t >= captures[next])
             {
                 var pose = FromAnimator(anim.pose);
-                // Capes bend (as in the game), the rest swing stiffly.
+                // Capes and braids bend (as in the game), banners swing stiffly.
                 foreach (var kv in springs)
-                    if (capes.Contains(kv.Key)) pose.bend[kv.Key] = new Vector2(kv.Value.pitch, kv.Value.roll);
+                    if (bent.Contains(kv.Key)) pose.bend[kv.Key] = new Vector2(kv.Value.pitch, kv.Value.roll);
                     else pose.rot[kv.Key] = kv.Value.Rotation;
                 // (The jump is drawn at half height so the whole hero stays in the frame.)
                 pose.pos[Joints.Body] += new Vector3(0f, y * 0.5f, 0f);

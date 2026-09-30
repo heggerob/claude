@@ -141,7 +141,7 @@ namespace OdinsCoin
             public Vector3 lastPos, lastVel;
             public bool primed;
             public float phase;
-            // A cape's meshes, bent rather than turned (see ClothBend); null for things that swing stiffly.
+            // A cape's or braid's meshes, bent rather than turned (see ClothBend); null for things that swing stiffly.
             public List<Bendable> bends;
             public float length;
         }
@@ -159,8 +159,9 @@ namespace OdinsCoin
         public void Add(Transform joint, SwingKind kind)
         {
             var e = new Entry { joint = joint, spring = SwingSpring.For(kind), phase = (made++) * 2.1f + joint.name.Length * 0.37f };
-            // Capes bend: keep each of their meshes' rest shape (in the joint's space: the pieces sit on it untransformed).
-            if (kind == SwingKind.Cape)
+            // Capes and braids bend: keep each of their meshes' rest shape (in the joint's space: the pieces sit on it
+            // untransformed). Banners stand out sideways from their pole, so they swing stiffly.
+            if (kind == SwingKind.Cape || kind == SwingKind.Braid)
             {
                 e.bends = new List<Bendable>();
                 foreach (var mf in joint.GetComponentsInChildren<MeshFilter>(true))
