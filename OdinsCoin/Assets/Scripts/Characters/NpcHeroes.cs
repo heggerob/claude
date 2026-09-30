@@ -138,24 +138,52 @@ namespace OdinsCoin
         /// </summary>
         public const float FirstPersonRaise = 30f, FirstPersonShieldRaise = 12f;
 
-        /// <summary>The first-person lift for one arm, <paramref name="amount"/> 0..1, on top of whatever it's doing.</summary>
-        public static Quaternion FirstPersonLift(bool weaponArm, float amount)
+        /// <summary>Above this angle (degrees above straight ahead) a raised arm is folded forward, into view.</summary>
+        public const float FirstPersonFold = 20f, FirstPersonFoldKeep = 0.25f;
+
+        /// <summary>
+        /// Where an arm pointing at <paramref name="angle"/> (degrees in the body's side view: 0 straight ahead,
+        /// 90 up, 180 back over the head, -90 hanging down) is drawn in first person: lifted by up to
+        /// <paramref name="raise"/> when low, the lift fading out towards straight ahead, and anything raised
+        /// higher folded forward so an overhead wind-up stays in sight above your eyes.
+        /// </summary>
+        public static float FirstPersonAngle(float angle, float raise)
         {
-            return Quaternion.Euler(-(weaponArm ? FirstPersonRaise : FirstPersonShieldRaise) * amount, 0f, 0f);
+            if (angle <= FirstPersonFold)
+            {
+                float fade = Mathf.Clamp01((FirstPersonFold - angle) / (FirstPersonFold + 90f));
+                return angle + raise * fade;
+            }
+            return FirstPersonFold + (angle - FirstPersonFold) * FirstPersonFoldKeep;
+        }
+
+        /// <summary>The first-person turn for one arm (as a rotation in the body), <paramref name="amount"/> 0..1.</summary>
+        public static Quaternion FirstPersonLift(Quaternion arm, bool weaponArm, float amount)
+        {
+            var d = arm * Vector3.down;
+            float angle = Mathf.Atan2(d.y, d.z) * Mathf.Rad2Deg;
+            // Behind the shoulder and below it (a swing's back-swing low down) counts as hanging.
+            if (angle < -90f) angle += 360f;
+            if (angle > 270f) angle -= 360f;
+            float want = FirstPersonAngle(angle, weaponArm ? FirstPersonRaise : FirstPersonShieldRaise);
+            return Quaternion.Euler(-(want - angle) * amount, 0f, 0f);
         }
 
         /// <summary>The same lift on a pose given as joint rotations (the preview's poses).</summary>
         public static void FirstPersonArms(System.Collections.Generic.Dictionary<string, Quaternion> rot, float amount)
         {
             foreach (var j in new[] { Joints.LeftArm, Joints.RightArm })
-                rot[j] = FirstPersonLift(j == Joints.RightArm, amount) * (rot.ContainsKey(j) ? rot[j] : Quaternion.identity);
+            {
+                var r = rot.ContainsKey(j) ? rot[j] : Quaternion.identity;
+                rot[j] = FirstPersonLift(r, j == Joints.RightArm, amount) * r;
+            }
         }
 
         /// <summary>The same lift on the hero's arm bones in the game.</summary>
         public static void FirstPersonArms(VikingBuilder.Parts parts, float amount)
         {
-            if (parts.leftArm != null) parts.leftArm.localRotation = FirstPersonLift(false, amount) * parts.leftArm.localRotation;
-            if (parts.rightArm != null) parts.rightArm.localRotation = FirstPersonLift(true, amount) * parts.rightArm.localRotation;
+            if (parts.leftArm != null) parts.leftArm.localRotation = FirstPersonLift(parts.leftArm.localRotation, false, amount) * parts.leftArm.localRotation;
+            if (parts.rightArm != null) parts.rightArm.localRotation = FirstPersonLift(parts.rightArm.localRotation, true, amount) * parts.rightArm.localRotation;
         }
 
         /// <summary>

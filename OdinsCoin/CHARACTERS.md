@@ -193,4 +193,4 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
   - **Bevegelse:** du går rett dit du trykker, også sidelengs og baklengs. Du kommer raskt opp i fart og stopper enda raskere. Et hopp beholder farten, og du kan bare styre litt i lufta.
   - **Kamp:** slagene treffer dit du ser. Våpenarmen er løftet fram i synsfeltet, så øks, sverd, spyd og bue krysser bildet når du slår. Skjoldarmen er løftet mindre, så skjoldet ikke skjuler det som er foran deg.
   - **Tredjeperson:** V bytter til kameraet bak helten og tilbake, og valget huskes.
-  - [ ] Egne førstepersonsslag, slik at overhoggene også synes i bildet mens du lader opp.
+  - [x] Førstepersonsslag: en arm som løftes over hodet blir brettet fram, så du ser hendene og skaftet over øynene mens du lader opp et overhogg. En arm som henger løftes fram, og løftet blir mindre jo nærmere rett fram armen peker.

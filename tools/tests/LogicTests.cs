@@ -114,6 +114,12 @@ public static class LogicTests
         var airV = Viking.Strafe(new Vector3(0f, 0f, 5f), Vector3.back, Viking.WalkSpeed, false, 0.1f);
         var drift = Viking.Strafe(new Vector3(0f, 0f, 5f), Vector3.zero, Viking.WalkSpeed, false, 0.1f);
         Check(airV.z > 4.5f && airV.z < 5f && drift.z == 5f, "in the air a jump keeps its momentum, with only a little steering");
+        Check(Mathf.Abs(HeroPose.FirstPersonAngle(-90f, 30f) - (-60f)) < 1e-3f && Mathf.Abs(HeroPose.FirstPersonAngle(20f, 30f) - 20f) < 1e-3f,
+            "in first person a hanging arm is lifted into view, the lift fading out as the arm comes up to straight ahead");
+        Check(HeroPose.FirstPersonAngle(170f, 30f) < 70f && HeroPose.FirstPersonAngle(170f, 30f) > HeroPose.FirstPersonAngle(90f, 30f),
+            "an overhead wind-up is folded forward above your eyes, still higher than an arm raised straight up would be");
+        var hanging = HeroPose.FirstPersonLift(Quaternion.identity, true, 1f) * Vector3.down;
+        Check(hanging.z > 0.4f && hanging.y < 0f, "the lift swings a hanging weapon arm forward, not back");
         var facer = new Locomotion();
         facer.Reset(Vector2.zero, 0f);
         for (int i = 0; i < 30; i++) { facer.Face(90f); facer.Step(new Vector2(1f, 0f), Viking.WalkSpeed, 1f / 60f); facer.Face(90f); }
