@@ -213,7 +213,7 @@ namespace OdinsCoin
                 float rad = Mathf.Lerp(f.chestR * 0.62f, r, t * t) + 0.01f * s;
                 float y = Mathf.Lerp(top, bottom, t) + 0.012f * s;
                 var p = new Vector3(Mathf.Sin(a2) * rad, y, Mathf.Cos(a2) * rad * 0.8f);
-                float lump = (0.035f + (float)rng.NextDouble() * 0.03f) * s * size;
+                float lump = (0.028f + (float)rng.NextDouble() * 0.022f) * s * size;
                 d.Add(Joints.Body, i % 4 == 0 ? d.pal.furShadow : d.pal.fur, MeshData.Ellipsoid(p, new Vector3(lump * 1.3f, lump * 0.7f, lump), 7, 4));
             }
             // The pelt rises behind the neck like a mane, framing the head (not when it's slung over one shoulder).
