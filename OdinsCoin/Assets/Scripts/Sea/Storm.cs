@@ -74,7 +74,7 @@ namespace OdinsCoin
         {
             float i = Intensity;
             Waves.Roughness = 1f + 1.3f * i;
-            if (i > 0.3f) Wind.Set(Wind.Angle + Mathf.Sin(Time.time * 0.3f) * 20f * dt, 0.8f + 0.2f * i, 2f);
+            if (i > 0.3f) Wind.Set(Wind.Angle + Mathf.Sin(Time.time * 0.3f) * 20f * dt, 0.8f + 0.8f * i, 2f); // up to a full gale in the eye
 
             // Fog and gloom. Heimdall's Eye sees through it.
             bool heimdall = Fortune.Current.Has(FateEffect.SeeThroughFog, FateKind.Blessing);

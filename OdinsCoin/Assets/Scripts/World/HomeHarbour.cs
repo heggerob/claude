@@ -108,9 +108,14 @@ namespace OdinsCoin
                     foreach (float x in new[] { -1.5f, 1.5f })
                         LongshipBuilder.Deco(PrimitiveType.Cylinder, jetty, new Vector3(x, -1f, z), new Vector3(0.3f, 2.2f, 0.3f), Materials.DarkWood).position = new Vector3(x, -1f, z);
             }
-            // Mooring posts.
-            LongshipBuilder.Deco(PrimitiveType.Cylinder, jetty, Vector3.zero, new Vector3(0.35f, 0.7f, 0.35f), Materials.DarkWood).position = new Vector3(1.7f, 1.6f, -58f);
-            LongshipBuilder.Deco(PrimitiveType.Cylinder, jetty, Vector3.zero, new Vector3(0.35f, 0.7f, 0.35f), Materials.DarkWood).position = new Vector3(1.7f, 1.6f, -67f);
+            // Mooring posts, along the berth's side: a ship alongside makes fast to them (G at the helm).
+            foreach (float z in new[] { -67f, -58f, -48f })
+            {
+                var post = LongshipBuilder.Deco(PrimitiveType.Cylinder, jetty, Vector3.zero, new Vector3(0.35f, 0.7f, 0.35f), Materials.DarkWood);
+                post.position = new Vector3(1.7f, 1.6f, z);
+                post.name = "Bollard";
+                Seamanship.Bollards.Add(post);
+            }
         }
 
         void BuildLonghouse()

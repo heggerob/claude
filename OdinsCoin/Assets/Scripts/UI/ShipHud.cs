@@ -21,9 +21,9 @@ namespace OdinsCoin
             string arrow = Arrow(relWind);
             string text = string.Format(
                 "<b>{0:0.0} knots</b>   heading {1:000}°\nSail {2:0}%{3}\nWind {4:0} kn  {5} ({6})\n\n<size=12>{7}</size>",
-                Ship.SpeedKnots, Ship.Heading, Ship.SailAmount * 100f, Ship.Rowing ? "   ROWING" : "", Wind.Knots, arrow, WindWord(relWind),
+                Ship.SpeedKnots, Ship.Heading, Ship.SailAmount * 100f, Ship.Rowing ? "   ROWING" : Ship.Moored ? "   MOORED" : Ship.Anchored ? "   AT ANCHOR" : "", Wind.Knots, arrow, WindWord(relWind),
                 Player != null && Player.AtHelm
-                    ? "At the helm: A/D steer · R raise sail · Q lower sail · W row (sail down) · E let go"
+                    ? "At the helm: A/D steer · R raise sail · Q lower / reef sail · W row (sail down) · G anchor / make fast · E let go"
                     : Player != null && Player.Carrying != null
                         ? "Carrying a chest: put it down on deck (E) to stow it, sell it to Gunnar in the Home Fjord"
                         : "WASD move · Shift run · Ctrl walk · Space jump · LMB attack (again for a combo) · RMB shield · E use / pick up / bail · scroll zoom · Esc menu");
@@ -114,6 +114,11 @@ namespace OdinsCoin
         void DrawDangers()
         {
             float y = 162f;
+            // Seamanship warnings: the rail under, the anchor dragging.
+            string warn = Ship.Shipping > 0.05f ? "Shipping water over the rail! Reef (Q) or bear away."
+                : Ship.AnchorDragging > 0.05f ? "The anchor is dragging! Take in sail or find shallower water."
+                : null;
+            if (warn != null) { GUI.Label(new Rect(20f, y, 420f, 22f), "<color=#ff9a6a><b>" + warn + "</b></color>", style); y += 26f; }
             var hull = Ship.Hull;
             if (hull.Level > 0.01f || hull.Holes > 0)
             {

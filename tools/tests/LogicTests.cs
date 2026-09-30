@@ -44,8 +44,49 @@ public static class LogicTests
         CombatTests();
         WorldMapTests();
         ShipPhysicsTests();
+        SeamanshipTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
+    }
+
+    static void SeamanshipTests()
+    {
+        var wolf = ShipDesign.Wavewolf;
+        // Water over the rail: none while it's clear, and a rail well under swamps her in a minute or two.
+        Check(Seamanship.ShippedWater(0f, 10f) == 0f && Seamanship.ShippedWater(-0.5f, 10f) == 0f, "no water comes in while the rail is above the sea");
+        float swamp = Seamanship.OpenVolume(wolf) / Seamanship.ShippedWater(0.3f, 10f);
+        float trickle = Seamanship.OpenVolume(wolf) / Seamanship.ShippedWater(0.05f, 3f);
+        Check(swamp > 30f && swamp < 180f && trickle > 600f, "a rail 30 cm under swamps the Wavewolf in " + swamp.ToString("0") + " s, a wave slopping over takes " + (trickle / 60f).ToString("0") + " min");
+        float rail = Seamanship.RailUnderAngle(wolf);
+        Check(rail > 20f && rail < 40f, "her rail goes under at " + rail.ToString("0") + "° of heel");
+        // In a full gale, full sail heels her far further than reefed.
+        var beamGale = new Vector2(-Wind.MaxStrength * 22f * 0.514f - 6f * 0.514f, 0f);
+        float full = Mathf.Abs(ShipPhysics.HeelAngle(wolf, ShipPhysics.Total(wolf, 4f, 0f, 0f, beamGale, new ShipPhysics.Controls { sail = 1f }, 0f).heel));
+        float reefed = Mathf.Abs(ShipPhysics.HeelAngle(wolf, ShipPhysics.Total(wolf, 4f, 0f, 0f, beamGale, new ShipPhysics.Controls { sail = 0.25f }, 0f).heel));
+        Check(Wind.Knots <= 28.1f && 6f + Wind.MaxStrength * 22f > 40f && full > reefed * 3f && full > 10f, "a storm blows a full gale, and full sail heels her " + full.ToString("0") + "° where reefed she heels " + reefed.ToString("0") + "°");
+
+        // The anchor: slack inside the rode's reach, then pulling towards the anchor; it holds her with the sails
+        // down in a stiff wind, but full sail in a gale drags it.
+        float drag;
+        Check(Seamanship.RodePull(wolf, new Vector2(0f, 30f), Vector2.zero, 10f, out drag) == Vector2.zero && drag == 0f, "the rode lies slack while she's inside its reach");
+        var pull = Seamanship.RodePull(wolf, new Vector2(0f, 82f), Vector2.zero, 10f, out drag);
+        Check(pull.y > 0f && Mathf.Abs(pull.x) < 1e-3f && drag == 0f, "a taut rode pulls her towards the anchor (" + pull.y.ToString("0") + " N)");
+        pull = Seamanship.RodePull(wolf, new Vector2(0f, 120f), Vector2.zero, 10f, out drag);
+        Check(Mathf.Abs(pull.magnitude - Seamanship.HoldingForce(wolf)) < 1f && drag > 0f, "pulled too hard, the anchor drags and the pull is its holding");
+        var ahead = new Vector2(0f, -28f * 0.514f);
+        float bare = new Vector2(ShipPhysics.Total(wolf, 0f, 0f, 0f, ahead, new ShipPhysics.Controls(), 0f).fx, ShipPhysics.Total(wolf, 0f, 0f, 0f, ahead, new ShipPhysics.Controls(), 0f).fz).magnitude;
+        var driven = ShipPhysics.Total(wolf, 0f, 0f, 0f, beamGale, new ShipPhysics.Controls { sail = 1f }, 0f);
+        float sailPull = new Vector2(driven.fx, driven.fz).magnitude;
+        Check(bare < Seamanship.HoldingForce(wolf) && sailPull > Seamanship.HoldingForce(wolf),
+            "the anchor holds her bare-poled in 28 kn (" + (bare / 1000f).ToString("0.0") + " kN of " + (Seamanship.HoldingForce(wolf) / 1000f).ToString("0") + ") but not under full sail in a gale (" + (sailPull / 1000f).ToString("0") + " kN)");
+        Check(Seamanship.MaxAnchorDepth >= 20f && Seamanship.MaxAnchorDepth <= Seamanship.RodeLength, "she can anchor in water up to " + Seamanship.MaxAnchorDepth + " m deep");
+
+        // Mooring lines: slack until they're taken up, then they hold her in.
+        Check(Seamanship.LinePull(wolf, new Vector3(3f, 0f, 0f), Vector3.zero, 4f) == Vector3.zero, "a slack line doesn't pull");
+        var line = Seamanship.LinePull(wolf, new Vector3(5f, 0f, 0f), Vector3.zero, 4f);
+        Check(line.x > 0f && Mathf.Abs(line.z) < 1e-3f, "a taut line pulls her towards the bollard");
+        var damped = Seamanship.LinePull(wolf, new Vector3(5f, 0f, 0f), new Vector3(2f, 0f, 0f), 4f);
+        Check(damped.x < line.x, "the line's give takes the snatch out of it when she's already coming in");
     }
 
     static void ShipPhysicsTests()
@@ -880,6 +921,14 @@ public static class LogicTests
         Check(last > s.z, "jetty reaches past the middle of the ship");
         Check(s.x - beam / 2f > 1.7f + 0.1f, "moored ship clears the jetty");
         Check(s.z - half > HomeHarbour.JettyStart + 4f, "the moored ship's stern is clear of the beach");
+        // Her bow and stern lines reach the jetty's bollards (at x 1.7, z -67, -58, -48).
+        foreach (float end in new[] { 0.8f, -0.8f })
+        {
+            var cleat = new Vector3(s.x, s.y + design.freeboard, s.z + end * half);
+            float nearest = float.MaxValue;
+            foreach (float z in new[] { -67f, -58f, -48f }) nearest = Math.Min(nearest, Vector3.Distance(cleat, new Vector3(1.7f, 1.95f, z)));
+            Check(nearest < Seamanship.LineReach, (end > 0f ? "bow" : "stern") + " line reaches a bollard at the berth (" + nearest.ToString("0.0") + " m)");
+        }
         // Gunnar can trade over the gunwale: the deck edge nearest him is within reach.
         var deckEdge = new Vector3(s.x - (beam / 2f - 0.5f), s.y + deckY, HomeHarbour.TraderPosition.z);
         Check(Vector3.Distance(deckEdge, HomeHarbour.TraderPosition) < HomeHarbour.TradeRange, "Gunnar is in reach from the deck");

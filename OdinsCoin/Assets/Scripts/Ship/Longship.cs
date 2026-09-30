@@ -34,6 +34,20 @@ namespace OdinsCoin
         List<ShipPhysics.FloatCell> cells;
         float strokePhase;
 
+        /// <summary>The new classes: lying to her anchor.</summary>
+        public bool Anchored { get; private set; }
+        /// <summary>How fast the anchor is dragging over the bottom (m/s; 0 when it holds).</summary>
+        public float AnchorDragging { get; private set; }
+        /// <summary>The depth she anchored in (m).</summary>
+        public float AnchorDepth { get; private set; }
+        double anchorX, anchorZ;
+        /// <summary>Water coming in over a rail that's gone under (m³/s).</summary>
+        public float Shipping { get; private set; }
+        Transform bowBollard, sternBollard;
+        float bowLine, sternLine;
+        /// <summary>Made fast to a jetty's bollards.</summary>
+        public bool Moored { get { return bowBollard != null || sternBollard != null; } }
+
         /// <summary>Half her length (m).</summary>
         public float HalfLength { get { return Design != null ? Design.length / 2f : LongshipBuilder.Length / 2f; } }
         /// <summary>The deck's height in her own space (m above the waterline).</summary>
@@ -196,6 +210,130 @@ namespace OdinsCoin
             oars = up.OarMultiplier * woe;
         }
 
+        /// <summary>The bow and stern cleats the mooring lines are made fast to, and the bow where the anchor rode runs out (her own space).</summary>
+        Vector3 BowCleat { get { return new Vector3(0f, Freeboard, HalfLength * 0.8f); } }
+        Vector3 SternCleat { get { return new Vector3(0f, Freeboard, -HalfLength * 0.8f); } }
+
+        /// <summary>
+        /// The one key for staying put: cast off if moored, weigh anchor if anchored, else make fast to a jetty if
+        /// one's in reach, else let go the anchor. Returns what happened, for the HUD.
+        /// </summary>
+        public string AnchorOrMoor()
+        {
+            if (Design == null) return "This old hull carries no anchor.";
+            if (Moored) { CastOff(); return "Lines cast off."; }
+            if (Anchored) { WeighAnchor(); return "Anchor aweigh."; }
+            string moor = MakeFast();
+            return moor ?? DropAnchor();
+        }
+
+        /// <summary>Throw lines to the nearest bollards from the bow and stern; null if none is in reach.</summary>
+        public string MakeFast()
+        {
+            var bow = transform.TransformPoint(BowCleat);
+            var stern = transform.TransformPoint(SternCleat);
+            var b = Seamanship.NearestBollard(bow, Seamanship.LineReach);
+            var s = Seamanship.NearestBollard(stern, Seamanship.LineReach);
+            if (b == null && s == null) return null;
+            bowBollard = b;
+            sternBollard = s;
+            if (b != null) bowLine = Mathf.Max(1.5f, Vector3.Distance(b.position, bow) + 0.3f);
+            if (s != null) sternLine = Mathf.Max(1.5f, Vector3.Distance(s.position, stern) + 0.3f);
+            SailTarget = 0f;
+            return b != null && s != null ? "Made fast, bow and stern." : "Made fast with one line.";
+        }
+
+        public void CastOff() { bowBollard = sternBollard = null; }
+
+        /// <summary>Let the anchor go where the bow is. It only reaches the bottom in water up to <see cref="Seamanship.MaxAnchorDepth"/>.</summary>
+        public string DropAnchor()
+        {
+            var bow = transform.TransformPoint(new Vector3(0f, 0f, HalfLength * 0.9f));
+            float depth = DepthAt(bow);
+            if (depth > Seamanship.MaxAnchorDepth) return string.Format("Too deep to anchor: {0:0} m. Find water under {1:0} m.", depth, Seamanship.MaxAnchorDepth);
+            anchorX = WorldOrigin.GlobalX(bow);
+            anchorZ = WorldOrigin.GlobalZ(bow);
+            AnchorDepth = Mathf.Max(1f, depth);
+            Anchored = true;
+            return string.Format("Anchor down in {0:0} m.", depth);
+        }
+
+        public void WeighAnchor() { Anchored = false; AnchorDragging = 0f; }
+
+        /// <summary>How deep the water is at a scene point (m): the real sea floor in the real North, else the storybook isles' shores.</summary>
+        public static float DepthAt(Vector3 p)
+        {
+            // Close to home, the home island's own shore.
+            var home = HomeHarbour.Spec;
+            Vector2 local = new Vector2(p.x, p.z) - new Vector2(HomeHarbour.Drift.x, HomeHarbour.Drift.z);
+            if (HomeHarbour.Instance != null && Vector2.Distance(local, home.centre) < home.radius * 1.6f)
+                return Mathf.Max(0f, -Island.Height(home, local.x, local.y));
+            if (RealWorld.Active && WorldMap.Current != null)
+                return Mathf.Max(0f, -TerrainDetail.Height(WorldMap.Current, WorldOrigin.GlobalX(p), WorldOrigin.GlobalZ(p)));
+            float depth = 25f;
+            foreach (var island in WorldGen.Islands)
+                if (island != null) depth = Mathf.Min(depth, Mathf.Max(0f, -Island.Height(island.Spec, p.x, p.z)));
+            return depth;
+        }
+
+        /// <summary>The anchor rode and the mooring lines pull at her.</summary>
+        void HoldFast(float dt)
+        {
+            var d = Design;
+            AnchorDragging = 0f;
+            if (Anchored)
+            {
+                var bow = transform.TransformPoint(new Vector3(0f, 0f, HalfLength * 0.9f));
+                var anchor = WorldOrigin.ToScene(anchorX, anchorZ, 0f);
+                var vel = Body.GetPointVelocity(bow);
+                float drag;
+                var pull = Seamanship.RodePull(d, new Vector2(anchor.x - bow.x, anchor.z - bow.z), new Vector2(vel.x, vel.z), AnchorDepth, out drag);
+                Body.AddForceAtPosition(new Vector3(pull.x, 0f, pull.y), bow);
+                if (drag > 0f)
+                {
+                    // The anchor ploughs through the mud towards her.
+                    Vector2 toShip = new Vector2(bow.x - anchor.x, bow.z - anchor.z).normalized;
+                    float slide = Mathf.Min(drag, 0.8f * dt); // mud lets it plough at most a slow walk
+                    anchorX += toShip.x * slide;
+                    anchorZ += toShip.y * slide;
+                    AnchorDragging = slide / dt;
+                }
+            }
+            if (bowBollard != null) Line(bowBollard, BowCleat, bowLine);
+            if (sternBollard != null) Line(sternBollard, SternCleat, sternLine);
+        }
+
+        void Line(Transform bollard, Vector3 cleatLocal, float length)
+        {
+            var cleat = transform.TransformPoint(cleatLocal);
+            var offset = bollard.position - cleat;
+            offset.y = 0f;
+            var v = Body.GetPointVelocity(cleat);
+            v.y = 0f;
+            Body.AddForceAtPosition(Seamanship.LinePull(Design, offset, v, length), cleat);
+        }
+
+        /// <summary>Water pours in wherever the rail is under the surface: heeled over in a blow, or burying her bow in a sea.</summary>
+        void ShipWater(float dt)
+        {
+            var d = Design;
+            const int stations = 10;
+            float shipped = 0f, piece = d.length / stations;
+            for (int i = 0; i < stations; i++)
+            {
+                float s = -0.9f + 1.8f * (i + 0.5f) / stations;
+                float hw, k, g;
+                Station(s, out hw, out k, out g);
+                foreach (float side in new[] { -1f, 1f })
+                {
+                    var p = transform.TransformPoint(new Vector3(side * hw, g, s * HalfLength));
+                    shipped += Seamanship.ShippedWater(Waves.Height(p.x, p.z) - p.y, piece);
+                }
+            }
+            Shipping = shipped;
+            if (PlayerShip && shipped > 0f) Hull.Flood(shipped * dt / Seamanship.OpenVolume(d));
+        }
+
         void SailByPhysics()
         {
             var d = Design;
@@ -227,6 +365,8 @@ namespace OdinsCoin
                 Body.AddForceAtPosition(Vector3.up * Mathf.Max(0f, ShipPhysics.CellBuoyancy(d, c, depth) - damping * vy), p);
             }
             if (wet == 0) return; // off the top of a wave: nothing to push against
+            HoldFast(dt);
+            ShipWater(dt);
 
             // Water, wind, sails, oars and rudder, in the ship's own frame.
             Vector3 vel = t.InverseTransformDirection(Compat.Velocity(Body));
@@ -278,6 +418,8 @@ namespace OdinsCoin
             rudderAngle = 0f;
             RudderInput = 0f;
             Actual = new ShipPhysics.Controls();
+            WeighAnchor();
+            CastOff();
             Rowing = false;
             Furl();
         }
@@ -325,6 +467,7 @@ namespace OdinsCoin
             if (GameInput.Pressed(Key.SailUp)) ship.SailTarget = Mathf.Min(1f, ship.SailTarget + 0.25f);
             if (GameInput.Pressed(Key.SailDown)) ship.SailTarget = Mathf.Max(0f, ship.SailTarget - 0.25f);
             ship.Rowing = GameInput.Held(Key.Up) && ship.SailTarget < 0.15f;
+            if (GameInput.Pressed(Key.Anchor)) CombatHud.Banner(ship.Moored || ship.Anchored ? "UNDER WAY" : "HOLDING FAST", ship.AnchorOrMoor());
         }
     }
 }

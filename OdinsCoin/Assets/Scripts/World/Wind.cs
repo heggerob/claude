@@ -17,16 +17,18 @@ namespace OdinsCoin
 
         public static Vector3 Direction { get { return Quaternion.Euler(0f, angle, 0f) * Vector3.forward; } }
         public static float Strength { get { return strength; } }
+        /// <summary>The strongest wind a storm brings.</summary>
+        public const float MaxStrength = 1.6f;
         public static float Angle { get { return angle; } }
 
-        /// <summary>Wind speed in knots, just for the HUD.</summary>
+        /// <summary>Wind speed in knots: a breeze at 0, a stiff wind at 1, a full gale (41 kn) at <see cref="MaxStrength"/> in storms.</summary>
         public static float Knots { get { return 6f + strength * 22f; } }
 
         /// <summary>Forces the wind (blessings, storms). Changes ease in over a few seconds.</summary>
         public static void Set(float newAngle, float newStrength, float holdSeconds)
         {
             targetAngle = newAngle;
-            targetStrength = Mathf.Clamp01(newStrength);
+            targetStrength = Mathf.Clamp(newStrength, 0f, MaxStrength);
             nextChange = Time.time + holdSeconds;
         }
 

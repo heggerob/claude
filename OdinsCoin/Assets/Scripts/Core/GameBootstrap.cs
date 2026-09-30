@@ -69,6 +69,7 @@ namespace OdinsCoin
                 ? Longship.Create(transform, HomeHarbour.ShipStart, HomeHarbour.ShipStartHeading, PlayerDesign, PlayerLook())
                 : Longship.Create(transform, HomeHarbour.ShipStart, HomeHarbour.ShipStartHeading);
             Ship.Furl();
+            Ship.MakeFast(); // lines out to the jetty's bollards: cast off with G at the helm
             Ship.PlayerShip = true;
             // The helm only listens to the keyboard while the Viking holds the steering oar.
             Ship.gameObject.AddComponent<ShipKeyboardHelm>().enabled = false;

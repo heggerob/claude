@@ -86,6 +86,19 @@ med ror, seil i vinden og årer.
   - De danske raiderne seiler nå Skerrycutters (17 m, 21 tonn) med svart-rødt seil og den samme ekte fysikken.
     Wavewolf er fire ganger så tung, så en ramming fra deg rister dem mye mer enn deres rister deg.
 - [ ] **8. Seiling i praksis:** kryssing mot vinden, rev av seil i storm, ankring, fortøying ved brygga.
+  - Ferdig (`Ship/Seamanship.cs`):
+    - **Vann over ripa:** vannet renner inn der ripa er under bølgeflaten, enten skipet krenger i vinden eller
+      baugen graver seg inn i en sjø (overløp: 1,7 · lengde · dybde^1,5). Ligger ripa 30 cm under, er Wavewolf
+      full på rundt ett minutt.
+    - **Storm og rev:** stormen blåser nå full storm (41 knop). Med fulle seil krenger Wavewolf 15°, revet
+      til en firedel bare 4°. Rev med Q.
+    - **Anker (G ved roret):** holder der det er under 40 m dypt. Tauet ligger slakt til det strekkes, og drar
+      ankeret hvis draget blir større enn det holder: ankeret holder skipet uten seil i 28 knop, men ikke med
+      fulle seil i full storm.
+    - **Fortøying (G ved brygga):** fortøyninger fra baug og hekk til pullertene på brygga. Reisen starter
+      fortøyd hjemme, og hver brygge ved de ekte stedene har pullerter.
+    - HUD-en varsler når du tar inn vann eller ankeret drar.
+  - Gjenstår: kryssing (baut og kuvending) som egen manøver med hjelp i HUD-en.
 
 ## Merk
 

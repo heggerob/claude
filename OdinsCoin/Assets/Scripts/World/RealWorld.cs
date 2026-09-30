@@ -184,6 +184,11 @@ namespace OdinsCoin
                 b.position = WorldOrigin.ToScene(plot.at.x, plot.at.z, plot.at.y);
                 b.rotation = Quaternion.Euler(0f, plot.yaw, 0f);
                 ModelView.Show(Buildings.Build(plot.kind, look, i++), b);
+                // Bollards along both sides of the jetty for visiting ships to make fast to.
+                if (plot.kind == BuildingKind.Jetty)
+                    foreach (float z in new[] { 18f, 34f })
+                        foreach (float x in new[] { -2.2f, 2.2f })
+                            Seamanship.AddBollard(b, new Vector3(x, 1.35f, z));
             }
             return root;
         }
