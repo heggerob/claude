@@ -841,8 +841,10 @@ public static class LogicTests
                 Check(Secrets.ChartNote(kaupang, secretSave) == "", "the chart says nothing of a place's secrets until you've found one");
                 secretSave.Dug.Add("Kaupang"); secretSave.Feathers.Add(Feathers.Key(kaupang, 2));
                 Check(Secrets.Found(kaupang, secretSave) == 2 && Secrets.ChartNote(kaupang, secretSave).Contains("2/6"), "then it counts them");
+                Check(Secrets.Reward(kaupang, secretSave) == 0 && Secrets.Completed(secretSave) == 0, "a find that isn't a place's last earns no reward");
                 secretSave.Shrines.Add("Kaupang"); secretSave.Caves.Add("Kaupang"); secretSave.Feathers.Add(Feathers.Key(kaupang, 0)); secretSave.Feathers.Add(Feathers.Key(kaupang, 1));
                 Check(Secrets.ChartNote(kaupang, secretSave).Contains("★ 6/6"), "and stars a place whose every secret is found");
+                Check(Secrets.Reward(kaupang, secretSave) == Secrets.CompleteGold && Secrets.Completed(secretSave) == 1 && Secrets.Reward(null, secretSave) == 0, "the last of a place's secrets is rewarded, and the place counts as done");
             }
             Check(Feathers.Milestone(10, 78) == 100 && Feathers.Milestone(11, 78) == 0 && Feathers.Milestone(50, 78) == 600 && Feathers.Milestone(78, 78) == 1500, "feather milestones pay at 10, 25, 50 and all");
             var hint = Rumours.FeatherHint(Vector3.zero, new Vector3(200f, 0f, 0f));

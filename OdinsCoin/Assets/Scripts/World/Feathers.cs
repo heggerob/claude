@@ -78,6 +78,7 @@ namespace OdinsCoin
                 ModelView.Show(Model(), t);
                 var f = t.gameObject.AddComponent<RavenFeather>();
                 f.key = Key(place, i);
+                f.place = place.name;
             }
         }
 
@@ -98,7 +99,7 @@ namespace OdinsCoin
     /// <summary>One feather: bobs and turns, and is taken when the player walks into it.</summary>
     public class RavenFeather : MonoBehaviour
     {
-        public string key;
+        public string key, place;
 
         public static readonly List<RavenFeather> All = new List<RavenFeather>();
 
@@ -134,7 +135,8 @@ namespace OdinsCoin
             var d = boot.Player.transform.position + Vector3.up * 0.9f - transform.position;
             if (d.magnitude > Feathers.PickRange) return;
             var u = Upgrades.Current;
-            if (!u.Feathers.Contains(key)) u.Feathers.Add(key);
+            bool fresh = !u.Feathers.Contains(key);
+            if (fresh) u.Feathers.Add(key);
             Fortune.Current.Gold += Feathers.Gold;
             Fortune.Current.AddFavour(Feathers.Favour);
             Sfx.At(SfxId.Blessing, transform.position, 0.8f, 0.1f);
@@ -142,6 +144,7 @@ namespace OdinsCoin
             Fortune.Current.Gold += bonus;
             if (bonus > 0) CombatHud.Banner(u.Feathers.Count == Feathers.Total ? "EVERY FEATHER!" : u.Feathers.Count + " RAVEN FEATHERS", "Huginn and Muninn are pleased with you: " + (bonus + Feathers.Gold) + " gold.");
             else CombatHud.Banner("A RAVEN FEATHER", "Odin's raven passed this way. " + u.Feathers.Count + " of " + Feathers.Total + " found, and " + Feathers.Gold + " gold.");
+            if (fresh) Secrets.Found(place);
             Destroy(gameObject);
         }
     }

@@ -431,13 +431,15 @@ namespace OdinsCoin
                 {
                     var gift = RuneShrines.GiftOf(touched.Place);
                     var u = Upgrades.Current;
-                    if (!u.Shrines.Contains(touched.Place.name)) u.Shrines.Add(touched.Place.name);
+                    bool fresh = !u.Shrines.Contains(touched.Place.name);
+                    if (fresh) u.Shrines.Add(touched.Place.name);
                     if (gift == RuneGift.Vitality) u.Vitality++;
                     else if (gift == RuneGift.Endurance) u.Endurance++;
                     else u.Luck++;
                     if (combat != null) combat.Health.Restore();
                     Sfx.Play(SfxId.Blessing, 1f);
                     CombatHud.Banner("THE RUNE RING WAKES", "You are given the " + RuneShrines.GiftName(gift) + ".");
+                    if (fresh) Secrets.Found(touched.Place.name);
                 }
                 return;
             }

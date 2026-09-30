@@ -128,7 +128,7 @@ namespace OdinsCoin
         public static TreasureChest Dig(Transform cairn, Place place, Transform world)
         {
             var u = Upgrades.Current;
-            if (!u.Dug.Contains(place.name)) u.Dug.Add(place.name);
+            if (!u.Dug.Contains(place.name)) { u.Dug.Add(place.name); Secrets.Found(place.name); }
             u.Maps.Remove(place.name);
             var rng = new System.Random(place.name.GetHashCode());
             var chest = TreasureChest.Create(world, cairn.position + cairn.right * 1.4f + Vector3.up * 0.05f, cairn.eulerAngles.y, MinGold + rng.Next(MaxGold - MinGold + 1));

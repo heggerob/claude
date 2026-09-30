@@ -135,7 +135,7 @@ namespace OdinsCoin
         {
             Carried = true;
             if (FromPlunder) { FromPlunder = false; if (Opened != null) Opened(this); }
-            if (Cave != null) { if (!Upgrades.Current.Caves.Contains(Cave)) Upgrades.Current.Caves.Add(Cave); Cave = null; }
+            if (Cave != null) { if (!Upgrades.Current.Caves.Contains(Cave)) { Upgrades.Current.Caves.Add(Cave); Secrets.Found(Cave); } Cave = null; }
             var floater = GetComponent<Floater>();
             if (floater != null) Destroy(floater);
             var col = GetComponent<Collider>();

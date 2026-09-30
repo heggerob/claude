@@ -419,8 +419,8 @@ namespace OdinsCoin
             int places = Places.All.Length;
             GUILayout.Label(string.Format(
                 "Chests brought home: <b>{0}</b>\nGold plundered: <b>{1}</b>\nTreasure staked at Odin's altar: <b>{2}</b> times, Odin smiled <b>{3}</b> times\nDice with Bjorn: <b>{4}</b> won, <b>{5}</b> lost\n" +
-                "Rune rings woken: <b>{6}</b> of {7}\nHoards dug up: <b>{8}</b> of {7}\nCaves emptied: <b>{9}</b> of {7}\nRaven feathers: <b>{10}</b> of {11}",
-                f.ChestsSold, f.GoldPlundered, f.Flips, f.HeadsCount, f.DiceWon, f.DiceLost, u.Shrines.Count, places, u.Dug.Count, u.Caves.Count, u.Feathers.Count, Feathers.Total), text);
+                "Rune rings woken: <b>{6}</b> of {7}\nHoards dug up: <b>{8}</b> of {7}\nCaves emptied: <b>{9}</b> of {7}\nRaven feathers: <b>{10}</b> of {11}\nPlaces with every secret found: <b>{12}</b> of {7}",
+                f.ChestsSold, f.GoldPlundered, f.Flips, f.HeadsCount, f.DiceWon, f.DiceLost, u.Shrines.Count, places, u.Dug.Count, u.Caves.Count, u.Feathers.Count, Feathers.Total, Secrets.Completed(u)), text);
         }
 
         void EnsureStyles()
