@@ -166,8 +166,24 @@ namespace OdinsCoin
             return arrows[Mathf.RoundToInt(Mathf.Repeat(relative, 360f) / 45f) % 8];
         }
 
-        static string WindWord(float relative)
+        string WindWord(float relative)
         {
+            if (Ship != null && Ship.Design != null)
+            {
+                // The new ships: the point of sail, and when she's too close to the wind, the tacks to take.
+                float from = 180f - Mathf.Abs(relative);
+                float limit = Seamanship.ClosestToWind(Ship.Design, Wind.Knots);
+                if (from < limit)
+                {
+                    float port, starboard;
+                    Seamanship.TackHeadings(Wind.Angle + 180f, limit + 5f, out port, out starboard);
+                    return string.Format("in irons: tack to {0:000}° or {1:000}°, or row", port, starboard);
+                }
+                if (from < limit + 15f) return "close-hauled";
+                if (from < 110f) return "beam reach";
+                if (from < 150f) return "broad reach";
+                return "running before the wind";
+            }
             float a = Mathf.Abs(relative);
             if (a < 35f) return "tailwind: full speed";
             if (a < 120f) return "wind from the side";

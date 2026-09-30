@@ -34,6 +34,41 @@ namespace OdinsCoin
         /// <summary>The heel at which the rail amidships touches flat water (degrees).</summary>
         public static float RailUnderAngle(ShipDesign d) { return Mathf.Atan2(d.freeboard, d.beam / 2f) * Mathf.Rad2Deg; }
 
+        // ---- Pointing and tacking ----
+
+        static readonly Dictionary<long, float> closest = new Dictionary<long, float>();
+
+        /// <summary>
+        /// The closest she can sail to the wind (degrees off the true wind) and still be driven ahead: the smallest
+        /// angle where the sails' drive beats the water's drag at a working speed, with a little leeway. A lateen
+        /// points higher than a square sail. Upwind of this she's in irons: tack, or row.
+        /// </summary>
+        public static float ClosestToWind(ShipDesign d, float windKnots)
+        {
+            int kn = Mathf.Clamp(Mathf.RoundToInt(windKnots), 2, 60);
+            long key = ((long)d.GetHashCode() << 8) | (long)kn;
+            float found;
+            if (closest.TryGetValue(key, out found)) return found;
+            float speed = kn * 0.514f, u = Mathf.Min(2f, 0.3f * d.HullSpeed), v = -u * Mathf.Tan(4f * Mathf.Deg2Rad);
+            found = 180f;
+            for (float a = 15f; a <= 180f; a += 1f)
+            {
+                // Wind coming from a° off the starboard bow.
+                var wind = new Vector2(-Mathf.Sin(a * Mathf.Deg2Rad), -Mathf.Cos(a * Mathf.Deg2Rad)) * speed;
+                if (ShipPhysics.Total(d, u, v, 0f, wind, new ShipPhysics.Controls { sail = 1f }, 0f).fz > 0f) { found = a; break; }
+            }
+            closest[key] = found;
+            return found;
+        }
+
+        /// <summary>The two headings to tack on to work up towards where the wind comes from (port tack, starboard tack).</summary>
+        public static void TackHeadings(float windFrom, float offWind, out float portTack, out float starboardTack)
+        {
+            // On port tack the wind comes over the port bow: she heads to the right of the wind.
+            portTack = Mathf.Repeat(windFrom + offWind, 360f);
+            starboardTack = Mathf.Repeat(windFrom - offWind, 360f);
+        }
+
         // ---- The anchor ----
 
         /// <summary>The anchor rode's length (m): she can anchor in water up to about half that deep.</summary>

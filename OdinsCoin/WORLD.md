@@ -85,7 +85,7 @@ med ror, seil i vinden og årer.
     - Ror du mens du legger roret over, drar yttersiden hardere.
   - De danske raiderne seiler nå Skerrycutters (17 m, 21 tonn) med svart-rødt seil og den samme ekte fysikken.
     Wavewolf er fire ganger så tung, så en ramming fra deg rister dem mye mer enn deres rister deg.
-- [ ] **8. Seiling i praksis:** kryssing mot vinden, rev av seil i storm, ankring, fortøying ved brygga.
+- [x] **8. Seiling i praksis:** kryssing mot vinden, rev av seil i storm, ankring, fortøying ved brygga.
   - Ferdig (`Ship/Seamanship.cs`):
     - **Vann over ripa:** vannet renner inn der ripa er under bølgeflaten, enten skipet krenger i vinden eller
       baugen graver seg inn i en sjø (overløp: 1,7 · lengde · dybde^1,5). Ligger ripa 30 cm under, er Wavewolf
@@ -98,7 +98,9 @@ med ror, seil i vinden og årer.
     - **Fortøying (G ved brygga):** fortøyninger fra baug og hekk til pullertene på brygga. Reisen starter
       fortøyd hjemme, og hver brygge ved de ekte stedene har pullerter.
     - HUD-en varsler når du tar inn vann eller ankeret drar.
-  - Gjenstår: kryssing (baut og kuvending) som egen manøver med hjelp i HUD-en.
+    - **Kryssing:** fysikken regner ut hvor høyt hvert skip går mot vinden i vinden som blåser nå (Wavewolf 51°,
+      den råriggede Skerrycutter 55° i 16 knop). HUD-en viser seilingen: slør, halvvind, bidevind, og «in irons»
+      med de to kursene du må krysse på for å komme opp mot vinden.
 
 ## Merk
 

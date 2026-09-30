@@ -65,6 +65,13 @@ public static class LogicTests
         float reefed = Mathf.Abs(ShipPhysics.HeelAngle(wolf, ShipPhysics.Total(wolf, 4f, 0f, 0f, beamGale, new ShipPhysics.Controls { sail = 0.25f }, 0f).heel));
         Check(Wind.Knots <= 28.1f && 6f + Wind.MaxStrength * 22f > 40f && full > reefed * 3f && full > 10f, "a storm blows a full gale, and full sail heels her " + full.ToString("0") + "° where reefed she heels " + reefed.ToString("0") + "°");
 
+        // Pointing: a lateen-rigged ship sails closer to the wind than a square-rigger, and nobody sails straight into it.
+        float wolfPoint = Seamanship.ClosestToWind(wolf, 16f), cutterPoint = Seamanship.ClosestToWind(ShipDesign.Skerrycutter, 16f);
+        Check(wolfPoint >= 35f && wolfPoint < cutterPoint && cutterPoint <= 85f, "the Wavewolf points " + wolfPoint + "° off the wind, the square-rigged Skerrycutter only " + cutterPoint + "°");
+        float portTack, starTack;
+        Seamanship.TackHeadings(0f, 60f, out portTack, out starTack);
+        Check(Mathf.Abs(portTack - 60f) < 1e-3f && Mathf.Abs(starTack - 300f) < 1e-3f, "wind from the north, 60° off: tack on 060° and 300°");
+
         // The anchor: slack inside the rode's reach, then pulling towards the anchor; it holds her with the sails
         // down in a stiff wind, but full sail in a gale drags it.
         float drag;
