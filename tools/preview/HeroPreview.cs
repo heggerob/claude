@@ -52,9 +52,9 @@ public static class HeroPreview
         carry.worldRot[Joints.OffHand] = Quaternion.LookRotation(haft, Vector3.Cross(haft, Vector3.forward));
         carry.rot[Joints.LeftLeg] = Quaternion.Euler(0f, -22f, -13f);
         carry.rot[Joints.RightLeg] = Quaternion.Euler(0f, 24f, 12f);
-        // The free arm hangs straight down at the side, fist by the hip, as in the concept art.
-        carry.rot[Joints.RightArm] = Quaternion.Euler(3f, 0f, 7f);
-        carry.rot[Joints.RightForearm] = Quaternion.Euler(-4f, 0f, 0f);
+        // The free arm hangs down held a little out from the side, fist by the hip, as in the concept art.
+        carry.rot[Joints.RightArm] = Quaternion.Euler(3f, 0f, 15f);
+        carry.rot[Joints.RightForearm] = Quaternion.Euler(-8f, 0f, -4f);
         var walk = new Pose();
         walk.rot[Joints.LeftLeg] = Quaternion.Euler(-24f, 0f, 0f);
         walk.rot[Joints.RightLeg] = Quaternion.Euler(20f, 0f, 0f);
