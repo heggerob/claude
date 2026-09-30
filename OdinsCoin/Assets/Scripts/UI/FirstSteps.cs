@@ -43,7 +43,7 @@ namespace OdinsCoin
         {
             switch (s)
             {
-                case Step.Board: return "Walk down to your longship at the jetty and press E beside her to climb aboard.";
+                case Step.Board: return "Walk down the jetty and step aboard your longship (from the water, E beside her climbs up).";
                 case Step.Helm: return "Go aft to the steering oar and press E to take the helm.";
                 case Step.Sail: return "Press W to get under way (W again for more sail), A/D to steer. M opens the chart.";
                 case Step.Plunder: return "Sail to a town and find its treasure. Ask the townsfolk (E) where the riches are.";
