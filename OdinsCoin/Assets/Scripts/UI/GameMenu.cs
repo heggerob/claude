@@ -189,6 +189,10 @@ namespace OdinsCoin
             GUILayout.EndArea();
         }
 
+        string shownSave;
+        Fortune shownFortune;
+        Upgrades shownUpgrades;
+
         void DrawTitle()
         {
             GUILayout.Label("ODIN'S COIN", title);
@@ -196,8 +200,10 @@ namespace OdinsCoin
             GUILayout.Space(12);
             if (SaveGame.Exists)
             {
-                Fortune f; Upgrades u;
-                SaveGame.Deserialize(PlayerPrefs.GetString(SaveGame.Key, ""), out f, out u);
+                // Read the save once, not every frame the title is drawn.
+                var raw = PlayerPrefs.GetString(SaveGame.Key, "");
+                if (raw != shownSave) { SaveGame.Deserialize(raw, out shownFortune, out shownUpgrades); shownSave = raw; }
+                var f = shownFortune; var u = shownUpgrades;
                 if (GUILayout.Button("<b>Continue</b>\n<size=12>" + f.Gold + " gold · " + f.ChestsSold + " chests brought home · " + (u.Shrines.Count + u.Dug.Count + u.Caves.Count + u.Feathers.Count) + " secrets found</size>", GUILayout.Height(52)))
                     deferred += () => Begin(true);
             }
