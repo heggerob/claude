@@ -71,6 +71,8 @@ namespace OdinsCoin
                     Garments.JarlCoat(d, 0.2f);
                     Garments.Tunic(d, false);
                     Garments.LongSleeves(d);
+                    // Laced leather bracers with a fur cuff above, as in the concept art.
+                    Garments.Bracers(d);
                     Garments.RingBelt(d);
                     Garments.BigCape(d, 0.95f, 2.6f);
                     Garments.ShoulderPelt(d, 1.62f, 0f, 0.92f, 2.2f, 0.62f);

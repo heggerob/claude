@@ -72,9 +72,9 @@ public static class HeroPreview
         jarl.body = new BodyShape { height = 1.72f, width = 1.1f, gender = Gender.Male };
         var jarlModel = WithWeapon(WithWeapon(HeroModel.Build(jarl), HeroModel.BuildWeapon(jarl), Joints.Weapon), HeroModel.BuildOffHand(jarl), Joints.OffHand);
         var stand = new Pose();
-        stand.rot[Joints.RightArm] = Quaternion.Euler(-12f, 0f, 16f);
-        stand.rot[Joints.RightForearm] = Quaternion.Euler(-35f, 0f, -8f);
-        stand.worldRot[Joints.Weapon] = Quaternion.LookRotation(new Vector3(-0.15f, -1f, 0.22f).normalized, Vector3.forward);
+        stand.rot[Joints.RightArm] = Quaternion.Euler(-8f, 0f, 22f);
+        stand.rot[Joints.RightForearm] = Quaternion.Euler(-18f, 0f, -12f);
+        stand.worldRot[Joints.Weapon] = Quaternion.LookRotation(new Vector3(0.35f, -1f, 0.6f).normalized, Vector3.forward);
         stand.rot[Joints.LeftArm] = Quaternion.Euler(12f, 0f, -20f);
         stand.rot[Joints.LeftForearm] = Quaternion.Euler(-10f, 0f, 6f);
         stand.worldRot[Joints.OffHand] = Quaternion.Euler(0f, 55f, 0f);
