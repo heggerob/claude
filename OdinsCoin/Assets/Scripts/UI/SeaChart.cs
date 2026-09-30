@@ -23,6 +23,9 @@ namespace OdinsCoin
 
         // ---- The drawing, as plain maths ----
 
+        /// <summary>The height the map gives everywhere outside its region (tools/world/build_map.py).</summary>
+        public const float NoData = -2000f;
+
         public static readonly Color Parchment = new Color(0.9f, 0.84f, 0.68f), Ink = new Color(0.22f, 0.16f, 0.1f);
 
         /// <summary>The chart's colour for ground at a height (m): sea blues by depth, land ochres by height.</summary>
@@ -46,16 +49,19 @@ namespace OdinsCoin
             var px = new Color[w * h];
             float sx = (map.Width - 1) / (float)Mathf.Max(1, w - 1), sz = (map.Height - 1) / (float)Mathf.Max(1, h - 1);
             System.Func<int, int, float> at = (x, y) => map.At(Mathf.Clamp(Mathf.RoundToInt(x * sx), 0, map.Width - 1), Mathf.Clamp(Mathf.RoundToInt(y * sz), 0, map.Height - 1));
+            // Beyond the map's region the data is a flat -2000 m: leave that parchment, unexplored, with no coast.
+            System.Func<int, int, bool> blank = (x, y) => at(x, y) == NoData && at(x + 1, y) == NoData && at(x - 1, y) == NoData && at(x, y + 1) == NoData && at(x, y - 1) == NoData;
             for (int y = 0; y < h; y++)
                 for (int x = 0; x < w; x++)
                 {
                     float hgt = at(x, y);
+                    if (blank(x, y)) { px[y * w + x] = Parchment; continue; }
                     var c = Tint(hgt);
                     // Pen hatching on high ground, denser the higher it is.
                     if (hgt > 500f && ((x + y) % Mathf.Max(2, 7 - Mathf.FloorToInt(hgt / 400f)) == 0)) c = Color.Lerp(c, Ink, 0.35f);
                     // The coastline in ink.
                     bool land = hgt >= 0f;
-                    if ((at(x + 1, y) >= 0f) != land || (at(x, y + 1) >= 0f) != land) c = Color.Lerp(c, Ink, 0.8f);
+                    if (((at(x + 1, y) >= 0f) != land && !blank(x + 1, y)) || ((at(x, y + 1) >= 0f) != land && !blank(x, y + 1))) c = Color.Lerp(c, Ink, 0.8f);
                     px[y * w + x] = c;
                 }
             return px;
