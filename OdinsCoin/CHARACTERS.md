@@ -148,6 +148,14 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
     - [x] Scout: spennen på beltet synes. Pelshetta er mørkere, flekkete brun med et mørkeblått stoffbånd rundt, som i bildet. Kniven henger nå med skaftet ut mot hofta, og kappa er kortet litt inn igjen, så den taggete kanten ikke dekker beltet.
     - **Raider, Navigator og Scout:** det brede beltet med den firkantede messingspennen ligger utenpå skjørtet, ikke skjult under det.
     - **Alle:** skulderpelsene går helt inn til halsen, så det ikke lenger er en grå ring av kjortel mellom halsen og pelsen.
+  - Runde 22 (ferdig):
+    - **Jarl:** pelskragen er tett og myk rundt halsen og når ut over skuldrene, i stedet for store hvite klosser. Pelsen under er mindre.
+    - **Raider:** pelsen er kortere, så tunikaen og beltet synes under den. Hjelmen er lysere, grått jern.
+    - **Navigator:** leggstøvlene er lavere og slankere, så mer av de tynne beina synes.
+    - **Spear Guard:** skjoldet henger lavere, fra brystet ned til knærne.
+    - **Scout:** pelsen på den ene skulderen er mindre, og pelsstøvlene er lavere.
+    - **Old Seer:** runebrikkene henger fra geviret i lengre snorer med ulik lengde.
+    - **Alle:** slankere støvler og mindre pelsdotter, så pelsen ser ut som én raggete kappe.
 - [x] **9. Bevegelse i plaggene:** (se [docs/motion.png](docs/motion.png)) kapper, skjørt, fletter, pels og vimpler svinger og henger etter når figuren går, snur og hugger (enkel fysikk med fjærer). Kapper og fletter bøyer seg i stedet for å svinge som en stiv planke: toppen blir liggende på skuldrene (eller ved hodet), og jo lenger ned, jo mer blafrer de (`ClothBend`). Skjørt, frakker og kjortler følger beina: alt på kroppen under hofta svinger med låret på sin side, så et langt steg dytter stoffet fram i stedet for at kneet går gjennom det (`SkirtFlex`).
 - [x] **10. Tegneserie-look på alt:** tusj-kanter på skipet, øyene, trærne, husene og havet, skravur med blyant eller tusj i skyggene, og papirkorn over hele bildet.
   - [x] Skravur i skyggene: shaderen `OdinsCoin/InkToon` (i `Resources/Shaders`) gir myk tegnet belysning med kalde skygger, enkle blyantstreker på skyggesiden og kryss-skravur i de mørkeste delene. Ansiktene får ingen skravur, så de holder seg rene. Den brukes på alt som ikke er blankt (havet beholder Lit). `InkStyle.cs` har samme matte, og forhåndsvisningen bruker den.
