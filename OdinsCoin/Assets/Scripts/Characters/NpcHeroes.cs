@@ -161,7 +161,7 @@ namespace OdinsCoin
                 case WeaponId.Spear: return new CarryPose { set = true, arm = new Vector3(-6f, 0f, 30f), forearm = new Vector3(-50f, 0f, -18f), haft = new Vector3(0.03f, 1f, 0.05f), slide = 0.22f };
                 case WeaponId.Staff: return new CarryPose { set = true, arm = new Vector3(-6f, 0f, 28f), forearm = new Vector3(-50f, 0f, -16f), haft = new Vector3(0.04f, 1f, 0.08f), slide = 0.44f };
                 // A sword hangs point-down from a loose fist, angled out and forward like the Jarl's.
-                case WeaponId.Sword: return new CarryPose { set = true, arm = new Vector3(-6f, 0f, 14f), forearm = new Vector3(-62f, 0f, -8f), haft = new Vector3(0.12f, -1f, 0.5f), roll = 90f };
+                case WeaponId.Sword: return new CarryPose { set = true, arm = new Vector3(-6f, 0f, 14f), forearm = new Vector3(-62f, 0f, -8f), haft = new Vector3(0.12f, -1f, 0.58f), roll = 90f };
                 // A bow held low at the side, slanting down and back.
                 case WeaponId.Bow: return new CarryPose { set = true, arm = new Vector3(0f, 0f, 10f), forearm = new Vector3(-20f, 0f, 0f), haft = new Vector3(0.35f, 0.75f, -0.4f) };
                 default: return new CarryPose();

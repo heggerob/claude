@@ -43,7 +43,8 @@ namespace OdinsCoin
             // The big head grows more slowly than the body, so short characters look younger and cuter.
             f.headR = 0.148f * Mathf.Pow(s, 0.35f);
             f.headY = h - f.headR;
-            f.neckY = f.headY - f.headR - 0.01f * s;
+            // A short stretch of thin neck shows between the head and the collar, as in the concept art.
+            f.neckY = f.headY - f.headR - 0.03f * s;
             f.shoulderY = f.neckY - 0.08f * s;
             f.chest = f.shoulderY - 0.12f * s;
             f.waist = 0.62f * h;
