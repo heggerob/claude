@@ -1517,14 +1517,16 @@ namespace OdinsCoin
             d.Add(bj, d.pal.hair, CharacterKit.Braid(path, 0.032f * s));
             var end = path[path.Length - 1];
             d.Add(bj, d.pal.leatherDark, MeshData.Ellipsoid(end, new Vector3(0.028f, 0.014f, 0.028f) * s, 8, 4), false);
-            var locks = new[] { new Vector3(0.07f, -0.13f, 0.02f), new Vector3(0.11f, -0.07f, -0.02f), new Vector3(0.03f, -0.17f, 0.03f), new Vector3(0.09f, -0.16f, -0.01f) };
+            var locks = new[] { new Vector3(0.07f, -0.13f, 0.02f), new Vector3(0.11f, -0.07f, -0.02f), new Vector3(0.03f, -0.17f, 0.03f), new Vector3(0.09f, -0.16f, -0.01f),
+                                new Vector3(0.13f, -0.12f, 0.01f), new Vector3(0.05f, -0.1f, -0.03f) };
             for (int i = 0; i < locks.Length; i++)
             {
                 // Each lock bends once on the way down, so the tail reads as wavy rather than a stiff brush.
                 var tip = end + locks[i] * s;
                 var mid = Vector3.Lerp(end, tip, 0.5f) + new Vector3(-0.02f, 0f, 0.01f) * s * ((i & 1) == 0 ? 1f : -1f);
-                d.Add(bj, i == 3 ? VikingModel.Shade(d.pal.hair, 0.8f) : d.pal.hair, CharacterKit.Tuft(end, mid, 0.024f * s));
-                d.Add(bj, i == 3 ? VikingModel.Shade(d.pal.hair, 0.8f) : d.pal.hair, CharacterKit.Tuft(mid, tip, 0.017f * s));
+                var tone = i == 3 || i == 5 ? VikingModel.Shade(d.pal.hair, 0.8f) : d.pal.hair;
+                d.Add(bj, tone, CharacterKit.Tuft(end, mid, 0.03f * s));
+                d.Add(bj, tone, CharacterKit.Tuft(mid, tip, 0.022f * s));
             }
         }
 
