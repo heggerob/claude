@@ -130,6 +130,8 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
     - **Seer:** sammenlignet uten store avvik denne runden.
   - Runde 17 (ferdig):
     - **Seer:** fjærkappa vider seg ut mot bakken i fillete lag, så silhuetten blir en bred trekant som i bildet, i stedet for en rett søyle.
+  - Runde 18 (ferdig):
+    - **Spydvakt:** pelskragen er litt kortere igjen. Den henger fortsatt ned over overarmene, trolig fra pelsen på armene. Det tas i en senere runde.
 - [x] **9. Bevegelse i plaggene:** (se [docs/motion.png](docs/motion.png)) kapper, skjørt, fletter, pels og vimpler svinger og henger etter når figuren går, snur og hugger (enkel fysikk med fjærer). Kapper og fletter bøyer seg i stedet for å svinge som en stiv planke: toppen blir liggende på skuldrene (eller ved hodet), og jo lenger ned, jo mer blafrer de (`ClothBend`). Skjørt, frakker og kjortler følger beina: alt på kroppen under hofta svinger med låret på sin side, så et langt steg dytter stoffet fram i stedet for at kneet går gjennom det (`SkirtFlex`).
 - [x] **10. Tegneserie-look på alt:** tusj-kanter på skipet, øyene, trærne, husene og havet, skravur med blyant eller tusj i skyggene, og papirkorn over hele bildet.
   - [x] Skravur i skyggene: shaderen `OdinsCoin/InkToon` (i `Resources/Shaders`) gir myk tegnet belysning med kalde skygger, enkle blyantstreker på skyggesiden og kryss-skravur i de mørkeste delene. Ansiktene får ingen skravur, så de holder seg rene. Den brukes på alt som ikke er blankt (havet beholder Lit). `InkStyle.cs` har samme matte, og forhåndsvisningen bruker den.
