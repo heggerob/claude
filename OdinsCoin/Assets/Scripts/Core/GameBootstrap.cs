@@ -156,6 +156,25 @@ namespace OdinsCoin
             ship.MakeFast();
         }
 
+        /// <summary>
+        /// Carry on a saved voyage: put the ship back where she was left out in the real North (if that's still open
+        /// water) with the crew aboard. False if she stays at home.
+        /// </summary>
+        public bool ResumeAt(double x, double z, float heading)
+        {
+            var map = WorldMap.Current;
+            if (!RealWorld.Active || map == null || Ship == null) return false;
+            if (!RealWorld.OpenWater(map, new Vector3((float)x, 0f, (float)z), Ship.HalfLength)) return false;
+            Ship.Relocate(WorldOrigin.ToScene(x, z, 0.2f), heading);
+            // Shift the world under her now, so she's near the origin and the land streams in round her.
+            Vector3 shift;
+            if (WorldOrigin.NeedsShift(Ship.transform.position, out shift)) WorldOrigin.Shift(shift);
+            if (Player != null) Player.ReturnToShip();
+            var rig = Camera.main != null ? Camera.main.GetComponent<CameraRig>() : null;
+            if (rig != null && Focus != null) rig.SnapTo(Focus, heading);
+            return true;
+        }
+
         /// <summary>The player's ship in the home colours: the red-and-black sail of the jarl's house.</summary>
         static ShipLook PlayerLook()
         {

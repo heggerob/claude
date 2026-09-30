@@ -82,6 +82,9 @@ namespace OdinsCoin
             else SaveGame.NewGame();
             // The ship at the jetty is the one the save says you sail.
             if (GameBootstrap.Instance != null) GameBootstrap.Instance.SwapShip(Upgrades.Current.SailingDesign);
+            // And she's where the voyage was left, if that was out at sea.
+            var u = Upgrades.Current;
+            if (load && u.AtSea && GameBootstrap.Instance != null) GameBootstrap.Instance.ResumeAt(u.SeaX, u.SeaZ, u.SeaHeading);
             state = State.Playing;
             autosave = 0f;
             SetCursorFree(false);

@@ -766,6 +766,15 @@ public static class LogicTests
         SaveGame.Deserialize("gold=10\nsailing=krakenhall\n", out fg, out fu);
         Check(fu.SailingDesign == ShipDesign.Wavewolf, "a save can't sail a ship it doesn't own");
 
+        // A voyage left out at sea is saved where she was, exactly, and comes back there.
+        var voyageSave = new Upgrades { AtSea = true, SeaX = 123456.789, SeaZ = -987654.321, SeaHeading = 271.5f };
+        SaveGame.Deserialize(SaveGame.Serialize(new Fortune(), voyageSave), out fg, out fu);
+        Check(fu.AtSea && Math.Abs(fu.SeaX - 123456.789) < 1e-6 && Math.Abs(fu.SeaZ + 987654.321) < 1e-6 && Math.Abs(fu.SeaHeading - 271.5f) < 1e-4f, "where the ship was left at sea survives a save");
+        SaveGame.Deserialize(SaveGame.Serialize(new Fortune(), new Upgrades()), out fg, out fu);
+        Check(!fu.AtSea, "a ship lying at home isn't saved as out at sea");
+        SaveGame.Deserialize("gold=5\nat=NaN,1,2\n", out fg, out fu);
+        Check(!fu.AtSea, "a broken position in a save is ignored");
+
         // Broken or hostile saves don't crash or cheat.
         Fortune h; Upgrades w;
         Check(!SaveGame.Deserialize("", out h, out w) && h.Gold == 100, "an empty save gives a fresh start");

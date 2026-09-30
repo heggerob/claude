@@ -36,6 +36,8 @@ namespace OdinsCoin
             Line(sb, "upgrades", string.Join(",", levels));
             Line(sb, "fleet", string.Join(",", u.Fleet.ToArray()));
             Line(sb, "sailing", u.Sailing);
+            if (u.AtSea)
+                Line(sb, "at", u.SeaX.ToString("R", CultureInfo.InvariantCulture) + "," + u.SeaZ.ToString("R", CultureInfo.InvariantCulture) + "," + u.SeaHeading.ToString("R", CultureInfo.InvariantCulture));
             return sb.ToString();
         }
 
@@ -72,6 +74,16 @@ namespace OdinsCoin
                     case "flips": if (nums.Length == 2) { f.Flips = nums[0]; f.HeadsCount = nums[1]; } break;
                     case "plunder": if (nums.Length == 2) { f.ChestsSold = nums[0]; f.GoldPlundered = nums[1]; } break;
                     case "dice": if (nums.Length == 2) { f.DiceWon = nums[0]; f.DiceLost = nums[1]; } break;
+                    case "at":
+                        var parts = value.Split(',');
+                        double sx, sz; float sh;
+                        if (parts.Length == 3
+                            && double.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out sx)
+                            && double.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out sz)
+                            && float.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out sh)
+                            && !double.IsNaN(sx) && !double.IsNaN(sz) && System.Math.Abs(sx) < 1e8 && System.Math.Abs(sz) < 1e8)
+                        { u.AtSea = true; u.SeaX = sx; u.SeaZ = sz; u.SeaHeading = Mathf.Repeat(sh, 360f); }
+                        break;
                     case "fleet":
                         foreach (var id in value.Split(','))
                         {
@@ -105,6 +117,7 @@ namespace OdinsCoin
 
         public static void Save()
         {
+            RecordVoyage(Upgrades.Current);
             PlayerPrefs.SetString(Key, Serialize(Fortune.Current, Upgrades.Current));
             PlayerPrefs.Save();
         }
@@ -118,6 +131,21 @@ namespace OdinsCoin
             Fortune.SetCurrent(f);
             Upgrades.SetCurrent(u);
             return true;
+        }
+
+        /// <summary>Note where the ship is, if she's out in the real North rather than lying at home.</summary>
+        public static void RecordVoyage(Upgrades u)
+        {
+            var boot = GameBootstrap.Instance;
+            u.AtSea = false;
+            if (boot == null || boot.Ship == null || !RealWorld.Active) return;
+            var home = HomeHarbour.Instance;
+            if (home != null && home.ShipInRange(boot.Ship)) return; // at home: she starts at the jetty anyway
+            var p = boot.Ship.transform.position;
+            u.AtSea = true;
+            u.SeaX = WorldOrigin.GlobalX(p);
+            u.SeaZ = WorldOrigin.GlobalZ(p);
+            u.SeaHeading = boot.Ship.Heading;
         }
 
         public static void NewGame()

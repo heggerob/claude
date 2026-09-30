@@ -42,6 +42,11 @@ namespace OdinsCoin
 
         public readonly int[] Levels = new int[All.Length];
 
+        /// <summary>Where the voyage was left (global position and heading) when it wasn't lying at home; else she starts at the jetty.</summary>
+        public bool AtSea;
+        public double SeaX, SeaZ;
+        public float SeaHeading;
+
         /// <summary>The ships you own (design ids), and the one moored at the jetty for you to sail.</summary>
         public readonly List<string> Fleet = new List<string> { Shipwright.Starter.id };
         public string Sailing = Shipwright.Starter.id;

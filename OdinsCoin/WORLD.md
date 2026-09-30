@@ -130,6 +130,9 @@ med ror, seil i vinden og årer.
     tar da rundt 9 minutter. Overfarten stopper ved grunt vann foran baugen, og av alt som stopper rask tid.
     Den går ikke fra anker eller fortøyning. En test seiler en time på slør: kursen holdes innen 1°, og hun gjør
     10,5 knop.
+- [x] **12. Lagret posisjon:** lagringen husker hvor skipet ligger ute i den ekte verdenen, med kursen, og
+  «Continue» setter deg tilbake der med mannskapet om bord (hvis det fortsatt er åpent vann). Ligger skipet
+  hjemme, starter du ved brygga som før.
 
 ## Merk
 
