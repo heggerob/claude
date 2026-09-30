@@ -159,6 +159,11 @@ med ror, seil i vinden og årer.
   - Himmel, tåke og lys følger sola: blågrått om dagen, varm glød ved horisonten, blå skumring og mørkeblå natt.
     Stormen mørkner dette ytterligere.
   - HUD-en viser dag og klokkeslett, og tiden lagres.
+- [x] **15. Handelsskip (`Sea/Merchant.cs`):** opptil tre handelsskip seiler rundt deg ute på det ekte havet.
+  - Det er Skerrycutters i handelsfarger, på vei til en av de nærmeste markedsbyene, og de bruker den samme fysikken.
+  - De styrer mot havna, ror når vinden er for langt forut, og svinger unna grunt vann.
+  - Legger du deg langs siden, stryker de seilet uten kamp, og kistene på dekk er dine.
+  - De forsvinner når de når havna, eller når du er mer enn 15 km unna.
 
 ## Merk
 

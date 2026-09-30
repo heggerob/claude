@@ -397,6 +397,11 @@ public static class LogicTests
             }
         map.Detail = null;
 
+        // Merchants sail for one of the market towns near where they're met.
+        var nearBergen = MerchantTraffic.PickPort(map, map.ToWorld(60.3f, 4.9f));
+        Check(nearBergen != null && PlaceLife.HasMarket(nearBergen) && Vector3.Distance(Places.Position(map, nearBergen), map.ToWorld(60.3f, 4.9f)) < 700000f,
+            "a merchant met off Bergen is bound for a nearby market (" + (nearBergen != null ? nearBergen.name : "none") + ")");
+
         // Life at the places: monasteries, halls and fortresses hold plunder under guard; towns trade instead.
         foreach (var place in Places.All)
         {

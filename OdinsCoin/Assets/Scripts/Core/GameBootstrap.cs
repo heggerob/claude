@@ -84,6 +84,7 @@ namespace OdinsCoin
             gameObject.AddComponent<SeaDangers>();
             gameObject.AddComponent<TimeWarp>();
             gameObject.AddComponent<SkyClock>();
+            gameObject.AddComponent<MerchantTraffic>();
             gameObject.AddComponent<SeaChart>();
             gameObject.AddComponent<Sfx>();
             // Pen lines around everything solid in the world (the heroes draw their own).
