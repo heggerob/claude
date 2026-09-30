@@ -91,16 +91,16 @@ namespace OdinsCoin
                 {
                     Garments.ShinBoots(d, 0.24f);
                     Garments.Gloves(d);
-                    Garments.LongSkirt(d, 0.28f, 1.6f);
-                    Garments.Underskirt(d, 0.08f);
+                    Garments.LongSkirt(d, 0.32f, 1.6f);
+                    Garments.Underskirt(d, 0.035f);
                     Garments.Tunic(d, false);
                     Garments.LongSleeves(d);
                     Garments.RaiderBelt(d, 2);
                     Garments.Apron(d, 0.3f);
                     Garments.ScrollCase(d);
-                    Garments.SideCloak(d, 0.92f, 0.85f);
+                    Garments.SideCloak(d, 0.8f, 0.7f);
                     // Over the cloak's shoulders, so the fur shows on top as in the concept art.
-                    Garments.ShoulderPelt(d, 1.25f, 0f, 0.9f, 2f);
+                    Garments.ShoulderPelt(d, 1.3f, 0f, 0.9f, 2f);
                     Garments.Bandana(d);
                 } } },
             { OutfitId.SpearGuard, new Outfit {

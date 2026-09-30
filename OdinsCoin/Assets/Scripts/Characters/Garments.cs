@@ -738,9 +738,9 @@ namespace OdinsCoin
         {
             var f = d.fit;
             float s = d.S;
-            float y = f.waist - 0.1f * s;
-            // At the front of the right hip, in front of any cloak falling down that side.
-            float ang = 0.5f, rad = d.SkirtRadius(y) + 0.05f * s;
+            float y = f.waist - 0.12f * s;
+            // Out at the right hip, in front of any cloak falling down that side.
+            float ang = 1.2f, rad = d.SkirtRadius(y) + 0.1f * s;
             var at = new Vector3(Mathf.Sin(ang) * rad, y, Mathf.Cos(ang) * rad * (d.hasSkirt ? d.skirtDepth : f.depth));
             // The case: a leather tube hanging at a slant.
             d.Add(Joints.Body, d.pal.leather, MeshData.Lathe(new[] { new Vector2(0.03f * s, -0.12f * s), new Vector2(0.032f * s, 0.1f * s) }, 10)
