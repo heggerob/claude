@@ -9,7 +9,11 @@ namespace OdinsCoin
     /// </summary>
     public class TimeWarp : MonoBehaviour
     {
-        public static readonly int[] Levels = { 1, 2, 4, 8, 16 };
+        /// <summary>The speeds T steps through; the last is a long passage (<see cref="Passage"/>).</summary>
+        public static readonly int[] Levels = { 1, 2, 4, 8, 16, (int)Passage.Factor };
+        /// <summary>The fastest the whole world's clock runs (the passage speeds up only the ship on top of it).</summary>
+        public const int MaxClock = 16;
+        public static bool OnPassage { get { return Factor >= (int)Passage.Factor; } }
         /// <summary>How close an enemy ship may be before time runs normally again (m).</summary>
         public const float EnemyRange = 600f;
         /// <summary>A storm stronger than this needs you at the helm.</summary>
@@ -45,18 +49,31 @@ namespace OdinsCoin
             if (Factor < 1) Factor = 1;
             string why;
             bool ok = Allowed(out why);
+            var ship = GameBootstrap.Instance != null ? GameBootstrap.Instance.Ship : null;
             if (GameInput.Pressed(Key.TimeWarp))
             {
                 int next = Next(Factor);
                 if (next > 1 && !ok) CombatHud.Banner("TIME RUNS AS IT WILL", why);
-                else Factor = next;
+                else if (next >= (int)Passage.Factor && (ship == null || !ship.BeginPassage()))
+                {
+                    Factor = 1;
+                    CombatHud.Banner("NO PASSAGE", ship != null && (ship.Anchored || ship.Moored) ? "Cast off and weigh anchor first." : "This ship can't make a passage.");
+                }
+                else
+                {
+                    Factor = next;
+                    if (OnPassage) CombatHud.Banner("A LONG PASSAGE", "She holds her course (A/D to change it). T again to take her back by hand.");
+                }
             }
             else if (Factor > 1 && !ok)
             {
                 Factor = 1;
                 CombatHud.Banner("BACK TO REAL TIME", why);
             }
-            Time.timeScale = Factor;
+            // The passage lasts only while the ship is on it (she stops herself at shoal water).
+            if (OnPassage && (ship == null || !ship.OnPassage)) Factor = 1;
+            if (!OnPassage && ship != null && ship.OnPassage) ship.EndPassage();
+            Time.timeScale = Mathf.Min(Factor, MaxClock);
         }
 
         static bool Allowed(out string why)

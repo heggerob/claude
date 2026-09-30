@@ -74,11 +74,25 @@ public static class LogicTests
             "off the ship, the serpent, a storm or running aground all stop fast time");
         int lvl = 1, steps = 0;
         do { lvl = TimeWarp.Next(lvl); steps++; } while (lvl != 1 && steps < 10);
-        Check(steps == TimeWarp.Levels.Length && TimeWarp.Next(1) == 2 && TimeWarp.Next(16) == 1, "T steps 1x, 2x, 4x, 8x, 16x and back to real time");
+        Check(steps == TimeWarp.Levels.Length && TimeWarp.Next(1) == 2 && TimeWarp.Next(16) == (int)Passage.Factor && TimeWarp.Next((int)Passage.Factor) == 1, "T steps 1x, 2x, 4x, 8x, 16x, a long passage, and back to real time");
         var kau = Places.Find("Kaupang"); var hed = Places.Find("Hedeby");
         double dLat = (hed.latitude - kau.latitude) * Math.PI / 180.0, dLon = (hed.longitude - kau.longitude) * Math.PI / 180.0 * Math.Cos(56.8 * Math.PI / 180.0);
         float hours = (float)(6371000.0 * Math.Sqrt(dLat * dLat + dLon * dLon)) / (8f * 0.514f) / 3600f;
         Check(hours > 20f && hours / 16f < 2.5f, "Kaupang to Hedeby at 8 knots: " + hours.ToString("0") + " h, about " + (hours * 60f / 16f).ToString("0") + " min at 16x");
+
+        // A long passage: an hour of sea on the flat simulation, holding her course by herself.
+        var voyage = new ShipPhysics.State { heading = 90f, u = 3f };
+        var sailSet = new ShipPhysics.Controls { sail = 1f };
+        var northerly = new Vector2(0f, -16f * 0.514f); // a 16 kn wind from the north: a beam reach heading east
+        bool stopped;
+        var after = Passage.Advance(wolf, voyage, sailSet, northerly, 90f, 3600f, null, out stopped);
+        float made = after.position.magnitude / 1852f;
+        Check(!stopped && !float.IsNaN(after.position.x) && Mathf.Abs(Mathf.DeltaAngle(after.heading, 90f)) < 5f && made > 6f && made < 13f,
+            "an hour's passage on a beam reach holds her course (" + after.heading.ToString("0") + "°) and makes " + made.ToString("0.0") + " sea miles");
+        var turned = Passage.Advance(wolf, after, sailSet, northerly, 150f, 600f, null, out stopped);
+        Check(Mathf.Abs(Mathf.DeltaAngle(turned.heading, 150f)) < 5f, "given a new course, the helm brings her round to it (" + turned.heading.ToString("0") + "°)");
+        var reef = Passage.Advance(wolf, voyage, sailSet, northerly, 90f, 3600f, p => p.x > 2000f, out stopped);
+        Check(stopped && reef.position.x < 2000f && reef.u == 0f, "she stops short of shoal water ahead (at " + reef.position.x.ToString("0") + " m)");
 
         // Pointing: a lateen-rigged ship sails closer to the wind than a square-rigger, and nobody sails straight into it.
         float wolfPoint = Seamanship.ClosestToWind(wolf, 16f), cutterPoint = Seamanship.ClosestToWind(ShipDesign.Skerrycutter, 16f);

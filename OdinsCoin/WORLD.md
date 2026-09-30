@@ -117,7 +117,7 @@ med ror, seil i vinden og årer.
   - Vakter, stormen, sjøormen og piler følger med når origo flyttes.
   - Husene er solide, og brygga har et dekk du kan gå ut på til skipet.
   - Kister og vakter står alltid på tørt land og utenfor husene. Det er testet for alle stedene.
-- [ ] **11. Lange overfarter:** i full størrelse er Kaupang–Hedeby 500 km, 34 timer i 8 knop.
+- [x] **11. Lange overfarter:** i full størrelse er Kaupang–Hedeby 500 km, 34 timer i 8 knop.
   - Ferdig (`Core/TimeWarp.cs`): T ved roret gir 1×, 2×, 4×, 8× eller 16× tid på en rolig overfart. Tiden går
     tilbake til normal hvis raidere kommer innen 600 m, sjøormen dukker opp, det blir storm, skipet går på grunn,
     eller du forlater skipet. HUD-en viser «TIME ×8».
@@ -125,8 +125,11 @@ med ror, seil i vinden og årer.
     pergament fra det ekte kartet. Havet er blått etter dybden, landet oker etter høyden, fjellene har skravur og
     kystene er blekket. Kartet viser stedene (marked ◆, kloster ✚, andre ●, plyndrede er gråe) og skipet ditt med
     kursen, og har en målestokk. Rull for å zoome inn 2×–16× rundt skipet.
-  - Gjenstår: en egen overfartsmodus for enda raskere tid, der skipet seiler på den samme fysikken i 2D med
-    større tidssteg (`ShipPhysics.Step`) i stedet for full 3D-fysikk.
+  - Ferdig (`Ship/Passage.cs`): etter 16× gir T en lang overfart. Skipet seiler 240 ganger raskere på den samme
+    fysikken, men flatt og i steg på et kvarter sekund, og holder kursen selv. A/D svinger kursen. Kaupang–Hedeby
+    tar da rundt 9 minutter. Overfarten stopper ved grunt vann foran baugen, og av alt som stopper rask tid.
+    Den går ikke fra anker eller fortøyning. En test seiler en time på slør: kursen holdes innen 1°, og hun gjør
+    10,5 knop.
 
 ## Merk
 

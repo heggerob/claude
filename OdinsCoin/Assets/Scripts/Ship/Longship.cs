@@ -11,6 +11,7 @@ namespace OdinsCoin
     /// Controls come from whoever stands at the helm (or directly from the keyboard for now).
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
+    [DefaultExecutionOrder(-100)] // she moves before the crew ride along with her
     public class Longship : MonoBehaviour
     {
         /// <summary>-1 (port) .. 1 (starboard).</summary>
@@ -47,6 +48,65 @@ namespace OdinsCoin
         float bowLine, sternLine;
         /// <summary>Made fast to a jetty's bollards.</summary>
         public bool Moored { get { return bowBollard != null || sternBollard != null; } }
+
+        /// <summary>On a long passage: sailing the flat simulation at <see cref="Passage.Factor"/> times real time.</summary>
+        public bool OnPassage { get; private set; }
+        /// <summary>The course the helm holds on a passage (degrees).</summary>
+        public float PassageCourse;
+        ShipPhysics.State passage;
+
+        /// <summary>Set out on a long passage, holding her present heading. False (and nothing changes) if she can't.</summary>
+        public bool BeginPassage()
+        {
+            if (Design == null || OnPassage || Anchored || Moored) return false;
+            var v = transform.InverseTransformDirection(Compat.Velocity(Body));
+            passage = new ShipPhysics.State { position = new Vector2(transform.position.x, transform.position.z), heading = Heading, u = v.z, v = v.x, r = Body.angularVelocity.y };
+            PassageCourse = Heading;
+            Body.isKinematic = true;
+            OnPassage = true;
+            return true;
+        }
+
+        /// <summary>Back to sailing in real time, carrying on at the speed she had.</summary>
+        public void EndPassage()
+        {
+            if (!OnPassage) return;
+            OnPassage = false;
+            Body.isKinematic = false;
+            Compat.SetVelocity(Body, transform.forward * passage.u + transform.right * passage.v);
+            Body.angularVelocity = Vector3.up * passage.r;
+        }
+
+        void OnEnable() { WorldOrigin.Shifted += OnShift; }
+        void OnDisable() { WorldOrigin.Shifted -= OnShift; }
+        void OnShift(Vector3 shift) { passage.position -= new Vector2(shift.x, shift.z); }
+
+        /// <summary>The passage: hours of sea in minutes, on the same physics, flat and in big steps.</summary>
+        void SailPassage()
+        {
+            float seconds = Mathf.Min(8f, Time.unscaledDeltaTime * Passage.Factor);
+            var c = Wanted();
+            float sails, oars;
+            Drive(out sails, out oars);
+            c.sail *= sails; c.oarsPort *= oars; c.oarsStarboard *= oars;
+            Actual = c;
+            SailAmount = Mathf.Clamp01(SailTarget);
+            var wind = new Vector2(Wind.Direction.x, Wind.Direction.z) * Wind.Knots * 0.514f;
+            float draught = Design.draught;
+            bool stopped;
+            passage = Passage.Advance(Design, passage, c, wind, PassageCourse, seconds, p => DepthAt(new Vector3(p.x, 0f, p.y)) < draught + Passage.ShoalMargin, out stopped);
+            var at = new Vector3(passage.position.x, 0f, passage.position.y);
+            at.y = Waves.Height(at.x, at.z) * 0.5f;
+            transform.position = at;
+            transform.rotation = Quaternion.Euler(0f, passage.heading, 0f);
+            Body.position = at;
+            Body.rotation = transform.rotation;
+            if (stopped)
+            {
+                EndPassage();
+                CombatHud.Banner("SHOAL WATER AHEAD", "The lookout calls it: the passage ends here. Take her in by hand.");
+            }
+        }
 
         /// <summary>Half her length (m).</summary>
         public float HalfLength { get { return Design != null ? Design.length / 2f : LongshipBuilder.Length / 2f; } }
@@ -336,6 +396,7 @@ namespace OdinsCoin
 
         void SailByPhysics()
         {
+            if (OnPassage) return;
             var d = Design;
             float dt = Time.fixedDeltaTime;
             var t = transform;
@@ -409,6 +470,7 @@ namespace OdinsCoin
         /// <summary>Put the ship somewhere else at rest (after foundering, for example).</summary>
         public void Relocate(Vector3 position, float heading)
         {
+            EndPassage();
             transform.position = position;
             transform.rotation = Quaternion.Euler(0f, heading, 0f);
             Body.position = position;
@@ -426,6 +488,7 @@ namespace OdinsCoin
 
         void Update()
         {
+            if (OnPassage) SailPassage();
             // Visuals: sail rolls up, yard braces round to the wind, steering oar swings.
             if (Parts.sail != null) Parts.sail.localScale = new Vector3(1f, Mathf.Max(0.08f, SailAmount), 1f);
             if (Parts.yard != null)
@@ -464,6 +527,8 @@ namespace OdinsCoin
         void Update()
         {
             ship.RudderInput = GameInput.Move().x;
+            // On a passage the helm holds a course: A/D swing it round.
+            if (ship.OnPassage) ship.PassageCourse = Mathf.Repeat(ship.PassageCourse + ship.RudderInput * 30f * Time.unscaledDeltaTime, 360f);
             if (GameInput.Pressed(Key.SailUp)) ship.SailTarget = Mathf.Min(1f, ship.SailTarget + 0.25f);
             if (GameInput.Pressed(Key.SailDown)) ship.SailTarget = Mathf.Max(0f, ship.SailTarget - 0.25f);
             ship.Rowing = GameInput.Held(Key.Up) && ship.SailTarget < 0.15f;
