@@ -102,6 +102,7 @@ namespace OdinsCoin
                 if (parts.rightForearm != null) parts.rightForearm.localRotation = Quaternion.Euler(HeroPose.ChopElbow(t), 0f, 0f);
                 // Mid-swing the weapon points along the arm, off the shoulder.
                 if (parts.axe != null) parts.axe.localRotation = Quaternion.identity;
+                HeroPose.RestGrip(parts);
             }
             // Shield: slides from the back to the front arm while blocking.
             block = Mathf.MoveTowards(block, Blocking ? 1f : 0f, Time.deltaTime * 6f);

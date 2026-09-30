@@ -847,6 +847,30 @@ public static class LogicTests
             Vector3 up = Quaternion.Euler(p.arm) * Quaternion.Euler(p.forearm) * HeroPose.WeaponInFist(p) * Vector3.forward;
             Check(up.y > 0.95f, w + " is carried upright (" + up + ")");
         }
+        // Long weapons carried in game stay clear of the ground, on the smallest and tallest bodies.
+        foreach (var w in new[] { WeaponId.Spear, WeaponId.Staff, WeaponId.Sword })
+            foreach (float h in new[] { 1.4f, 1.62f, 2f })
+            {
+                var spec = CharacterSpec.Default(OutfitId.Raider); spec.weapon = w; spec.body.height = h;
+                float low = CarriedLowest(spec);
+                Check(low > 0.02f && low < 0.35f * h, w + " carried by a " + h + " m hero clears the ground without floating (" + low + ")");
+            }
+    }
+
+    /// <summary>The lowest point (height above the soles) of the hero's weapon in its in-game carry pose.</summary>
+    static float CarriedLowest(CharacterSpec spec)
+    {
+        var body = HeroModel.Build(spec);
+        var weapon = HeroModel.BuildWeapon(spec);
+        var p = HeroPose.CarryFor(spec.weapon);
+        Quaternion arm = Quaternion.Euler(p.arm), fore = arm * Quaternion.Euler(p.forearm), wr = fore * HeroPose.WeaponInFist(p);
+        Vector3 elbow = body.Find(Joints.RightArm).localPosition + arm * body.Find(Joints.RightForearm).localPosition;
+        Vector3 grip = elbow + fore * (body.Find(Joints.Weapon).localPosition + HeroPose.GripSlide(p, Fit.Of(spec.body).s));
+        float low = float.MaxValue;
+        foreach (var piece in weapon.Pieces)
+            if (piece.joint == Joints.Weapon)
+                foreach (var v in piece.mesh.Vertices) low = Math.Min(low, (grip + wr * v).y);
+        return low;
     }
 
     static void FaceTests()

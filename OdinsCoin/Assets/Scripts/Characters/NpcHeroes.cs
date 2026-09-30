@@ -136,7 +136,9 @@ namespace OdinsCoin
 
         /// <summary>How a weapon is carried while walking: upper arm, forearm (local Euler) and the haft's direction in the body.</summary>
         public struct CarryPose { public Vector3 arm, forearm, haft; public bool set; /// <summary>Turn about the haft, degrees (to show a blade's flat).</summary>
-            public float roll; }
+            public float roll;
+            /// <summary>How far the grip slides down the haft (metres on the reference body), lifting a long weapon clear of the ground.</summary>
+            public float slide; }
 
         public static CarryPose CarryFor(WeaponId w)
         {
@@ -144,10 +146,10 @@ namespace OdinsCoin
             {
                 case WeaponId.TwoHandAxe: return new CarryPose { set = true, arm = AxeCarryArm, forearm = AxeCarryForearm, haft = new Vector3(-1f, 0.3f, -0.55f) };
                 // Long hafts held upright in a fist at chest height, the butt clear of the ground.
-                case WeaponId.Spear: return new CarryPose { set = true, arm = new Vector3(-6f, 0f, 30f), forearm = new Vector3(-50f, 0f, -18f), haft = new Vector3(0.03f, 1f, 0.05f) };
-                case WeaponId.Staff: return new CarryPose { set = true, arm = new Vector3(-6f, 0f, 28f), forearm = new Vector3(-50f, 0f, -16f), haft = new Vector3(0.04f, 1f, 0.08f) };
+                case WeaponId.Spear: return new CarryPose { set = true, arm = new Vector3(-6f, 0f, 30f), forearm = new Vector3(-50f, 0f, -18f), haft = new Vector3(0.03f, 1f, 0.05f), slide = 0.22f };
+                case WeaponId.Staff: return new CarryPose { set = true, arm = new Vector3(-6f, 0f, 28f), forearm = new Vector3(-50f, 0f, -16f), haft = new Vector3(0.04f, 1f, 0.08f), slide = 0.44f };
                 // A sword hangs point-down from a loose fist, angled out and forward like the Jarl's.
-                case WeaponId.Sword: return new CarryPose { set = true, arm = new Vector3(-6f, 0f, 14f), forearm = new Vector3(-24f, 0f, -8f), haft = new Vector3(0.12f, -1f, 0.3f), roll = 90f };
+                case WeaponId.Sword: return new CarryPose { set = true, arm = new Vector3(-6f, 0f, 14f), forearm = new Vector3(-62f, 0f, -8f), haft = new Vector3(0.12f, -1f, 0.5f), roll = 90f };
                 // A bow held low at the side, slanting down and back.
                 case WeaponId.Bow: return new CarryPose { set = true, arm = new Vector3(0f, 0f, 10f), forearm = new Vector3(-20f, 0f, 0f), haft = new Vector3(0.35f, 0.75f, -0.4f) };
                 default: return new CarryPose();
@@ -171,7 +173,21 @@ namespace OdinsCoin
             if (!p.set || parts == null || parts.rightForearm == null || amount <= 0.001f) return;
             parts.rightArm.localRotation = Quaternion.Slerp(parts.rightArm.localRotation, Quaternion.Euler(p.arm), amount);
             parts.rightForearm.localRotation = Quaternion.Slerp(parts.rightForearm.localRotation, Quaternion.Euler(p.forearm), amount);
-            if (parts.axe != null) parts.axe.localRotation = Quaternion.Slerp(parts.axe.localRotation, WeaponInFist(p), amount);
+            if (parts.axe == null) return;
+            parts.axe.localRotation = Quaternion.Slerp(parts.axe.localRotation, WeaponInFist(p), amount);
+            parts.axe.localPosition = Vector3.Lerp(parts.axe.localPosition, parts.axeRest + GripSlide(p, parts.scale), amount);
+        }
+
+        /// <summary>How far the weapon moves in the fist (forearm space) when held further down the haft.</summary>
+        public static Vector3 GripSlide(CarryPose p, float scale)
+        {
+            return WeaponInFist(p) * Vector3.forward * (p.slide * scale);
+        }
+
+        /// <summary>Put the weapon back where the fist holds it at rest (after a carry slid it along the haft).</summary>
+        public static void RestGrip(VikingBuilder.Parts parts)
+        {
+            if (parts != null && parts.axe != null && parts.rightForearm != null) parts.axe.localPosition = parts.axeRest;
         }
 
         /// <summary>Set both elbows (only storybook heroes have them).</summary>

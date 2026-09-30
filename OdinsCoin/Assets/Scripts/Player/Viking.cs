@@ -62,6 +62,7 @@ namespace OdinsCoin
         void RestWeapon()
         {
             if (parts.axe != null && Hero != null) parts.axe.localRotation = Quaternion.Euler(Weapons.RestEuler(Hero.weapon));
+            HeroPose.RestGrip(parts);
         }
 
         /// <summary>The hero this Viking is drawn as.</summary>
