@@ -113,7 +113,7 @@ namespace OdinsCoin
                 palette = () => new Palette {
                     cloth = new Color(0.4f, 0.28f, 0.18f), clothDark = new Color(0.22f, 0.16f, 0.12f),
                     accent = new Color(0.6f, 0.18f, 0.12f), emblem = new Color(0.9f, 0.82f, 0.68f),
-                    fur = new Color(0.68f, 0.56f, 0.4f), furShadow = new Color(0.42f, 0.32f, 0.22f),
+                    fur = new Color(0.8f, 0.7f, 0.55f), furShadow = new Color(0.52f, 0.42f, 0.3f),
                     hair = new Color(0.8f, 0.64f, 0.42f), metal = new Color(0.42f, 0.43f, 0.45f) },
                 defaultHair = HairStyle.ShortLocks, suggestedWeapon = WeaponId.Spear, suggestedOffHand = OffHandId.KnotShield,
                 abilities = new[] {
@@ -130,7 +130,7 @@ namespace OdinsCoin
                     Garments.StuddedTrim(d);
                     Garments.RingBuckleBelt(d);
                     Garments.BigCape(d, 0.9f, 1.4f, false);
-                    Garments.ShoulderPelt(d, 1.45f, 0f, 0.9f, 2.2f, 0.4f);
+                    Garments.ShoulderPelt(d, 1.55f, 0f, 0.95f, 2.4f, 0.28f);
                     Garments.Scarf(d);
                     Garments.NasalHelmet(d);
                 } } },
