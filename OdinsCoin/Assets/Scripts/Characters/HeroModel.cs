@@ -207,7 +207,7 @@ namespace OdinsCoin
                 case WeaponId.Spear:
                     // A tall spear held about a third of the way up: an ash shaft with leather bindings, a leaf-shaped
                     // iron head on a socket, and a red pennant with a knot rune tied below the head.
-                    d.Add(Joints.Weapon, d.pal.leather, MeshData.Tube(new[] { new Vector3(0f, 0f, -1.3f * s), new Vector3(0f, 0f, 0.82f * s) }, new[] { 0.02f * s, 0.018f * s }, 8));
+                    d.Add(Joints.Weapon, d.pal.leather, MeshData.Tube(new[] { new Vector3(0f, 0f, -1.02f * s), new Vector3(0f, 0f, 0.82f * s) }, new[] { 0.02f * s, 0.018f * s }, 8));
                     foreach (float z in new[] { 0.58f, 0.7f })
                         d.Add(Joints.Weapon, d.pal.leatherDark, MeshData.Lathe(new[] { new Vector2(0.024f * s, 0f), new Vector2(0.024f * s, 0.05f * s) }, 8).Transformed(new Vector3(0f, 0f, z * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one), false);
                     d.Add(Joints.Weapon, d.pal.metal, MeshData.Lathe(new[] { new Vector2(0.024f * s, 0f), new Vector2(0.018f * s, 0.08f * s) }, 8).Transformed(new Vector3(0f, 0f, 0.8f * s), Quaternion.Euler(90f, 0f, 0f), Vector3.one));

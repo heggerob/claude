@@ -126,26 +126,47 @@ namespace OdinsCoin
         /// The axe's local rotation in the fist for the carry: worked out from where the haft should lie in the body's
         /// space (up and back across the shoulders towards the left, the blade facing forward), whatever the arm does.
         /// </summary>
-        public static Quaternion AxeCarryWeapon
-        {
-            get
-            {
-                Vector3 haft = new Vector3(-1f, 0.3f, -0.55f).normalized;
-                Quaternion inBody = Quaternion.LookRotation(haft, Vector3.Cross(Vector3.forward, haft));
-                return Quaternion.Inverse(Quaternion.Euler(AxeCarryArm) * Quaternion.Euler(AxeCarryForearm)) * inBody;
-            }
-        }
+        public static Quaternion AxeCarryWeapon { get { return WeaponInFist(CarryFor(WeaponId.TwoHandAxe)); } }
 
         /// <summary>
         /// Carry a big axe over the shoulder (by <paramref name="amount"/> 0..1): the right arm swings out and folds up
         /// so the fist sits by the shoulder, and the haft lies back across it with the head behind.
         /// </summary>
-        public static void AxeCarry(VikingBuilder.Parts parts, float amount)
+        public static void AxeCarry(VikingBuilder.Parts parts, float amount) { Carry(parts, WeaponId.TwoHandAxe, amount); }
+
+        /// <summary>How a weapon is carried while walking: upper arm, forearm (local Euler) and the haft's direction in the body.</summary>
+        public struct CarryPose { public Vector3 arm, forearm, haft; public bool set; }
+
+        public static CarryPose CarryFor(WeaponId w)
         {
-            if (parts == null || parts.rightForearm == null || amount <= 0.001f) return;
-            parts.rightArm.localRotation = Quaternion.Slerp(parts.rightArm.localRotation, Quaternion.Euler(AxeCarryArm), amount);
-            parts.rightForearm.localRotation = Quaternion.Slerp(parts.rightForearm.localRotation, Quaternion.Euler(AxeCarryForearm), amount);
-            if (parts.axe != null) parts.axe.localRotation = Quaternion.Slerp(parts.axe.localRotation, AxeCarryWeapon, amount);
+            switch (w)
+            {
+                case WeaponId.TwoHandAxe: return new CarryPose { set = true, arm = AxeCarryArm, forearm = AxeCarryForearm, haft = new Vector3(-1f, 0.3f, -0.55f) };
+                // Long hafts held upright in a fist at chest height, the butt clear of the ground.
+                case WeaponId.Spear: return new CarryPose { set = true, arm = new Vector3(-6f, 0f, 30f), forearm = new Vector3(-50f, 0f, -18f), haft = new Vector3(0.03f, 1f, 0.05f) };
+                case WeaponId.Staff: return new CarryPose { set = true, arm = new Vector3(-6f, 0f, 28f), forearm = new Vector3(-50f, 0f, -16f), haft = new Vector3(0.04f, 1f, 0.08f) };
+                default: return new CarryPose();
+            }
+        }
+
+        /// <summary>The weapon's local rotation in the fist that makes its haft lie along <paramref name="p"/>.haft in body space.</summary>
+        public static Quaternion WeaponInFist(CarryPose p)
+        {
+            Vector3 haft = p.haft.normalized;
+            // Upright things turn their flat side (a pennant, a rune stone) out to the right; others face forward.
+            Vector3 side = Mathf.Abs(haft.y) > 0.8f ? Vector3.back : Vector3.forward;
+            Quaternion inBody = Quaternion.LookRotation(haft, Vector3.Cross(side, haft));
+            return Quaternion.Inverse(Quaternion.Euler(p.arm) * Quaternion.Euler(p.forearm)) * inBody;
+        }
+
+        /// <summary>Carry the hero's weapon the way it's meant to be carried (if it has a carry pose).</summary>
+        public static void Carry(VikingBuilder.Parts parts, WeaponId w, float amount)
+        {
+            var p = CarryFor(w);
+            if (!p.set || parts == null || parts.rightForearm == null || amount <= 0.001f) return;
+            parts.rightArm.localRotation = Quaternion.Slerp(parts.rightArm.localRotation, Quaternion.Euler(p.arm), amount);
+            parts.rightForearm.localRotation = Quaternion.Slerp(parts.rightForearm.localRotation, Quaternion.Euler(p.forearm), amount);
+            if (parts.axe != null) parts.axe.localRotation = Quaternion.Slerp(parts.axe.localRotation, WeaponInFist(p), amount);
         }
 
         /// <summary>Set both elbows (only storybook heroes have them).</summary>

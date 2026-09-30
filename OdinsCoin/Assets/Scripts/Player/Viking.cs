@@ -389,7 +389,7 @@ namespace OdinsCoin
                 // Stick arms bend at the elbow as they swing; the helm hand reaches for the oar.
                 HeroPose.Elbows(parts, HeroPose.WalkElbow(-swing * 0.8f), AtHelm ? -30f : HeroPose.WalkElbow(swing * 0.8f));
                 // A big axe rides on the shoulder, like the raider on the concept sheet.
-                if (!AtHelm && !Swimming && Hero != null && Hero.weapon == WeaponId.TwoHandAxe) HeroPose.AxeCarry(parts, 1f);
+                if (!AtHelm && !Swimming && Hero != null && HeroPose.CarryFor(Hero.weapon).set) HeroPose.Carry(parts, Hero.weapon, 1f);
                 else RestWeapon();
             }
             if (parts.axe != null) parts.axe.gameObject.SetActive(Carrying == null);
