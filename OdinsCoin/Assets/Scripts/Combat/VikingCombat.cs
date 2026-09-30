@@ -10,6 +10,17 @@ namespace OdinsCoin
     public class VikingCombat : MonoBehaviour
     {
         public const float SwingTime = 0.42f, SwingDamage = 26f, Reach = 2.1f, Arc = 110f;
+        /// <summary>An aimed arrow in first person: how far it flies (m), and the widest it may miss the crosshair by (degrees).</summary>
+        public const float BowRange = 30f, BowAimArc = 30f;
+
+        /// <summary>
+        /// How far off the crosshair (full angle, degrees) an aimed arrow still hits someone at <paramref name="distance"/>:
+        /// about a man's width either side, so aiming matters more the further off they are.
+        /// </summary>
+        public static float AimedArc(float distance)
+        {
+            return Mathf.Min(BowAimArc, 2f * Mathf.Atan2(0.45f, Mathf.Max(0.5f, distance)) * Mathf.Rad2Deg);
+        }
         const float RespawnDelay = 3.5f;
 
         public Health Health { get; private set; }
@@ -34,6 +45,7 @@ namespace OdinsCoin
             Health.BaseMax = 100f;
             Health.Damaged += (amount, from) => Sfx.At(SfxId.Hurt, transform.position + Vector3.up, 0.8f, 0.1f);
             Health.Damaged += (amount, from) => Face.On(this, Expression.Hurt, 0.7f);
+            Health.Damaged += (amount, from) => { if (CameraRig.Instance != null && CameraRig.Instance.FirstPerson) CameraRig.Instance.Hurt(amount); };
             Health.Damaged += (amount, from) => CombatHud.Number(transform.position + Vector3.up * 2.2f, "-" + Mathf.RoundToInt(amount), new Color(1f, 0.35f, 0.3f));
             Health.Died += OnDied;
         }
@@ -104,16 +116,24 @@ namespace OdinsCoin
             float arc = Abilities.Has("cleave") ? Abilities.CleaveArc : Arc;
             float volley = Abilities.Has("volley") && viking.Hero != null && viking.Hero.weapon == WeaponId.Bow ? Abilities.VolleyDamage : 1f;
             if (volley > 1f) reach *= 4f; // arrows fly further than a blade reaches
+            // In first person a bow is aimed: the arrow flies where the crosshair is, far, and hits only what's there.
+            var rig = CameraRig.Instance;
+            bool aimed = rig != null && rig.FirstPerson && Weapon == WeaponId.Bow;
+            if (aimed) { reach = Mathf.Max(reach, BowRange); arc = BowAimArc; }
+            bool landed = false;
             foreach (var saxon in Saxon.All)
             {
                 if (saxon.Health.Dead) continue;
                 if (!CombatMath.InArc(transform.position, transform.forward, saxon.transform.position, reach, arc)) continue;
+                if (aimed && !CombatMath.InArc(transform.position, transform.forward, saxon.transform.position, reach, AimedArc(Vector3.Distance(transform.position, saxon.transform.position)))) continue;
+                landed = true;
                 bool front = CombatMath.FromFront(saxon.transform.position, saxon.transform.forward, transform.position);
                 float dmg = CombatMath.Damage(SwingDamage * Move.power * volley, fortune.MeleeDamageMultiplier * Upgrades.Current.AxeMultiplier, saxon.Blocking, front);
                 saxon.Health.TakeDamage(dmg, transform.position);
                 Sfx.At(saxon.Blocking && front ? SfxId.ShieldBlock : SfxId.AxeHit, saxon.transform.position + Vector3.up);
                 saxon.Stagger(transform.position);
             }
+            if (landed && rig != null && rig.FirstPerson) { rig.HitMarker(); rig.Kick(aimed ? 0.4f : 1.2f); }
             float blow = SwingDamage * Move.power * fortune.MeleeDamageMultiplier * Upgrades.Current.AxeMultiplier;
             // Jörmungandr's head, while it lies stunned on the gunwale.
             var serpent = Serpent.Instance;

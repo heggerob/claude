@@ -39,6 +39,30 @@ namespace OdinsCoin
         Renderer[] hiddenHead;
         bool headHidden;
         Vector3 smoothedEye;
+        // A jolt of the view (degrees of pitch and roll), dying away; the hit marker and the hurt flash, counting down.
+        float kick, kickRoll, hitMark, hurtFlash;
+        /// <summary>How quickly a jolt dies away (per second), and how long the hit marker and hurt flash last (s).</summary>
+        public const float KickDecay = 12f, HitMarkTime = 0.22f, HurtFlashTime = 0.45f;
+
+        /// <summary>Jolt the view: a small one when your blow lands, a bigger one when you're hit.</summary>
+        public void Kick(float degrees)
+        {
+            kick += degrees;
+            kickRoll += (Random.value - 0.5f) * degrees;
+        }
+
+        /// <summary>Your blow landed: flash the crosshair.</summary>
+        public void HitMarker() { hitMark = HitMarkTime; }
+
+        /// <summary>You were hurt: redden the edges of the view and jolt it.</summary>
+        public void Hurt(float amount)
+        {
+            hurtFlash = HurtFlashTime;
+            Kick(Mathf.Clamp(amount * 0.12f, 1.5f, 6f));
+        }
+
+        /// <summary>What's left of a jolt after <paramref name="dt"/> seconds.</summary>
+        public static float Settle(float jolt, float dt) { return jolt * Mathf.Exp(-KickDecay * dt); }
         Vector3 smoothedTarget;
         /// <summary>The coin and hall screens set this to free the cursor and stop mouse-look.</summary>
         public bool CursorFree;
@@ -131,7 +155,9 @@ namespace OdinsCoin
                 // The head bobs with every step: follow it closely, but not every jolt.
                 smoothedEye = (smoothedEye - eye).sqrMagnitude > 4f ? eye : Vector3.Lerp(smoothedEye, eye, 1f - Mathf.Exp(-30f * Time.deltaTime));
                 transform.position = smoothedEye;
-                transform.rotation = Quaternion.Euler(pitch, Yaw, 0f);
+                kick = Settle(kick, Time.deltaTime);
+                kickRoll = Settle(kickRoll, Time.deltaTime);
+                transform.rotation = Quaternion.Euler(pitch - kick, Yaw, kickRoll);
                 if (cam != null) { cam.nearClipPlane = 0.05f; cam.fieldOfView = FirstPersonFov; }
                 smoothedTarget = Target.position + Vector3.up * Height;
                 return;
@@ -166,10 +192,32 @@ namespace OdinsCoin
         /// <summary>A small crosshair in the middle of the screen while you look out of your hero's eyes.</summary>
         void OnGUI()
         {
+            hitMark = Mathf.Max(0f, hitMark - Time.deltaTime);
+            hurtFlash = Mathf.Max(0f, hurtFlash - Time.deltaTime);
             if (!FirstPerson || CursorFree || MenuOpen || !headHidden) return;
             var old = GUI.color;
-            GUI.color = new Color(1f, 0.97f, 0.9f, 0.85f);
             float cx = Screen.width / 2f, cy = Screen.height / 2f;
+            if (hurtFlash > 0f)
+            {
+                // Blood-red at the edges of the view, fading.
+                GUI.color = new Color(0.7f, 0.05f, 0.03f, 0.45f * hurtFlash / HurtFlashTime);
+                float band = Screen.height * 0.08f;
+                GUI.DrawTexture(new Rect(0f, 0f, Screen.width, band), Texture2D.whiteTexture);
+                GUI.DrawTexture(new Rect(0f, Screen.height - band, Screen.width, band), Texture2D.whiteTexture);
+                GUI.DrawTexture(new Rect(0f, band, band, Screen.height - band * 2f), Texture2D.whiteTexture);
+                GUI.DrawTexture(new Rect(Screen.width - band, band, band, Screen.height - band * 2f), Texture2D.whiteTexture);
+            }
+            if (hitMark > 0f)
+            {
+                // A struck blow: four ticks out on the diagonals.
+                GUI.color = new Color(1f, 0.85f, 0.4f, hitMark / HitMarkTime);
+                for (int i = 0; i < 4; i++)
+                {
+                    float sx = (i & 1) == 0 ? -1f : 1f, sy = i < 2 ? -1f : 1f;
+                    for (int k = 5; k < 11; k++) GUI.DrawTexture(new Rect(cx + sx * k - 1f, cy + sy * k - 1f, 2f, 2f), Texture2D.whiteTexture);
+                }
+            }
+            GUI.color = new Color(1f, 0.97f, 0.9f, 0.85f);
             GUI.DrawTexture(new Rect(cx - 9f, cy - 1f, 6f, 2f), Texture2D.whiteTexture);
             GUI.DrawTexture(new Rect(cx + 3f, cy - 1f, 6f, 2f), Texture2D.whiteTexture);
             GUI.DrawTexture(new Rect(cx - 1f, cy - 9f, 2f, 6f), Texture2D.whiteTexture);

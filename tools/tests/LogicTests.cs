@@ -120,6 +120,9 @@ public static class LogicTests
             "an overhead wind-up is folded forward above your eyes, still higher than an arm raised straight up would be");
         var hanging = HeroPose.FirstPersonLift(Quaternion.identity, true, 1f) * Vector3.down;
         Check(hanging.z > 0.4f && hanging.y < 0f, "the lift swings a hanging weapon arm forward, not back");
+        Check(VikingCombat.AimedArc(10f) > 4f && VikingCombat.AimedArc(10f) < 6f && VikingCombat.AimedArc(1f) == VikingCombat.BowAimArc
+            && VikingCombat.AimedArc(25f) < VikingCombat.AimedArc(10f), "an aimed arrow must be on target: a man's width either side, tighter the further off");
+        Check(CameraRig.Settle(4f, 0.25f) < 0.3f && CameraRig.Settle(4f, 0.02f) > 3f, "a jolt of the view dies away within a quarter second");
         var facer = new Locomotion();
         facer.Reset(Vector2.zero, 0f);
         for (int i = 0; i < 30; i++) { facer.Face(90f); facer.Step(new Vector2(1f, 0f), Viking.WalkSpeed, 1f / 60f); facer.Face(90f); }

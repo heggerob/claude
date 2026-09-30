@@ -194,3 +194,4 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
   - **Kamp:** slagene treffer dit du ser. Våpenarmen er løftet fram i synsfeltet, så øks, sverd, spyd og bue krysser bildet når du slår. Skjoldarmen er løftet mindre, så skjoldet ikke skjuler det som er foran deg.
   - **Tredjeperson:** V bytter til kameraet bak helten og tilbake, og valget huskes.
   - [x] Førstepersonsslag: en arm som løftes over hodet blir brettet fram, så du ser hendene og skaftet over øynene mens du lader opp et overhogg. En arm som henger løftes fram, og løftet blir mindre jo nærmere rett fram armen peker.
+  - [x] Følelse i kampen: treffer du, blinker siktet og bildet rykker litt. Blir du truffet, rykker bildet mer, og kantene av synsfeltet blir blodrøde et øyeblikk. Buen siktes i førsteperson: pila flyr opptil 30 m dit siktet peker og treffer bare den som står der, innenfor omtrent en manns bredde.
