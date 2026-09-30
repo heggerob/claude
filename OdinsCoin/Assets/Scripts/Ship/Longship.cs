@@ -34,6 +34,8 @@ namespace OdinsCoin
         public bool Aground { get; private set; }
         List<ShipPhysics.FloatCell> cells;
         float strokePhase;
+        /// <summary>Where the oars are in their stroke (0..1), for the crew to pull in time.</summary>
+        public float StrokePhase { get { return strokePhase; } }
 
         /// <summary>The new classes: lying to her anchor.</summary>
         public bool Anchored { get; private set; }

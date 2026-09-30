@@ -44,6 +44,7 @@ namespace OdinsCoin
         }
 
         readonly List<Hand> hands = new List<Hand>();
+        Longship ship;
         float reactUntil = -1f;
         bool cheering;
 
@@ -54,6 +55,7 @@ namespace OdinsCoin
             var go = new GameObject("Crew");
             go.transform.SetParent(ship.transform, false);
             var crew = go.AddComponent<Crew>();
+            crew.ship = ship;
             int n = 0;
             foreach (var station in Stations(ship.Design))
             {
@@ -90,6 +92,15 @@ namespace OdinsCoin
                 h.loco.Step(Vector2.zero, 0f, dt);
                 h.animator.Step(dt, h.loco, true, 0f, false, Time.time + i * 1.7f);
                 h.animator.Apply(h.parts);
+                if (!reacting && ship != null && ship.Rowing)
+                {
+                    // Pulling at the oars in time with the stroke: reach forward, lean back and haul.
+                    float s = Mathf.Sin(ship.StrokePhase * Mathf.PI * 2f);
+                    if (h.parts.leftArm != null) h.parts.leftArm.localRotation = Quaternion.Euler(-70f - s * 30f, 0f, -12f);
+                    if (h.parts.rightArm != null) h.parts.rightArm.localRotation = Quaternion.Euler(-70f - s * 30f, 0f, 12f);
+                    if (h.parts.body != null) h.parts.body.localRotation = Quaternion.Euler(8f + s * 14f, 0f, 0f);
+                    continue;
+                }
                 if (!reacting)
                 {
                     // Idle: looking out to sea, now one way, now the other.
