@@ -42,8 +42,46 @@ public static class LogicTests
         RestTests();
         SkinTests();
         CombatTests();
+        WorldMapTests();
         Console.WriteLine(passes + " passed, " + failures + " failed");
         return failures == 0 ? 0 : 1;
+    }
+
+    static void WorldMapTests()
+    {
+        // The real map, built from elevation data by tools/world/build_map.py.
+        var path = "OdinsCoin/Assets/Resources/World/north.bytes";
+        Check(System.IO.File.Exists(path), "the world map is in the game's resources");
+        if (!System.IO.File.Exists(path)) return;
+        var map = WorldMap.FromBytes(System.IO.File.ReadAllBytes(path));
+        WorldMap.Scale = 1f;
+        Func<float, float, float> h = (lat, lon) => { var p = map.ToWorld(lat, lon); return map.GroundHeight(p.x, p.z); };
+        Check(h(61.64f, 8.31f) > 1500f, "Jotunheimen is high mountains (" + h(61.64f, 8.31f) + " m)");
+        Check(h(60.1f, 7.5f) > 900f, "Hardangervidda is a high plateau (" + h(60.1f, 7.5f) + " m)");
+        Check(h(64.8f, -18.5f) > 300f, "the middle of Iceland is land (" + h(64.8f, -18.5f) + " m)");
+        Check(h(57f, 3f) < -20f && h(57f, 3f) > -150f, "the North Sea is shallow sea (" + h(57f, 3f) + " m)");
+        Check(h(58.2f, 9.5f) < -200f, "the Skagerrak trench is deep (" + h(58.2f, 9.5f) + " m)");
+        Check(h(66f, 0f) < -1500f, "the Norwegian Sea is deep ocean (" + h(66f, 0f) + " m)");
+        Check(h(58f, 20f) < 0f && h(59.33f, 18.2f) > 0f, "the Baltic is sea and Stockholm is land");
+        Check(h(52f, -1.5f) > 0f && h(53.5f, -5f) < 0f, "England is land and the Irish Sea is sea");
+        // Distances are real: Bergen to Nidaros (Trondheim) is about 430 km as the raven flies.
+        var bergen = map.ToWorld(60.39f, 5.32f);
+        var nidaros = map.ToWorld(63.43f, 10.40f);
+        float km = Vector3.Distance(bergen, nidaros) / 1000f;
+        Check(km > 400f && km < 460f, "Bergen to Nidaros is about 430 km (" + km + ")");
+        // The projection comes back to where it started.
+        var ll = map.ToLatLon(map.ToWorld(68.24f, 13.76f));
+        Check(Math.Abs(ll.x - 68.24f) < 1e-3f && Math.Abs(ll.y - 13.76f) < 1e-3f, "latitude/longitude survive a round trip (" + ll + ")");
+        // A smaller world scales distances and heights together.
+        float fullHeight = h(61.64f, 8.31f);
+        WorldMap.Scale = 0.1f;
+        var small = map.ToWorld(63.43f, 10.40f);
+        Check(Math.Abs(small.z - nidaros.z * 0.1f) < 1f && Math.Abs(h(61.64f, 8.31f) - fullHeight * 0.1f) < 0.5f, "the world scale shrinks distances and heights alike");
+        WorldMap.Scale = 1f;
+        // Bad files are refused rather than read as nonsense.
+        bool refused = false;
+        try { WorldMap.FromBytes(new byte[] { 1, 2, 3, 4, 5 }); } catch (System.IO.InvalidDataException) { refused = true; } catch (System.IO.EndOfStreamException) { refused = true; }
+        Check(refused, "a file that isn't a world map is refused");
     }
 
     static void CombatTests()

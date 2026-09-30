@@ -159,3 +159,4 @@ namespace UnityEngine {
 }
 
 namespace UnityEngine { public static class Application { public static bool isEditor; public static void Quit(){} } }
+namespace UnityEngine { public class TextAsset : Object { public byte[] bytes = new byte[0]; public string text = ""; } public static class Resources { public static T Load<T>(string path) where T : Object { return null; } } }
