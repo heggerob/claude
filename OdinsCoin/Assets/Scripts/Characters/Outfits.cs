@@ -46,11 +46,11 @@ namespace OdinsCoin
                 {
                     Garments.FurBoots(d, 0.05f);
                     Garments.Gloves(d);
-                    Garments.LongSkirt(d, 0.15f, 1.55f);
-                    Garments.FurSkirt(d, 0.46f, 0.22f);
+                    Garments.LongSkirt(d, 0.26f, 1.55f);
+                    Garments.FurSkirt(d, 0.56f, 0.32f);
                     Garments.Tunic(d, true);
                     Garments.RaiderBelt(d, 4);
-                    Garments.Tabard(d, 0.52f, 0.1f);
+                    Garments.Tabard(d, 0.42f, 0.1f);
                     Garments.ShoulderPelt(d, 1.1f, 0f, 0.95f, 2.6f);
                     Garments.NasalHelmet(d);
                 } } },
@@ -91,7 +91,7 @@ namespace OdinsCoin
                 {
                     Garments.ShinBoots(d, 0.24f);
                     Garments.Gloves(d);
-                    Garments.LongSkirt(d, 0.2f, 1.6f);
+                    Garments.LongSkirt(d, 0.28f, 1.6f);
                     Garments.Underskirt(d, 0.08f);
                     Garments.Tunic(d, false);
                     Garments.LongSleeves(d);
@@ -166,12 +166,12 @@ namespace OdinsCoin
                 {
                     Garments.FurBoots(d, 0.04f);
                     Garments.Gloves(d);
-                    Garments.LongSkirt(d, 0.14f, 1.3f);
-                    Garments.FurSkirt(d, 0.42f, 0.26f);
+                    Garments.LongSkirt(d, 0.24f, 1.3f);
+                    Garments.FurSkirt(d, 0.52f, 0.34f);
                     Garments.Tunic(d, false);
                     Garments.Bracers(d);
                     Garments.RaiderBelt(d, 1);
-                    Garments.Tabard(d, 0.56f, 0.09f);
+                    Garments.Tabard(d, 0.46f, 0.09f);
                     Garments.BeltKnife(d);
                     Garments.Quiver(d);
                     Garments.ShoulderPelt(d, 1.0f, 1f);
