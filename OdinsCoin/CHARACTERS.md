@@ -73,6 +73,14 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
   - Til runde 8:
     - [x] Sverd og bue har egne bærestillinger: sverdet henger med spissen ned og den flate siden ut, og buen holdes lavt og på skrå. Se `docs/heroes.png`.
     - [x] Hanskene er store, med knoker, tommel og en utsvingt mansjett med lys søm, som i bildet.
+  - Runde 8 (ferdig):
+    - **Alle:** spyd, stav og sverd går ikke lenger gjennom bakken når de bæres i spillet. Hånden griper lenger ned på skaftet, og en test sjekker høyder fra 1,4 til 2 m.
+    - **Jarl:** store kuplede gullspenner med knutemønster foran pelsen og flettene.
+    - **Raider:** lysere, slitt stål på økseblad og en blank egg.
+    - **Navigatør:** kortere skjørt og kappe, så beina synes. Skriftrullene stikker ut ved hofta, og bandanaknuten med haler sitter på siden av hodet. Pelskragen er lys saueskinn.
+    - **Spydvakt:** større skjold med mørk jernkant og nagler.
+    - **Seer:** kortere stav, så runesteinen sitter ved ansiktet.
+    - **Speider:** bred grønn kappekrage over begge skuldrene, med pelsen oppå.
 - [x] **9. Bevegelse i plaggene:** (se [docs/motion.png](docs/motion.png)) kapper, skjørt, fletter, pels og vimpler svinger og henger etter når figuren går, snur og hugger (enkel fysikk med fjærer).
 - [ ] **10. Tegneserie-look på alt:** tusj-kanter på skipet, øyene, trærne, husene og havet, skravur med blyant eller tusj i skyggene, og papirkorn over hele bildet.
   - [x] Skravur i skyggene: shaderen `OdinsCoin/InkToon` (i `Resources/Shaders`) gir myk tegnet belysning med kalde skygger, enkle blyantstreker på skyggesiden og kryss-skravur i de mørkeste delene. Ansiktene får ingen skravur, så de holder seg rene. Den brukes på alt som ikke er blankt (havet beholder Lit). `InkStyle.cs` har samme matte, og forhåndsvisningen bruker den.
