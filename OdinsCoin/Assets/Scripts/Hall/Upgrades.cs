@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace OdinsCoin
@@ -40,6 +41,34 @@ namespace OdinsCoin
         public static void SetCurrent(Upgrades u) { current = u; }
 
         public readonly int[] Levels = new int[All.Length];
+
+        /// <summary>The ships you own (design ids), and the one moored at the jetty for you to sail.</summary>
+        public readonly List<string> Fleet = new List<string> { Shipwright.Starter.id };
+        public string Sailing = Shipwright.Starter.id;
+
+        public bool Owns(ShipDesign d) { return Fleet.Contains(d.id); }
+
+        public bool CanBuyShip(ShipDesign d, Fortune fortune) { return !Owns(d) && fortune.Gold >= Shipwright.Price(d); }
+
+        /// <summary>Pay the shipwright; the new hull is yours and the one you'll sail.</summary>
+        public bool BuyShip(ShipDesign d, Fortune fortune)
+        {
+            if (!CanBuyShip(d, fortune)) return false;
+            fortune.Gold -= Shipwright.Price(d);
+            Fleet.Add(d.id);
+            Sailing = d.id;
+            return true;
+        }
+
+        /// <summary>The ship you sail: the one chosen, if it's yours, else the starter.</summary>
+        public ShipDesign SailingDesign
+        {
+            get
+            {
+                var d = Shipwright.Find(Sailing);
+                return d != null && Owns(d) ? d : Shipwright.Starter;
+            }
+        }
 
         public static UpgradeDef Def(UpgradeKind kind) { return All[(int)kind]; }
 

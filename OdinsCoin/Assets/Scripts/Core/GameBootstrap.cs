@@ -66,7 +66,7 @@ namespace OdinsCoin
 
             // The voyage starts moored at the home jetty, sail furled.
             Ship = PlayerDesign != null
-                ? Longship.Create(transform, HomeHarbour.ShipStart, HomeHarbour.ShipStartHeading, PlayerDesign, PlayerLook())
+                ? Longship.Create(transform, HomeHarbour.Berth(PlayerDesign), HomeHarbour.ShipStartHeading, PlayerDesign, PlayerLook())
                 : Longship.Create(transform, HomeHarbour.ShipStart, HomeHarbour.ShipStartHeading);
             Ship.Furl();
             Ship.MakeFast(); // lines out to the jetty's bollards: cast off with G at the helm
@@ -111,6 +111,47 @@ namespace OdinsCoin
             Ocean.Follow(cam.transform);
             // The title screen goes up last, over the live harbour.
             gameObject.AddComponent<GameMenu>();
+        }
+
+        /// <summary>
+        /// Put a different hull at the home jetty for the player to sail (bought from the shipwright, or the one the
+        /// save says). The cargo is carried across, the coin altar goes aboard, and the crew's ship is the new one.
+        /// </summary>
+        public void SwapShip(ShipDesign design)
+        {
+            var old = Ship;
+            if (design == null || (old != null && old.Design == design)) return;
+            var ship = Longship.Create(transform, HomeHarbour.BerthNow(design), HomeHarbour.ShipStartHeading, design, PlayerLook());
+            ship.Furl();
+            ship.PlayerShip = true;
+            ship.gameObject.AddComponent<ShipKeyboardHelm>().enabled = false;
+            bool aboard = Player != null && Player.OnShip;
+            if (old != null)
+            {
+                // The chests stowed on deck go across to the new ship.
+                foreach (var chest in TreasureChest.All.ToArray())
+                {
+                    if (chest == null || !chest.Stowed(old)) continue;
+                    var local = old.transform.InverseTransformPoint(chest.transform.position);
+                    float hw, k, g;
+                    ship.Station(Mathf.Clamp(local.z / ship.HalfLength, -0.6f, 0.6f), out hw, out k, out g);
+                    chest.transform.SetParent(ship.transform, false);
+                    chest.transform.localPosition = new Vector3(Mathf.Clamp(local.x, -hw + 0.8f, hw - 0.8f), ship.DeckY, Mathf.Clamp(local.z, -ship.HalfLength * 0.6f, ship.HalfLength * 0.6f));
+                }
+                Destroy(old.gameObject);
+            }
+            Ship = ship;
+            CoinAltar.Create(ship);
+            if (Player != null)
+            {
+                Player.Ship = ship;
+                if (aboard) Player.ReturnToShip();
+            }
+            var hall = GetComponent<MeadHallUI>();
+            if (hall != null) hall.Ship = ship;
+            var hud = GetComponent<ShipHud>();
+            if (hud != null) hud.Ship = ship;
+            ship.MakeFast();
         }
 
         /// <summary>The player's ship in the home colours: the red-and-black sail of the jarl's house.</summary>

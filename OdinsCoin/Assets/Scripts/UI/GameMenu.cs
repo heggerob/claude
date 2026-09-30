@@ -80,6 +80,8 @@ namespace OdinsCoin
         {
             if (load) SaveGame.Load();
             else SaveGame.NewGame();
+            // The ship at the jetty is the one the save says you sail.
+            if (GameBootstrap.Instance != null) GameBootstrap.Instance.SwapShip(Upgrades.Current.SailingDesign);
             state = State.Playing;
             autosave = 0f;
             SetCursorFree(false);

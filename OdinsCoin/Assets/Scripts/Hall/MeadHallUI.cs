@@ -15,7 +15,7 @@ namespace OdinsCoin
 
         public static bool IsOpenNow { get { return Instance != null && Instance.open; } }
 
-        enum Tab { Upgrades, Skins, Dice, Boasts }
+        enum Tab { Upgrades, Ships, Skins, Dice, Boasts }
         enum DiceState { Betting, Rolling, Reroll, Done }
 
         const float RollTime = 1.1f;
@@ -114,10 +114,10 @@ namespace OdinsCoin
             GUILayout.Label("THE MEAD HALL", title);
             GUILayout.Label("<color=#aaaaaa>Bjorn wipes a horn and nods at you.</color>   Gold: <b>" + Fortune.Current.Gold + "</b>", text);
             GUILayout.BeginHorizontal();
-            foreach (Tab t in new[] { Tab.Upgrades, Tab.Skins, Tab.Dice, Tab.Boasts })
+            foreach (Tab t in new[] { Tab.Upgrades, Tab.Ships, Tab.Skins, Tab.Dice, Tab.Boasts })
             {
                 var tt = t;
-                string label = (t == tab ? "▶ " : "") + (t == Tab.Upgrades ? "Upgrades" : t == Tab.Skins ? "Colours" : t == Tab.Dice ? "Dice with Bjorn" : "Boasting board");
+                string label = (t == tab ? "▶ " : "") + (t == Tab.Upgrades ? "Upgrades" : t == Tab.Ships ? "Shipwright" : t == Tab.Skins ? "Colours" : t == Tab.Dice ? "Dice with Bjorn" : "Boasting board");
                 GUI.enabled = dice != DiceState.Rolling && dice != DiceState.Reroll;
                 if (GUILayout.Button(label, GUILayout.Height(30))) deferred += () => { tab = tt; if (dice == DiceState.Done) dice = DiceState.Betting; };
                 GUI.enabled = true;
@@ -126,6 +126,7 @@ namespace OdinsCoin
             GUILayout.Space(8);
 
             if (tab == Tab.Upgrades) DrawUpgrades();
+            else if (tab == Tab.Ships) DrawShips();
             else if (tab == Tab.Skins) DrawSkins();
             else if (tab == Tab.Dice) DrawDice();
             else DrawBoasts();
@@ -176,6 +177,53 @@ namespace OdinsCoin
                 if (GUILayout.Button(string.Format("Have Gunnar fetch the cargo off your ship: {0} chest{1}, {2} gold", count, count == 1 ? "" : "s", gold), GUILayout.Height(30)))
                     deferred += () => { int n; int g = home.SellCargo(Ship, out n); CombatHud.Banner("+" + g + " GOLD", "Gunnar hauls " + n + " chest" + (n == 1 ? "" : "s") + " up the hill."); };
             }
+        }
+
+        /// <summary>
+        /// The shipwright's board: every hull, what it costs, and the ones you own to choose between. A new ship is
+        /// rigged at the jetty, so she has to be lying there to swap.
+        /// </summary>
+        void DrawShips()
+        {
+            var up = Upgrades.Current;
+            var fortune = Fortune.Current;
+            var home = HomeHarbour.Instance;
+            bool atJetty = home != null && Ship != null && home.ShipInRange(Ship);
+            foreach (var design in ShipDesign.All)
+            {
+                var d = design;
+                bool owned = up.Owns(d), sailing = Ship != null && Ship.Design == d;
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(string.Format("<b>{0}</b>{1}\n<size=12>{2}\n<color=#aaaaaa>{3}</color></size>", d.title,
+                    sailing ? "  <color=#ffd060>(at the jetty)</color>" : owned ? "  <color=#88cc88>(yours)</color>" : "", d.blurb, Shipwright.Numbers(d)), text);
+                if (sailing)
+                {
+                    GUI.enabled = false;
+                    GUILayout.Button("Your ship", GUILayout.Width(190f), GUILayout.Height(52));
+                }
+                else if (owned)
+                {
+                    GUI.enabled = atJetty;
+                    if (GUILayout.Button("Sail her\n<size=12>rigged at the jetty</size>", GUILayout.Width(190f), GUILayout.Height(52)))
+                        deferred += () => { up.Sailing = d.id; GameBootstrap.Instance.SwapShip(d); SaveGame.Save(); CombatHud.Banner(d.title.ToUpper(), "Your crew carry the cargo and the coin across to her."); };
+                }
+                else
+                {
+                    GUI.enabled = atJetty && up.CanBuyShip(d, fortune);
+                    if (GUILayout.Button("Buy her\n<size=12>" + Shipwright.Price(d) + " gold</size>", GUILayout.Width(190f), GUILayout.Height(52)))
+                        deferred += () =>
+                        {
+                            if (!up.BuyShip(d, fortune)) return;
+                            Sfx.Play(SfxId.Purchase);
+                            GameBootstrap.Instance.SwapShip(d);
+                            SaveGame.Save();
+                            CombatHud.Banner(d.title.ToUpper(), "The shipwright's crew rig her at the jetty. She's yours.");
+                        };
+                }
+                GUI.enabled = true;
+                GUILayout.EndHorizontal();
+            }
+            if (!atJetty) GUILayout.Label("<size=12><color=#ff9a6a>Bring your ship alongside the jetty to buy or change hulls.</color></size>", text);
         }
 
         /// <summary>

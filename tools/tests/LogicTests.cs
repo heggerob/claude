@@ -665,6 +665,25 @@ public static class LogicTests
         Check(g.Active.Count == 0, "blessings and curses are fleeting: not saved");
         Check(Math.Abs(g.HeadsChance - f.HeadsChance + 0.1f * 0f) < 0.2f && g.PayoutMultiplier == f.PayoutMultiplier, "the loaded coin plays the same");
 
+        // The fleet: you start with a Wavewolf; bought hulls are yours, saved, and the one you sail comes back.
+        var fleet = new Upgrades();
+        var rich = new Fortune { Gold = 3000 };
+        Check(fleet.SailingDesign == ShipDesign.Wavewolf && fleet.Owns(ShipDesign.Wavewolf) && Shipwright.Price(ShipDesign.Wavewolf) == 0, "every voyage starts with a Wavewolf");
+        Check(!fleet.CanBuyShip(ShipDesign.Krakenhall, rich) && fleet.BuyShip(ShipDesign.Stormbreaker, rich) && rich.Gold == 3000 - Shipwright.Price(ShipDesign.Stormbreaker),
+            "the Krakenhall is out of reach at 3000 gold; the Stormbreaker costs " + Shipwright.Price(ShipDesign.Stormbreaker));
+        Check(!fleet.BuyShip(ShipDesign.Stormbreaker, new Fortune { Gold = 99999 }) && fleet.SailingDesign == ShipDesign.Stormbreaker, "you can't buy the same hull twice, and you sail the one you bought");
+        int last = 0;
+        bool dearer = true;
+        foreach (var d in new[] { ShipDesign.Skerrycutter, ShipDesign.Stormbreaker, ShipDesign.Krakenhall }) { if (Shipwright.Price(d) <= last) dearer = false; last = Shipwright.Price(d); }
+        Check(dearer, "bigger hulls cost more");
+        Fortune fg; Upgrades fu;
+        SaveGame.Deserialize(SaveGame.Serialize(rich, fleet), out fg, out fu);
+        Check(fu.Owns(ShipDesign.Stormbreaker) && fu.Owns(ShipDesign.Wavewolf) && fu.SailingDesign == ShipDesign.Stormbreaker && fu.Fleet.Count == 2, "the fleet and the ship you sail survive a save");
+        SaveGame.Deserialize("gold=10\nfleet=krakenhall,nonsense\nsailing=nonsense\n", out fg, out fu);
+        Check(fu.Owns(ShipDesign.Krakenhall) && fu.SailingDesign == ShipDesign.Wavewolf, "unknown ships in a save are skipped");
+        SaveGame.Deserialize("gold=10\nsailing=krakenhall\n", out fg, out fu);
+        Check(fu.SailingDesign == ShipDesign.Wavewolf, "a save can't sail a ship it doesn't own");
+
         // Broken or hostile saves don't crash or cheat.
         Fortune h; Upgrades w;
         Check(!SaveGame.Deserialize("", out h, out w) && h.Gold == 100, "an empty save gives a fresh start");
@@ -904,22 +923,36 @@ public static class LogicTests
     static void HarbourTests()
     {
         var home = HomeHarbour.Spec;
-        Vector3 s = HomeHarbour.ShipStart;
+        // Every hull the shipwright sells has a berth alongside the jetty: afloat even in a trough, clear of the planks and the beach.
+        foreach (var hullDesign in ShipDesign.All)
+        {
+            var at = HomeHarbour.Berth(hullDesign);
+            float shallowest = float.MaxValue;
+            bool afloat = true;
+            for (float t = -1f; t <= 1f; t += 0.1f)
+            {
+                float hw, keel, g;
+                ShipModel.Section(hullDesign, t, out keel, out g, out hw);
+                float z = at.z + t * hullDesign.length / 2f;
+                foreach (float side in new[] { -1f, 0f, 1f })
+                {
+                    float bottom = Island.Height(home, at.x + side * hw, z);
+                    if (bottom >= at.y + keel - Waves.MaxHeight) afloat = false;
+                    shallowest = Math.Min(shallowest, at.y + keel - Waves.MaxHeight - bottom);
+                }
+            }
+            Check(afloat, hullDesign.title + " lies afloat at her berth (" + shallowest.ToString("0.0") + " m under the keel)");
+            Check(at.x - hullDesign.beam / 2f > 1.7f + 0.1f && at.z - hullDesign.length / 2f > HomeHarbour.JettyStart + 4f, hullDesign.title + " lies clear of the jetty and the beach");
+            float line = float.MaxValue;
+            foreach (float end in new[] { 0.8f, -0.8f })
+                foreach (float z in new[] { -67f, -58f, -48f })
+                    line = Math.Min(line, Vector3.Distance(new Vector3(at.x, at.y + hullDesign.freeboard, at.z + end * hullDesign.length / 2f), new Vector3(1.7f, 1.95f, z)));
+            Check(line < Seamanship.LineReach, hullDesign.title + " can get a line to a bollard (" + line.ToString("0.0") + " m)");
+        }
+        Vector3 s = HomeHarbour.Berth(GameBootstrap.PlayerDesign);
         // The player's ship (one of the new classes) and its measurements.
         var design = GameBootstrap.PlayerDesign;
         float half = design.length / 2f, beam = design.beam, deckY = DesignedShipBuilder.DeckY(design);
-        // The berth is deep enough for the keel even in a wave trough, along the whole hull.
-        for (float t = -1f; t <= 1f; t += 0.1f)
-        {
-            float hw, keel, g;
-            ShipModel.Section(design, t, out keel, out g, out hw);
-            float z = s.z + t * half;
-            foreach (float side in new[] { -1f, 0f, 1f })
-            {
-                float bottom = Island.Height(home, s.x + side * hw, z);
-                Check(bottom < s.y + keel - Waves.MaxHeight, "berth is deep enough at station " + t.ToString("0.0") + " side " + side + " (" + bottom + ")");
-            }
-        }
         // The jetty starts on the beach and runs out over the water, clear of the hull.
         float last = HomeHarbour.JettyStart + (HomeHarbour.JettyPlanks - 1) * 1.6f;
         float beach = Island.Height(home, 0f, HomeHarbour.JettyStart);

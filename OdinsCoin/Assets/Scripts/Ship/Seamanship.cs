@@ -46,7 +46,7 @@ namespace OdinsCoin
         public static float ClosestToWind(ShipDesign d, float windKnots)
         {
             int kn = Mathf.Clamp(Mathf.RoundToInt(windKnots), 2, 60);
-            long key = ((long)d.GetHashCode() << 8) | (long)kn;
+            long key = ((long)(uint)d.GetHashCode() << 8) | (uint)kn;
             float found;
             if (closest.TryGetValue(key, out found)) return found;
             float speed = kn * 0.514f, u = Mathf.Min(2f, 0.3f * d.HullSpeed), v = -u * Mathf.Tan(4f * Mathf.Deg2Rad);

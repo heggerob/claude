@@ -101,6 +101,12 @@ med ror, seil i vinden og årer.
     - **Kryssing:** fysikken regner ut hvor høyt hvert skip går mot vinden i vinden som blåser nå (Wavewolf 51°,
       den råriggede Skerrycutter 55° i 16 knop). HUD-en viser seilingen: slør, halvvind, bidevind, og «in irons»
       med de to kursene du må krysse på for å komme opp mot vinden.
+- [x] **9. Skipsbyggeren:** kjøp større skip i mjødhallen (fanen «Shipwright»).
+  - Skerrycutter koster 400 gull, Stormbreaker 2 500 og Krakenhall 6 000. Alle starter med en Wavewolf.
+  - Skipene du har kjøpt er dine, og du bytter mellom dem ved brygga. Lasten og Odins alter flyttes over.
+  - Flåten og skipet du seiler lagres.
+  - Hvert skip har sin egen plass ved brygga, flytende og klar av stranda.
+  - Du kan klatre om bord fra brygga eller fra vannet når du står ved siden av skipet.
 
 ## Merk
 

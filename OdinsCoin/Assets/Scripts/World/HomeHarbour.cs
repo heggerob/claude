@@ -42,6 +42,20 @@ namespace OdinsCoin
         /// <summary>The ship's berth in the scene now.</summary>
         public static Vector3 ShipStartNow { get { return ShipStart + Drift; } }
 
+        /// <summary>
+        /// Where a hull of this design lies alongside the jetty (as built): her side just clear of the planks, her
+        /// stern well clear of the beach, so the longest ships lie further out along the jetty.
+        /// </summary>
+        public static Vector3 Berth(ShipDesign d)
+        {
+            if (d == null) return ShipStart;
+            float x = 1.7f + d.beam / 2f + 0.4f;
+            float z = Mathf.Max(ShipStart.z, JettyStart + 5f + d.length / 2f + 4f * d.draught); // deep keels further from the beach
+            return new Vector3(Mathf.Max(ShipStart.x, x), ShipStart.y, z);
+        }
+
+        public static Vector3 BerthNow(ShipDesign d) { return Berth(d) + Drift; }
+
         /// <summary>The home island's centre as built (y = 0).</summary>
         public static Vector3 HomeCentre { get { return new Vector3(Spec.centre.x, 0f, Spec.centre.y); } }
 

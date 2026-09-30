@@ -114,7 +114,7 @@ namespace OdinsCoin
             if (Serpent.Instance != null) Destroy(Serpent.Instance.gameObject);
             ship.Hull.Reset();
             Sfx.Play(SfxId.Splash, 1f);
-            ship.Relocate(HomeHarbour.ShipStartNow, HomeHarbour.ShipStartHeading);
+            ship.Relocate(HomeHarbour.BerthNow(ship.Design), HomeHarbour.ShipStartHeading);
             if (boot.Player != null) boot.Player.ReturnToShip();
             nextRaider = 180f;
             CombatHud.Banner("RÁN TAKES YOUR SHIP", lost > 0

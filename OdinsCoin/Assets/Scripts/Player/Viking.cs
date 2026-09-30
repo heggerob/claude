@@ -251,14 +251,14 @@ namespace OdinsCoin
             }
             if (Carrying != null)
             {
-                Prompt = Swimming && DistanceToShip() < ClimbRange ? "[E] Climb aboard" : "[E] Put the chest down";
+                Prompt = CanClimbAboard ? "[E] Climb aboard" : "[E] Put the chest down";
                 return;
             }
             var chest = TreasureChest.NearestFree(transform.position + Vector3.up * 0.5f, InteractRange);
             if (chest != null) { Prompt = "[E] Pick up the chest (" + chest.Value + " gold)"; return; }
             if (OnShip && Ship.Hull.Holes > 0) { Prompt = "[E] Plug a hole (" + Ship.Hull.Holes + " letting water in)"; return; }
             if (OnShip && Ship.Hull.Level > 0.02f) { Prompt = "[E] Bail water (" + Mathf.RoundToInt(Ship.Hull.Level * 100f) + "% full)"; return; }
-            if (Swimming && DistanceToShip() < ClimbRange) Prompt = "[E] Climb aboard";
+            if (CanClimbAboard) Prompt = "[E] Climb aboard";
         }
 
         void Interact()
@@ -311,7 +311,7 @@ namespace OdinsCoin
                     return;
                 }
             }
-            if (Carrying != null && !(Swimming && DistanceToShip() < ClimbRange))
+            if (Carrying != null && !(CanClimbAboard))
             {
                 DropChest();
                 return;
@@ -333,7 +333,7 @@ namespace OdinsCoin
                     return;
                 }
             }
-            if (Swimming && DistanceToShip() < ClimbRange)
+            if (CanClimbAboard)
             {
                 // Haul yourself over the side nearest to you.
                 Vector3 local = Ship.transform.InverseTransformPoint(transform.position);
@@ -373,6 +373,9 @@ namespace OdinsCoin
             var altar = CoinAltar.Instance;
             return altar != null && !altar.Flipping && Vector3.Distance(transform.position, altar.transform.position) < CoinAltar.UseRange;
         }
+
+        /// <summary>Close enough to haul yourself up her side: from the water, or from a jetty or beach beside her.</summary>
+        bool CanClimbAboard { get { return !OnShip && !AtHelm && DistanceToShip() < ClimbRange; } }
 
         float DistanceToShip()
         {

@@ -34,6 +34,8 @@ namespace OdinsCoin
             var levels = new string[u.Levels.Length];
             for (int i = 0; i < levels.Length; i++) levels[i] = u.Levels[i].ToString(CultureInfo.InvariantCulture);
             Line(sb, "upgrades", string.Join(",", levels));
+            Line(sb, "fleet", string.Join(",", u.Fleet.ToArray()));
+            Line(sb, "sailing", u.Sailing);
             return sb.ToString();
         }
 
@@ -70,6 +72,17 @@ namespace OdinsCoin
                     case "flips": if (nums.Length == 2) { f.Flips = nums[0]; f.HeadsCount = nums[1]; } break;
                     case "plunder": if (nums.Length == 2) { f.ChestsSold = nums[0]; f.GoldPlundered = nums[1]; } break;
                     case "dice": if (nums.Length == 2) { f.DiceWon = nums[0]; f.DiceLost = nums[1]; } break;
+                    case "fleet":
+                        foreach (var id in value.Split(','))
+                        {
+                            var d = Shipwright.Find(id.Trim());
+                            if (d != null && !u.Owns(d)) u.Fleet.Add(d.id);
+                        }
+                        break;
+                    case "sailing":
+                        var ship = Shipwright.Find(value);
+                        if (ship != null) u.Sailing = ship.id;
+                        break;
                     case "upgrades":
                         for (int i = 0; i < nums.Length && i < u.Levels.Length; i++)
                             u.Levels[i] = Mathf.Clamp(nums[i], 0, Upgrades.All[i].costs.Length);
