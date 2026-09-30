@@ -127,7 +127,7 @@ namespace OdinsCoin
                     Garments.StuddedTrim(d);
                     Garments.RingBuckleBelt(d);
                     Garments.BigCape(d, 0.9f, 1.4f, false);
-                    Garments.ShoulderPelt(d, 1.2f, 0f, 0.9f, 2.2f);
+                    Garments.ShoulderPelt(d, 1.35f, 0f, 0.9f, 2.2f);
                     Garments.Scarf(d);
                     Garments.NasalHelmet(d);
                 } } },
