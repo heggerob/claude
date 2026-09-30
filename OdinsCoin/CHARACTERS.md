@@ -192,7 +192,7 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
   - **Jarl:** Rally the Crew gjør at mannskapet ror en femtedel hardere. Tribute gir 25 % mer for kister solgt hjemme.
   - **Navigatør:** Read the Stars viser veien til nærmeste sted med plyndring igjen. Currents gir seilene mer kraft når du står ved roret.
   - **Spydvakt:** Shield Wall gjør at skjoldet stopper nesten alt forfra, piler også. Long Reach gir 35 % lengre rekkevidde.
-  - **Seer:** Foresight viser hvordan mynten vil lande før du satser. Ward of Runes gjør at forbannelser går over raskere.
+  - **Seer:** Foresight viser hvordan mynten vil lande før du satser skatten ved alteret. Rune Lore får den neste steinen du skal røre i en runering til å gløde svakt (den erstatter Ward of Runes, som bare virket på forbannelser fra den gamle myntmenyen).
   - **Speider:** Keen Eyes gjør at du ser 50 % lenger gjennom disen. Volley gir buen dobbel skade og lang rekkevidde.
 - [x] **18. Førsteperson (`Core/CameraRig.cs`, se [docs/firstperson.png](docs/firstperson.png)):** spillet spilles nå i førsteperson. Du ser ut gjennom heltens øyne, med sikte midt på skjermen.
   - **Kamera:** musa snur hodet og kroppen, og du kan se nesten rett opp og ned. Ditt eget hode (ansikt, hår, hatt) tegnes ikke, men kaster fortsatt skygge. Står du på et skip som svinger, svinger blikket med.

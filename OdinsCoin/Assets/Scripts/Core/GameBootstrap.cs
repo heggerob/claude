@@ -41,7 +41,7 @@ namespace OdinsCoin
         void Update()
         {
             Wind.Tick(Time.deltaTime);
-            Fortune.Current.Tick(Time.deltaTime, Abilities.Has("ward") ? Abilities.WardCurseRate : 1f);
+            Fortune.Current.Tick(Time.deltaTime);
         }
 
         void Awake()

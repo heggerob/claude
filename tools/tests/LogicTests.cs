@@ -53,19 +53,22 @@ public static class LogicTests
     static void AbilityTests()
     {
         // Every ability the hero screen lists does something in the game.
-        var known = new HashSet<string> { "cleave", "plunder", "rally", "tribute", "stars", "currents", "wall", "reach", "foresight", "ward", "keen", "volley" };
+        var known = new HashSet<string> { "cleave", "plunder", "rally", "tribute", "stars", "currents", "wall", "reach", "foresight", "runelore", "keen", "volley" };
         foreach (OutfitId o in System.Enum.GetValues(typeof(OutfitId)))
             foreach (var a in Outfits.Get(o).abilities)
                 Check(known.Contains(a.id) && Abilities.Has(o, a.id), Outfits.Get(o).title + "'s " + a.name + " is wired into the game");
         Check(!Abilities.Has(OutfitId.Raider, "tribute") && Abilities.Has(OutfitId.Jarl, "tribute"), "only the Jarl has Tribute");
         Check(Abilities.PlunderCarrySpeed > Viking.CarrySpeed && Abilities.CleaveArc > VikingCombat.Arc && Abilities.LongReach > 1f && Abilities.TributePrice > 1f, "the gifts make things better");
-        // Ward of Runes: curses fade faster, blessings don't.
-        var warded = new Fortune();
-        warded.Add(Fates.Curses[0], 1, 60f);
-        warded.Add(Fates.Blessings[0], 1, 60f);
-        warded.Tick(30f, Abilities.WardCurseRate);
-        Check(warded.Active.Count == 2 && warded.Active.Exists(a => a.card.kind == FateKind.Blessing && Mathf.Abs(a.remaining - 30f) < 1e-3f)
-            && warded.Active.Exists(a => a.card.kind == FateKind.Curse && a.remaining < 30f - 1f), "Ward of Runes wears curses off faster than blessings");
+        // Rune Lore: the Seer sees which stone of a rune ring comes next, and only that one.
+        var lore = new RunePuzzle(5, 7);
+        int first = System.Array.IndexOf(lore.Notches, 1), second = System.Array.IndexOf(lore.Notches, 2);
+        int hinted = 0;
+        for (int i = 0; i < 5; i++) if (lore.IsNext(i)) hinted++;
+        Check(hinted == 1 && lore.IsNext(first), "Rune Lore points at the one-notch stone first");
+        lore.Touch(first);
+        Check(lore.IsNext(second) && !lore.IsNext(first), "then at the two-notch stone");
+        lore.Touch((second + 1) % 5 == first ? (second + 2) % 5 : (second + 1) % 5);
+        Check(lore.IsNext(first), "after a wrong touch it points back at the start");
     }
 
     static void SeamanshipTests()

@@ -145,7 +145,7 @@ namespace OdinsCoin
                 defaultHair = HairStyle.VeryLongBraids, suggestedWeapon = WeaponId.Staff,
                 abilities = new[] {
                     new Ability { id = "foresight", name = "Foresight", description = "See how Odin's coin will land before you stake your treasure." },
-                    new Ability { id = "ward", name = "Ward of Runes", description = "Curses on you and your crew wear off faster." } },
+                    new Ability { id = "runelore", name = "Rune Lore", description = "At a rune ring, the next stone to touch glows faintly." } },
                 dress = d =>
                 {
                     Garments.ShinBoots(d, 0.2f);

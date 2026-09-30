@@ -22,8 +22,6 @@ namespace OdinsCoin
         public const float WallLeak = 0.05f;
         /// <summary>Spear Guard, Long Reach: how much further your blows reach.</summary>
         public const float LongReach = 1.35f;
-        /// <summary>Seer, Ward of Runes: how much faster curses wear off.</summary>
-        public const float WardCurseRate = 1.6f;
         /// <summary>Scout, Keen Eyes: how much further you see through the haze.</summary>
         public const float KeenSight = 1.5f;
         /// <summary>Scout, Volley: three arrows at once, so each loosed shot hits this much harder.</summary>

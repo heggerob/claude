@@ -32,6 +32,9 @@ namespace OdinsCoin
         /// <summary>Is this stone lit (touched in turn so far)?</summary>
         public bool IsLit(int stone) { return Solved || Notches[stone] <= Next; }
 
+        /// <summary>Is this the stone to touch next (what the Seer's Rune Lore shows)?</summary>
+        public bool IsNext(int stone) { return !Solved && Notches[stone] == Next + 1; }
+
         /// <summary>Touch a stone.</summary>
         public Result Touch(int stone)
         {
@@ -104,7 +107,7 @@ namespace OdinsCoin
         public Place Place { get; private set; }
         public RunePuzzle Puzzle { get; private set; }
         readonly Renderer[] glows = new Renderer[RuneShrines.Stones];
-        static readonly Color Stone = new Color(0.55f, 0.53f, 0.5f), Dark = new Color(0.22f, 0.2f, 0.2f), Lit = new Color(0.45f, 0.8f, 1f);
+        static readonly Color Stone = new Color(0.55f, 0.53f, 0.5f), Dark = new Color(0.22f, 0.2f, 0.2f), Lit = new Color(0.45f, 0.8f, 1f), Hint = new Color(0.62f, 0.52f, 0.3f);
 
         public static ShrineRing Build(Transform parent, Place place, Vector3 scenePos, System.Func<Vector3, float> groundAt)
         {
@@ -141,15 +144,16 @@ namespace OdinsCoin
             return ring;
         }
 
-        /// <summary>Light the stones touched in turn (all of them once solved).</summary>
+        /// <summary>Light the stones touched in turn (all of them once solved), and, for a Seer, warm the next one.</summary>
         public void Show()
         {
+            bool lore = Abilities.Has("runelore");
             for (int i = 0; i < RuneShrines.Stones; i++)
             {
                 var notches = glows[i] != null ? glows[i].transform.parent : null;
                 if (notches == null) continue;
                 foreach (var r in notches.GetComponentsInChildren<Renderer>())
-                    r.sharedMaterial = Materials.Get(Puzzle.IsLit(i) ? Lit : Dark);
+                    r.sharedMaterial = Materials.Get(Puzzle.IsLit(i) ? Lit : lore && Puzzle.IsNext(i) ? Hint : Dark);
             }
         }
     }

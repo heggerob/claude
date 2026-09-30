@@ -238,7 +238,7 @@ namespace OdinsCoin
 
         public void Tick(float dt) { Tick(dt, 1f); }
 
-        /// <summary>Let time pass; curses wear off <paramref name="curseRate"/> times as fast (the Seer's Ward of Runes).</summary>
+        /// <summary>Let time pass; curses wear off <paramref name="curseRate"/> times as fast.</summary>
         public void Tick(float dt, float curseRate)
         {
             for (int i = Active.Count - 1; i >= 0; i--)
