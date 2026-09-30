@@ -105,17 +105,19 @@ namespace OdinsCoin
         {
             var f = d.fit;
             float s = d.S;
+            // Near-black leather, as every hand in the concept art is drawn.
+            var glove = Color.Lerp(d.pal.leatherDark, new Color(0.08f, 0.07f, 0.07f), 0.6f);
             foreach (var joint in new[] { Joints.LeftForearm, Joints.RightForearm })
             {
                 float wrist = -f.foreArm;
                 // A flared gauntlet cuff with a pale stitched rim.
-                d.Add(joint, d.pal.leatherDark, MeshData.Lathe(new[] { new Vector2(0.022f * s, wrist + 0.02f * s), new Vector2(0.042f * s, wrist + 0.1f * s), new Vector2(0.047f * s, wrist + 0.11f * s) }, 12));
+                d.Add(joint, glove, MeshData.Lathe(new[] { new Vector2(0.022f * s, wrist + 0.02f * s), new Vector2(0.042f * s, wrist + 0.1f * s), new Vector2(0.047f * s, wrist + 0.11f * s) }, 12));
                 d.Add(joint, d.pal.leather, CharacterKit.Band(wrist + 0.1f * s, 0.008f * s, 0.048f * s, 1f, 12), false);
                 // A big mitten-like fist, knuckles and a thumb: chunky, as the concept art draws the hands.
-                d.Add(joint, d.pal.leatherDark, MeshData.Ellipsoid(new Vector3(0f, wrist - 0.028f * s, 0.008f * s), new Vector3(0.043f, 0.054f, 0.047f) * s, 12, 7));
+                d.Add(joint, glove, MeshData.Ellipsoid(new Vector3(0f, wrist - 0.028f * s, 0.008f * s), new Vector3(0.04f, 0.05f, 0.043f) * s, 12, 7));
                 for (int k = -1; k <= 1; k++)
-                    d.Add(joint, d.pal.leatherDark, MeshData.Ellipsoid(new Vector3(k * 0.022f * s, wrist - 0.06f * s, 0.03f * s), Vector3.one * 0.018f * s, 6, 4), false);
-                d.Add(joint, d.pal.leatherDark, MeshData.Ellipsoid(new Vector3(0f, wrist - 0.01f * s, 0.042f * s), new Vector3(0.018f, 0.03f, 0.018f) * s, 6, 4));
+                    d.Add(joint, glove, MeshData.Ellipsoid(new Vector3(k * 0.02f * s, wrist - 0.056f * s, 0.028f * s), Vector3.one * 0.017f * s, 6, 4), false);
+                d.Add(joint, glove, MeshData.Ellipsoid(new Vector3(0f, wrist - 0.01f * s, 0.042f * s), new Vector3(0.018f, 0.03f, 0.018f) * s, 6, 4));
             }
         }
 
