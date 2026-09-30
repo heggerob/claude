@@ -46,11 +46,19 @@ Alt bygges i kode (ingen modellfiler trengs). `tools/preview/render.sh` tegner e
     - **Spydvakt:** splitt foran i lærvesten, mørke bukser og knehøye støvler.
     - **Seer:** blekere filler i fjærkappa.
     - **Speider:** lua sitter på skrå med mørkt stoff synlig, flettet svinger over høyre skulder, og løse lokker henger på samme side.
-  - Til runde 4:
-    - Ansiktene er litt mindre enn i bildet. Hodet kan bli større, eller hodeplaggene kan sitte høyere.
-    - Hendene som holder våpen bør synes bedre.
-    - Pelsen på Navigatørens skulder er for lite synlig.
-    - Buen til Speideren skal henge bak, ikke holdes foran.
+  - Runde 4 (ferdig): større hoder og flatt lys på ansiktene, og pelsen på Navigatørens skulder synes over kappa.
+  - Runde 5 (ferdig):
+    - **Speider:** skjørt og panel til kneet, og buen skrått bak kroppen.
+    - **Spydvakt:** vimpelen henger ned fra spydet.
+    - **Raider:** flettene svinger som i bildet (`SwungBraids`).
+    - **Jarl:** fyldigere pelskrage og skjoldet vendt mot oss.
+    - **Seer:** fillete fjær stikker ut fra skuldrene.
+    - **Navigatør:** videre skjørt og høyere pannebånd.
+  - Til runde 6:
+    - Pelsen er fortsatt for lys og jevn mot bildets gule og brune toner.
+    - Runene på Jarlens gullkant er for små til å synes.
+    - Speiderens bue bør henge lavere enn skjørtet.
+    - Stoffet i Navigatørens kappe trenger mønsteret langs hele kanten.
 - [x] **9. Bevegelse i plaggene:** (se [docs/motion.png](docs/motion.png)) kapper, skjørt, fletter, pels og vimpler svinger og henger etter når figuren går, snur og hugger (enkel fysikk med fjærer).
 - [ ] **10. Tegneserie-look på alt:** tusj-kanter på skipet, øyene, trærne, husene og havet, skravur med blyant eller tusj i skyggene, og papirkorn over hele bildet.
   - [x] Skravur i skyggene: shaderen `OdinsCoin/InkToon` (i `Resources/Shaders`) gir myk tegnet belysning med kalde skygger, enkle blyantstreker på skyggesiden og kryss-skravur i de mørkeste delene. Ansiktene får ingen skravur, så de holder seg rene. Den brukes på alt som ikke er blankt (havet beholder Lit). `InkStyle.cs` har samme matte, og forhåndsvisningen bruker den.

@@ -665,7 +665,7 @@ namespace OdinsCoin
         {
             var f = d.fit;
             float r = f.headR, cy = HeroModel.HeadCentre(f), s = d.S;
-            float brim = cy + 0.1f * r;
+            float brim = cy + 0.2f * r;
             d.Add(Joints.Head, d.pal.accent, MeshData.Lathe(new[] {
                 new Vector2(r * 1.07f, brim - 0.05f * r), new Vector2(r * 1.09f, brim + 0.3f * r), new Vector2(r * 1.0f, brim + 0.65f * r),
                 new Vector2(r * 0.75f, brim + 0.92f * r), new Vector2(0.01f, brim + 1.05f * r) }, 18)
